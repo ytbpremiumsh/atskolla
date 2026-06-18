@@ -2955,7 +2955,7 @@ export function BendaharaSPPDetail() {
       {/* Tabel riwayat */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
-          <CardTitle className="text-base">Riwayat Pembayaran</CardTitle>
+          <CardTitle className="text-base">Riwayat Pembayaran SPP</CardTitle>
           <Button size="sm" className="bg-[#5B6CF9] hover:bg-[#4c5ded]" disabled={busy === "bulk-all"} onClick={() => downloadAllPaidPdf()}>
             {busy === "bulk-all" ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
             Export Semua Lunas
