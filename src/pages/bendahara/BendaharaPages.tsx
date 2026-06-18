@@ -2060,6 +2060,15 @@ export function BendaharaTransaksi() {
         }
       />
 
+      {/* Jenis tagihan */}
+      <Tabs value={filterBillType} onValueChange={(v) => setFilterBillType(v as any)} className="w-full">
+        <TabsList className="grid grid-cols-3 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
+          <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Semua</TabsTrigger>
+          <TabsTrigger value="spp" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">SPP</TabsTrigger>
+          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Custom</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Summary mini */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Siswa" value={summary.total} icon={User} gradient="from-[#5B6CF9] to-[#4c5ded]" />
