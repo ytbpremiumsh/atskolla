@@ -1996,6 +1996,7 @@ export function BendaharaTransaksi() {
     return students.map(s => {
       const studentInvs = invoices.filter(inv => {
         if (inv.student_id !== s.id) return false;
+        if (filterBillType !== "all" && (inv.bill_type || "spp") !== filterBillType) return false;
         const ay = academicYearOf(inv.period_month, inv.period_year);
         if (ay !== filterAY) return false;
         if (filterMonth !== "all" && inv.period_month !== parseInt(filterMonth)) return false;
