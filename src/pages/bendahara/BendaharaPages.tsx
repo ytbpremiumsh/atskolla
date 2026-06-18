@@ -1643,19 +1643,29 @@ function BendaharaGenerateCustom() {
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const reloadCustom = async () => {
+    if (!profile?.school_id) return;
+    const { data } = await supabase
+      .from("spp_invoices")
+      .select("id, student_id, student_name, class_name, period_label, bill_category, total_amount, status, due_date, created_at, bill_type")
+      .eq("school_id", profile.school_id)
+      .eq("bill_type", "custom")
+      .order("created_at", { ascending: false });
+    setExistingInvs(data || []);
+  };
+
   useEffect(() => {
     if (!profile?.school_id) return;
     Promise.all([
       supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
       supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone").eq("school_id", profile.school_id),
-      supabase.from("spp_invoices").select("student_id, period_label, bill_type").eq("school_id", profile.school_id).eq("bill_type", "custom"),
-    ]).then(([c, s, inv]) => {
+    ]).then(([c, s]) => {
       const cls = (c.data || []).map((x: any) => x.name);
       setClasses(cls);
       setSelectedClasses(cls);
       setStudents(s.data || []);
-      setExistingInvs(inv.data || []);
     });
+    reloadCustom();
   }, [profile?.school_id]);
 
   const effectiveCategory = category === "Lainnya" ? (customCategory.trim() || "Lainnya") : category;
@@ -1782,10 +1792,7 @@ function BendaharaGenerateCustom() {
       }
 
       // Refresh local cache
-      const { data } = await supabase.from("spp_invoices")
-        .select("student_id, period_label, bill_type")
-        .eq("school_id", profile.school_id).eq("bill_type", "custom");
-      setExistingInvs(data || []);
+      await reloadCustom();
       setBillName("");
     } finally { setLoading(false); }
   };
@@ -1950,7 +1957,160 @@ function BendaharaGenerateCustom() {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* Tagihan Custom Aktif */}
+      <ActiveCustomInvoicesList invoices={existingInvs} onChanged={reloadCustom} />
     </div>
+  );
+}
+
+function ActiveCustomInvoicesList({ invoices, onChanged }: { invoices: any[]; onChanged: () => void | Promise<void> }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [open, setOpen] = useState<Record<string, boolean>>({});
+
+  const groups = useMemo(() => {
+    const map = new Map<string, { key: string; name: string; category: string; rows: any[] }>();
+    for (const inv of invoices) {
+      const key = `${inv.period_label || "-"}__${inv.bill_category || "-"}`;
+      if (!map.has(key)) map.set(key, { key, name: inv.period_label || "-", category: inv.bill_category || "-", rows: [] });
+      map.get(key)!.rows.push(inv);
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      const da = Math.max(...a.rows.map(r => new Date(r.created_at).getTime()));
+      const db = Math.max(...b.rows.map(r => new Date(r.created_at).getTime()));
+      return db - da;
+    });
+  }, [invoices]);
+
+  const deleteOne = async (inv: any) => {
+    if (inv.status === "paid") { toast.error("Tagihan lunas tidak bisa dihapus"); return; }
+    if (!confirm(`Hapus tagihan "${inv.period_label}" untuk ${inv.student_name}?`)) return;
+    setBusy(`one-${inv.id}`);
+    const { error } = await supabase.from("spp_invoices").delete().eq("id", inv.id).neq("status", "paid");
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tagihan dihapus");
+    await onChanged();
+  };
+
+  const deleteUnpaidGroup = async (g: { key: string; name: string; rows: any[] }) => {
+    const unpaidIds = g.rows.filter(r => r.status !== "paid").map(r => r.id);
+    if (unpaidIds.length === 0) { toast.info("Tidak ada tagihan belum bayar pada grup ini"); return; }
+    if (!confirm(`Hapus ${unpaidIds.length} tagihan belum bayar pada "${g.name}"?`)) return;
+    setBusy(`grp-${g.key}`);
+    const { error } = await supabase.from("spp_invoices").delete().in("id", unpaidIds).neq("status", "paid");
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${unpaidIds.length} tagihan dihapus`);
+    await onChanged();
+  };
+
+  if (groups.length === 0) {
+    return (
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-6 text-center text-sm text-muted-foreground">
+          <Receipt className="h-8 w-8 mx-auto mb-2 opacity-30" />
+          Belum ada tagihan custom yang dibuat
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tagihan Custom Aktif</Label>
+          <Badge variant="secondary" className="text-[10px]">{groups.length} grup</Badge>
+        </div>
+        <div className="space-y-2">
+          {groups.map(g => {
+            const total = g.rows.length;
+            const paid = g.rows.filter(r => r.status === "paid").length;
+            const unpaid = total - paid;
+            const sumTotal = g.rows.reduce((s, r) => s + (r.total_amount || 0), 0);
+            const sumPaid = g.rows.filter(r => r.status === "paid").reduce((s, r) => s + (r.total_amount || 0), 0);
+            const isOpen = open[g.key] ?? false;
+            return (
+              <div key={g.key} className="rounded-xl border bg-card overflow-hidden">
+                <button
+                  onClick={() => setOpen(p => ({ ...p, [g.key]: !p[g.key] }))}
+                  className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/40 transition"
+                >
+                  <div className="h-9 w-9 rounded-lg bg-[#5B6CF9]/15 flex items-center justify-center shrink-0">
+                    <Receipt className="h-4 w-4 text-[#5B6CF9]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm truncate">{g.name}</p>
+                      <Badge variant="outline" className="text-[10px]">{g.category}</Badge>
+                    </div>
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
+                      <span>{total} siswa</span>
+                      <span className="text-emerald-600">• {paid} lunas</span>
+                      {unpaid > 0 && <span className="text-amber-600">• {unpaid} belum</span>}
+                      <span>• {fmtIDR(sumPaid)} / {fmtIDR(sumTotal)}</span>
+                    </div>
+                  </div>
+                  {unpaid > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => { e.stopPropagation(); deleteUnpaidGroup(g); }}
+                      disabled={busy === `grp-${g.key}`}
+                      className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      {busy === `grp-${g.key}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Trash2 className="h-3 w-3 mr-1" /> Hapus belum bayar</>}
+                    </Button>
+                  )}
+                </button>
+                {isOpen && (
+                  <div className="border-t max-h-80 overflow-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/40 [&_th]:whitespace-nowrap">
+                          <TableHead>Siswa</TableHead>
+                          <TableHead>Kelas</TableHead>
+                          <TableHead className="text-right">Nominal</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Aksi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {g.rows.map(inv => (
+                          <TableRow key={inv.id} className="[&>td]:whitespace-nowrap">
+                            <TableCell className="text-sm">{inv.student_name}</TableCell>
+                            <TableCell className="text-sm"><Badge variant="secondary">{inv.class_name}</Badge></TableCell>
+                            <TableCell className="text-sm font-semibold text-right">{fmtIDR(inv.total_amount)}</TableCell>
+                            <TableCell><StatusBadge status={inv.status} /></TableCell>
+                            <TableCell className="text-right">
+                              {inv.status === "paid" ? (
+                                <span className="text-[11px] text-muted-foreground italic">Terkunci</span>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => deleteOne(inv)}
+                                  disabled={busy === `one-${inv.id}`}
+                                  className="h-7 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  title="Hapus"
+                                >
+                                  {busy === `one-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -2497,6 +2657,16 @@ export function BendaharaSPPDetail() {
 
   const copyLink = (url: string) => { navigator.clipboard.writeText(url); toast.success("Link disalin"); };
 
+  const deleteInvoice = async (inv: any) => {
+    if (inv.status === "paid") { toast.error("Tagihan lunas tidak bisa dihapus"); return; }
+    if (!confirm(`Hapus tagihan ${inv.period_label}?\nTagihan yang sudah dibayar tidak akan dihapus.`)) return;
+    setBusy(`del-${inv.id}`);
+    const { error } = await supabase.from("spp_invoices").delete().eq("id", inv.id).neq("status", "paid");
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tagihan dihapus"); load();
+  };
+
   const sendWa = async (inv: any) => {
     // Selalu pakai nomor terkini dari data siswa (bukan snapshot invoice yang bisa basi)
     const phone = student?.parent_phone || inv.parent_phone;
@@ -2840,6 +3010,9 @@ export function BendaharaSPPDetail() {
                             <Button size="sm" variant="outline" className="h-8 px-2.5 border-slate-400 text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => openOfflineDialog(inv)} title="Catat pembayaran tunai/transfer manual">
                               <Banknote className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Bayar Offline</span>
                             </Button>
+                            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50" disabled={busy === `del-${inv.id}`} onClick={() => deleteInvoice(inv)} title="Hapus tagihan">
+                              {busy === `del-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                            </Button>
                           </div>
                         ) : dStatus === "expired" ? (
                           <div className="flex flex-nowrap gap-1 justify-end">
@@ -2848,6 +3021,9 @@ export function BendaharaSPPDetail() {
                             </Button>
                             <Button size="sm" variant="outline" className="h-8 px-2.5 border-slate-400 text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => openOfflineDialog(inv)} title="Catat pembayaran tunai/transfer manual">
                               <Banknote className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Bayar Offline</span>
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50" disabled={busy === `del-${inv.id}`} onClick={() => deleteInvoice(inv)} title="Hapus tagihan">
+                              {busy === `del-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                             </Button>
                           </div>
                         ) : dStatus === "paid" ? (
