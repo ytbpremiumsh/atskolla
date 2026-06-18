@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -208,7 +209,11 @@ export function SuperAdminLayout() {
               </Avatar>
             </div>
           </header>
-          <main className={cn("flex-1 p-4 md:p-6 overflow-auto", isMobileDevice && "pb-24")}><Outlet /></main>
+          <main className={cn("flex-1 p-4 md:p-6 overflow-auto", isMobileDevice && "pb-24")}>
+            <Suspense fallback={<div className="h-32" />}>
+              <Outlet />
+            </Suspense>
+          </main>
           {isMobileDevice && (
             <MobileFooterNav
               items={superAdminFooterItems}
