@@ -2230,7 +2230,7 @@ export function BendaharaTransaksi() {
         <TabsList className="grid grid-cols-3 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
           <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Semua</TabsTrigger>
           <TabsTrigger value="spp" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">SPP</TabsTrigger>
-          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Custom</TabsTrigger>
+          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Lainnya</TabsTrigger>
         </TabsList>
       </Tabs>
 
