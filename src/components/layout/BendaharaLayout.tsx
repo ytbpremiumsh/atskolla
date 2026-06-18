@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { BendaharaSidebar } from "./BendaharaSidebar";
