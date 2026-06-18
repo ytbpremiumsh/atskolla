@@ -2023,7 +2023,7 @@ export function BendaharaTransaksi() {
       if (sortBy === "lunas") return b.lunas - a.lunas;
       return a.name.localeCompare(b.name);
     });
-  }, [students, invoices, filterClass, filterAY, filterStatus, filterMonth, search, sortBy]);
+  }, [students, invoices, filterClass, filterAY, filterStatus, filterMonth, filterBillType, search, sortBy]);
 
   const summary = useMemo(() => ({
     total: enriched.length,
