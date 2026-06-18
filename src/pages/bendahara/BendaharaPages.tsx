@@ -3026,15 +3026,6 @@ export function BendaharaSPPDetail() {
                               {busy === `del-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                             </Button>
                           </div>
-                        ) : dStatus === "expired" ? (
-                          <div className="flex flex-nowrap gap-1 justify-end">
-                            <Button size="sm" className="bg-orange-600 hover:bg-orange-700 text-white h-8 px-2.5" disabled={busy === `link-${inv.id}`} onClick={() => createPaymentLink(inv, true)} title="Buat Ulang Link">
-                              {busy === `link-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><RefreshCw className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Buat Ulang Link</span></>}
-                            </Button>
-                            <Button size="sm" variant="outline" className="h-8 px-2.5 border-slate-400 text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800" onClick={() => openOfflineDialog(inv)} title="Catat pembayaran tunai/transfer manual">
-                              <Banknote className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Bayar Offline</span>
-                            </Button>
-                          </div>
                         ) : dStatus === "paid" ? (
                           <div className="flex flex-nowrap gap-1 justify-end">
                             <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
