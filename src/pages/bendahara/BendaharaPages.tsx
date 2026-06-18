@@ -1409,7 +1409,7 @@ export function BendaharaGenerate() {
       <PageHeader
         icon={FileText}
         title="Buat Tagihan"
-        subtitle="SPP bulanan atau tagihan custom (Ujian, Praktek, Daftar Ulang, dll)"
+        subtitle="SPP bulanan atau tagihan lainnya (Ujian, Praktek, Daftar Ulang, dll)"
         variant="primary"
       />
 
@@ -1419,7 +1419,7 @@ export function BendaharaGenerate() {
             <Receipt className="h-3.5 w-3.5" /> SPP Bulanan
           </TabsTrigger>
           <TabsTrigger value="custom" className="gap-2 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
-            <FileText className="h-3.5 w-3.5" /> Custom (Ujian / Praktek / dll)
+            <FileText className="h-3.5 w-3.5" /> Tagihan Lainnya
           </TabsTrigger>
         </TabsList>
 
@@ -2156,10 +2156,15 @@ export function BendaharaTransaksi() {
     return students.map(s => {
       const studentInvs = invoices.filter(inv => {
         if (inv.student_id !== s.id) return false;
-        if (filterBillType !== "all" && (inv.bill_type || "spp") !== filterBillType) return false;
-        const ay = academicYearOf(inv.period_month, inv.period_year);
-        if (ay !== filterAY) return false;
-        if (filterMonth !== "all" && inv.period_month !== parseInt(filterMonth)) return false;
+        const billType = (inv.bill_type || "spp");
+        if (filterBillType !== "all" && billType !== filterBillType) return false;
+        // Filter periode (AY/bulan) hanya berlaku untuk tagihan SPP bulanan.
+        // Tagihan custom (Ujian, Praktek, dll) tidak terikat periode bulan → selalu tampil.
+        if (billType === "spp") {
+          const ay = academicYearOf(inv.period_month, inv.period_year);
+          if (ay !== filterAY) return false;
+          if (filterMonth !== "all" && inv.period_month !== parseInt(filterMonth)) return false;
+        }
         return true;
       });
       const lunas = studentInvs.filter(i => i.status === "paid").length;
@@ -2206,7 +2211,7 @@ export function BendaharaTransaksi() {
       <PageHeader
         icon={Wallet}
         title="Pembayaran"
-        subtitle="Tagihan SPP bulanan & tagihan custom (Ujian, Praktek, dll) per siswa"
+        subtitle="Tagihan SPP bulanan & tagihan lainnya (Ujian, Praktek, dll) per siswa"
         variant="primary"
         actions={
           <Button
@@ -2225,7 +2230,7 @@ export function BendaharaTransaksi() {
         <TabsList className="grid grid-cols-3 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
           <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Semua</TabsTrigger>
           <TabsTrigger value="spp" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">SPP</TabsTrigger>
-          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Custom</TabsTrigger>
+          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Lainnya</TabsTrigger>
         </TabsList>
       </Tabs>
 
