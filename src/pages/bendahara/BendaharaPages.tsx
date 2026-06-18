@@ -1408,10 +1408,23 @@ export function BendaharaGenerate() {
     <div className="space-y-4">
       <PageHeader
         icon={FileText}
-        title="Generate Tagihan SPP"
-        subtitle="Buat tagihan SPP per kelas, per bulan, atau satu tahun ajaran sekaligus"
+        title="Buat Tagihan"
+        subtitle="SPP bulanan atau tagihan custom (Ujian, Praktek, Daftar Ulang, dll)"
         variant="primary"
       />
+
+      <Tabs defaultValue="spp" className="w-full">
+        <TabsList className="grid grid-cols-2 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
+          <TabsTrigger value="spp" className="gap-2 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
+            <Receipt className="h-3.5 w-3.5" /> SPP Bulanan
+          </TabsTrigger>
+          <TabsTrigger value="custom" className="gap-2 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
+            <FileText className="h-3.5 w-3.5" /> Custom (Ujian / Praktek / dll)
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="spp" className="space-y-4 mt-4">
+
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1601,9 +1614,346 @@ export function BendaharaGenerate() {
           </Button>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+
+        <TabsContent value="custom" className="space-y-4 mt-4">
+          <BendaharaGenerateCustom />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
+// ============ GENERATE CUSTOM (Ujian / Praktek / dll) ============
+function BendaharaGenerateCustom() {
+  const { profile } = useAuth();
+  const [classes, setClasses] = useState<string[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [existingInvs, setExistingInvs] = useState<any[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
+  const [billName, setBillName] = useState("");
+  const [category, setCategory] = useState("Ujian");
+  const [customCategory, setCustomCategory] = useState("");
+  const [amount, setAmount] = useState<number>(0);
+  const [dueDate, setDueDate] = useState<string>(() => {
+    const d = new Date(); d.setDate(d.getDate() + 14);
+    return d.toISOString().slice(0, 10);
+  });
+  const [autoSendWa, setAutoSendWa] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    Promise.all([
+      supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
+      supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone").eq("school_id", profile.school_id),
+      supabase.from("spp_invoices").select("student_id, period_label, bill_type").eq("school_id", profile.school_id).eq("bill_type", "custom"),
+    ]).then(([c, s, inv]) => {
+      const cls = (c.data || []).map((x: any) => x.name);
+      setClasses(cls);
+      setSelectedClasses(cls);
+      setStudents(s.data || []);
+      setExistingInvs(inv.data || []);
+    });
+  }, [profile?.school_id]);
+
+  const effectiveCategory = category === "Lainnya" ? (customCategory.trim() || "Lainnya") : category;
+
+  const targetStudents = useMemo(
+    () => students.filter(s => selectedClasses.includes(s.class)),
+    [students, selectedClasses]
+  );
+
+  const preview = useMemo(() => {
+    const list: any[] = [];
+    let skipped = 0;
+    for (const s of targetStudents) {
+      const exists = existingInvs.some(i => i.student_id === s.id && i.period_label === billName);
+      if (exists) { skipped++; continue; }
+      list.push({ student: s });
+    }
+    return { list, skipped, total: list.length * (amount || 0) };
+  }, [targetStudents, existingInvs, billName, amount]);
+
+  const toggleClass = (c: string) =>
+    setSelectedClasses(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+
+  const slugify = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 32) || "custom";
+
+  const generate = async () => {
+    if (!profile?.school_id) return;
+    if (!billName.trim()) { toast.error("Nama tagihan wajib diisi"); return; }
+    if (!amount || amount <= 0) { toast.error("Nominal tagihan harus lebih dari 0"); return; }
+    if (preview.list.length === 0) { toast.error("Tidak ada siswa untuk dibuat tagihan"); return; }
+    setLoading(true);
+    try {
+      const due = new Date(dueDate);
+      const periodMonth = due.getMonth() + 1;
+      const periodYear = due.getFullYear();
+      const slug = slugify(billName);
+      const rows = preview.list.map(({ student }) => ({
+        school_id: profile.school_id,
+        student_id: student.id,
+        invoice_number: `CUSTOM/${periodYear}${String(periodMonth).padStart(2, "0")}/${student.student_id}/${slug}`,
+        student_name: student.name,
+        class_name: student.class,
+        parent_name: student.parent_name,
+        parent_phone: student.parent_phone,
+        period_month: periodMonth,
+        period_year: periodYear,
+        period_label: billName.trim(),
+        description: `${billName.trim()} - ${student.class} - ${student.name}`,
+        amount, denda: 0, total_amount: amount,
+        due_date: due.toISOString().slice(0, 10),
+        bill_type: "custom" as const,
+        bill_category: effectiveCategory,
+      }));
+
+      // Server-side dedup by (student, period_label, bill_type='custom')
+      const { data: existsRows } = await supabase
+        .from("spp_invoices")
+        .select("student_id, period_label, bill_type")
+        .eq("school_id", profile.school_id)
+        .eq("bill_type", "custom")
+        .eq("period_label", billName.trim())
+        .in("student_id", rows.map(r => r.student_id));
+      const existKey = new Set((existsRows || []).map((e: any) => `${e.student_id}|${e.period_label}`));
+      const toInsert = rows.filter(r => !existKey.has(`${r.student_id}|${r.period_label}`));
+      if (toInsert.length === 0) { toast.info("Semua siswa sudah punya tagihan dengan nama yang sama"); return; }
+
+      const { data: inserted, error } = await supabase.from("spp_invoices").insert(toInsert).select("*");
+      if (error) { toast.error(error.message); return; }
+      const created = inserted || [];
+      toast.success(`${created.length} tagihan custom berhasil dibuat`);
+      setPreviewOpen(false);
+
+      // Background: Mayar link + WA
+      if (created.length > 0 && autoSendWa) {
+        const schoolId = profile.school_id;
+        const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", schoolId).maybeSingle();
+        const schoolName = schoolRow?.name || "Sekolah";
+        (async () => {
+          let linkOk = 0, linkFail = 0, waOk = 0, waFail = 0, waSkip = 0;
+          const processOne = async (inv: any) => {
+            try {
+              const { data: linkRes } = await supabase.functions.invoke("spp-mayar", {
+                body: { action: "create_payment_link", invoice_id: inv.id },
+              });
+              const paymentUrl = linkRes?.payment_url;
+              if (!paymentUrl) return false;
+              linkOk++;
+              const phone = inv.parent_phone;
+              if (!phone) { waSkip++; return true; }
+              const dueStr = inv.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID") : "-";
+              const msg = `*${schoolName} — Tagihan ${effectiveCategory} Baru*\n\nYth. Bapak/Ibu *${inv.parent_name || "Wali"}*,\n\nTagihan ananda:\n• Nama    : ${inv.student_name}\n• Kelas   : ${inv.class_name}\n• Jenis   : ${inv.period_label}\n• Nominal : ${fmtIDR(inv.total_amount)}\n• Jatuh tempo: ${dueStr}\n\nSilakan lakukan pembayaran via *QRIS / Transfer Bank* pada link berikut:\n${paymentUrl}\n\nTerima kasih.`;
+              const { error: waErr } = await supabase.functions.invoke("send-whatsapp", {
+                body: { school_id: schoolId, phone, message: msg, message_type: "spp_invoice" },
+              });
+              if (waErr) waFail++; else waOk++;
+              return true;
+            } catch { return false; }
+          };
+          const BATCH = 4;
+          const failed: any[] = [];
+          for (let i = 0; i < created.length; i += BATCH) {
+            const slice = created.slice(i, i + BATCH);
+            const results = await Promise.all(slice.map(processOne));
+            results.forEach((ok, idx) => { if (!ok) failed.push(slice[idx]); });
+          }
+          if (failed.length > 0) {
+            await new Promise((r) => setTimeout(r, 1500));
+            for (let i = 0; i < failed.length; i += BATCH) {
+              const slice = failed.slice(i, i + BATCH);
+              const results = await Promise.all(slice.map(processOne));
+              results.forEach((ok) => { if (!ok) linkFail++; });
+            }
+          }
+          toast.success(
+            `Selesai: ${linkOk} link • ${waOk} WA` +
+            `${waFail ? ` • ${waFail} WA gagal` : ""}` +
+            `${waSkip ? ` • ${waSkip} tanpa nomor` : ""}` +
+            `${linkFail ? ` • ${linkFail} link gagal` : ""}`,
+            { duration: 6000 }
+          );
+        })();
+      }
+
+      // Refresh local cache
+      const { data } = await supabase.from("spp_invoices")
+        .select("student_id, period_label, bill_type")
+        .eq("school_id", profile.school_id).eq("bill_type", "custom");
+      setExistingInvs(data || []);
+      setBillName("");
+    } finally { setLoading(false); }
+  };
+
+  const CATEGORIES = ["Ujian", "Praktek", "Daftar Ulang", "Study Tour", "Seragam", "Buku", "Lainnya"];
+
+  return (
+    <div className="space-y-4">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-[#5B6CF9]/10 to-transparent"><CardContent className="p-4"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Kategori</p><p className="text-base font-bold mt-0.5 truncate">{effectiveCategory}</p></div><div className="h-9 w-9 rounded-lg bg-[#5B6CF9]/15 flex items-center justify-center"><FileText className="h-4 w-4 text-[#5B6CF9]" /></div></div></CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Kelas Dipilih</p><p className="text-xl font-bold mt-0.5">{selectedClasses.length}<span className="text-xs text-muted-foreground font-normal">/{classes.length}</span></p></div><div className="h-9 w-9 rounded-lg bg-sky-100 flex items-center justify-center"><User className="h-4 w-4 text-sky-600" /></div></div></CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Total Siswa</p><p className="text-xl font-bold mt-0.5">{targetStudents.length}</p></div><div className="h-9 w-9 rounded-lg bg-emerald-100 flex items-center justify-center"><CheckCircle2 className="h-4 w-4 text-emerald-600" /></div></div></CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4"><div className="flex items-center justify-between"><div><p className="text-xs text-muted-foreground">Akan Dibuat</p><p className="text-xl font-bold mt-0.5 text-[#5B6CF9]">{preview.list.length}</p></div><div className="h-9 w-9 rounded-lg bg-[#5B6CF9]/15 flex items-center justify-center"><Receipt className="h-4 w-4 text-[#5B6CF9]" /></div></div></CardContent></Card>
+      </div>
+
+      {/* Form Tagihan */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Detail Tagihan</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <Label className="text-xs">Nama Tagihan <span className="text-red-500">*</span></Label>
+              <Input
+                placeholder="Contoh: Ujian Tengah Semester Ganjil 2026"
+                value={billName}
+                onChange={e => setBillName(e.target.value)}
+                className="h-9"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1">Nama ini akan muncul di tagihan & pesan WA wali murid</p>
+            </div>
+            <div>
+              <Label className="text-xs">Kategori</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
+              {category === "Lainnya" && (
+                <Input
+                  placeholder="Sebutkan kategori"
+                  value={customCategory}
+                  onChange={e => setCustomCategory(e.target.value)}
+                  className="h-9 mt-2"
+                />
+              )}
+            </div>
+            <div>
+              <Label className="text-xs">Nominal (Rp) <span className="text-red-500">*</span></Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="0"
+                value={amount || ""}
+                onChange={e => setAmount(parseInt(e.target.value) || 0)}
+                className="h-9"
+              />
+              {amount > 0 && <p className="text-[11px] font-semibold text-emerald-600 mt-1">{fmtIDR(amount)}</p>}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-xs">Jatuh Tempo</Label>
+              <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="h-9" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Pilih Kelas */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">Kelas Tujuan</Label>
+            <div className="flex gap-1">
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedClasses(classes)}>Pilih semua</Button>
+              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelectedClasses([])}>Kosongkan</Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {classes.map(c => {
+              const sel = selectedClasses.includes(c);
+              const studentCount = students.filter(s => s.class === c).length;
+              return (
+                <button key={c} onClick={() => toggleClass(c)} className={`rounded-lg border-2 p-2.5 text-left transition ${sel ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20" : "border-muted hover:border-muted-foreground/30"}`}>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-sm">{c}</p>
+                    {sel && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{studentCount} siswa</p>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Options */}
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center justify-between rounded-lg border p-3 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900">
+            <div>
+              <p className="text-sm font-medium flex items-center gap-1.5 text-emerald-800 dark:text-emerald-200"><Send className="h-3.5 w-3.5" /> Otomatis buat link & kirim WA</p>
+              <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">Setelah generate, sistem otomatis membuat link pembayaran & mengirim ke WA wali murid</p>
+            </div>
+            <Switch checked={autoSendWa} onCheckedChange={setAutoSendWa} />
+          </div>
+          {preview.skipped > 0 && (
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-3 text-xs">
+              <p className="text-amber-800 dark:text-amber-200"><strong>{preview.skipped}</strong> siswa sudah punya tagihan "{billName}" — akan dilewati</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Action bar */}
+      <div className="sticky bottom-4 z-10">
+        <Card className="border-0 shadow-xl bg-gradient-to-r from-[#5B6CF9] to-[#3D4FE0] text-white">
+          <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs text-white/70">Total estimasi</p>
+              <p className="text-2xl font-bold">{fmtIDR(preview.total)}</p>
+              <p className="text-xs text-white/70 mt-0.5">{preview.list.length} tagihan • {selectedClasses.length} kelas • {effectiveCategory}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => setPreviewOpen(true)} disabled={preview.list.length === 0 || !billName.trim() || !amount} className="bg-white/15 hover:bg-white/25 text-white border border-white/20"><Eye className="h-4 w-4 mr-1.5" /> Pratinjau</Button>
+              <Button onClick={generate} disabled={loading || preview.list.length === 0 || !billName.trim() || !amount} className="bg-white text-[#3D4FE0] hover:bg-white/90">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+                Generate Sekarang
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Pratinjau Tagihan Custom</DialogTitle></DialogHeader>
+          <div className="text-xs text-muted-foreground mb-2">
+            <span className="font-semibold text-foreground">{billName || "(tanpa nama)"}</span> • {effectiveCategory} • {fmtIDR(amount)} / siswa
+          </div>
+          <div className="max-h-[60vh] overflow-auto rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/40 sticky top-0 [&_th]:whitespace-nowrap">
+                  <TableHead>Siswa</TableHead><TableHead>Kelas</TableHead><TableHead className="text-right">Nominal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {preview.list.slice(0, 200).map((x, i) => (
+                  <TableRow key={i} className="[&>td]:whitespace-nowrap">
+                    <TableCell className="text-sm">{x.student.name}</TableCell>
+                    <TableCell className="text-sm"><Badge variant="secondary">{x.student.class}</Badge></TableCell>
+                    <TableCell className="text-sm font-semibold text-right">{fmtIDR(amount)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {preview.list.length > 200 && <p className="text-xs text-center py-2 text-muted-foreground">+{preview.list.length - 200} baris lagi…</p>}
+          </div>
+          <Button onClick={generate} disabled={loading} className="w-full bg-[#5B6CF9] hover:bg-[#4c5ded]">
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+            Konfirmasi Generate {preview.list.length} Tagihan
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 
 // ============ SPP PER SISWA (LIST) ============
 export function BendaharaTransaksi() {
@@ -1622,6 +1972,7 @@ export function BendaharaTransaksi() {
   const [filterAY, setFilterAY] = useState(currentAY);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterMonth, setFilterMonth] = useState("all");
+  const [filterBillType, setFilterBillType] = useState<"all" | "spp" | "custom">("all");
   const [sortBy, setSortBy] = useState<"name" | "tunggakan" | "lunas">("name");
 
   const load = () => {
@@ -1645,6 +1996,7 @@ export function BendaharaTransaksi() {
     return students.map(s => {
       const studentInvs = invoices.filter(inv => {
         if (inv.student_id !== s.id) return false;
+        if (filterBillType !== "all" && (inv.bill_type || "spp") !== filterBillType) return false;
         const ay = academicYearOf(inv.period_month, inv.period_year);
         if (ay !== filterAY) return false;
         if (filterMonth !== "all" && inv.period_month !== parseInt(filterMonth)) return false;
@@ -1671,7 +2023,7 @@ export function BendaharaTransaksi() {
       if (sortBy === "lunas") return b.lunas - a.lunas;
       return a.name.localeCompare(b.name);
     });
-  }, [students, invoices, filterClass, filterAY, filterStatus, filterMonth, search, sortBy]);
+  }, [students, invoices, filterClass, filterAY, filterStatus, filterMonth, filterBillType, search, sortBy]);
 
   const summary = useMemo(() => ({
     total: enriched.length,
@@ -1693,8 +2045,8 @@ export function BendaharaTransaksi() {
     <div className="space-y-5">
       <PageHeader
         icon={Wallet}
-        title="Pembayaran SPP"
-        subtitle="Per siswa, per tahun ajaran, per bulan"
+        title="Pembayaran"
+        subtitle="Tagihan SPP bulanan & tagihan custom (Ujian, Praktek, dll) per siswa"
         variant="primary"
         actions={
           <Button
@@ -1707,6 +2059,15 @@ export function BendaharaTransaksi() {
           </Button>
         }
       />
+
+      {/* Jenis tagihan */}
+      <Tabs value={filterBillType} onValueChange={(v) => setFilterBillType(v as any)} className="w-full">
+        <TabsList className="grid grid-cols-3 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
+          <TabsTrigger value="all" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Semua</TabsTrigger>
+          <TabsTrigger value="spp" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">SPP</TabsTrigger>
+          <TabsTrigger value="custom" className="gap-1.5 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">Custom</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Summary mini */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
