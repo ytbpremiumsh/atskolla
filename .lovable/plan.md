@@ -1,88 +1,79 @@
-# Generate Custom + Rapikan Menu Bendahara
 
-## 1. Database — perluas `spp_invoices` agar mendukung tagihan non-SPP
+# Plan: Auto Wildcard Subdomain `{slug}.atskolla.com` per Sekolah
 
-Tambah 2 kolom (migration):
-- `bill_type text not null default 'spp'` — nilai: `'spp'` atau `'custom'`
-- `bill_category text` — diisi untuk custom (mis. `"Ujian"`, `"Praktek"`, `"Daftar Ulang"`, atau bebas)
+Tujuan: Setiap sekolah baru otomatis punya `slug.atskolla.com` yang melayani **login ber-branding, monitoring publik, parent portal, dan seluruh app** dengan isolasi data berdasarkan subdomain.
 
-Index ringan: `(school_id, bill_type)` untuk filter cepat.
+---
 
-Tagihan SPP lama tetap aman (default `spp`). Tidak ada perubahan RLS — kebijakan existing sudah scoped via `school_id`.
+## Bagian 1 — Yang harus disiapkan user (sekali setup di luar Lovable)
 
-## 2. Halaman Buat Tagihan — tambah tab "Custom"
+Ini **tidak bisa saya kerjakan** karena di luar Lovable, tapi wajib agar wildcard jalan:
 
-File: `src/pages/bendahara/BendaharaPages.tsx` → `BendaharaGenerate`
+1. **Beli/punya domain `atskolla.com`** dan arahkan nameserver ke **Cloudflare** (gratis).
+2. Di Cloudflare DNS, tambahkan record:
+   - `CNAME  *  →  absenpintar.lovable.app` (Proxied / orange cloud ON)
+   - `CNAME  @  →  absenpintar.lovable.app` (Proxied)
+3. Di Lovable → Project Settings → Domains:
+   - Connect `atskolla.com` **dengan opsi "Domain uses Cloudflare proxy"** dicentang (CNAME verification).
+   - Catatan: Lovable hanya verifikasi domain root. Wildcard `*` ditangani Cloudflare proxy yang melempar semua subdomain ke origin Lovable yang sama. SSL otomatis dari Cloudflare Universal SSL.
+4. (Opsional tapi direkomendasikan) **Cloudflare Page Rule / Transform Rule** untuk meneruskan `Host` header asli ke origin sehingga app bisa baca subdomain.
 
-Bungkus konten yang ada dengan **Tabs** di paling atas:
+Setelah ini sekali jadi, **semua sekolah baru otomatis** tanpa setup DNS tambahan.
 
-- **Tab "SPP Bulanan"** — persis seperti sekarang (mode Single / Range periode, ambil tarif dari `spp_tariffs`). Tidak diubah logikanya.
-- **Tab "Custom"** — flow baru:
-  1. **Nama Tagihan** (text, wajib) — contoh: "Ujian Tengah Semester Ganjil 2026"
-  2. **Kategori** (select + free text) — Ujian, Praktek, Daftar Ulang, Study Tour, Seragam, Lainnya
-  3. **Nominal** (number, wajib) — sama untuk semua siswa terpilih (versi v1)
-  4. **Tanggal Jatuh Tempo** (date picker)
-  5. **Pilih Kelas** (checkbox grid + "Pilih Semua") — reuse komponen kelas dari tab SPP
-  6. **Preview**: jumlah siswa, total nominal, daftar siswa
-  7. Toggle "Kirim WA otomatis setelah generate" (sama seperti SPP)
-  8. Tombol **Generate Sekarang**
+---
 
-Insert ke `spp_invoices` dengan:
-- `bill_type = 'custom'`, `bill_category = <kategori>`
-- `period_month`/`period_year` = bulan/tahun jatuh tempo (untuk kompatibilitas grouping existing)
-- `period_label` = nama tagihan (mis. "Ujian Tengah Semester Ganjil 2026")
-- `description` = `"<nama tagihan> - <kelas> - <nama siswa>"`
-- `invoice_number` = `CUSTOM/<yyyymm>/<student_id>/<slug-nama>` (jamin unik per siswa+nama)
-- `amount` = `total_amount` = nominal input, `denda = 0`
+## Bagian 2 — Yang saya kerjakan di codebase
 
-Dedup: skip siswa yang sudah punya invoice dengan kombinasi (student_id, bill_type='custom', period_label) sama.
+### 2.1 Schema database
+- Tambah kolom `schools.slug` (text, unique, lowercase, regex `^[a-z0-9-]+$`).
+- Migration backfill slug untuk sekolah existing dari `name` (slugify).
+- Trigger auto-generate slug saat insert sekolah baru jika kosong (handle collision: `smkcendikia`, `smkcendikia-2`, dst).
+- Update edge function `create-user` agar generate & simpan slug saat school baru dibuat.
 
-Reuse pipeline background yang sudah ada: panggil `spp-mayar create_payment_link` + kirim WA via `send-whatsapp` (template pesan diganti dari "Tagihan SPP Baru" → "Tagihan <nama> Baru").
+### 2.2 Tenant resolver (frontend)
+- Buat `src/lib/tenant.ts`:
+  - Parse `window.location.hostname` → ekstrak subdomain.
+  - Kalau host = `atskolla.com` / `www.atskolla.com` / `*.lovable.app` / `localhost` → mode **landing** (tidak terikat sekolah).
+  - Kalau subdomain ada → fetch `schools` by slug, simpan di React Context `TenantProvider`.
+  - Kalau slug tidak ditemukan → halaman "Sekolah tidak ditemukan".
+- `TenantProvider` membungkus `App.tsx`, expose `useTenant()` ke seluruh app.
 
-Header halaman jadi: **"Buat Tagihan"** dengan deskripsi "SPP bulanan atau tagihan custom (Ujian, Praktek, dll)".
+### 2.3 Login & UI ber-branding per subdomain
+- Halaman `Login.tsx`: jika `useTenant().school` ada, tampilkan logo + nama + warna sekolah, sembunyikan field "Pilih sekolah". Auto-scope login ke `school_id` sekolah tsb.
+- Halaman publik (`PublicMonitoring`, `PublicAttendanceMonitoring`, `ParentLogin`) baca slug dari subdomain, bukan dari path/param.
+- Root subdomain (`smkcendikia.atskolla.com/`) redirect ke `/login` sekolah tsb (bukan landing page ATSkolla).
 
-## 3. Halaman Pembayaran — tampilkan tipe tagihan
+### 2.4 Landing page
+- `atskolla.com` (tanpa subdomain) tetap menampilkan landing marketing seperti sekarang.
+- Form pendaftaran sekolah baru: setelah daftar, tampilkan "URL sekolah Anda: `smkcendikia.atskolla.com`" + tombol langsung kunjungi.
 
-File: `BendaharaTransaksi` & `BendaharaSPPDetail`
+### 2.5 Super Admin
+- Tambah kolom "Subdomain" di `SuperAdminSchools` dengan tombol edit slug (validasi unique + warning kalau diubah karena memutus link lama).
 
-- Tambah **filter tab/segment**: `Semua` · `SPP` · `Custom` (filter berdasarkan `bill_type`)
-- Di tabel daftar invoice per siswa, tambah kolom kecil **"Jenis"** (badge "SPP" / "<kategori>")
-- Statistik (Total Tagihan / Lunas / Sisa) tetap, hanya mengikuti filter aktif
-- Pesan WA tetap reuse template — pakai `period_label` (sudah berisi nama tagihan untuk custom)
+---
 
-## 4. Rapikan Sidebar & Header
+## Bagian 3 — Hal yang perlu diperhatikan / risiko
 
-File: `src/components/layout/BendaharaSidebar.tsx` + `BendaharaFloatingNav.tsx`
+- **Supabase Auth cookie**: domain cookie harus di-scope ke `.atskolla.com` agar session valid lintas subdomain. Saat ini Supabase pakai localStorage (bukan cookie), jadi **session terisolasi per subdomain** — user yang login di `smkA.atskolla.com` tidak otomatis login di `smkB.atskolla.com`. Ini justru bagus untuk multi-tenant, tapi perlu dikomunikasikan.
+- **Custom Domain Add-on** existing (per sekolah punya domain sendiri spt `absen.smkcendikia.sch.id`) tetap jalan paralel, tidak konflik.
+- **Reserved slug**: `www`, `app`, `api`, `admin`, `super`, `affiliate`, `parent` harus diblokir agar tidak diambil sekolah.
+- **SEO**: tiap subdomain butuh meta tag dinamis (judul = nama sekolah). Akan saya tambahkan via `react-helmet`-style update di tenant provider.
 
-Struktur baru (lebih ringkas & sesuai alur kerja):
+---
 
-```
-Ringkasan
-  - Dashboard
+## Bagian 4 — Urutan implementasi (jika disetujui)
 
-Master Data
-  - Data Siswa
-  - Tarif SPP
+1. Migration: kolom `slug`, trigger, backfill, reserved-slug check.
+2. `TenantProvider` + `useTenant()` + parser hostname.
+3. Refactor `Login`, `PublicMonitoring`, `ParentLogin`, root route untuk pakai tenant.
+4. Update `create-user` edge function & form registrasi landing untuk generate slug & tampilkan URL hasil.
+5. Super Admin: kolom subdomain + edit.
+6. Dokumentasi singkat di `DEPLOY.md` untuk setup Cloudflare wildcard (untuk user).
 
-Tagihan
-  - Buat Tagihan          (was: Generate Tagihan — sekarang ada tab SPP & Custom)
-  - Pembayaran            (was: Pembayaran SPP — sekarang juga tampung custom)
-  - Import Tagihan
+---
 
-Keuangan
-  - Keuangan              (saldo, pencairan, laporan — sudah ada tab)
-```
+## Pertanyaan terakhir sebelum saya mulai
 
-Mobile floating nav (`BendaharaFloatingNav`) ikut disesuaikan: Dashboard · Siswa · Buat · Bayar · Keuangan.
-
-PageHeader masing-masing halaman juga diupdate (title + subtitle) agar konsisten dengan nama menu baru.
-
-## 5. Yang TIDAK diubah
-- Skema `spp_tariffs`, alur Mayar, edge functions, RLS
-- Logika SPP bulanan (single/range) tetap apa adanya
-- Halaman `Keuangan` (tab Saldo / Pencairan / Laporan) tetap
-
-## Catatan teknis
-- Migration kolom baru → setelah disetujui, `types.ts` Supabase regen, baru ubah kode UI.
-- Field `period_month`/`period_year` di-reuse untuk custom (diambil dari jatuh tempo) agar laporan bulanan existing tidak pecah.
-- v1 nominal custom seragam per generate. Nominal berbeda per siswa bisa ditambah nanti (v2).
+1. Apakah subdomain boleh **diubah** sekolah sendiri, atau **fix** (hanya Super Admin yang bisa ubah)?
+2. Untuk sekolah existing yang sudah jalan: backfill slug otomatis dari nama, atau Super Admin set manual satu-satu?
+3. Saat user buka `smkcendikia.atskolla.com` tanpa login → langsung `/login` sekolah tsb, atau ke halaman "monitoring publik" sekolah tsb?
