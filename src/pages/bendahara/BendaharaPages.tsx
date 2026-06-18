@@ -1643,19 +1643,29 @@ function BendaharaGenerateCustom() {
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const reloadCustom = async () => {
+    if (!profile?.school_id) return;
+    const { data } = await supabase
+      .from("spp_invoices")
+      .select("id, student_id, student_name, class_name, period_label, bill_category, total_amount, status, due_date, created_at, bill_type")
+      .eq("school_id", profile.school_id)
+      .eq("bill_type", "custom")
+      .order("created_at", { ascending: false });
+    setExistingInvs(data || []);
+  };
+
   useEffect(() => {
     if (!profile?.school_id) return;
     Promise.all([
       supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
       supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone").eq("school_id", profile.school_id),
-      supabase.from("spp_invoices").select("student_id, period_label, bill_type").eq("school_id", profile.school_id).eq("bill_type", "custom"),
-    ]).then(([c, s, inv]) => {
+    ]).then(([c, s]) => {
       const cls = (c.data || []).map((x: any) => x.name);
       setClasses(cls);
       setSelectedClasses(cls);
       setStudents(s.data || []);
-      setExistingInvs(inv.data || []);
     });
+    reloadCustom();
   }, [profile?.school_id]);
 
   const effectiveCategory = category === "Lainnya" ? (customCategory.trim() || "Lainnya") : category;
