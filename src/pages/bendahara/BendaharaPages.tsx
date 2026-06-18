@@ -1419,7 +1419,7 @@ export function BendaharaGenerate() {
             <Receipt className="h-3.5 w-3.5" /> SPP Bulanan
           </TabsTrigger>
           <TabsTrigger value="custom" className="gap-2 text-xs data-[state=active]:bg-[#5B6CF9] data-[state=active]:text-white">
-            <FileText className="h-3.5 w-3.5" /> Custom (Ujian / Praktek / dll)
+            <FileText className="h-3.5 w-3.5" /> Tagihan Lainnya
           </TabsTrigger>
         </TabsList>
 
