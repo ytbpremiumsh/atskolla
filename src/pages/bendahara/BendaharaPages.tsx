@@ -1707,7 +1707,7 @@ function BendaharaGenerateCustom() {
       const rows = preview.list.map(({ student }) => ({
         school_id: profile.school_id,
         student_id: student.id,
-        invoice_number: `CUSTOM/${periodYear}${String(periodMonth).padStart(2, "0")}/${student.student_id}/${slug}`,
+        invoice_number: `Tagihan/${periodYear}${String(periodMonth).padStart(2, "0")}/${student.student_id}/${slug}`,
         student_name: student.name,
         class_name: student.class,
         parent_name: student.parent_name,
