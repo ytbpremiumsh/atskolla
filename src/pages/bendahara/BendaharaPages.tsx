@@ -2045,8 +2045,8 @@ export function BendaharaTransaksi() {
     <div className="space-y-5">
       <PageHeader
         icon={Wallet}
-        title="Pembayaran SPP"
-        subtitle="Per siswa, per tahun ajaran, per bulan"
+        title="Pembayaran"
+        subtitle="Tagihan SPP bulanan & tagihan custom (Ujian, Praktek, dll) per siswa"
         variant="primary"
         actions={
           <Button
