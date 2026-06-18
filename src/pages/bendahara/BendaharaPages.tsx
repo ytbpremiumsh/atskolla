@@ -2657,6 +2657,16 @@ export function BendaharaSPPDetail() {
 
   const copyLink = (url: string) => { navigator.clipboard.writeText(url); toast.success("Link disalin"); };
 
+  const deleteInvoice = async (inv: any) => {
+    if (inv.status === "paid") { toast.error("Tagihan lunas tidak bisa dihapus"); return; }
+    if (!confirm(`Hapus tagihan ${inv.period_label}?\nTagihan yang sudah dibayar tidak akan dihapus.`)) return;
+    setBusy(`del-${inv.id}`);
+    const { error } = await supabase.from("spp_invoices").delete().eq("id", inv.id).neq("status", "paid");
+    setBusy(null);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Tagihan dihapus"); load();
+  };
+
   const sendWa = async (inv: any) => {
     // Selalu pakai nomor terkini dari data siswa (bukan snapshot invoice yang bisa basi)
     const phone = student?.parent_phone || inv.parent_phone;
