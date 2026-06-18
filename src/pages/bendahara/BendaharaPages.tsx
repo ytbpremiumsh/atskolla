@@ -2970,9 +2970,10 @@ export function BendaharaSPPDetail() {
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {enrichedInvoices.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Belum ada tagihan</TableCell></TableRow>}
+                {enrichedInvoices.filter(i => (i.bill_type || "spp") !== "custom").length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Belum ada tagihan SPP</TableCell></TableRow>}
                 {enrichedInvoices
                   .filter((inv) => {
+                    if ((inv.bill_type || "spp") === "custom") return false;
                     const a = academicYearOf(inv.period_month, inv.period_year);
                     return a === ay;
                   })
