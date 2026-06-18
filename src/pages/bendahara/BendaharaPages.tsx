@@ -1792,10 +1792,7 @@ function BendaharaGenerateCustom() {
       }
 
       // Refresh local cache
-      const { data } = await supabase.from("spp_invoices")
-        .select("student_id, period_label, bill_type")
-        .eq("school_id", profile.school_id).eq("bill_type", "custom");
-      setExistingInvs(data || []);
+      await reloadCustom();
       setBillName("");
     } finally { setLoading(false); }
   };
