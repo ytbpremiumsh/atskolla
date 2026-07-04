@@ -1387,7 +1387,9 @@ export function BendaharaGenerate() {
               if (paymentUrl) {
                 linkOk++;
                 const phone = inv.parent_phone;
-                if (phone) {
+                if (!flags.wa) {
+                  waSkip++;
+                } else if (phone) {
                   const due = inv.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID") : "-";
                   const msg = `*${schoolName} — Tagihan SPP Baru*\n\nYth. Bapak/Ibu *${inv.parent_name || "Wali"}*,\n\nTagihan SPP ananda:\n• Nama    : ${inv.student_name}\n• Kelas   : ${inv.class_name}\n• Periode : ${inv.period_label}\n• Nominal : ${fmtIDR(inv.total_amount)}\n• Jatuh tempo: ${due}\n\nSilakan lakukan pembayaran via *QRIS / Transfer Bank* pada link berikut:\n${paymentUrl}\n\nTerima kasih.`;
                   const { error: waErr } = await supabase.functions.invoke("send-whatsapp", {
