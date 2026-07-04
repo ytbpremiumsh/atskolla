@@ -2986,7 +2986,6 @@ export function BendaharaSPPDetail() {
       {/* Header siswa */}
       <Card className="shadow-elevated border-0 overflow-hidden">
         <div className="relative h-16 sm:h-20 bg-gradient-to-br from-[#5B6CF9] via-[#4c5ded] to-[#3D4FE0] overflow-hidden">
-          {/* Grid pattern statis (sangat ringan, hanya bg gradient) */}
           <div
             className="absolute inset-0 opacity-25"
             style={{
@@ -2995,20 +2994,8 @@ export function BendaharaSPPDetail() {
               backgroundSize: "22px 22px",
             }}
           />
-          {/* Glowing orb kanan atas */}
-          <div className="absolute -top-10 -right-8 h-32 w-32 rounded-full bg-white/20 blur-2xl animate-pulse" style={{ animationDuration: "3s" }} />
-          {/* Scan line bergerak vertikal (GPU translate, ringan) */}
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-white/70 to-transparent animate-bend-scan" />
-          {/* Diagonal shimmer */}
-          <div
-            className="absolute inset-0 opacity-30 pointer-events-none animate-bend-shimmer"
-            style={{
-              backgroundImage:
-                "linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%)",
-              backgroundSize: "200% 100%",
-            }}
-          />
         </div>
+
         <CardContent className="relative px-4 sm:px-6 pb-5 pt-0">
           {/* Row 1: Avatar + nama + TA */}
           <div className="flex items-start gap-4 -mt-10">
