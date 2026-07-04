@@ -2588,6 +2588,7 @@ export function BendaharaSPPDetail() {
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
+  const flags = useBendaharaFlags(profile?.school_id);
   const search = new URLSearchParams(window.location.search);
   const initAY = search.get("ay") || academicYearOf(new Date().getMonth() + 1, new Date().getFullYear());
 
