@@ -138,9 +138,9 @@ export function StudentIdCard({ student }: Props) {
         </div>
 
         {/* QR - centered & larger */}
-        <div className="relative flex flex-col items-center justify-center px-5 mt-5 text-white">
+        <div className="relative flex items-center justify-center px-5 mt-6 text-white">
           {qrDataUrl && (
-            <div className="h-36 w-36 rounded-2xl bg-white p-2 shadow-lg">
+            <div className="h-44 w-44 rounded-2xl bg-white p-2.5 shadow-lg mx-auto">
               <img src={qrDataUrl} alt="QR" className="h-full w-full object-contain" />
             </div>
           )}
