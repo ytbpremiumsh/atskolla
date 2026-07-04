@@ -104,6 +104,13 @@ const Register = () => {
 
   const canProceed = !!schoolData;
 
+  // Prefill school address whenever schoolData is (re)set
+  useEffect(() => {
+    if (schoolData) {
+      setSchoolAddress((prev) => prev || schoolData.address || "");
+    }
+  }, [schoolData]);
+
   const resetStep1 = () => {
     setInputMode(null);
     setNpsn("");
