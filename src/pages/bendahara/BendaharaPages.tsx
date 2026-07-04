@@ -1789,7 +1789,7 @@ function BendaharaGenerateCustom() {
       setPreviewOpen(false);
 
       // Background: Mayar link + WA
-      if (created.length > 0 && autoSendWa) {
+      if (created.length > 0 && autoSendWa && flags.wa) {
         const schoolId = profile.school_id;
         const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", schoolId).maybeSingle();
         const schoolName = schoolRow?.name || "Sekolah";
