@@ -128,7 +128,31 @@ const Login = ({ forcedMode }: LoginProps) => {
         localStorage.setItem("was_ephemeral", "1");
         sessionStorage.setItem("tab_alive", "1");
       }
-      toast.success("Login berhasil!");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Guard: school login is only allowed on a tenant subdomain / path
+    if (isRootDomain) {
+      toast.error("Silakan buka halaman login sekolah Anda terlebih dahulu.");
+      return;
+    }
+    setLoading(true);
+    setNetworkIssue(false);
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        if (isBackendNetworkError(error)) {
+          setNetworkIssue(true);
+          setRecheckKey((k) => k + 1);
+          toast.error("Server backend sedang gangguan/timeout. Silakan coba lagi sebentar.");
+        } else if (error.includes("Invalid login credentials")) {
+          toast.error("Email atau password salah. Pastikan email sudah terverifikasi.");
+        } else if (error.includes("Email not confirmed")) {
+          toast.error("Email belum diverifikasi. Silakan cek inbox email Anda.");
+        } else {
+          toast.error("Login gagal: " + error);
+        }
+        return;
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const [{ data: roles }, { data: profileData }] = await Promise.all([
@@ -137,6 +161,44 @@ const Login = ({ forcedMode }: LoginProps) => {
         ]);
         const rolesList = (roles || []).map((r: any) => r.role);
         const isSuperAdmin = rolesList.includes("super_admin");
+
+        // ==== Tenant enforcement ====
+        // Non-super-admin users may only sign in on their own school's subdomain/path.
+        if (!isSuperAdmin) {
+          if (!profileData?.school_id) {
+            await supabase.auth.signOut();
+            toast.error("Akun Anda belum terhubung ke sekolah. Hubungi admin sekolah.");
+            return;
+          }
+          if (tenantSchoolId && profileData.school_id !== tenantSchoolId) {
+            await supabase.auth.signOut();
+            // Look up the correct school slug for a friendly redirect message.
+            const { data: mySchool } = await supabase
+              .from("schools").select("slug, name").eq("id", profileData.school_id).maybeSingle();
+            if (mySchool?.slug) {
+              toast.error(
+                `Akun Anda terdaftar di ${mySchool.name}. Silakan login di halaman sekolah Anda.`,
+                { duration: 6000 }
+              );
+              setTimeout(() => { window.location.href = buildTenantUrl(mySchool.slug, "/admin"); }, 1200);
+            } else {
+              toast.error("Akun ini tidak diperbolehkan login di subdomain sekolah ini.");
+            }
+            return;
+          }
+        }
+
+        // Persist remember-me preference (only after tenant guard passes)
+        if (rememberMe) {
+          localStorage.setItem("remembered_email", email);
+          localStorage.removeItem("was_ephemeral");
+        } else {
+          localStorage.removeItem("remembered_email");
+          localStorage.setItem("was_ephemeral", "1");
+          sessionStorage.setItem("tab_alive", "1");
+        }
+        toast.success("Login berhasil!");
+
         const isBendahara = rolesList.includes("bendahara");
         const isTeacher = rolesList.includes("teacher");
         const isAdmin = rolesList.includes("school_admin");
@@ -177,6 +239,7 @@ const Login = ({ forcedMode }: LoginProps) => {
       setLoading(false);
     }
   };
+
 
   const requestOtp = async () => {
     setLoading(true);
