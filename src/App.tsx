@@ -84,7 +84,7 @@ const ManageBendahara = lazy(() => import("./pages/ManageBendahara"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
 const BendaharaKeuangan = lazy(() => import("./pages/bendahara/BendaharaKeuangan"));
 const LaporanAbsensi = lazy(() => import("./pages/LaporanAbsensi"));
-const HistoryPage = lazy(() => import("./pages/History"));
+const RekapSiswaPage = lazy(() => import("./pages/RekapSiswaPage"));
 const JadwalCombined = lazy(() => import("./pages/JadwalCombined"));
 const LanggananCombined = lazy(() => import("./pages/LanggananCombined"));
 const AllFeatures = lazy(() => import("./pages/AllFeatures"));
