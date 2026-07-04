@@ -84,6 +84,7 @@ const ManageBendahara = lazy(() => import("./pages/ManageBendahara"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
 const BendaharaKeuangan = lazy(() => import("./pages/bendahara/BendaharaKeuangan"));
 const LaporanAbsensi = lazy(() => import("./pages/LaporanAbsensi"));
+const HistoryPage = lazy(() => import("./pages/History"));
 const JadwalCombined = lazy(() => import("./pages/JadwalCombined"));
 const LanggananCombined = lazy(() => import("./pages/LanggananCombined"));
 const AllFeatures = lazy(() => import("./pages/AllFeatures"));
@@ -240,10 +241,14 @@ function AppRoutes() {
           <Route path="/wali-kelas-export" element={<Navigate to="/wali-kelas/laporan?tab=rekap" replace />} />
           <Route path="/wali-kelas-history" element={<Navigate to="/wali-kelas/laporan?tab=analitik" replace />} />
           <Route path="/leave-requests" element={<LeaveRequests />} />
-          <Route path="/laporan-absensi" element={<LaporanAbsensi />} />
-          <Route path="/history" element={<Navigate to="/laporan-absensi?tab=analitik" replace />} />
-          <Route path="/export-history" element={<Navigate to="/laporan-absensi?tab=rekap" replace />} />
-          <Route path="/edit-attendance" element={<Navigate to="/laporan-absensi?tab=riwayat" replace />} />
+          <Route path="/laporan-absensi" element={<Navigate to="/laporan-absensi/siswa" replace />} />
+          <Route path="/laporan-absensi/siswa" element={<ExportHistory />} />
+          <Route path="/laporan-absensi/guru" element={<TeacherAttendanceRecap />} />
+          <Route path="/laporan-absensi/analitik" element={<HistoryPage />} />
+          <Route path="/laporan-absensi/riwayat" element={<EditAttendance />} />
+          <Route path="/history" element={<Navigate to="/laporan-absensi/analitik" replace />} />
+          <Route path="/export-history" element={<Navigate to="/laporan-absensi/siswa" replace />} />
+          <Route path="/edit-attendance" element={<Navigate to="/laporan-absensi/riwayat" replace />} />
           <Route path="/mapel/laporan" element={<MapelLaporan />} />
           <Route path="/teacher-attendance" element={<TeacherAttendanceRecap />} />
           <Route path="/langganan" element={<LanggananCombined />} />
