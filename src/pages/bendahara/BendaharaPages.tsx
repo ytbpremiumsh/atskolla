@@ -3932,10 +3932,11 @@ export function BendaharaPencairan() {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bankManageOpen, setBankManageOpen] = useState(false);
-  const [bank, setBank] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "" });
+  const [bank, setBank] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", account_type: "bank", responsible_user_id: "" });
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-  const [newAccount, setNewAccount] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false });
+  const [newAccount, setNewAccount] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank" as "bank" | "ewallet", responsible_user_id: "" });
+  const [staffList, setStaffList] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -3970,8 +3971,26 @@ export function BendaharaPencairan() {
     if (list.length && !selectedAccountId) {
       const def = list.find((x: any) => x.is_default) || list[0];
       setSelectedAccountId(def.id);
-      setBank({ bank_name: def.bank_name, account_number: def.account_number, account_holder: def.account_holder, notes: def.notes || "" });
+      setBank({ bank_name: def.bank_name, account_number: def.account_number, account_holder: def.account_holder, notes: def.notes || "", account_type: def.account_type || "bank", responsible_user_id: def.responsible_user_id || "" });
     }
+  };
+
+  const loadStaff = async () => {
+    if (!profile?.school_id) return;
+    const { data: roleRows } = await supabase.from("user_roles")
+      .select("user_id, role").in("role", ["guru", "operator", "admin", "bendahara"] as any);
+    const ids = Array.from(new Set((roleRows || []).map((r: any) => r.user_id)));
+    if (ids.length === 0) { setStaffList([]); return; }
+    const { data: profs } = await supabase.from("profiles")
+      .select("user_id, full_name, phone, school_id")
+      .in("user_id", ids).eq("school_id", profile.school_id);
+    const roleMap = new Map<string, string[]>();
+    (roleRows || []).forEach((r: any) => {
+      const arr = roleMap.get(r.user_id) || [];
+      arr.push(r.role);
+      roleMap.set(r.user_id, arr);
+    });
+    setStaffList((profs || []).map((p: any) => ({ ...p, roles: roleMap.get(p.user_id) || [] })));
   };
 
   useEffect(() => {
@@ -4037,6 +4056,7 @@ export function BendaharaPencairan() {
     };
     load();
     loadAccounts();
+    loadStaff();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.school_id, open, refreshKey]);
@@ -4046,7 +4066,7 @@ export function BendaharaPencairan() {
   const handleSelectAccount = (id: string) => {
     setSelectedAccountId(id);
     const acc = savedAccounts.find((x: any) => x.id === id);
-    if (acc) setBank({ bank_name: acc.bank_name, account_number: acc.account_number, account_holder: acc.account_holder, notes: acc.notes || "" });
+    if (acc) setBank({ bank_name: acc.bank_name, account_number: acc.account_number, account_holder: acc.account_holder, notes: acc.notes || "", account_type: acc.account_type || "bank", responsible_user_id: acc.responsible_user_id || "" });
   };
 
   const requestSubmit = () => {
@@ -4057,16 +4077,17 @@ export function BendaharaPencairan() {
       return;
     }
     const acc = savedAccounts.find((x: any) => x.is_default) || savedAccounts[0];
-    setBank({ bank_name: acc.bank_name, account_number: acc.account_number, account_holder: acc.account_holder, notes: acc.notes || "" });
+    setBank({ bank_name: acc.bank_name, account_number: acc.account_number, account_holder: acc.account_holder, notes: acc.notes || "", account_type: acc.account_type || "bank", responsible_user_id: acc.responsible_user_id || "" });
     setSelectedAccountId(acc.id);
     setConfirmOpen(true);
   };
 
   const sendOtp = async () => {
     if (!user?.id || !profile?.school_id) return;
+    if (!bank.responsible_user_id) { toast.error("Penanggung jawab belum diatur pada rekening/e-wallet ini"); return; }
     setOtpSending(true);
     const { data, error } = await supabase.functions.invoke("send-bendahara-otp", {
-      body: { user_id: user.id, school_id: profile.school_id },
+      body: { user_id: user.id, school_id: profile.school_id, responsible_user_id: bank.responsible_user_id },
     });
     setOtpSending(false);
     if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal mengirim OTP"); return; }
@@ -4083,7 +4104,7 @@ export function BendaharaPencairan() {
     setSubmitting(true);
     // 1) Verifikasi OTP
     const { data: vData, error: vErr } = await supabase.functions.invoke("verify-bendahara-otp", {
-      body: { user_id: user.id, otp_code: otpCode },
+      body: { user_id: user.id, otp_code: otpCode, responsible_user_id: bank.responsible_user_id },
     });
     if (vErr || vData?.error) {
       toast.error(vData?.error || vErr?.message || "OTP tidak valid");
@@ -4109,7 +4130,11 @@ export function BendaharaPencairan() {
   };
 
   const saveAccount = async () => {
-    if (!newAccount.bank_name || !newAccount.account_number || !newAccount.account_holder) { toast.error("Lengkapi data rekening"); return; }
+    const isEw = newAccount.account_type === "ewallet";
+    if (!newAccount.bank_name) { toast.error(isEw ? "Pilih jenis E-Wallet" : "Isi nama bank"); return; }
+    if (!newAccount.account_number) { toast.error(isEw ? "Nomor E-Wallet wajib" : "Nomor rekening wajib"); return; }
+    if (!newAccount.account_holder) { toast.error("Nama pemilik wajib"); return; }
+    if (!newAccount.responsible_user_id) { toast.error("Pilih Penanggung Jawab"); return; }
     if (!profile?.school_id) return;
     if (newAccount.is_default) {
       await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", profile.school_id);
@@ -4118,8 +4143,8 @@ export function BendaharaPencairan() {
       school_id: profile.school_id, ...newAccount, created_by: user?.id,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Rekening disimpan");
-    setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false });
+    toast.success(isEw ? "E-Wallet disimpan" : "Rekening disimpan");
+    setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
     loadAccounts();
   };
 
@@ -4214,9 +4239,9 @@ export function BendaharaPencairan() {
                     <div className="flex items-start gap-3">
                       <Landmark className="h-5 w-5 text-emerald-600 mt-0.5" />
                       <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rekening Tujuan</p>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{acc.account_type === "ewallet" ? "E-Wallet Tujuan" : "Rekening Tujuan"}</p>
                         <p className="text-sm font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
-                        <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}</p>
+                        <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}{acc.responsible_user_id ? ` · PJ: ${staffList.find((s) => s.user_id === acc.responsible_user_id)?.full_name || "—"}` : ""}</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setBankManageOpen(true)} className="text-xs">Ubah</Button>
@@ -4290,12 +4315,13 @@ export function BendaharaPencairan() {
 
           {!otpStep ? (
             <div className="space-y-3 pt-2 max-h-[70vh] overflow-y-auto">
-              {/* Rekening Tujuan */}
+              {/* Rekening / E-Wallet Tujuan */}
               <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 space-y-2">
-                <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">Rekening Tujuan</p>
-                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Bank</span><span className="font-bold">{bank.bank_name}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted-foreground">No. Rekening</span><span className="font-mono font-bold tracking-wider">{bank.account_number}</span></div>
+                <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">{bank.account_type === "ewallet" ? "E-Wallet Tujuan" : "Rekening Tujuan"}</p>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">{bank.account_type === "ewallet" ? "E-Wallet" : "Bank"}</span><span className="font-bold">{bank.bank_name}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">{bank.account_type === "ewallet" ? "Nomor" : "No. Rekening"}</span><span className="font-mono font-bold tracking-wider">{bank.account_number}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Atas Nama</span><span className="font-bold">{bank.account_holder}</span></div>
+                <div className="flex justify-between text-sm border-t border-amber-200 dark:border-amber-800 pt-2"><span className="text-muted-foreground">Penanggung Jawab OTP</span><span className="font-semibold">{staffList.find((s) => s.user_id === bank.responsible_user_id)?.full_name || "—"}</span></div>
               </div>
 
               {/* Rincian Perhitungan */}
@@ -4366,41 +4392,108 @@ export function BendaharaPencairan() {
       <Dialog open={bankManageOpen} onOpenChange={setBankManageOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Kelola Rekening Pencairan</DialogTitle>
-            <DialogDescription>Simpan rekening sekolah agar tidak perlu input ulang setiap pencairan.</DialogDescription>
+            <DialogTitle>Kelola Rekening / E-Wallet Pencairan</DialogTitle>
+            <DialogDescription>Simpan rekening bank atau e-wallet sekolah beserta penanggung jawab OTP.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Rekening Tersimpan</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tersimpan</Label>
               {savedAccounts.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">Belum ada rekening</p>
+                <p className="text-sm text-muted-foreground italic">Belum ada rekening / e-wallet</p>
               ) : (
                 <div className="space-y-2 max-h-48 overflow-auto">
-                  {savedAccounts.map((a: any) => (
-                    <div key={a.id} className="flex items-center justify-between p-2 rounded-lg border bg-card">
-                      <div>
-                        <p className="text-sm font-semibold">{a.bank_name} {a.is_default && <Badge className="ml-1 bg-emerald-600 text-[10px]">Utama</Badge>}</p>
-                        <p className="text-xs font-mono text-muted-foreground">{a.account_number} · {a.account_holder}</p>
+                  {savedAccounts.map((a: any) => {
+                    const pj = staffList.find((s) => s.user_id === a.responsible_user_id);
+                    const isEw = a.account_type === "ewallet";
+                    return (
+                      <div key={a.id} className="flex items-center justify-between p-2 rounded-lg border bg-card">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold flex items-center gap-1 flex-wrap">
+                            <Badge variant="outline" className="text-[10px]">{isEw ? "E-Wallet" : "Bank"}</Badge>
+                            {a.bank_name}
+                            {a.is_default && <Badge className="ml-1 bg-emerald-600 text-[10px]">Utama</Badge>}
+                          </p>
+                          <p className="text-xs font-mono text-muted-foreground">{a.account_number} · {a.account_holder}</p>
+                          <p className="text-[11px] text-muted-foreground">PJ: {pj?.full_name || <span className="text-amber-600">belum diatur</span>}</p>
+                        </div>
+                        <div className="flex gap-1 shrink-0">
+                          {!a.is_default && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)} className="h-7 text-xs">Utama</Button>}
+                          <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-7 text-destructive">Hapus</Button>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        {!a.is_default && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)} className="h-7 text-xs">Jadikan Utama</Button>}
-                        <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-7 text-destructive">Hapus</Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
             <div className="border-t pt-4 space-y-3">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah Rekening Baru</Label>
-              <div><Label>Nama Bank</Label><Input value={newAccount.bank_name} onChange={e => setNewAccount({ ...newAccount, bank_name: e.target.value })} placeholder="BCA / BRI / Mandiri" /></div>
-              <div><Label>Nomor Rekening</Label><Input value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} /></div>
-              <div><Label>Atas Nama</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah Baru</Label>
+              <div>
+                <Label>Jenis Akun</Label>
+                <Select value={newAccount.account_type} onValueChange={(v) => setNewAccount({ ...newAccount, account_type: v as "bank" | "ewallet", bank_name: "" })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bank">Rekening Bank</SelectItem>
+                    <SelectItem value="ewallet">E-Wallet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {newAccount.account_type === "ewallet" ? (
+                <>
+                  <div>
+                    <Label>Jenis E-Wallet</Label>
+                    <Select value={newAccount.bank_name} onValueChange={(v) => setNewAccount({ ...newAccount, bank_name: v })}>
+                      <SelectTrigger><SelectValue placeholder="Pilih e-wallet" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="DANA">DANA</SelectItem>
+                        <SelectItem value="OVO">OVO</SelectItem>
+                        <SelectItem value="GoPay">GoPay</SelectItem>
+                        <SelectItem value="ShopeePay">ShopeePay</SelectItem>
+                        <SelectItem value="LinkAja">LinkAja</SelectItem>
+                        <SelectItem value="QRIS">QRIS</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Nomor E-Wallet</Label><Input inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} placeholder="Nomor HP terdaftar" /></div>
+                  <div><Label>Atas Nama</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <Label>Nama Bank</Label>
+                    <Select value={newAccount.bank_name} onValueChange={(v) => setNewAccount({ ...newAccount, bank_name: v })}>
+                      <SelectTrigger><SelectValue placeholder="Pilih bank" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {["BCA","BRI","BNI","Mandiri","BSI","CIMB Niaga","Danamon","Permata","BTN","Panin","Mega","OCBC NISP","Maybank","BJB","Bank Jateng","Bank DKI","Bank Sumut","Bank Sulselbar","Bank Nagari","Muamalat","BTPN","Jenius","SeaBank","Bank Neo Commerce","Jago","Allo Bank","Blu by BCA","Line Bank"].map(b => (
+                          <SelectItem key={b} value={b}>{b}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Nomor Rekening</Label><Input inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} /></div>
+                  <div><Label>Atas Nama (sesuai buku tabungan)</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
+                </>
+              )}
+              <div>
+                <Label>Penanggung Jawab (OTP dikirim ke WA-nya)</Label>
+                <Select value={newAccount.responsible_user_id} onValueChange={(v) => setNewAccount({ ...newAccount, responsible_user_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Pilih Guru / Operator" /></SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {staffList.length === 0 && <div className="p-2 text-xs text-muted-foreground">Belum ada staf terdaftar</div>}
+                    {staffList.map((s) => (
+                      <SelectItem key={s.user_id} value={s.user_id}>
+                        {s.full_name || "(tanpa nama)"} — {(s.roles || []).join(", ")}{s.phone ? "" : " (no WA)"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground mt-1">Setiap transaksi pencairan wajib diotorisasi via OTP WhatsApp ke penanggung jawab.</p>
+              </div>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={newAccount.is_default} onChange={e => setNewAccount({ ...newAccount, is_default: e.target.checked })} />
-                Jadikan rekening utama
+                Jadikan utama
               </label>
-              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Simpan Rekening</Button>
+              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Simpan</Button>
             </div>
           </div>
         </DialogContent>
