@@ -578,7 +578,7 @@ const SuperAdminRegistrationWA = () => {
               <div>
                 <h3 className="font-bold text-foreground text-sm">Notifikasi WA Admin</h3>
                 <p className="text-xs text-muted-foreground">
-                  Kirim WhatsApp otomatis ke admin saat ada Tiket Bantuan, Pencairan Dana Affiliate, atau Pencairan Dana Bendahara
+                  Kirim WhatsApp otomatis ke admin saat ada Tiket Bantuan atau Pencairan Dana Bendahara
                 </p>
               </div>
             </div>
