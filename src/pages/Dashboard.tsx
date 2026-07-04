@@ -106,6 +106,8 @@ const Dashboard = () => {
   const [chartPeriod, setChartPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [periodLogs, setPeriodLogs] = useState<any[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [holidayMode, setHolidayMode] = useState(false);
+  const [holidayToggling, setHolidayToggling] = useState(false);
   const navigate = useNavigate();
 
 
