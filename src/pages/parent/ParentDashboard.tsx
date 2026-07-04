@@ -1133,7 +1133,7 @@ export default function ParentDashboard() {
 
         {tab === "card" && (
           <>
-            <SectionTitle icon={CreditCard} title="Kartu Pelajar Digital" />
+            
             {current ? (
               <div className="space-y-4">
                 <StudentIdCard student={current as any} />
