@@ -129,7 +129,18 @@ const Register = () => {
     e.preventDefault();
     if (!schoolData) { toast.error("Data sekolah belum diisi"); return; }
     if (!fullName.trim()) { toast.error("Nama lengkap wajib diisi"); return; }
-    if (!email.trim()) { toast.error("Email wajib diisi"); return; }
+    if (!email.trim()) { toast.error("Email admin wajib diisi"); return; }
+    if (!principalName.trim()) { toast.error("Nama Kepala Sekolah wajib diisi"); return; }
+    if (!schoolEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(schoolEmail.trim())) {
+      toast.error("Email sekolah tidak valid"); return;
+    }
+    if (!schoolAddress.trim() || schoolAddress.trim().length < 8) {
+      toast.error("Alamat lengkap sekolah wajib diisi (min 8 karakter)"); return;
+    }
+    const waDigits = schoolWhatsapp.replace(/\D/g, '');
+    if (waDigits.length < 9 || waDigits.length > 15) {
+      toast.error("Nomor WhatsApp sekolah tidak valid"); return;
+    }
     if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
     if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
 
@@ -148,7 +159,10 @@ const Register = () => {
           role: 'school_admin',
           npsn: schoolData.npsn || undefined,
           school_name: schoolData.name,
-          school_address: schoolData.address,
+          school_address: schoolAddress.trim() || schoolData.address,
+          school_principal_name: principalName.trim(),
+          school_email: schoolEmail.trim(),
+          school_whatsapp: waDigits,
           phone,
           referral_code: referralInput || undefined,
         }),
