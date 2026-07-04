@@ -211,6 +211,7 @@ const SchoolSettings = () => {
       name, address, logo: logo || null,
       npsn: npsn || null, city: city || null, province: province || null, timezone,
       holiday_days: holidayDays,
+      whatsapp: whatsapp || null, email: email || null, principal_name: principalName || null,
     } as any).eq("id", profile.school_id);
 
     const settingsPayload = {
