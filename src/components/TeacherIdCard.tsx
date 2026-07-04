@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { toast } from "sonner";
@@ -7,49 +6,40 @@ import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { downloadCardAsJpg } from "@/lib/downloadCard";
 
 interface Props {
-  student: {
-    id: string;
-    name: string;
-    class?: string;
-    student_id?: string;
+  teacher: {
+    user_id: string;
+    full_name: string;
     photo_url?: string | null;
-    gender?: string;
-    schools?: { name?: string; logo?: string | null };
-    school_id?: string;
+    qr_code?: string | null;
+    nip?: string | null;
+    phone?: string | null;
+    role_label?: string; // e.g. "Guru", "Operator", "Bendahara"
+  };
+  school: {
+    name?: string;
+    logo?: string | null;
   };
 }
 
-function formatCard(n?: string) {
+function formatNip(n?: string | null) {
   if (!n) return "•••• •••• •••• ••••";
   const digits = n.replace(/\D/g, "").padEnd(16, "•");
   return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)} ${digits.slice(12, 16)}`;
 }
 
-export function StudentIdCard({ student }: Props) {
-  const [cardNumber, setCardNumber] = useState<string>("");
+export function TeacherIdCard({ teacher, school }: Props) {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      if ((student as any).card_number) {
-        if (mounted) setCardNumber((student as any).card_number);
-      } else {
-        const { data } = await supabase
-          .from("students")
-          .select("card_number")
-          .eq("id", student.id)
-          .maybeSingle();
-        if (mounted && data?.card_number) setCardNumber(data.card_number);
-      }
-
       try {
         const QRCodeStyling = (await import("qr-code-styling")).default;
         const qr = new QRCodeStyling({
           width: 220,
           height: 220,
-          data: (student as any).qr_code || student.student_id || student.id,
+          data: teacher.qr_code || teacher.user_id,
           dotsOptions: { color: "#0f172a", type: "rounded" },
           backgroundOptions: { color: "#ffffff" },
           cornersSquareOptions: { type: "extra-rounded", color: "#5B6CF9" },
@@ -62,12 +52,12 @@ export function StudentIdCard({ student }: Props) {
       } catch {/* ignore */ }
     })();
     return () => { mounted = false; };
-  }, [student.id]);
+  }, [teacher.user_id, teacher.qr_code]);
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
     try {
-      await downloadCardAsJpg(cardRef.current, `kartu-pelajar-${student.name.replace(/\s+/g, "-")}`);
+      await downloadCardAsJpg(cardRef.current, `kartu-guru-${teacher.full_name.replace(/\s+/g, "-")}`);
       toast.success("Kartu berhasil diunduh");
     } catch (e) {
       console.error(e);
@@ -75,8 +65,9 @@ export function StudentIdCard({ student }: Props) {
     }
   };
 
-  const schoolLogo = student.schools?.logo;
-  const schoolName = student.schools?.name || "Sekolah";
+  const schoolLogo = school?.logo;
+  const schoolName = school?.name || "Sekolah";
+  const roleLabel = teacher.role_label || "Guru / Staff";
 
   return (
     <div className="space-y-3">
@@ -92,38 +83,38 @@ export function StudentIdCard({ student }: Props) {
         <div className="relative flex items-center gap-2.5 p-5 text-white">
           <img src={schoolLogo || atskollaLogo} alt="" crossOrigin="anonymous" className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur p-1 object-contain" />
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Kartu Pelajar</p>
+            <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Kartu {roleLabel}</p>
             <p className="text-sm font-bold leading-tight truncate">{schoolName}</p>
           </div>
         </div>
 
         <div className="relative px-5 flex items-center gap-4 text-white">
           <div className="h-24 w-20 rounded-2xl bg-white/15 backdrop-blur ring-2 ring-white/40 overflow-hidden shrink-0 flex items-center justify-center text-3xl font-bold">
-            {student.photo_url ? (
-              <img src={student.photo_url} alt={student.name} crossOrigin="anonymous" className="h-full w-full object-cover" />
+            {teacher.photo_url ? (
+              <img src={teacher.photo_url} alt={teacher.full_name} crossOrigin="anonymous" className="h-full w-full object-cover" />
             ) : (
-              <span>{student.name?.[0]}</span>
+              <span>{teacher.full_name?.[0]}</span>
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Nama Siswa</p>
-            <p className="text-lg font-bold leading-tight break-words">{student.name}</p>
+            <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Nama</p>
+            <p className="text-lg font-bold leading-tight break-words">{teacher.full_name}</p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <div>
-                <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">Kelas</p>
-                <p className="text-xs font-semibold">{student.class || "-"}</p>
+                <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">Jabatan</p>
+                <p className="text-xs font-semibold">{roleLabel}</p>
               </div>
               <div>
-                <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">NIS</p>
-                <p className="text-xs font-semibold">{student.student_id || "-"}</p>
+                <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">Telp</p>
+                <p className="text-xs font-semibold">{teacher.phone || "-"}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="relative mx-5 mt-4 rounded-2xl bg-black/25 backdrop-blur border border-white/15 px-4 py-3 text-white">
-          <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">Nomor Kartu Identitas</p>
-          <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5">{formatCard(cardNumber)}</p>
+          <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">NIP / Nomor Induk</p>
+          <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5">{formatNip(teacher.nip)}</p>
         </div>
 
         <div className="relative flex items-center justify-center px-5 mt-5 text-white">

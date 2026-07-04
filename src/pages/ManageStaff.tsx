@@ -20,6 +20,7 @@ import { PremiumGate } from "@/components/PremiumGate";
 import * as XLSX from "xlsx";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import StaffAttendanceDetailDialog from "@/components/staff/StaffAttendanceDetailDialog";
+import { TeacherIdCard } from "@/components/TeacherIdCard";
 
 interface StaffMember {
   user_id: string;
@@ -42,6 +43,7 @@ const ROLE_META: Record<string, { label: string; icon: any; cls: string }> = {
 const ManageStaff = () => {
   const { profile } = useAuth();
   const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [school, setSchool] = useState<{ name?: string; logo?: string | null }>({});
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -128,6 +130,12 @@ const ManageStaff = () => {
   };
 
   useEffect(() => { fetchStaff(); }, [schoolId]);
+
+  useEffect(() => {
+    if (!schoolId) return;
+    supabase.from("schools").select("name, logo").eq("id", schoolId).maybeSingle()
+      .then(({ data }) => { if (data) setSchool(data); });
+  }, [schoolId]);
 
   const handleCreate = async () => {
     if (!formName || !formEmail || !formPassword) { toast.error("Nama, email, dan password harus diisi"); return; }
@@ -739,27 +747,35 @@ const ManageStaff = () => {
         </DialogContent>
       </Dialog>
 
-      {/* QR Dialog */}
+      {/* Kartu Guru Dialog */}
       <Dialog open={qrDialog} onOpenChange={setQrDialog}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5 text-[#5B6CF9]" /> QR Absensi
+              <QrCode className="h-5 w-5 text-[#5B6CF9]" /> Kartu Digital
             </DialogTitle>
             <DialogDescription>
-              Scan QR ini di halaman Scan Absensi untuk mencatat kehadiran.
+              Kartu identitas digital lengkap dengan QR untuk absensi. Klik tombol untuk mengunduh.
             </DialogDescription>
           </DialogHeader>
           {qrTarget && (
-            <div className="flex flex-col items-center gap-3 py-2">
-              <div className="bg-white p-4 rounded-xl border border-border">
-                <QRCodeDisplay data={qrTarget.qr_code || qrTarget.user_id} size={200} autoFrame={false} studentName={qrTarget.full_name} />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-base">{qrTarget.full_name}</p>
-                {getRoleBadges(qrTarget.roles)}
-                <p className="text-[10px] text-muted-foreground mt-2 font-mono break-all">{qrTarget.qr_code || qrTarget.user_id}</p>
-              </div>
+            <div className="py-2">
+              <TeacherIdCard
+                teacher={{
+                  user_id: qrTarget.user_id,
+                  full_name: qrTarget.full_name,
+                  photo_url: qrTarget.photo_url,
+                  qr_code: qrTarget.qr_code,
+                  nip: qrTarget.nip,
+                  phone: qrTarget.phone,
+                  role_label: qrTarget.roles.includes("teacher")
+                    ? "Guru"
+                    : qrTarget.roles.includes("bendahara")
+                    ? "Bendahara"
+                    : "Operator",
+                }}
+                school={school}
+              />
             </div>
           )}
         </DialogContent>

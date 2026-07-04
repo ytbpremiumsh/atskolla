@@ -17,6 +17,7 @@ import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+import { StudentIdCard } from "@/components/StudentIdCard";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -481,6 +482,25 @@ const StudentDetail = () => {
           </Card>
         </motion.div>
       </div>
+
+      {/* Kartu Pelajar Digital */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}>
+        <Card className="shadow-card border-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <QrCode className="h-4 w-4 text-primary" />Kartu Pelajar Digital
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-4">
+            <StudentIdCard
+              student={{
+                ...student,
+                schools: { name: school?.name, logo: school?.logo },
+              }}
+            />
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Attendance History Section */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
