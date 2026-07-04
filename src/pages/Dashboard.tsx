@@ -423,6 +423,61 @@ const Dashboard = () => {
         }
       />
 
+      {/* Login URL Info — helps admin share the right link to guru/wali kelas & wali murid */}
+      {showLoginInfo && tenant.slug && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="rounded-2xl border border-indigo-200/60 bg-gradient-to-br from-indigo-50/80 via-white to-violet-50/60 dark:from-indigo-950/30 dark:via-slate-900 dark:to-violet-950/20 dark:border-indigo-800/40 shadow-sm overflow-hidden">
+            <CardContent className="p-4 sm:p-5 relative">
+              <button
+                onClick={() => { setShowLoginInfo(false); localStorage.setItem("dismissed_login_info", "1"); }}
+                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                aria-label="Tutup"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <div className="flex items-start gap-3 mb-3">
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 shadow-md shadow-indigo-300/30 flex items-center justify-center shrink-0">
+                  <Info className="h-4 w-4 text-white" />
+                </div>
+                <div className="pr-6">
+                  <p className="font-semibold text-sm text-foreground">Bagikan link login yang tepat</p>
+                  <p className="text-[12px] text-muted-foreground mt-0.5">
+                    Setiap sekolah punya URL login sendiri. Gunakan link di bawah agar guru, staf, dan orang tua tidak salah masuk.
+                  </p>
+                </div>
+              </div>
+              <div className="grid sm:grid-cols-2 gap-2.5">
+                <div className="rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 bg-white/70 dark:bg-slate-900/50 p-3 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                    <LogIn className="h-3 w-3" /> Admin & Guru
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <code className="text-[11px] font-mono break-all text-foreground flex-1">{buildTenantUrl(tenant.slug, "/admin")}</code>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0"
+                      onClick={() => { navigator.clipboard.writeText(buildTenantUrl(tenant.slug!, "/admin")); toast.success("Link Admin/Guru disalin"); }}>
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-violet-200/60 dark:border-violet-800/40 bg-white/70 dark:bg-slate-900/50 p-3 space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                    <Users className="h-3 w-3" /> Wali Murid
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <code className="text-[11px] font-mono break-all text-foreground flex-1">{buildTenantUrl(tenant.slug, "/login")}</code>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0"
+                      onClick={() => { navigator.clipboard.writeText(buildTenantUrl(tenant.slug!, "/login")); toast.success("Link Wali Murid disalin"); }}>
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((s) => (
