@@ -219,3 +219,35 @@
   }
   .status-pill-neutral .dot { background-color: hsl(220 10% 55%); }
 }
+
+/* ============================================
+   Performance: reduce animations & heavy blur
+   ============================================ */
+
+/* Kill all non-essential animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tone down heavy blur globally (backdrop & filter blur) on low-end devices */
+@media (max-width: 640px) {
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl { backdrop-filter: blur(6px) !important; -webkit-backdrop-filter: blur(6px) !important; }
+  .blur-2xl, .blur-3xl { filter: blur(20px) !important; }
+}
+
+/* Softer status pills (reduce infinite pulse cost) */
+.status-pill-paid,
+.status-pill-unpaid,
+.status-pill-pending,
+.status-pill-neutral {
+  animation: none !important;
+}

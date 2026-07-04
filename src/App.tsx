@@ -61,10 +61,6 @@ const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
 const Penawaran = lazy(() => import("./pages/Penawaran"));
 const SuperAdminPenawaran = lazy(() => import("./pages/super-admin/SuperAdminPenawaran"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const AffiliateRegister = lazy(() => import("./pages/AffiliateRegister"));
-const AffiliateLogin = lazy(() => import("./pages/AffiliateLogin"));
-const AffiliateDashboard = lazy(() => import("./pages/AffiliateDashboard"));
-const SuperAdminAffiliate = lazy(() => import("./pages/super-admin/SuperAdminAffiliate"));
 const SuperAdminBackup = lazy(() => import("./pages/super-admin/SuperAdminBackup"));
 const SuperAdminServerInfo = lazy(() => import("./pages/super-admin/SuperAdminServerInfo"));
 const SuperAdminBendahara = lazy(() => import("./pages/super-admin/SuperAdminBendahara"));
@@ -76,7 +72,7 @@ const Addons = lazy(() => import("./pages/Addons"));
 const OrderIdCard = lazy(() => import("./pages/OrderIdCard"));
 const WaCredit = lazy(() => import("./pages/WaCredit"));
 const LiveSchedule = lazy(() => import("./pages/LiveSchedule"));
-const TeacherAffiliate = lazy(() => import("./pages/TeacherAffiliate"));
+
 const SchoolAnnouncements = lazy(() => import("./pages/SchoolAnnouncements"));
 const TeacherAttendanceRecap = lazy(() => import("./pages/TeacherAttendanceRecap"));
 const ParentLogin = lazy(() => import("./pages/parent/ParentLogin"));
@@ -168,9 +164,6 @@ function AppRoutes() {
         <Route path="/penawaran" element={<Penawaran />} />
         <Route path="/proposal" element={<Proposal />} />
         <Route path="/pitchdeck" element={<PitchDeck />} />
-        <Route path="/affiliate/register" element={<AffiliateRegister />} />
-        <Route path="/affiliate/login" element={<AffiliateLogin />} />
-        <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
         <Route path="/parent/login" element={<ParentLogin />} />
         <Route path="/parent" element={<ParentDashboard />} />
         {/* Bendahara */}
@@ -214,7 +207,7 @@ function AppRoutes() {
           <Route path="/super-admin/testimonials" element={<Navigate to="/super-admin/cms?tab=testimoni" replace />} />
           <Route path="/super-admin/auto-caption" element={<Navigate to="/super-admin/cms?tab=caption" replace />} />
           <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
-          <Route path="/super-admin/affiliate" element={<SuperAdminAffiliate />} />
+          
           <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
           <Route path="/super-admin/server-info" element={<SuperAdminServerInfo />} />
           <Route path="/super-admin/bendahara" element={<SuperAdminBendahara />} />
@@ -262,7 +255,7 @@ function AppRoutes() {
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/support" element={<SupportTickets />} />
           <Route path="/referral" element={<ReferralDashboard />} />
-          <Route path="/affiliate-teacher" element={<TeacherAffiliate />} />
+          
           <Route path="/whatsapp" element={<WhatsAppSettings />} />
           <Route path="/custom-domain" element={<CustomDomain />} />
           <Route path="/order-idcard" element={<OrderIdCard />} />
