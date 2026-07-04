@@ -86,8 +86,14 @@ const ConfirmationPopup = ({ open, scannedStudent, alreadyRecorded, processing, 
             )}
             <div>
               <h3 className="text-lg sm:text-xl font-bold text-foreground">{scannedStudent.name}</h3>
-              <p className="text-sm text-muted-foreground">Kelas: {scannedStudent.class}</p>
-              <p className="text-sm text-muted-foreground">NIS: {scannedStudent.student_id}</p>
+              {scannedStudent.__isTeacher ? (
+                <p className="text-sm text-muted-foreground">Peran: {scannedStudent.class}</p>
+              ) : (
+                <>
+                  <p className="text-sm text-muted-foreground">Kelas: {scannedStudent.class}</p>
+                  <p className="text-sm text-muted-foreground">NIS: {scannedStudent.student_id}</p>
+                </>
+              )}
               {scanMethod === "face" && (
                 <span className="inline-flex items-center gap-1 text-xs text-success font-medium mt-1">
                   <UserCheck className="h-3 w-3" /> Dikenali via Face Recognition
