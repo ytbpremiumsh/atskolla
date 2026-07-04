@@ -2709,6 +2709,8 @@ export function BendaharaSPPDetail() {
     const parentName = student?.parent_name || inv.parent_name;
     if (!phone) { toast.error("Wali murid tidak punya nomor WA"); return; }
     if (!inv.payment_url) { toast.error("Buat link pembayaran dulu"); return; }
+    const flags = await fetchBendaharaFlags(profile!.school_id);
+    if (!flags.wa) { toast.error("Pengiriman WA dinonaktifkan Super Admin untuk sekolah ini"); return; }
     const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", profile!.school_id).maybeSingle();
     const schoolName = schoolRow?.name || "Sekolah";
     const msg = `*${schoolName} — Tagihan SPP Baru*\n\nYth. Bapak/Ibu *${parentName || "Wali"}*,\n\nTagihan SPP ananda:\n• Nama    : ${inv.student_name}\n• Kelas   : ${inv.class_name}\n• Periode : ${inv.period_label}\n• Nominal : ${fmtIDR(inv.total_amount)}\n• Jatuh tempo: ${inv.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID") : "-"}\n\nSilakan lakukan pembayaran via *QRIS / Transfer Bank* pada link berikut:\n${brandPaymentUrl(inv.payment_url)}\n\nTerima kasih.`;
