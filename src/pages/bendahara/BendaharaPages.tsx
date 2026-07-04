@@ -142,6 +142,8 @@ export function BendaharaDashboard() {
   // Kirim WA konfirmasi (teks SAMA untuk semua metode, hanya field "Metode" yang berbeda)
   const sendPaidConfirmationWa = async (inv: any) => {
     if (!inv?.parent_phone) { toast.error("Wali murid tidak punya nomor WA"); return; }
+    const flags = await fetchBendaharaFlags(profile!.school_id);
+    if (!flags.wa) { toast.error("Pengiriman WA dinonaktifkan Super Admin untuk sekolah ini"); return; }
     const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", profile!.school_id).maybeSingle();
     const schoolName = schoolRow?.name || "Sekolah";
     const tgl = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-";
