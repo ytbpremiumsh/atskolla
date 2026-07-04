@@ -52,7 +52,7 @@ export function StudentIdCard({ student }: Props) {
         const qr = new QRCodeStyling({
           width: 220,
           height: 220,
-          data: (student as any).card_number || student.student_id || student.id,
+          data: (student as any).qr_code || student.student_id || student.id,
           dotsOptions: { color: "#0f172a", type: "rounded" },
           backgroundOptions: { color: "#ffffff" },
           cornersSquareOptions: { type: "extra-rounded", color: "#5B6CF9" },
