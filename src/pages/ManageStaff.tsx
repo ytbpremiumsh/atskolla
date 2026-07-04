@@ -167,7 +167,7 @@ const ManageStaff = () => {
     try {
       // Use first role as primary, then add the rest
       const res = await supabase.functions.invoke("create-user", {
-        body: { email: formEmail, password: formPassword, full_name: formName, role: selectedRoles[0], school_id: schoolId, phone: formPhone, nip: formNip },
+        body: { email: formEmail, password: formPassword, full_name: formName, role: selectedRoles[0], school_id: schoolId, phone: formPhone, nip: formNip, position: formPosition },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
