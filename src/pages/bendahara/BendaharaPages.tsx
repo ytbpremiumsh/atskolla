@@ -4139,7 +4139,7 @@ export function BendaharaPencairan() {
     });
     if (error) { toast.error(error.message); return; }
     toast.success("Rekening disimpan");
-    setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false });
+    setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
     loadAccounts();
   };
 
