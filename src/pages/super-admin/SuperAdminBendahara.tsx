@@ -241,6 +241,21 @@ export default function SuperAdminBendahara() {
     }
   };
 
+  const toggleSchoolFlag = async (schoolId: string, field: "bendahara_wa_enabled" | "bendahara_offline_enabled", next: boolean) => {
+    // Optimistic UI
+    setSchools((prev) => prev.map((s) => (s.id === schoolId ? { ...s, [field]: next } : s)));
+    const { error } = await supabase.from("schools").update({ [field]: next }).eq("id", schoolId);
+    if (error) {
+      toast.error("Gagal menyimpan: " + error.message);
+      // Rollback
+      setSchools((prev) => prev.map((s) => (s.id === schoolId ? { ...s, [field]: !next } : s)));
+      return;
+    }
+    toast.success(next ? "Fitur diaktifkan" : "Fitur dinonaktifkan");
+  };
+
+
+
   const updateSettlement = async (newStatus: "approved" | "paid" | "rejected") => {
     if (!reviewing) return;
     setActionLoading(true);
