@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan, ArrowLeft,
-  Phone, MessageSquare, Sparkles, Users, Calendar, ScanFace, Wallet, BarChart3, MessageCircle,
+  Phone, MessageSquare, Sparkles, Users, Calendar, ScanFace, Wallet, BarChart3, MessageCircle, LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
