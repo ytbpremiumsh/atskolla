@@ -65,7 +65,7 @@ serve(async (req) => {
     // Ambil semua sekolah aktif beserta timezone
     const { data: schools, error: schErr } = await supabase
       .from('schools')
-      .select('id, name, timezone, holiday_days');
+      .select('id, name, timezone, holiday_days, holiday_mode');
 
     if (schErr) throw schErr;
     if (!schools || schools.length === 0) {
