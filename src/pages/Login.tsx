@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan, ArrowLeft,
-  Phone, MessageSquare, Sparkles, Users, Calendar, ScanFace, Wallet, BarChart3, MessageCircle,
+  Phone, MessageSquare, Sparkles, Users, Calendar, ScanFace, Wallet, BarChart3, MessageCircle, LogIn,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -440,7 +440,7 @@ const Login = () => {
                             )}
                             <Button onClick={requestOtp} disabled={loading}
                               className="w-full h-12 bg-[#5B6CF9] hover:bg-[#4c5ded] text-white font-semibold text-sm uppercase tracking-wide shadow-lg shadow-indigo-500/20 rounded-xl">
-                              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><MessageSquare className="h-4 w-4 mr-2" /> Kirim Kode OTP <ArrowRight className="h-4 w-4 ml-2" /></>}
+                              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : parentMethod === "card" ? (<><LogIn className="h-4 w-4 mr-2" /> Masuk Sekarang <ArrowRight className="h-4 w-4 ml-2" /></>) : (<><MessageSquare className="h-4 w-4 mr-2" /> Kirim Kode OTP <ArrowRight className="h-4 w-4 ml-2" /></>)}
                             </Button>
                           </motion.div>
                         ) : (
