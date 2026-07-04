@@ -3932,10 +3932,11 @@ export function BendaharaPencairan() {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bankManageOpen, setBankManageOpen] = useState(false);
-  const [bank, setBank] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "" });
+  const [bank, setBank] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", account_type: "bank", responsible_user_id: "" });
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-  const [newAccount, setNewAccount] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false });
+  const [newAccount, setNewAccount] = useState({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank" as "bank" | "ewallet", responsible_user_id: "" });
+  const [staffList, setStaffList] = useState<any[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
