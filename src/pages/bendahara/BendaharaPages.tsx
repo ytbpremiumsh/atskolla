@@ -4130,7 +4130,11 @@ export function BendaharaPencairan() {
   };
 
   const saveAccount = async () => {
-    if (!newAccount.bank_name || !newAccount.account_number || !newAccount.account_holder) { toast.error("Lengkapi data rekening"); return; }
+    const isEw = newAccount.account_type === "ewallet";
+    if (!newAccount.bank_name) { toast.error(isEw ? "Pilih jenis E-Wallet" : "Isi nama bank"); return; }
+    if (!newAccount.account_number) { toast.error(isEw ? "Nomor E-Wallet wajib" : "Nomor rekening wajib"); return; }
+    if (!newAccount.account_holder) { toast.error("Nama pemilik wajib"); return; }
+    if (!newAccount.responsible_user_id) { toast.error("Pilih Penanggung Jawab"); return; }
     if (!profile?.school_id) return;
     if (newAccount.is_default) {
       await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", profile.school_id);
@@ -4139,7 +4143,7 @@ export function BendaharaPencairan() {
       school_id: profile.school_id, ...newAccount, created_by: user?.id,
     });
     if (error) { toast.error(error.message); return; }
-    toast.success("Rekening disimpan");
+    toast.success(isEw ? "E-Wallet disimpan" : "Rekening disimpan");
     setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
     loadAccounts();
   };
