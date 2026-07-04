@@ -32,7 +32,7 @@ serve(async (req) => {
       throw new Error('Insufficient permissions');
     }
 
-    const { user_id, full_name, email, password, phone, nip } = await req.json();
+    const { user_id, full_name, email, password, phone, nip, position } = await req.json();
     if (!user_id) throw new Error('user_id is required');
 
     // Cross-tenant guard: school_admin only allowed to update users within own school
@@ -46,11 +46,12 @@ serve(async (req) => {
       }
     }
 
-    // Update profile name, phone, nip if provided
+    // Update profile name, phone, nip, position if provided
     const profileUpdate: Record<string, string | null> = {};
     if (full_name) profileUpdate.full_name = full_name;
     if (phone !== undefined) profileUpdate.phone = phone || null;
     if (nip !== undefined) profileUpdate.nip = nip || null;
+    if (position !== undefined) profileUpdate.position = position || null;
     
     if (Object.keys(profileUpdate).length > 0) {
       const { error: profileError } = await supabaseAdmin.from('profiles').update(profileUpdate).eq('user_id', user_id);
