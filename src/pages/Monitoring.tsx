@@ -169,6 +169,16 @@ const Monitoring = () => {
 
   const handleUpdateStatus = async () => {
     if (!editStudent || !editStatus || !profile?.school_id) return;
+
+    // Block manual attendance during holiday
+    const holidayStatus = await fetchSchoolHolidayStatus(profile.school_id);
+    if (holidayStatus.isHoliday) {
+      toast.error(`Absensi ditangguhkan: ${holidayStatus.reason}`);
+      setEditStudent(null);
+      setEditStatus("");
+      return;
+    }
+
     
     if (editStatus === "belum") {
       // Cancel attendance — delete the log
