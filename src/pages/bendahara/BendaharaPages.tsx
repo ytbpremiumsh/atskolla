@@ -2213,7 +2213,7 @@ export function BendaharaTransaksi() {
     })
     .filter(s => filterClass === "all" || s.class === filterClass)
     .filter(s => filterStatus === "all" || s.aggStatus === filterStatus)
-    .filter(s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || (s.student_id || "").toLowerCase().includes(search.toLowerCase()))
+    .filter(s => !search || s.name.toLowerCase().includes(search.toLowerCase()) || (s.student_id || "").toLowerCase().includes(search.toLowerCase()) || (s.card_number || "").toLowerCase().includes(search.toLowerCase().replace(/\s+/g,"")))
     .sort((a, b) => {
       if (sortBy === "tunggakan") return b.sisa - a.sisa;
       if (sortBy === "lunas") return b.lunas - a.lunas;
