@@ -40,7 +40,7 @@ serve(async (req) => {
       if (npsn) {
         const { data } = await supabaseAdmin
           .from('schools')
-          .select('id')
+          .select('id, address, principal_name, email, whatsapp')
           .eq('npsn', npsn)
           .maybeSingle();
         existingSchool = data;
@@ -52,7 +52,7 @@ serve(async (req) => {
       if (!existingSchool && !npsn) {
         const { data } = await supabaseAdmin
           .from('schools')
-          .select('id')
+          .select('id, address, principal_name, email, whatsapp')
           .ilike('name', school_name.trim())
           .limit(1)
           .maybeSingle();
@@ -61,9 +61,24 @@ serve(async (req) => {
 
       if (existingSchool) {
         resolvedSchoolId = existingSchool.id;
+        // Fill only fields that are still empty (skip if already set)
+        const patch: any = {};
+        if (!existingSchool.address && school_address) patch.address = school_address.trim();
+        if (!existingSchool.principal_name && school_principal_name) patch.principal_name = school_principal_name.trim();
+        if (!existingSchool.email && school_email) patch.email = school_email.trim();
+        if (!existingSchool.whatsapp && school_whatsapp) patch.whatsapp = school_whatsapp.trim();
+        if (Object.keys(patch).length > 0) {
+          await supabaseAdmin.from('schools').update(patch).eq('id', existingSchool.id);
+        }
       } else {
         // Create new school
-        const insertData: any = { name: school_name.trim(), address: school_address?.trim() || null };
+        const insertData: any = {
+          name: school_name.trim(),
+          address: school_address?.trim() || null,
+          principal_name: school_principal_name?.trim() || null,
+          email: school_email?.trim() || null,
+          whatsapp: school_whatsapp?.trim() || null,
+        };
         if (npsn) insertData.npsn = npsn;
 
         const { data: newSchool, error: schoolError } = await supabaseAdmin
