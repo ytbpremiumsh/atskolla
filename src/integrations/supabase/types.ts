@@ -1779,6 +1779,7 @@ export type Database = {
           principal_name: string | null
           province: string | null
           slug: string
+          slug_updated_at: string | null
           timezone: string | null
           whatsapp: string | null
         }
@@ -1800,6 +1801,7 @@ export type Database = {
           principal_name?: string | null
           province?: string | null
           slug: string
+          slug_updated_at?: string | null
           timezone?: string | null
           whatsapp?: string | null
         }
@@ -1821,6 +1823,7 @@ export type Database = {
           principal_name?: string | null
           province?: string | null
           slug?: string
+          slug_updated_at?: string | null
           timezone?: string | null
           whatsapp?: string | null
         }

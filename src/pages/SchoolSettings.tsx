@@ -28,6 +28,8 @@ const SchoolSettings = () => {
   const [holidayDays, setHolidayDays] = useState<number[]>([0, 6]);
   const [logo, setLogo] = useState("");
   const [slug, setSlug] = useState("");
+  const [initialSlug, setInitialSlug] = useState("");
+  const [slugUpdatedAt, setSlugUpdatedAt] = useState<string | null>(null);
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
   const [principalName, setPrincipalName] = useState("");
@@ -53,7 +55,7 @@ const SchoolSettings = () => {
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
-      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label, slug, whatsapp, email, principal_name").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label, slug, slug_updated_at, whatsapp, email, principal_name").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("school_holidays").select("id, date, label").eq("school_id", profile.school_id).order("date"),
@@ -71,6 +73,8 @@ const SchoolSettings = () => {
         setHolidayMode(!!(schoolRes.data as any).holiday_mode);
         setHolidayModeLabel((schoolRes.data as any).holiday_mode_label || "");
         setSlug((schoolRes.data as any).slug || "");
+        setInitialSlug((schoolRes.data as any).slug || "");
+        setSlugUpdatedAt((schoolRes.data as any).slug_updated_at || null);
         setWhatsapp((schoolRes.data as any).whatsapp || "");
         setEmail((schoolRes.data as any).email || "");
         setPrincipalName((schoolRes.data as any).principal_name || "");
@@ -203,16 +207,53 @@ const SchoolSettings = () => {
     toast.success("Dihapus");
   };
 
+  const COOLDOWN_DAYS = 14;
+  const slugCooldownMs = slugUpdatedAt ? (new Date(slugUpdatedAt).getTime() + COOLDOWN_DAYS * 86400000) - Date.now() : 0;
+  const slugDaysRemaining = Math.max(0, Math.ceil(slugCooldownMs / 86400000));
+  const canEditSlug = slugDaysRemaining === 0;
+
   const handleSave = async () => {
     if (!profile?.school_id) return;
     setSaving(true);
+
+    // Handle subdomain change with 14-day cooldown + uniqueness check
+    const normalizedSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    const slugChanged = normalizedSlug !== initialSlug;
+    let slugUpdatePayload: any = {};
+    if (slugChanged) {
+      if (!canEditSlug) {
+        setSaving(false);
+        toast.error(`Subdomain baru bisa diubah lagi dalam ${slugDaysRemaining} hari.`);
+        return;
+      }
+      if (normalizedSlug.length < 3) {
+        setSaving(false);
+        toast.error("Subdomain minimal 3 karakter (huruf, angka, tanda -).");
+        return;
+      }
+      const { data: taken } = await supabase.from("schools").select("id").eq("slug", normalizedSlug).neq("id", profile.school_id).maybeSingle();
+      if (taken) {
+        setSaving(false);
+        toast.error("Subdomain sudah dipakai sekolah lain. Coba yang lain.");
+        return;
+      }
+      slugUpdatePayload = { slug: normalizedSlug, slug_updated_at: new Date().toISOString() };
+    }
 
     const { error: schoolErr } = await supabase.from("schools").update({
       name, address, logo: logo || null,
       npsn: npsn || null, city: city || null, province: province || null, timezone,
       holiday_days: holidayDays,
       whatsapp: whatsapp || null, email: email || null, principal_name: principalName || null,
+      ...slugUpdatePayload,
     } as any).eq("id", profile.school_id);
+
+    if (!schoolErr && slugChanged) {
+      setInitialSlug(normalizedSlug);
+      setSlug(normalizedSlug);
+      setSlugUpdatedAt(slugUpdatePayload.slug_updated_at);
+    }
+
 
     const settingsPayload = {
       school_start_time: startTime + ":00",
@@ -296,34 +337,40 @@ const SchoolSettings = () => {
             </div>
           </div>
 
-          {/* Subdomain (read-only) */}
+          {/* Subdomain */}
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Label>Subdomain Sekolah</Label>
-              <Badge variant="secondary" className="text-[10px]"><Lock className="h-3 w-3 mr-1" /> Hubungi Tim Bantuan</Badge>
+              {!canEditSlug && (
+                <Badge variant="secondary" className="text-[10px]">
+                  <Lock className="h-3 w-3 mr-1" /> Bisa diubah dalam {slugDaysRemaining} hari
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center rounded-lg border border-border bg-muted/40 overflow-hidden">
+              <div className={`flex-1 flex items-center rounded-lg border border-border overflow-hidden ${canEditSlug ? "bg-background" : "bg-muted/40"}`}>
                 <span className="pl-3 pr-2 py-2 text-sm text-muted-foreground flex items-center gap-2">
                   <Link2 className="h-3.5 w-3.5" />
                   https://
                 </span>
                 <input
-                  readOnly
-                  value={slug || "-"}
+                  readOnly={!canEditSlug}
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
+                  placeholder="nama-sekolah"
                   className="flex-1 bg-transparent py-2 text-sm font-medium text-foreground outline-none"
                 />
                 <span className="pl-1 pr-3 py-2 text-sm text-muted-foreground">
                   .{getRootDomain()}
                 </span>
               </div>
-              {slug && (
+              {initialSlug && (
                 <>
                   <Button
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => { navigator.clipboard.writeText(buildTenantUrl(slug, "/")); toast.success("URL disalin"); }}
+                    onClick={() => { navigator.clipboard.writeText(buildTenantUrl(initialSlug, "/")); toast.success("URL disalin"); }}
                     title="Salin URL"
                   >
                     <Copy className="h-4 w-4" />
@@ -332,7 +379,7 @@ const SchoolSettings = () => {
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => window.open(buildTenantUrl(slug, "/"), "_blank")}
+                    onClick={() => window.open(buildTenantUrl(initialSlug, "/"), "_blank")}
                     title="Buka"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -341,9 +388,12 @@ const SchoolSettings = () => {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Perubahan subdomain hanya dapat dilakukan oleh Tim Bantuan
+              {canEditSlug
+                ? "Gunakan huruf kecil, angka, dan tanda '-'. Setelah diubah, subdomain baru bisa diubah lagi setelah 14 hari."
+                : `Subdomain baru dapat diubah lagi dalam ${slugDaysRemaining} hari.`}
             </p>
           </div>
+
 
 
           {/* Logo */}
