@@ -103,6 +103,22 @@ serve(async (req) => {
           summary.push({ school: school.name, skipped: 'holiday', date: today });
           continue;
         }
+        // Skip Mode Libur darurat sekolah
+        if ((school as any).holiday_mode) {
+          summary.push({ school: school.name, skipped: 'holiday_mode', date: today });
+          continue;
+        }
+        // Skip tanggal merah spesifik sekolah
+        const { data: schoolHol } = await supabase
+          .from('school_holidays')
+          .select('id')
+          .eq('school_id', school.id)
+          .eq('date', today)
+          .maybeSingle();
+        if (schoolHol) {
+          summary.push({ school: school.name, skipped: 'school_holiday_date', date: today });
+          continue;
+        }
 
         // Ambil siswa
         const { data: students } = await supabase
