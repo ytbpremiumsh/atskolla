@@ -297,6 +297,7 @@ const ManageStaff = () => {
     setEditEmail("");
     setEditPhone(member.phone || "");
     setEditNip(member.nip || "");
+    setEditPosition(member.position || (member.roles.includes("teacher") ? "Guru" : member.roles.includes("bendahara") ? "Bendahara" : "Operator"));
     setEditPassword("");
     setEditRoles({
       staff: member.roles.includes("staff"),
