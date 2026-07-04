@@ -379,7 +379,7 @@ const SchoolSettings = () => {
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => window.open(buildTenantUrl(initialSlug, "/"), "_blank")}
+                    onClick={() => window.open(buildTenantUrl(initialSlug, "/admin"), "_blank")}
                     title="Buka"
                   >
                     <ExternalLink className="h-4 w-4" />
