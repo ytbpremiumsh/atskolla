@@ -160,8 +160,11 @@ export function StudentIdCard({ student }: Props) {
         </div>
       </div>
 
-      <div className="max-w-sm mx-auto flex gap-2">
-        <Button onClick={handleDownload} className="flex-1 bg-[#5B6CF9] hover:bg-[#4c5ded] text-white">
+      <div className="max-w-sm mx-auto grid grid-cols-2 gap-2">
+        <Button onClick={handleDownloadQr} variant="outline" className="w-full">
+          <Download className="h-4 w-4 mr-2" /> Unduh QR
+        </Button>
+        <Button onClick={handleDownload} className="w-full bg-[#5B6CF9] hover:bg-[#4c5ded] text-white">
           <Download className="h-4 w-4 mr-2" /> Unduh Kartu
         </Button>
       </div>
