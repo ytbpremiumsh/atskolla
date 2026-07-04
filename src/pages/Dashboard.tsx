@@ -20,6 +20,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 import { getLocalDateString } from "@/lib/dateLocal";
+import { fetchSchoolHolidayStatus, type HolidayStatus } from "@/lib/schoolHoliday";
 
 const STATUS_COLORS: Record<string, string> = {
   hadir: "hsl(152, 69%, 40%)",
