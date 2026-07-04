@@ -22,9 +22,8 @@ interface Props {
 }
 
 function formatNip(n?: string | null) {
-  if (!n) return "•••• •••• •••• ••••";
-  const digits = n.replace(/\D/g, "").padEnd(16, "•");
-  return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)} ${digits.slice(12, 16)}`;
+  if (!n) return "-";
+  return String(n).trim();
 }
 
 export function TeacherIdCard({ teacher, school }: Props) {
