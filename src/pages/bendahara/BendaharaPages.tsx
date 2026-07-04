@@ -2348,6 +2348,7 @@ export function BendaharaTransaksi() {
 
 // Per-class collapsible cards
 function ClassGroupedList({ students, filterAY, filterMonth, navigate, invoices, schoolId, onRefresh }: { students: any[]; filterAY: string; filterMonth: string; navigate: any; invoices: any[]; schoolId?: string; onRefresh: () => void }) {
+  const flags = useBendaharaFlags(schoolId);
   const grouped = useMemo(() => {
     const m = new Map<string, any[]>();
     students.forEach(s => {
