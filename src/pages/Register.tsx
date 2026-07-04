@@ -43,6 +43,12 @@ const Register = () => {
   const [registering, setRegistering] = useState(false);
   const [logo, setLogo] = useState("/images/logo-atskolla.png");
 
+  // School-level extra info (required)
+  const [principalName, setPrincipalName] = useState("");
+  const [schoolEmail, setSchoolEmail] = useState("");
+  const [schoolAddress, setSchoolAddress] = useState("");
+  const [schoolWhatsapp, setSchoolWhatsapp] = useState("");
+
   useEffect(() => {
     supabase
       .from("platform_settings")
@@ -98,6 +104,13 @@ const Register = () => {
 
   const canProceed = !!schoolData;
 
+  // Prefill school address whenever schoolData is (re)set
+  useEffect(() => {
+    if (schoolData) {
+      setSchoolAddress((prev) => prev || schoolData.address || "");
+    }
+  }, [schoolData]);
+
   const resetStep1 = () => {
     setInputMode(null);
     setNpsn("");
@@ -116,7 +129,18 @@ const Register = () => {
     e.preventDefault();
     if (!schoolData) { toast.error("Data sekolah belum diisi"); return; }
     if (!fullName.trim()) { toast.error("Nama lengkap wajib diisi"); return; }
-    if (!email.trim()) { toast.error("Email wajib diisi"); return; }
+    if (!email.trim()) { toast.error("Email admin wajib diisi"); return; }
+    if (!principalName.trim()) { toast.error("Nama Kepala Sekolah wajib diisi"); return; }
+    if (!schoolEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(schoolEmail.trim())) {
+      toast.error("Email sekolah tidak valid"); return;
+    }
+    if (!schoolAddress.trim() || schoolAddress.trim().length < 8) {
+      toast.error("Alamat lengkap sekolah wajib diisi (min 8 karakter)"); return;
+    }
+    const waDigits = schoolWhatsapp.replace(/\D/g, '');
+    if (waDigits.length < 9 || waDigits.length > 15) {
+      toast.error("Nomor WhatsApp sekolah tidak valid"); return;
+    }
     if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
     if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
 
@@ -135,7 +159,10 @@ const Register = () => {
           role: 'school_admin',
           npsn: schoolData.npsn || undefined,
           school_name: schoolData.name,
-          school_address: schoolData.address,
+          school_address: schoolAddress.trim() || schoolData.address,
+          school_principal_name: principalName.trim(),
+          school_email: schoolEmail.trim(),
+          school_whatsapp: waDigits,
           phone,
           referral_code: referralInput || undefined,
         }),
@@ -480,6 +507,36 @@ const Register = () => {
                         <Label htmlFor="phone">No. Telepon / WhatsApp</Label>
                         <Input id="phone" type="tel" placeholder="08xxxxxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} className="h-11 rounded-xl" />
                       </motion.div>
+
+                      {/* School-level required data */}
+                      <motion.div variants={itemVariants} className="pt-2">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="h-px flex-1 bg-border" />
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Data Sekolah Lengkap</span>
+                          <div className="h-px flex-1 bg-border" />
+                        </div>
+                      </motion.div>
+
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="principalName">Nama Kepala Sekolah</Label>
+                        <Input id="principalName" placeholder="Contoh: Drs. Ahmad Setiawan, M.Pd" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} maxLength={120} className="h-11 rounded-xl" required />
+                      </motion.div>
+
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolEmail">Email Sekolah</Label>
+                        <Input id="schoolEmail" type="email" placeholder="info@sekolah.sch.id" value={schoolEmail} onChange={(e) => setSchoolEmail(e.target.value)} maxLength={200} className="h-11 rounded-xl" required />
+                      </motion.div>
+
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolAddress">Alamat Lengkap Sekolah</Label>
+                        <Input id="schoolAddress" placeholder="Jl. Pendidikan No. 1, Kel. ..., Kec. ..., Kota ..." value={schoolAddress} onChange={(e) => setSchoolAddress(e.target.value)} maxLength={300} className="h-11 rounded-xl" required />
+                      </motion.div>
+
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolWa">No. WhatsApp Sekolah</Label>
+                        <Input id="schoolWa" type="tel" placeholder="08xxxxxxxxxx" value={schoolWhatsapp} onChange={(e) => setSchoolWhatsapp(e.target.value.replace(/\D/g, ''))} maxLength={16} className="h-11 rounded-xl" required />
+                      </motion.div>
+
 
                       <motion.div variants={itemVariants} className="space-y-2">
                         <Label htmlFor="regPassword">Password</Label>
