@@ -236,36 +236,42 @@ export type Database = {
         Row: {
           account_holder: string
           account_number: string
+          account_type: string
           bank_name: string
           created_at: string
           created_by: string | null
           id: string
           is_default: boolean
           notes: string | null
+          responsible_user_id: string | null
           school_id: string
           updated_at: string
         }
         Insert: {
           account_holder: string
           account_number: string
+          account_type?: string
           bank_name: string
           created_at?: string
           created_by?: string | null
           id?: string
           is_default?: boolean
           notes?: string | null
+          responsible_user_id?: string | null
           school_id: string
           updated_at?: string
         }
         Update: {
           account_holder?: string
           account_number?: string
+          account_type?: string
           bank_name?: string
           created_at?: string
           created_by?: string | null
           id?: string
           is_default?: boolean
           notes?: string | null
+          responsible_user_id?: string | null
           school_id?: string
           updated_at?: string
         }
@@ -2047,6 +2053,7 @@ export type Database = {
         Row: {
           account_holder: string | null
           account_number: string | null
+          account_type: string
           admin_notes: string | null
           approved_at: string | null
           bank_name: string | null
@@ -2057,6 +2064,7 @@ export type Database = {
           paid_at: string | null
           requested_at: string
           requested_by: string | null
+          responsible_user_id: string | null
           reviewed_by: string | null
           school_id: string
           settlement_code: string
@@ -2071,6 +2079,7 @@ export type Database = {
         Insert: {
           account_holder?: string | null
           account_number?: string | null
+          account_type?: string
           admin_notes?: string | null
           approved_at?: string | null
           bank_name?: string | null
@@ -2081,6 +2090,7 @@ export type Database = {
           paid_at?: string | null
           requested_at?: string
           requested_by?: string | null
+          responsible_user_id?: string | null
           reviewed_by?: string | null
           school_id: string
           settlement_code: string
@@ -2095,6 +2105,7 @@ export type Database = {
         Update: {
           account_holder?: string | null
           account_number?: string | null
+          account_type?: string
           admin_notes?: string | null
           approved_at?: string | null
           bank_name?: string | null
@@ -2105,6 +2116,7 @@ export type Database = {
           paid_at?: string | null
           requested_at?: string
           requested_by?: string | null
+          responsible_user_id?: string | null
           reviewed_by?: string | null
           school_id?: string
           settlement_code?: string
