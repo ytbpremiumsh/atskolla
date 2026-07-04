@@ -17,6 +17,7 @@ import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+import { StudentIdCard } from "@/components/StudentIdCard";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
