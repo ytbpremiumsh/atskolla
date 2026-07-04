@@ -126,9 +126,9 @@ export function StudentIdCard({ student }: Props) {
           <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5">{formatCard(cardNumber)}</p>
         </div>
 
-        <div className="relative flex items-center justify-center px-5 mt-5 text-white">
+        <div className="relative flex items-center justify-center px-5 text-white" style={{ position: "absolute", left: 0, right: 0, top: "calc(50% + 60px)", transform: "translateY(-50%)" }}>
           {qrDataUrl && (
-            <div className="h-44 w-44 rounded-2xl bg-white p-2.5 shadow-lg mx-auto">
+            <div style={{ width: 200, height: 200 }} className="rounded-2xl bg-white p-3 shadow-lg">
               <img src={qrDataUrl} alt="QR" className="h-full w-full object-contain" />
             </div>
           )}
