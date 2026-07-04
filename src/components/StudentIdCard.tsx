@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Download, CreditCard as CardIcon } from "lucide-react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
+import { downloadCardAsJpg } from "@/lib/downloadCard";
 
 interface Props {
   student: {
@@ -32,9 +33,6 @@ export function StudentIdCard({ student }: Props) {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      // Fetch card_number from DB (public.students select is allowed via existing RLS for authenticated,
-      // but parent uses custom token — so we use edge if needed. Since we already have it in `student`
-      // typically, fall back to direct fetch by id.)
       if ((student as any).card_number) {
         if (mounted) setCardNumber((student as any).card_number);
       } else {
@@ -46,7 +44,6 @@ export function StudentIdCard({ student }: Props) {
         if (mounted && data?.card_number) setCardNumber(data.card_number);
       }
 
-      // Generate QR from student id / card number
       try {
         const QRCodeStyling = (await import("qr-code-styling")).default;
         const qr = new QRCodeStyling({
@@ -62,7 +59,7 @@ export function StudentIdCard({ student }: Props) {
           const url = URL.createObjectURL(blob as Blob);
           setQrDataUrl(url);
         }
-      } catch {/* ignore */}
+      } catch {/* ignore */ }
     })();
     return () => { mounted = false; };
   }, [student.id]);
@@ -70,19 +67,10 @@ export function StudentIdCard({ student }: Props) {
   const handleDownload = async () => {
     if (!cardRef.current) return;
     try {
-      const { toJpeg } = await import("html-to-image");
-      const dataUrl = await toJpeg(cardRef.current, {
-        pixelRatio: 3,
-        cacheBust: true,
-        quality: 0.95,
-        backgroundColor: "#1E1B4B",
-      });
-      const link = document.createElement("a");
-      link.download = `kartu-pelajar-${student.name.replace(/\s+/g, "-")}.jpg`;
-      link.href = dataUrl;
-      link.click();
+      await downloadCardAsJpg(cardRef.current, `kartu-pelajar-${student.name.replace(/\s+/g, "-")}`);
       toast.success("Kartu berhasil diunduh");
-    } catch {
+    } catch (e) {
+      console.error(e);
       toast.error("Gagal mengunduh kartu");
     }
   };
@@ -97,12 +85,10 @@ export function StudentIdCard({ student }: Props) {
         className="relative w-full max-w-sm mx-auto rounded-[24px] overflow-hidden shadow-xl"
         style={{ aspectRatio: "1 / 1.58", background: "linear-gradient(135deg, #5B6CF9 0%, #4338CA 60%, #1E1B4B 100%)" }}
       >
-        {/* Decorative shapes */}
         <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
         <div className="absolute -bottom-14 -left-10 h-48 w-48 rounded-full bg-white/5 blur-2xl pointer-events-none" />
         <div className="absolute inset-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 20% 10%, white 1.2px, transparent 1.2px), radial-gradient(circle at 80% 90%, white 1.2px, transparent 1.2px)", backgroundSize: "28px 28px" }} />
 
-        {/* Header */}
         <div className="relative flex items-center gap-2.5 p-5 text-white">
           <img src={schoolLogo || atskollaLogo} alt="" crossOrigin="anonymous" className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur p-1 object-contain" />
           <div className="min-w-0 flex-1">
@@ -111,7 +97,6 @@ export function StudentIdCard({ student }: Props) {
           </div>
         </div>
 
-        {/* Body */}
         <div className="relative px-5 flex items-center gap-4 text-white">
           <div className="h-24 w-20 rounded-2xl bg-white/15 backdrop-blur ring-2 ring-white/40 overflow-hidden shrink-0 flex items-center justify-center text-3xl font-bold">
             {student.photo_url ? (
@@ -136,14 +121,12 @@ export function StudentIdCard({ student }: Props) {
           </div>
         </div>
 
-        {/* Card number strip */}
         <div className="relative mx-5 mt-4 rounded-2xl bg-black/25 backdrop-blur border border-white/15 px-4 py-3 text-white">
           <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">Nomor Kartu Identitas</p>
           <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5">{formatCard(cardNumber)}</p>
         </div>
 
-        {/* QR - centered & larger */}
-        <div className="relative flex items-center justify-center px-5 mt-6 text-white">
+        <div className="relative flex items-center justify-center px-5 mt-5 text-white">
           {qrDataUrl && (
             <div className="h-44 w-44 rounded-2xl bg-white p-2.5 shadow-lg mx-auto">
               <img src={qrDataUrl} alt="QR" className="h-full w-full object-contain" />
@@ -151,7 +134,6 @@ export function StudentIdCard({ student }: Props) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="absolute bottom-0 inset-x-0 px-5 pb-4 pt-3 text-center text-white">
           <p className="text-[10px] uppercase tracking-[0.2em] text-white/70 font-semibold">Scan untuk verifikasi</p>
           <p className="text-[10px] text-white/60 mt-0.5">Powered by ATSkolla</p>
