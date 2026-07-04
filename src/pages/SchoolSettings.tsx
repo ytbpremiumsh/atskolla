@@ -53,7 +53,7 @@ const SchoolSettings = () => {
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
-      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label, slug, whatsapp, email, principal_name").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("school_holidays").select("id, date, label").eq("school_id", profile.school_id).order("date"),
