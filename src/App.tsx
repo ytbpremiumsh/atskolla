@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { TenantProvider, useTenant } from "@/lib/tenant";
+import { TenantProvider, useTenant, getRootDomain } from "@/lib/tenant";
 
 // Layouts kept eager (small + shared by many routes)
 import { AppLayout } from "@/components/layout/AppLayout";
