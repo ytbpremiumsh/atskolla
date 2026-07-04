@@ -80,7 +80,7 @@ function SuperAdminSidebar() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate("/login");
+    navigate("/admin");
   };
 
   return (
@@ -178,7 +178,7 @@ export function SuperAdminLayout() {
   const isMobileDevice = useIsMobile();
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><Skeleton className="h-8 w-32" /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/admin" replace />;
   if (!roles.includes("super_admin")) return <Navigate to="/dashboard" replace />;
 
   const initials = profile?.full_name?.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "SA";

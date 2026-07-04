@@ -70,7 +70,7 @@ function AppContent() {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/admin" replace />;
   if (roles.includes("super_admin")) return <Navigate to="/super-admin" replace />;
 
   const activeDashboard = typeof window !== "undefined" ? sessionStorage.getItem("active_dashboard") : null;
@@ -99,7 +99,7 @@ function AppContent() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login");
+    navigate("/admin");
   };
 
   const logoSrc = headerLogo || atskollaLogo;

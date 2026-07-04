@@ -179,7 +179,7 @@ const ForgotPassword = () => {
     <div className="min-h-screen flex relative overflow-hidden bg-[#5B6CF9]">
       {/* Back to home */}
       <button
-        onClick={() => navigate("/login")}
+        onClick={() => navigate("/admin")}
         className="absolute top-4 left-4 z-50 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3 py-2 rounded-xl text-sm font-medium transition-all backdrop-blur-sm"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -464,7 +464,7 @@ const ForgotPassword = () => {
                       Silakan login menggunakan password baru Anda dan jaga kerahasiaannya.
                     </p>
                     <Button
-                      onClick={() => navigate("/login")}
+                      onClick={() => navigate("/admin")}
                       className="w-full h-12 bg-[#5B6CF9] hover:bg-[#4c5ded] text-white font-semibold text-sm uppercase tracking-wide shadow-lg shadow-indigo-500/20 transition-all rounded-xl"
                     >
                       Ke Halaman Login
@@ -476,7 +476,7 @@ const ForgotPassword = () => {
 
               {step !== "done" && (
                 <div className="mt-6 text-center">
-                  <Link to="/login" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to="/admin" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     ← Kembali ke Login
                   </Link>
                 </div>

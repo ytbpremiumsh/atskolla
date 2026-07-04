@@ -26,7 +26,7 @@ export default function Panduan() {
             </div>
             <span className="font-bold text-slate-900">ATSkolla</span>
           </Link>
-          <Link to="/login" className="text-sm font-semibold text-[#5B6CF9] hover:text-[#4c5ded] transition-colors">
+          <Link to="/admin" className="text-sm font-semibold text-[#5B6CF9] hover:text-[#4c5ded] transition-colors">
             Masuk Aplikasi →
           </Link>
         </div>
@@ -110,7 +110,7 @@ export default function Panduan() {
           <h3 className="text-2xl font-bold mb-2">Siap Mencoba?</h3>
           <p className="text-white/80 mb-5">Mulai gunakan ATSkolla untuk mengelola sekolah Anda secara digital.</p>
           <div className="flex flex-wrap gap-3 justify-center">
-            <Link to="/login" className="px-6 py-3 rounded-xl bg-white text-[#5B6CF9] font-bold hover:bg-slate-100 transition-colors">Masuk Aplikasi</Link>
+            <Link to="/admin" className="px-6 py-3 rounded-xl bg-white text-[#5B6CF9] font-bold hover:bg-slate-100 transition-colors">Masuk Aplikasi</Link>
             <Link to="/register" className="px-6 py-3 rounded-xl border border-white/30 text-white font-bold hover:bg-white/10 transition-colors">Daftar Gratis</Link>
           </div>
         </motion.div>

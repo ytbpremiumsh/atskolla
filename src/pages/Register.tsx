@@ -248,7 +248,7 @@ const Register = () => {
         }, 2500);
       } else {
         toast.success("Registrasi berhasil! Silakan login.");
-        navigate("/login");
+        navigate("/admin");
       }
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
@@ -718,7 +718,7 @@ const Register = () => {
               >
                 <p className="text-sm text-muted-foreground">
                   Sudah punya akun?{" "}
-                  <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Masuk di sini</Link>
+                  <Link to="/admin" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Masuk di sini</Link>
                 </p>
               </motion.div>
             </div>
