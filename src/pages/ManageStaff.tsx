@@ -22,6 +22,19 @@ import QRCodeDisplay from "@/components/QRCodeDisplay";
 import StaffAttendanceDetailDialog from "@/components/staff/StaffAttendanceDetailDialog";
 import { TeacherIdCard } from "@/components/TeacherIdCard";
 
+const POSITION_PRESETS = [
+  "Guru",
+  "Wali Kelas",
+  "Kepala Sekolah",
+  "Wakil Kepala Sekolah",
+  "Tata Usaha",
+  "Operator",
+  "Bendahara",
+  "Sekuriti",
+  "Kebersihan",
+  "Pustakawan",
+];
+
 interface StaffMember {
   user_id: string;
   full_name: string;
@@ -29,6 +42,7 @@ interface StaffMember {
   qr_code: string | null;
   phone: string | null;
   nip: string | null;
+  position: string | null;
   roles: string[];
   presentToday?: boolean;
   arrivalTime?: string | null;
@@ -53,6 +67,7 @@ const ManageStaff = () => {
   const [formPassword, setFormPassword] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formNip, setFormNip] = useState("");
+  const [formPosition, setFormPosition] = useState("Guru");
   const [formRoles, setFormRoles] = useState<{ staff: boolean; teacher: boolean; bendahara: boolean }>({ staff: true, teacher: false, bendahara: false });
 
   // Detail/Edit
@@ -63,6 +78,7 @@ const ManageStaff = () => {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editNip, setEditNip] = useState("");
+  const [editPosition, setEditPosition] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [editRoles, setEditRoles] = useState<{ staff: boolean; teacher: boolean; bendahara: boolean }>({ staff: false, teacher: false, bendahara: false });
   const [savingEdit, setSavingEdit] = useState(false);
@@ -87,10 +103,10 @@ const ManageStaff = () => {
 
   const fetchStaff = async () => {
     if (!schoolId) { setLoading(false); return; }
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip").eq("school_id", schoolId);
+    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip, position" as any).eq("school_id", schoolId);
     if (!profiles || profiles.length === 0) { setStaff([]); setLoading(false); return; }
 
-    const userIds = profiles.map((p) => p.user_id);
+    const userIds = profiles.map((p: any) => p.user_id);
     const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("user_id", userIds).in("role", ["staff", "teacher", "bendahara"]);
 
     const roleMap = new Map<string, string[]>();
@@ -100,9 +116,9 @@ const ManageStaff = () => {
       roleMap.set(r.user_id, existing);
     });
 
-    const staffList: StaffMember[] = profiles
+    const staffList: StaffMember[] = (profiles as any[])
       .filter((p) => roleMap.has(p.user_id))
-      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
+      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, position: p.position || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
 
     // Fetch today's attendance (datang) to color cards green/red
     const today = new Date();
@@ -151,7 +167,7 @@ const ManageStaff = () => {
     try {
       // Use first role as primary, then add the rest
       const res = await supabase.functions.invoke("create-user", {
-        body: { email: formEmail, password: formPassword, full_name: formName, role: selectedRoles[0], school_id: schoolId, phone: formPhone, nip: formNip },
+        body: { email: formEmail, password: formPassword, full_name: formName, role: selectedRoles[0], school_id: schoolId, phone: formPhone, nip: formNip, position: formPosition },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
@@ -169,7 +185,7 @@ const ManageStaff = () => {
 
       toast.success(`Akun ${formName} berhasil ditambahkan`);
       setShowDialog(false);
-      setFormName(""); setFormEmail(""); setFormPassword(""); setFormPhone(""); setFormNip("");
+      setFormName(""); setFormEmail(""); setFormPassword(""); setFormPhone(""); setFormNip(""); setFormPosition("Guru");
       setFormRoles({ staff: true, teacher: false, bendahara: false });
       fetchStaff();
     } catch (err: any) {
@@ -281,6 +297,7 @@ const ManageStaff = () => {
     setEditEmail("");
     setEditPhone(member.phone || "");
     setEditNip(member.nip || "");
+    setEditPosition(member.position || (member.roles.includes("teacher") ? "Guru" : member.roles.includes("bendahara") ? "Bendahara" : "Operator"));
     setEditPassword("");
     setEditRoles({
       staff: member.roles.includes("staff"),
@@ -344,6 +361,7 @@ const ManageStaff = () => {
           ...(editEmail.trim() ? { email: editEmail.trim() } : {}),
           phone: editPhone.trim(),
           nip: editNip.trim(),
+          position: editPosition.trim(),
           ...(editPassword.trim() ? { password: editPassword.trim() } : {}),
         },
       });
@@ -624,6 +642,24 @@ const ManageStaff = () => {
               <Label>NIP / NIK (opsional)</Label>
               <Input placeholder="Nomor Induk Pegawai" value={formNip} onChange={(e) => setFormNip(e.target.value)} />
             </div>
+            <div className="space-y-2">
+              <Label>Jabatan</Label>
+              <div className="flex gap-2">
+                <select
+                  className="h-10 rounded-md border border-input bg-background px-3 text-sm flex-1"
+                  value={POSITION_PRESETS.includes(formPosition) ? formPosition : "__custom__"}
+                  onChange={(e) => setFormPosition(e.target.value === "__custom__" ? "" : e.target.value)}
+                >
+                  {POSITION_PRESETS.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                  <option value="__custom__">Lainnya (custom)...</option>
+                </select>
+              </div>
+              {!POSITION_PRESETS.includes(formPosition) && (
+                <Input placeholder="Ketik jabatan custom" value={formPosition} onChange={(e) => setFormPosition(e.target.value)} />
+              )}
+            </div>
             <Button onClick={handleCreate} disabled={creating} className="w-full gradient-primary hover:opacity-90">
               {creating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Membuat...</> : <><Plus className="h-4 w-4 mr-2" /> Buat Akun</>}
             </Button>
@@ -719,6 +755,22 @@ const ManageStaff = () => {
                     <Input value={editNip} onChange={(e) => setEditNip(e.target.value)} placeholder="Nomor Induk Pegawai" />
                   </div>
                   <div className="space-y-1">
+                    <Label className="text-xs">Jabatan</Label>
+                    <select
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      value={POSITION_PRESETS.includes(editPosition) ? editPosition : "__custom__"}
+                      onChange={(e) => setEditPosition(e.target.value === "__custom__" ? "" : e.target.value)}
+                    >
+                      {POSITION_PRESETS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                      <option value="__custom__">Lainnya (custom)...</option>
+                    </select>
+                    {!POSITION_PRESETS.includes(editPosition) && (
+                      <Input className="mt-1" placeholder="Ketik jabatan custom" value={editPosition} onChange={(e) => setEditPosition(e.target.value)} />
+                    )}
+                  </div>
+                  <div className="space-y-1">
                     <Label className="text-xs">Password Baru</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -768,11 +820,11 @@ const ManageStaff = () => {
                   qr_code: qrTarget.qr_code,
                   nip: qrTarget.nip,
                   phone: qrTarget.phone,
-                  role_label: qrTarget.roles.includes("teacher")
+                  role_label: qrTarget.position || (qrTarget.roles.includes("teacher")
                     ? "Guru"
                     : qrTarget.roles.includes("bendahara")
                     ? "Bendahara"
-                    : "Operator",
+                    : "Operator"),
                 }}
                 school={school}
               />

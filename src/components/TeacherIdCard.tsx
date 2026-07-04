@@ -22,9 +22,8 @@ interface Props {
 }
 
 function formatNip(n?: string | null) {
-  if (!n) return "•••• •••• •••• ••••";
-  const digits = n.replace(/\D/g, "").padEnd(16, "•");
-  return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)} ${digits.slice(12, 16)}`;
+  if (!n) return "-";
+  return String(n).trim();
 }
 
 export function TeacherIdCard({ teacher, school }: Props) {
@@ -90,11 +89,20 @@ export function TeacherIdCard({ teacher, school }: Props) {
           </div>
 
           <div className="relative px-5 flex items-center gap-4 text-white">
-            <div style={{ width: 80, height: 100 }} className="rounded-2xl bg-white/15 backdrop-blur ring-2 ring-white/40 overflow-hidden shrink-0 flex items-center justify-center text-3xl font-bold">
-              {teacher.photo_url ? (
-                <img src={teacher.photo_url} alt={teacher.full_name} crossOrigin="anonymous" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              ) : (
-                <span>{teacher.full_name?.[0]}</span>
+            <div
+              style={{
+                width: 80,
+                height: 100,
+                backgroundImage: teacher.photo_url ? `url("${teacher.photo_url}")` : undefined,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }}
+              className="rounded-2xl bg-white/15 backdrop-blur ring-2 ring-white/40 overflow-hidden shrink-0 flex items-center justify-center text-3xl font-bold"
+            >
+              {!teacher.photo_url && <span>{teacher.full_name?.[0]}</span>}
+              {teacher.photo_url && (
+                <img src={teacher.photo_url} alt="" crossOrigin="anonymous" style={{ display: "none" }} />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -113,9 +121,9 @@ export function TeacherIdCard({ teacher, school }: Props) {
             </div>
           </div>
 
-          <div className="relative mx-5 mt-4 rounded-2xl bg-black/25 backdrop-blur border border-white/15 px-4 py-3 text-white">
+          <div className="relative mx-5 mt-4 rounded-2xl bg-black/25 backdrop-blur border border-white/15 px-4 py-3 text-white text-center">
             <p className="text-[9px] uppercase tracking-wider text-white/60 font-semibold">NIP / Nomor Induk</p>
-            <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5">{formatNip(teacher.nip)}</p>
+            <p className="font-mono text-base font-bold tracking-[0.15em] mt-0.5 break-all">{formatNip(teacher.nip)}</p>
           </div>
 
           <div className="relative flex-1 flex items-center justify-center px-5 text-white">
