@@ -2844,7 +2844,7 @@ export function BendaharaSPPDetail() {
     setBusy("bulk-all");
     toast.loading(`Menyusun rekap ${paidList.length} pembayaran lunas...`);
     try {
-      const { data: school } = await supabase.from("schools").select("name, address, npsn, logo, phone, email").eq("id", profile.school_id).maybeSingle();
+      const { data: school } = await supabase.from("schools").select("name, address, npsn, logo, whatsapp, email").eq("id", profile.school_id).maybeSingle();
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const W = 210;
       const M = 15;
