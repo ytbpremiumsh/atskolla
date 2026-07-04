@@ -820,11 +820,11 @@ const ManageStaff = () => {
                   qr_code: qrTarget.qr_code,
                   nip: qrTarget.nip,
                   phone: qrTarget.phone,
-                  role_label: qrTarget.roles.includes("teacher")
+                  role_label: qrTarget.position || (qrTarget.roles.includes("teacher")
                     ? "Guru"
                     : qrTarget.roles.includes("bendahara")
                     ? "Bendahara"
-                    : "Operator",
+                    : "Operator"),
                 }}
                 school={school}
               />
