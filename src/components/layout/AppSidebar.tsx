@@ -290,18 +290,34 @@ export function AppSidebar() {
                       <CollapsibleContent>
                         <SidebarMenuSub className="mr-0 pr-0 border-l-2 border-[#5B6CF9]/20 ml-4 mt-1 space-y-0.5">
                           <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi" && (location.search.includes("tab=siswa") || !location.search.includes("tab="))}>
-                              <NavLink to="/laporan-absensi?tab=siswa" onClick={handleNavClick} className="text-[12.5px]">
+                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi/siswa"}>
+                              <NavLink to="/laporan-absensi/siswa" onClick={handleNavClick} className="text-[12.5px]">
                                 <GraduationCap className="h-3.5 w-3.5" />
                                 <span>Rekap Absensi Siswa</span>
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                           <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi" && location.search.includes("tab=guru")}>
-                              <NavLink to="/laporan-absensi?tab=guru" onClick={handleNavClick} className="text-[12.5px]">
+                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi/guru"}>
+                              <NavLink to="/laporan-absensi/guru" onClick={handleNavClick} className="text-[12.5px]">
                                 <UsersRound className="h-3.5 w-3.5" />
                                 <span>Rekap Absensi Guru</span>
+                              </NavLink>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi/analitik"}>
+                              <NavLink to="/laporan-absensi/analitik" onClick={handleNavClick} className="text-[12.5px]">
+                                <BarChart3 className="h-3.5 w-3.5" />
+                                <span>Analitik</span>
+                              </NavLink>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                          <SidebarMenuSubItem>
+                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi/riwayat"}>
+                              <NavLink to="/laporan-absensi/riwayat" onClick={handleNavClick} className="text-[12.5px]">
+                                <PenLine className="h-3.5 w-3.5" />
+                                <span>Riwayat Edit</span>
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
