@@ -565,6 +565,66 @@ export default function SuperAdminBendahara() {
             </CardContent>
           </Card>
 
+          {/* Toggle Fitur Bendahara per Sekolah */}
+          <Card className="border-0 shadow-card overflow-hidden">
+            <CardContent className="p-5 space-y-1">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <h3 className="font-bold text-base flex items-center gap-2">
+                    <Settings2 className="h-4 w-4 text-primary" />
+                    Fitur Bendahara per Sekolah
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Aktifkan/nonaktifkan pengiriman WA & pencatatan pembayaran offline (tunai / transfer manual) untuk tiap sekolah.
+                  </p>
+                </div>
+                <Badge className="bg-indigo-500 text-white border-0 text-[10px]">Kontrol Super Admin</Badge>
+              </div>
+            </CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/40">
+                    <TableHead className="font-bold">Sekolah</TableHead>
+                    <TableHead className="text-center font-bold">Kirim WA (Tagihan &amp; Konfirmasi)</TableHead>
+                    <TableHead className="text-center font-bold">Pembayaran Offline</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={3} className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
+                  ) : filteredSettings.length === 0 ? (
+                    <TableRow><TableCell colSpan={3} className="text-center py-8 text-muted-foreground text-sm">Tidak ada data</TableCell></TableRow>
+                  ) : filteredSettings.map(({ school }) => {
+                    const waOn = school.bendahara_wa_enabled !== false;
+                    const offOn = school.bendahara_offline_enabled !== false;
+                    return (
+                      <TableRow key={school.id} className="hover:bg-muted/30">
+                        <TableCell>
+                          <p className="font-semibold text-sm">{school.name}</p>
+                          <p className="text-[11px] text-muted-foreground">NPSN: {school.npsn || "—"}</p>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="inline-flex items-center gap-2">
+                            <Switch checked={waOn} onCheckedChange={(v) => toggleSchoolFlag(school.id, "bendahara_wa_enabled", v)} />
+                            <Badge className={`${waOn ? "bg-emerald-500" : "bg-slate-400"} text-white border-0 text-[10px]`}>{waOn ? "AKTIF" : "NONAKTIF"}</Badge>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="inline-flex items-center gap-2">
+                            <Switch checked={offOn} onCheckedChange={(v) => toggleSchoolFlag(school.id, "bendahara_offline_enabled", v)} />
+                            <Badge className={`${offOn ? "bg-emerald-500" : "bg-slate-400"} text-white border-0 text-[10px]`}>{offOn ? "AKTIF" : "NONAKTIF"}</Badge>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+
+
           <Card className="border-0 shadow-card overflow-hidden">
             <div className="overflow-x-auto">
               <Table>
