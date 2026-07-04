@@ -2169,7 +2169,7 @@ export function BendaharaTransaksi() {
   const load = () => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
-      supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone, gender").eq("school_id", profile.school_id),
+      supabase.from("students").select("id, name, student_id, card_number, class, parent_name, parent_phone, gender").eq("school_id", profile.school_id),
       supabase.from("spp_invoices").select("*").eq("school_id", profile.school_id),
       supabase.from("classes").select("name").eq("school_id", profile.school_id),
     ]).then(([s, i, c]) => {
