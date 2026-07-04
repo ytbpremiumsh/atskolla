@@ -164,9 +164,6 @@ function AppRoutes() {
         <Route path="/penawaran" element={<Penawaran />} />
         <Route path="/proposal" element={<Proposal />} />
         <Route path="/pitchdeck" element={<PitchDeck />} />
-        <Route path="/affiliate/register" element={<AffiliateRegister />} />
-        <Route path="/affiliate/login" element={<AffiliateLogin />} />
-        <Route path="/affiliate/dashboard" element={<AffiliateDashboard />} />
         <Route path="/parent/login" element={<ParentLogin />} />
         <Route path="/parent" element={<ParentDashboard />} />
         {/* Bendahara */}
