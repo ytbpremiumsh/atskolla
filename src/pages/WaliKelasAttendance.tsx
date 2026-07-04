@@ -8,6 +8,7 @@ import { Search, CalendarDays, Save, Loader2, ClipboardList } from "lucide-react
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { fetchSchoolHolidayStatus } from "@/lib/schoolHoliday";
 import { motion } from "framer-motion";
 
 const STATUS_OPTIONS = [
