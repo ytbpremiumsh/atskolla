@@ -422,9 +422,9 @@ const Dashboard = () => {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {statCards.map((s, i) => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="rounded-2xl border border-border/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+        {statCards.map((s) => (
+          <div key={s.label}>
+            <Card className="rounded-2xl border border-border/60 shadow-sm">
               <CardContent className="p-4 sm:p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -438,7 +438,7 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         ))}
       </div>
 
