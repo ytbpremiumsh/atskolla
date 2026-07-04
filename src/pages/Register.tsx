@@ -580,6 +580,47 @@ const Register = () => {
                         <Input id="schoolWa" type="tel" placeholder="08xxxxxxxxxx" value={schoolWhatsapp} onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setSchoolWhatsapp(v); setPhone(v); }} maxLength={16} className="h-11 rounded-xl" required />
                       </motion.div>
 
+                      {/* Subdomain / Alamat Website Sekolah */}
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolSlug">Alamat Website Sekolah</Label>
+                        <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
+                          <Input
+                            id="schoolSlug"
+                            placeholder="nama-sekolah"
+                            value={slug}
+                            onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); }}
+                            maxLength={40}
+                            className="h-11 border-0 rounded-none focus-visible:ring-0 flex-1"
+                            required
+                          />
+                          <div className="flex items-center px-3 bg-muted/60 text-xs text-muted-foreground whitespace-nowrap font-mono">
+                            .{rootDomain}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 min-h-[16px]">
+                          {slugStatus === "checking" && (
+                            <><Loader2 className="h-3 w-3 animate-spin text-muted-foreground" /><span className="text-[11px] text-muted-foreground">Mengecek ketersediaan…</span></>
+                          )}
+                          {slugStatus === "available" && (
+                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Tersedia — sekolah Anda akan bisa diakses di <span className="font-mono">{slug}.{rootDomain}</span></span></>
+                          )}
+                          {slugStatus === "taken" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Sudah dipakai sekolah lain, silakan pilih yang lain</span>
+                          )}
+                          {slugStatus === "reserved" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Kata ini dipesan sistem, silakan pilih yang lain</span>
+                          )}
+                          {slugStatus === "invalid" && slug.length > 0 && (
+                            <span className="text-[11px] text-amber-600 font-medium">Min 3 karakter, huruf kecil/angka/tanda hubung</span>
+                          )}
+                          {slugStatus === "idle" && !slug && (
+                            <span className="text-[11px] text-muted-foreground">Contoh: <span className="font-mono">smpn1jakarta</span> → login di <span className="font-mono">smpn1jakarta.{rootDomain}</span></span>
+                          )}
+                        </div>
+                      </motion.div>
+
+
+
 
                       <motion.div variants={itemVariants} className="space-y-2">
                         <Label htmlFor="regPassword">Password</Label>
