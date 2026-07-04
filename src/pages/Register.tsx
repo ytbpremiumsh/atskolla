@@ -186,6 +186,10 @@ const Register = () => {
     }
     if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
     if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
+    if (!slug || slugStatus !== "available") {
+      toast.error("Silakan pilih alamat website sekolah (subdomain) yang tersedia");
+      return;
+    }
 
     setRegistering(true);
     try {
@@ -208,6 +212,7 @@ const Register = () => {
           school_whatsapp: waDigits,
           phone,
           referral_code: referralInput || undefined,
+          desired_slug: slug,
         }),
       });
 
@@ -219,11 +224,21 @@ const Register = () => {
       }
 
       if (data.school_slug) {
-        toast.success(`Registrasi berhasil! URL sekolah Anda: ${data.school_slug}.atskolla.com`, { duration: 8000 });
+        const url = `${data.school_slug}.${rootDomain}`;
+        toast.success(`Registrasi berhasil! Login di ${url}`, { duration: 10000 });
+        // Auto-redirect ke subdomain sekolah
+        setTimeout(() => {
+          window.location.href = `${window.location.protocol}//${url}/login`;
+        }, 2500);
       } else {
         toast.success("Registrasi berhasil! Silakan login.");
+        navigate("/login");
       }
-      navigate("/login");
+    } catch (err: any) {
+      toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
+    }
+    setRegistering(false);
+  };
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
     }
