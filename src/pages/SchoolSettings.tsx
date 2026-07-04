@@ -28,10 +28,9 @@ const SchoolSettings = () => {
   const [holidayDays, setHolidayDays] = useState<number[]>([0, 6]);
   const [logo, setLogo] = useState("");
   const [slug, setSlug] = useState("");
-  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
-  const [website, setWebsite] = useState("");
-  const [headmaster, setHeadmaster] = useState("");
+  const [principalName, setPrincipalName] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("14:00");
   const [attStartTime, setAttStartTime] = useState("06:00");
