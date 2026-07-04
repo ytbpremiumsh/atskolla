@@ -304,7 +304,7 @@ const LandingPage = () => {
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button onClick={() => navigate("/admin")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
               Masuk
             </button>
             <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-[#5B6CF9] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]">
@@ -870,7 +870,7 @@ const LandingPage = () => {
             <div className="space-y-4">
               <p className="text-sm font-bold text-white uppercase tracking-wider">Dukungan</p>
               <ul className="space-y-2.5 text-sm text-slate-400">
-                <li><button onClick={() => navigate("/login")} className="hover:text-indigo-400 transition-colors">Login</button></li>
+                <li><button onClick={() => navigate("/admin")} className="hover:text-indigo-400 transition-colors">Login</button></li>
                 <li><button onClick={() => navigate("/panduan")} className="hover:text-indigo-400 transition-colors">Panduan Penggunaan</button></li>
                 {get("footer_link_faq") && <li><a href={get("footer_link_faq")} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition-colors">FAQ</a></li>}
                 {get("footer_link_docs") && <li><a href={get("footer_link_docs")} target="_blank" rel="noreferrer" className="hover:text-indigo-400 transition-colors">Dokumentasi</a></li>}

@@ -126,7 +126,7 @@ export function AppSidebar() {
 
   const handleLogout = async () => {
     await signOut();
-    navigate("/login");
+    navigate("/admin");
   };
 
   const handleNavClick = () => {

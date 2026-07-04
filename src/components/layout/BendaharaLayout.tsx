@@ -44,7 +44,7 @@ export function BendaharaLayout() {
   }, []);
 
   if (loading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/admin" replace />;
   if (!roles.includes("bendahara") && !roles.includes("school_admin") && !roles.includes("super_admin")) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -55,7 +55,7 @@ export function BendaharaLayout() {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login");
+    navigate("/admin");
   };
 
   return (

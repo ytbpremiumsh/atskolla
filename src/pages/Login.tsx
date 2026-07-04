@@ -17,14 +17,25 @@ import { Search, School as SchoolIcon } from "lucide-react";
 
 type Mode = "school" | "parent";
 
-const Login = () => {
+interface LoginProps {
+  /** When provided, hides the tab switcher and locks the login form to one audience. */
+  forcedMode?: Mode;
+}
+
+const Login = ({ forcedMode }: LoginProps) => {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const [params] = useSearchParams();
-  const [mode, setMode] = useState<Mode>(params.get("as") === "parent" ? "parent" : "school");
+  const [mode, setMode] = useState<Mode>(
+    forcedMode ?? (params.get("as") === "parent" ? "parent" : "school")
+  );
+  useEffect(() => { if (forcedMode) setMode(forcedMode); }, [forcedMode]);
   const tenant = useTenant();
   const tenantLogo = tenant.school?.logo || null;
   const tenantName = tenant.school?.name || null;
+  const tenantSlug = tenant.slug;
+  const tenantSchoolId = tenant.school?.id ?? null;
+
 
   // school
   const [showPassword, setShowPassword] = useState(false);
@@ -90,6 +101,11 @@ const Login = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Guard: school login is only allowed on a tenant subdomain / path
+    if (isRootDomain) {
+      toast.error("Silakan buka halaman login sekolah Anda terlebih dahulu.");
+      return;
+    }
     setLoading(true);
     setNetworkIssue(false);
     try {
@@ -108,16 +124,6 @@ const Login = () => {
         }
         return;
       }
-      // Persist remember-me preference
-      if (rememberMe) {
-        localStorage.setItem("remembered_email", email);
-        localStorage.removeItem("was_ephemeral");
-      } else {
-        localStorage.removeItem("remembered_email");
-        localStorage.setItem("was_ephemeral", "1");
-        sessionStorage.setItem("tab_alive", "1");
-      }
-      toast.success("Login berhasil!");
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const [{ data: roles }, { data: profileData }] = await Promise.all([
@@ -126,6 +132,44 @@ const Login = () => {
         ]);
         const rolesList = (roles || []).map((r: any) => r.role);
         const isSuperAdmin = rolesList.includes("super_admin");
+
+        // ==== Tenant enforcement ====
+        // Non-super-admin users may only sign in on their own school's subdomain/path.
+        if (!isSuperAdmin) {
+          if (!profileData?.school_id) {
+            await supabase.auth.signOut();
+            toast.error("Akun Anda belum terhubung ke sekolah. Hubungi admin sekolah.");
+            return;
+          }
+          if (tenantSchoolId && profileData.school_id !== tenantSchoolId) {
+            await supabase.auth.signOut();
+            // Look up the correct school slug for a friendly redirect message.
+            const { data: mySchool } = await supabase
+              .from("schools").select("slug, name").eq("id", profileData.school_id).maybeSingle();
+            if (mySchool?.slug) {
+              toast.error(
+                `Akun Anda terdaftar di ${mySchool.name}. Silakan login di halaman sekolah Anda.`,
+                { duration: 6000 }
+              );
+              setTimeout(() => { window.location.href = buildTenantUrl(mySchool.slug, "/admin"); }, 1200);
+            } else {
+              toast.error("Akun ini tidak diperbolehkan login di subdomain sekolah ini.");
+            }
+            return;
+          }
+        }
+
+        // Persist remember-me preference (only after tenant guard passes)
+        if (rememberMe) {
+          localStorage.setItem("remembered_email", email);
+          localStorage.removeItem("was_ephemeral");
+        } else {
+          localStorage.removeItem("remembered_email");
+          localStorage.setItem("was_ephemeral", "1");
+          sessionStorage.setItem("tab_alive", "1");
+        }
+        toast.success("Login berhasil!");
+
         const isBendahara = rolesList.includes("bendahara");
         const isTeacher = rolesList.includes("teacher");
         const isAdmin = rolesList.includes("school_admin");
@@ -166,6 +210,7 @@ const Login = () => {
       setLoading(false);
     }
   };
+
 
   const requestOtp = async () => {
     setLoading(true);
@@ -317,27 +362,41 @@ const Login = () => {
               transition={{ delay: 0.25, duration: 0.6 }} className="relative">
               <div className="absolute -inset-1 bg-white/10 rounded-[2rem] blur-xl" />
               <div className="relative bg-white dark:bg-slate-900 rounded-[2rem] p-6 sm:p-7 shadow-2xl shadow-black/20">
-                {/* Tabs */}
-                <div className="flex p-1 bg-secondary/60 rounded-xl mb-5">
-                  <button
-                    type="button"
-                    onClick={() => setMode("school")}
-                    className={`flex-1 h-9 text-xs font-semibold rounded-lg transition-all ${
-                      mode === "school" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    Sekolah / Guru
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setMode("parent")}
-                    className={`flex-1 h-9 text-xs font-semibold rounded-lg transition-all ${
-                      mode === "parent" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    Wali Murid
-                  </button>
-                </div>
+                {/* Tabs (hidden when a forced mode is provided via /admin or /login routes) */}
+                {!forcedMode && (
+                  <div className="flex p-1 bg-secondary/60 rounded-xl mb-5">
+                    <button
+                      type="button"
+                      onClick={() => setMode("school")}
+                      className={`flex-1 h-9 text-xs font-semibold rounded-lg transition-all ${
+                        mode === "school" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      Sekolah / Guru
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMode("parent")}
+                      className={`flex-1 h-9 text-xs font-semibold rounded-lg transition-all ${
+                        mode === "parent" ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      Wali Murid
+                    </button>
+                  </div>
+                )}
+
+                {/* Cross-link to the other portal when a forced mode is active */}
+                {forcedMode && (
+                  <div className="mb-5 text-center text-xs text-muted-foreground">
+                    {forcedMode === "school" ? (
+                      <>Orang tua / wali murid? <Link to={tenantSlug ? "/login" : "/login"} className="text-primary font-semibold hover:underline">Masuk di sini</Link></>
+                    ) : (
+                      <>Admin sekolah / Guru? <Link to="/admin" className="text-primary font-semibold hover:underline">Masuk di sini</Link></>
+                    )}
+                  </div>
+                )}
+
 
                 <div className="flex items-center gap-2 mb-5">
                   <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">

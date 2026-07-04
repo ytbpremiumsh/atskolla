@@ -228,7 +228,7 @@ const LandingThemeB = () => {
           </div>
           <div className="flex items-center gap-2 sm:gap-3 z-10">
             <ThemeToggle />
-            <button onClick={() => navigate("/login")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+            <button onClick={() => navigate("/admin")} className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
               Masuk
             </button>
             <button onClick={() => navigate("/register")} className="inline-flex items-center gap-1.5 bg-[#5B6CF9] text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98]">
@@ -700,7 +700,7 @@ const LandingThemeB = () => {
               <div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white mb-4">Tautan</p>
                 <ul className="space-y-2.5 text-sm text-slate-500 dark:text-slate-400">
-                  <li><button onClick={() => navigate("/login")} className="hover:text-indigo-600 transition-colors">Login</button></li>
+                  <li><button onClick={() => navigate("/admin")} className="hover:text-indigo-600 transition-colors">Login</button></li>
                   <li><button onClick={() => navigate("/register")} className="hover:text-indigo-600 transition-colors">Daftar Gratis</button></li>
                   <li><button onClick={() => navigate("/parent-login")} className="hover:text-indigo-600 transition-colors">Portal Wali Murid</button></li>
                   

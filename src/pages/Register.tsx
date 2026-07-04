@@ -240,15 +240,13 @@ const Register = () => {
       }
 
       if (data.school_slug) {
-        const url = `${data.school_slug}.${rootDomain}`;
-        toast.success(`Registrasi berhasil! Login di ${url}`, { duration: 10000 });
-        // Auto-redirect ke subdomain sekolah
-        setTimeout(() => {
-          window.location.href = `${window.location.protocol}//${url}/login`;
-        }, 2500);
+        // Use path-based tenant URL so it works with valid SSL on the root domain.
+        const targetUrl = `${window.location.protocol}//${rootDomain}/t/${data.school_slug}/admin`;
+        toast.success(`Registrasi berhasil! Login di ${rootDomain}/t/${data.school_slug}/admin`, { duration: 10000 });
+        setTimeout(() => { window.location.href = targetUrl; }, 2500);
       } else {
         toast.success("Registrasi berhasil! Silakan login.");
-        navigate("/login");
+        navigate("/admin");
       }
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
@@ -718,7 +716,7 @@ const Register = () => {
               >
                 <p className="text-sm text-muted-foreground">
                   Sudah punya akun?{" "}
-                  <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Masuk di sini</Link>
+                  <Link to="/admin" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Masuk di sini</Link>
                 </p>
               </motion.div>
             </div>

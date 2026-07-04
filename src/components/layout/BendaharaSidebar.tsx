@@ -125,7 +125,7 @@ export function BendaharaSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               className="text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-xl px-3 py-2.5"
-              onClick={async () => { await signOut(); navigate("/login"); }}
+              onClick={async () => { await signOut(); navigate("/admin"); }}
             >
               <div className="h-7 w-7 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
                 <LogOut className="h-[15px] w-[15px]" />
