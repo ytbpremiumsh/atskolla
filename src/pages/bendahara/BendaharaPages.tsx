@@ -3194,7 +3194,7 @@ export function BendaharaSPPDetail() {
                               <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
                                 {busy === `pdf-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Invoice</span></>}
                               </Button>
-                              {formatPaymentMethod(inv.payment_method).isOffline && inv.parent_phone && (
+                              {flags.wa && formatPaymentMethod(inv.payment_method).isOffline && inv.parent_phone && (
                                 <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-8 px-2.5" disabled={busy === `waoff-${inv.id}`} onClick={() => sendOfflinePaidWa(inv)} title="Kirim konfirmasi lunas via WA">
                                   {busy === `waoff-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><MessageCircle className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Notif WA</span></>}
                                 </Button>
