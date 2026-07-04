@@ -161,6 +161,7 @@ const Dashboard = () => {
     setHolidayToggling(false);
     if (error) { toast.error("Gagal: " + error.message); return; }
     setHolidayMode(val);
+    if (profile.school_id) fetchSchoolHolidayStatus(profile.school_id).then(setHolidayStatus);
     toast.success(val ? "Mode libur aktif — absensi ditangguhkan" : "Mode libur dinonaktifkan");
   };
 
