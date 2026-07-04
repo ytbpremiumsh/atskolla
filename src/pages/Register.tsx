@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence, type Easing } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { getRootDomain } from "@/lib/tenant";
 
 interface SchoolData {
   npsn: string;
@@ -48,6 +49,48 @@ const Register = () => {
   const [schoolEmail, setSchoolEmail] = useState("");
   const [schoolAddress, setSchoolAddress] = useState("");
   const [schoolWhatsapp, setSchoolWhatsapp] = useState("");
+
+  // Subdomain (school website slug) with live availability check
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid">("idle");
+  const rootDomain = typeof window !== "undefined" ? (getRootDomain() || "absenpintar.online") : "absenpintar.online";
+
+  const slugify = (s: string) =>
+    s.toLowerCase()
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 40);
+
+  // Auto-suggest slug from school name (only if user hasn't manually edited)
+  useEffect(() => {
+    if (!slugTouched && schoolData?.name) {
+      const s = slugify(schoolData.name);
+      if (s.length >= 3) setSlug(s);
+    }
+  }, [schoolData, slugTouched]);
+
+  // Debounced availability check
+  useEffect(() => {
+    if (!slug) { setSlugStatus("idle"); return; }
+    if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug)) {
+      setSlugStatus("invalid"); return;
+    }
+    setSlugStatus("checking");
+    const t = setTimeout(async () => {
+      try {
+        const [{ data: reserved }, { data: existing }] = await Promise.all([
+          supabase.rpc("is_reserved_slug", { _slug: slug }),
+          supabase.from("schools").select("id").eq("slug", slug).maybeSingle(),
+        ]);
+        if (reserved === true) setSlugStatus("reserved");
+        else if (existing) setSlugStatus("taken");
+        else setSlugStatus("available");
+      } catch { setSlugStatus("idle"); }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [slug]);
 
   useEffect(() => {
     supabase
@@ -143,6 +186,10 @@ const Register = () => {
     }
     if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
     if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
+    if (!slug || slugStatus !== "available") {
+      toast.error("Silakan pilih alamat website sekolah (subdomain) yang tersedia");
+      return;
+    }
 
     setRegistering(true);
     try {
@@ -165,6 +212,7 @@ const Register = () => {
           school_whatsapp: waDigits,
           phone,
           referral_code: referralInput || undefined,
+          desired_slug: slug,
         }),
       });
 
@@ -176,11 +224,16 @@ const Register = () => {
       }
 
       if (data.school_slug) {
-        toast.success(`Registrasi berhasil! URL sekolah Anda: ${data.school_slug}.atskolla.com`, { duration: 8000 });
+        const url = `${data.school_slug}.${rootDomain}`;
+        toast.success(`Registrasi berhasil! Login di ${url}`, { duration: 10000 });
+        // Auto-redirect ke subdomain sekolah
+        setTimeout(() => {
+          window.location.href = `${window.location.protocol}//${url}/login`;
+        }, 2500);
       } else {
         toast.success("Registrasi berhasil! Silakan login.");
+        navigate("/login");
       }
-      navigate("/login");
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
     }
@@ -527,6 +580,47 @@ const Register = () => {
                         <Input id="schoolWa" type="tel" placeholder="08xxxxxxxxxx" value={schoolWhatsapp} onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setSchoolWhatsapp(v); setPhone(v); }} maxLength={16} className="h-11 rounded-xl" required />
                       </motion.div>
 
+                      {/* Subdomain / Alamat Website Sekolah */}
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolSlug">Alamat Website Sekolah</Label>
+                        <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
+                          <Input
+                            id="schoolSlug"
+                            placeholder="nama-sekolah"
+                            value={slug}
+                            onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); }}
+                            maxLength={40}
+                            className="h-11 border-0 rounded-none focus-visible:ring-0 flex-1"
+                            required
+                          />
+                          <div className="flex items-center px-3 bg-muted/60 text-xs text-muted-foreground whitespace-nowrap font-mono">
+                            .{rootDomain}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 min-h-[16px]">
+                          {slugStatus === "checking" && (
+                            <><Loader2 className="h-3 w-3 animate-spin text-muted-foreground" /><span className="text-[11px] text-muted-foreground">Mengecek ketersediaan…</span></>
+                          )}
+                          {slugStatus === "available" && (
+                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Tersedia — sekolah Anda akan bisa diakses di <span className="font-mono">{slug}.{rootDomain}</span></span></>
+                          )}
+                          {slugStatus === "taken" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Sudah dipakai sekolah lain, silakan pilih yang lain</span>
+                          )}
+                          {slugStatus === "reserved" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Kata ini dipesan sistem, silakan pilih yang lain</span>
+                          )}
+                          {slugStatus === "invalid" && slug.length > 0 && (
+                            <span className="text-[11px] text-amber-600 font-medium">Min 3 karakter, huruf kecil/angka/tanda hubung</span>
+                          )}
+                          {slugStatus === "idle" && !slug && (
+                            <span className="text-[11px] text-muted-foreground">Contoh: <span className="font-mono">smpn1jakarta</span> → login di <span className="font-mono">smpn1jakarta.{rootDomain}</span></span>
+                          )}
+                        </div>
+                      </motion.div>
+
+
+
 
                       <motion.div variants={itemVariants} className="space-y-2">
                         <Label htmlFor="regPassword">Password</Label>
@@ -591,7 +685,7 @@ const Register = () => {
 
                       <motion.div variants={itemVariants} className="flex gap-2">
                         <Button type="button" variant="outline" onClick={() => setStep(1)} className="h-11 rounded-xl">Kembali</Button>
-                        <Button type="submit" disabled={registering} className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all">
+                        <Button type="submit" disabled={registering || slugStatus !== "available"} className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all">
                           {registering ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Mendaftar...</> : "Daftar Sekarang"}
                         </Button>
                       </motion.div>

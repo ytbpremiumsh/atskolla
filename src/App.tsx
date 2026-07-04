@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { TenantProvider, useTenant } from "@/lib/tenant";
+import { TenantProvider, useTenant, getRootDomain } from "@/lib/tenant";
 
 // Layouts kept eager (small + shared by many routes)
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -122,14 +122,19 @@ function PageFallback() {
 }
 
 function TenantNotFound() {
+  const root = typeof window !== "undefined" ? getRootDomain() : "";
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6 text-center">
       <div className="max-w-md">
         <h1 className="text-2xl font-bold mb-2">Sekolah tidak ditemukan</h1>
         <p className="text-muted-foreground mb-4">
-          Subdomain <code className="font-mono">{typeof window !== "undefined" ? window.location.hostname : ""}</code> belum terdaftar di ATSkolla.
+          Subdomain <code className="font-mono">{typeof window !== "undefined" ? window.location.hostname : ""}</code> belum terdaftar.
         </p>
-        <a href="https://atskolla.com" className="text-primary underline">Kunjungi atskolla.com</a>
+        {root && (
+          <a href={`${window.location.protocol}//${root}`} className="text-primary underline">
+            Kembali ke {root}
+          </a>
+        )}
       </div>
     </div>
   );

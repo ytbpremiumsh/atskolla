@@ -12,7 +12,8 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import BackendStatusBanner, { isBackendNetworkError } from "@/components/BackendStatusBanner";
-import { useTenant } from "@/lib/tenant";
+import { useTenant, buildTenantUrl, getRootDomain } from "@/lib/tenant";
+import { Search, School as SchoolIcon } from "lucide-react";
 
 type Mode = "school" | "parent";
 
@@ -42,6 +43,30 @@ const Login = () => {
   const [cardNumber, setCardNumber] = useState("");
   const [otp, setOtp] = useState("");
   const [cooldown, setCooldown] = useState(0);
+
+  // School finder (shown when on root domain — user must land on their subdomain to login)
+  const isRootDomain = !tenant.slug;
+  const [finderQuery, setFinderQuery] = useState("");
+  const [finderResults, setFinderResults] = useState<Array<{ id: string; name: string; slug: string; npsn: string | null; city: string | null }>>([]);
+  const [finderLoading, setFinderLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isRootDomain || mode !== "school") return;
+    const q = finderQuery.trim();
+    if (q.length < 2) { setFinderResults([]); return; }
+    setFinderLoading(true);
+    const t = setTimeout(async () => {
+      const isNumeric = /^\d+$/.test(q);
+      let query = supabase.from("schools").select("id, name, slug, npsn, city").limit(8);
+      query = isNumeric
+        ? query.ilike("npsn", `${q}%`)
+        : query.ilike("name", `%${q}%`);
+      const { data } = await query;
+      setFinderResults((data as any) || []);
+      setFinderLoading(false);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [finderQuery, isRootDomain, mode]);
 
   useEffect(() => {
     supabase
@@ -324,7 +349,69 @@ const Login = () => {
                 </div>
 
                 <AnimatePresence mode="wait">
-                  {mode === "school" ? (
+                  {mode === "school" && isRootDomain ? (
+                    <motion.div
+                      key="finder"
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      className="space-y-4"
+                    >
+                      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/30 text-xs text-amber-800 dark:text-amber-200">
+                        Setiap sekolah punya alamat website sendiri. Cari sekolah Anda untuk masuk ke halaman login.
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Cari Sekolah Anda</Label>
+                        <div className="relative group">
+                          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                          <Input
+                            autoFocus
+                            placeholder="Nama sekolah atau NPSN…"
+                            value={finderQuery}
+                            onChange={(e) => setFinderQuery(e.target.value)}
+                            className="h-12 pl-10 bg-secondary/50 border-border focus:bg-background focus:border-primary focus:ring-primary/20 rounded-xl"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="min-h-[80px] max-h-72 overflow-y-auto space-y-1.5">
+                        {finderLoading && (
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground px-2 py-3">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Mencari…
+                          </div>
+                        )}
+                        {!finderLoading && finderQuery.length >= 2 && finderResults.length === 0 && (
+                          <div className="text-center py-6 text-xs text-muted-foreground">
+                            Tidak ada sekolah cocok dengan "{finderQuery}".
+                          </div>
+                        )}
+                        {!finderLoading && finderResults.map((s) => (
+                          <a
+                            key={s.id}
+                            href={buildTenantUrl(s.slug, "/login")}
+                            className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/60 hover:bg-primary/5 transition-all group"
+                          >
+                            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shrink-0">
+                              <SchoolIcon className="h-4 w-4 text-white" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
+                              <p className="text-[10px] text-muted-foreground font-mono truncate">
+                                {s.slug}.{getRootDomain()}{s.npsn ? ` • NPSN ${s.npsn}` : ""}{s.city ? ` • ${s.city}` : ""}
+                              </p>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary shrink-0" />
+                          </a>
+                        ))}
+                      </div>
+
+                      <div className="text-center pt-1">
+                        <p className="text-sm text-muted-foreground">
+                          Belum punya akun?{" "}
+                          <Link to="/register" className="text-primary font-semibold hover:underline">Daftar Sekolah</Link>
+                        </p>
+                      </div>
+                    </motion.div>
+                  ) : mode === "school" ? (
                     <motion.form
                       key="school"
                       initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 15 }}

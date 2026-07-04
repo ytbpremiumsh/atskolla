@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SchoolData } from "./SchoolCard";
+import { getRootDomain, buildTenantUrl } from "@/lib/tenant";
 
 interface SchoolEditDialogProps {
   school: SchoolData | null;
@@ -84,11 +85,21 @@ const SchoolEditDialog = ({ school, onClose, onSaved }: SchoolEditDialogProps) =
                 onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase() })}
                 placeholder="smk-cendikia"
               />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">.atskolla.com</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">.{getRootDomain() || "absenpintar.online"}</span>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Mengubah subdomain akan memutus tautan lama. Hanya huruf kecil, angka, dan tanda hubung.
+              Mengubah subdomain akan memutus semua bookmark & QR sekolah lama. Hanya huruf kecil, angka, dan tanda hubung.
             </p>
+            {form.slug && (
+              <a
+                href={buildTenantUrl(form.slug, "/")}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[11px] text-primary hover:underline mt-1 inline-block font-mono"
+              >
+                Buka: {form.slug}.{getRootDomain() || "absenpintar.online"}
+              </a>
+            )}
           </div>
           <div>
             <Label>Alamat</Label>
