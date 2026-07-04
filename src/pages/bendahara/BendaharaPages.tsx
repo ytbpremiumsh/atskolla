@@ -3017,10 +3017,12 @@ export function BendaharaSPPDetail() {
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
             <span>NIS: <strong className="text-foreground font-semibold">{student.student_id}</strong></span>
             {student.nisn && <span>NISN: <strong className="text-foreground font-semibold">{student.nisn}</strong></span>}
+            {student.card_number && <span>No. Kartu: <strong className="text-foreground font-semibold font-mono">{student.card_number}</strong></span>}
             <span className="inline-flex items-center gap-1">Kelas: <Badge variant="secondary" className="font-semibold">{student.class}</Badge></span>
             <span>Wali: <strong className="text-foreground font-semibold">{student.parent_name || "-"}</strong></span>
             {student.parent_phone && <span>WA: <strong className="text-foreground font-semibold">{student.parent_phone}</strong></span>}
           </div>
+
 
           {/* Row 3: Stat cards */}
           <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2.5">
