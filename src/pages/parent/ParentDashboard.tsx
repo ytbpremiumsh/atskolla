@@ -359,6 +359,7 @@ export default function ParentDashboard() {
             { id: "info", label: "Pengumuman", icon: Megaphone },
             { id: "leave", label: "Pengajuan Izin", icon: FileText },
             { id: "contact", label: "Wali Kelas", icon: Phone },
+            { id: "card", label: "Kartu Pelajar", icon: CreditCard },
           ].map((t) => {
             const Active = tab === t.id;
             return (
