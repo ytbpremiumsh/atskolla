@@ -449,7 +449,7 @@ const StudentDetail = () => {
               </div>
               {student.card_number && (
                 <div className="border-t pt-4">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Kode Kartu (16 digit)</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Nomor Kartu Identitas</p>
                   <div className="rounded-lg bg-gradient-to-r from-[#5B6CF9]/10 to-[#4c5ded]/10 border border-[#5B6CF9]/20 px-3 py-2.5">
                     <p className="font-mono text-sm font-bold tracking-[0.15em] text-foreground break-all">
                       {String(student.card_number).replace(/(\d{4})(?=\d)/g, "$1 ")}
