@@ -1674,6 +1674,7 @@ export function BendaharaGenerate() {
 // ============ GENERATE CUSTOM (Ujian / Praktek / dll) ============
 function BendaharaGenerateCustom() {
   const { profile } = useAuth();
+  const flags = useBendaharaFlags(profile?.school_id);
   const [classes, setClasses] = useState<string[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [existingInvs, setExistingInvs] = useState<any[]>([]);
