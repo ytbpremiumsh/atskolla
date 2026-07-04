@@ -39,6 +39,7 @@ const PublicMonitoring = lazy(() => import("./pages/PublicMonitoring"));
 const PublicClassMonitoring = lazy(() => import("./pages/PublicClassMonitoring"));
 const PublicAttendanceMonitoring = lazy(() => import("./pages/PublicAttendanceMonitoring"));
 const SchoolSettings = lazy(() => import("./pages/SchoolSettings"));
+const HolidayManagement = lazy(() => import("./pages/HolidayManagement"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const SuperAdminDashboard = lazy(() => import("./pages/super-admin/SuperAdminDashboard"));
 const SuperAdminPayments = lazy(() => import("./pages/super-admin/SuperAdminPayments"));
