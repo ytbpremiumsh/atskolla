@@ -75,6 +75,15 @@ export function StudentIdCard({ student }: Props) {
     }
   };
 
+  const handleDownloadQr = () => {
+    if (!qrDataUrl) { toast.error("QR belum siap"); return; }
+    const link = document.createElement("a");
+    link.download = `qr-${student.name.replace(/\s+/g, "-")}.png`;
+    link.href = qrDataUrl;
+    link.click();
+    toast.success("QR berhasil diunduh");
+  };
+
   const schoolLogo = student.schools?.logo;
   const schoolName = student.schools?.name || "Sekolah";
 
