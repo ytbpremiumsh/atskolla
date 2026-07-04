@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
+import { StudentIdCard } from "@/components/StudentIdCard";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -835,23 +836,24 @@ const Students = () => {
       </Card>
 
       <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader><DialogTitle className="text-center">QR Code Siswa</DialogTitle></DialogHeader>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle className="text-center">Kartu Pelajar</DialogTitle></DialogHeader>
           {selectedStudent && (
-            <div className="text-center space-y-4 py-2">
-              <QRCodeDisplay
-                data={selectedStudent.qr_code || selectedStudent.student_id}
-                size={220}
-                studentName={selectedStudent.name}
-                studentClass={selectedStudent.class}
-                schoolName={schoolInfo.name}
-                customInstructions={qrInstructions.length > 0 ? qrInstructions : undefined}
+            <div className="py-2">
+              <StudentIdCard
+                student={{
+                  id: selectedStudent.id,
+                  name: selectedStudent.name,
+                  class: selectedStudent.class,
+                  student_id: selectedStudent.student_id,
+                  photo_url: selectedStudent.photo_url,
+                  gender: selectedStudent.gender,
+                  schools: { name: schoolInfo.name, logo: schoolInfo.logo },
+                  school_id: selectedStudent.school_id,
+                  ...(selectedStudent.qr_code ? { qr_code: selectedStudent.qr_code } : {}),
+                  ...(selectedStudent.card_number ? { card_number: selectedStudent.card_number } : {}),
+                } as any}
               />
-              <div>
-                <p className="font-bold">{selectedStudent.name}</p>
-                <p className="text-sm text-muted-foreground">Kelas: {selectedStudent.class}</p>
-                <p className="text-sm text-muted-foreground">NIS: {selectedStudent.student_id}</p>
-              </div>
             </div>
           )}
         </DialogContent>
