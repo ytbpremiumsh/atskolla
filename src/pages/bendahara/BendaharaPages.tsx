@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { downloadSppInvoicePDF, generateSppInvoicePDF } from "@/lib/sppInvoicePDF";
 import { PaymentIframeDialog } from "@/components/PaymentIframeDialog";
 import { brandPaymentUrl } from "@/lib/utils";
@@ -2918,7 +2918,7 @@ export function BendaharaSPPDetail() {
       const totalDenda = paidList.reduce((s, i) => s + (i.denda || 0), 0);
       const totalNet = paidList.reduce((s, i) => s + (i.total_amount || 0), 0);
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: y,
         head: [["No", "No. Invoice", "Periode", "Tgl Bayar", "Metode", "SPP", "Denda", "Total"]],
         body,
@@ -3641,7 +3641,7 @@ export function BendaharaImportExport() {
       doc.text(`NPSN: ${school?.npsn || "-"}`, 14, 27);
       doc.text(`Tahun Ajaran: ${expAY === "all" ? "Semua" : expAY}  •  Kelas: ${expClass === "all" ? "Semua" : expClass}  •  Status: ${expStatus === "all" ? "Semua" : expStatus}`, 14, 33);
       doc.text(`Total: ${rows.length} tagihan • ${fmtIDR(rows.reduce((a, r) => a + (r.Total || 0), 0))}`, 14, 39);
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 45,
         head: [["No", "NIS", "Nama Siswa", "Kelas", "Periode", "Total", "Jatuh Tempo", "Status"]],
         body: rows.map(r => [r.No, r.NIS, r["Nama Siswa"], r.Kelas, r.Periode, fmtIDR(r.Total), r["Jatuh Tempo"], r.Status]),
@@ -4570,7 +4570,7 @@ export function BendaharaLaporan() {
       doc.text(`NPSN: ${school?.npsn || "-"}`, 14, 27);
       doc.text(`Tahun Ajaran: ${expAY === "all" ? "Semua" : expAY}  •  Kelas: ${expClass === "all" ? "Semua" : expClass}  •  Status: ${expStatus === "all" ? "Semua" : expStatus}`, 14, 33);
       doc.text(`Total: ${rows.length} tagihan • ${fmtIDR(rows.reduce((a, r) => a + (r.Total || 0), 0))}`, 14, 39);
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 45,
         head: [["No", "NIS", "Nama Siswa", "Kelas", "Periode", "Total", "Jatuh Tempo", "Status"]],
         body: rows.map(r => [r.No, r.NIS, r["Nama Siswa"], r.Kelas, r.Periode, fmtIDR(r.Total), r["Jatuh Tempo"], r.Status]),
