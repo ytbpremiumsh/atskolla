@@ -43,6 +43,12 @@ const Register = () => {
   const [registering, setRegistering] = useState(false);
   const [logo, setLogo] = useState("/images/logo-atskolla.png");
 
+  // School-level extra info (required)
+  const [principalName, setPrincipalName] = useState("");
+  const [schoolEmail, setSchoolEmail] = useState("");
+  const [schoolAddress, setSchoolAddress] = useState("");
+  const [schoolWhatsapp, setSchoolWhatsapp] = useState("");
+
   useEffect(() => {
     supabase
       .from("platform_settings")
