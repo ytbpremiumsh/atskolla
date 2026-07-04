@@ -158,7 +158,8 @@ function AppRoutes() {
         <Route path="/" element={<RootRoute />} />
         <Route path="/panduan" element={<Panduan />} />
         <Route path="/panduan/:role" element={<PanduanDetail />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login forcedMode="parent" />} />
+        <Route path="/admin" element={<Login forcedMode="school" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
         <Route path="/select-role" element={<SelectRole />} />
