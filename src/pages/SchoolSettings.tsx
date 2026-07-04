@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical, Globe, CalendarOff } from "lucide-react";
+import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical, Globe, CalendarOff, CalendarDays, PowerOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -35,16 +37,22 @@ const SchoolSettings = () => {
   const [uploading, setUploading] = useState(false);
   const [qrInstructions, setQrInstructions] = useState<{ id?: string; text: string }[]>([]);
   const [savingInstructions, setSavingInstructions] = useState(false);
+  const [holidayMode, setHolidayMode] = useState(false);
+  const [holidayModeLabel, setHolidayModeLabel] = useState("");
+  const [holidayDates, setHolidayDates] = useState<{ id: string; date: string; label: string | null }[]>([]);
+  const [savingHolidayMode, setSavingHolidayMode] = useState(false);
+  const [newHolidayLabel, setNewHolidayLabel] = useState("");
 
   const maxInstructions = features.planName === "Free" ? 2 : 999;
 
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
-      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
-    ]).then(([schoolRes, settingsRes, instrRes]) => {
+      supabase.from("school_holidays").select("id, date, label").eq("school_id", profile.school_id).order("date"),
+    ]).then(([schoolRes, settingsRes, instrRes, holRes]) => {
       if (schoolRes.data) {
         setName(schoolRes.data.name || "");
         setAddress(schoolRes.data.address || "");
@@ -55,7 +63,10 @@ const SchoolSettings = () => {
         setTimezone((schoolRes.data as any).timezone || "Asia/Jakarta");
         const hd = (schoolRes.data as any).holiday_days;
         setHolidayDays(Array.isArray(hd) ? hd : [0, 6]);
+        setHolidayMode(!!(schoolRes.data as any).holiday_mode);
+        setHolidayModeLabel((schoolRes.data as any).holiday_mode_label || "");
       }
+      if (holRes.data) setHolidayDates(holRes.data as any);
       if (settingsRes.data) {
         setStartTime(settingsRes.data.school_start_time?.slice(0, 5) || "07:00");
         setEndTime(settingsRes.data.school_end_time?.slice(0, 5) || "14:00");
@@ -138,6 +149,49 @@ const SchoolSettings = () => {
 
     setSavingInstructions(false);
     toast.success("Petunjuk QR Code berhasil disimpan!");
+  };
+
+  const handleToggleHolidayMode = async (val: boolean) => {
+    if (!profile?.school_id) return;
+    setSavingHolidayMode(true);
+    const { error } = await supabase.from("schools").update({
+      holiday_mode: val,
+      holiday_mode_label: val ? (holidayModeLabel || "Hari Libur") : null,
+    } as any).eq("id", profile.school_id);
+    setSavingHolidayMode(false);
+    if (error) { toast.error("Gagal: " + error.message); return; }
+    setHolidayMode(val);
+    toast.success(val ? "Mode libur diaktifkan — absensi ditangguhkan" : "Mode libur dinonaktifkan");
+  };
+
+  const handleAddHolidayDate = async (date: Date | undefined) => {
+    if (!date || !profile?.school_id) return;
+    const iso = date.toISOString().slice(0, 10);
+    // Toggle: if exists, delete
+    const existing = holidayDates.find((h) => h.date === iso);
+    if (existing) {
+      const { error } = await supabase.from("school_holidays").delete().eq("id", existing.id);
+      if (error) { toast.error("Gagal menghapus: " + error.message); return; }
+      setHolidayDates(holidayDates.filter((h) => h.id !== existing.id));
+      toast.success("Tanggal libur dihapus");
+      return;
+    }
+    const { data, error } = await supabase.from("school_holidays").insert({
+      school_id: profile.school_id,
+      date: iso,
+      label: newHolidayLabel || null,
+    } as any).select().single();
+    if (error) { toast.error("Gagal menambah: " + error.message); return; }
+    setHolidayDates([...holidayDates, data as any].sort((a, b) => a.date.localeCompare(b.date)));
+    setNewHolidayLabel("");
+    toast.success("Tanggal libur ditambahkan");
+  };
+
+  const handleRemoveHolidayDate = async (id: string) => {
+    const { error } = await supabase.from("school_holidays").delete().eq("id", id);
+    if (error) { toast.error("Gagal: " + error.message); return; }
+    setHolidayDates(holidayDates.filter((h) => h.id !== id));
+    toast.success("Dihapus");
   };
 
   const handleSave = async () => {
