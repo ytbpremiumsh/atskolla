@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical, Globe, CalendarOff, CalendarDays, PowerOff } from "lucide-react";
+import { School, Save, Upload, Lock, Loader2, Image, Clock, Plus, Trash2, FileText, GripVertical, Globe, CalendarOff, CalendarDays, PowerOff, Link2, Copy, ExternalLink } from "lucide-react";
+import { buildTenantUrl, getRootDomain } from "@/lib/tenant";
 import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +27,10 @@ const SchoolSettings = () => {
   const [timezone, setTimezone] = useState("Asia/Jakarta");
   const [holidayDays, setHolidayDays] = useState<number[]>([0, 6]);
   const [logo, setLogo] = useState("");
+  const [slug, setSlug] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [principalName, setPrincipalName] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [endTime, setEndTime] = useState("14:00");
   const [attStartTime, setAttStartTime] = useState("06:00");
@@ -48,7 +53,7 @@ const SchoolSettings = () => {
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
-      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label").eq("id", profile.school_id).single(),
+      supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label, slug, whatsapp, email, principal_name").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
       supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("school_holidays").select("id, date, label").eq("school_id", profile.school_id).order("date"),
@@ -65,6 +70,10 @@ const SchoolSettings = () => {
         setHolidayDays(Array.isArray(hd) ? hd : [0, 6]);
         setHolidayMode(!!(schoolRes.data as any).holiday_mode);
         setHolidayModeLabel((schoolRes.data as any).holiday_mode_label || "");
+        setSlug((schoolRes.data as any).slug || "");
+        setWhatsapp((schoolRes.data as any).whatsapp || "");
+        setEmail((schoolRes.data as any).email || "");
+        setPrincipalName((schoolRes.data as any).principal_name || "");
       }
       if (holRes.data) setHolidayDates(holRes.data as any);
       if (settingsRes.data) {
@@ -202,6 +211,7 @@ const SchoolSettings = () => {
       name, address, logo: logo || null,
       npsn: npsn || null, city: city || null, province: province || null, timezone,
       holiday_days: holidayDays,
+      whatsapp: whatsapp || null, email: email || null, principal_name: principalName || null,
     } as any).eq("id", profile.school_id);
 
     const settingsPayload = {
@@ -269,6 +279,72 @@ const SchoolSettings = () => {
               <Input id="school-province" value={province} onChange={(e) => setProvince(e.target.value)} placeholder="Contoh: DKI Jakarta" />
             </div>
           </div>
+
+          {/* Kepala Sekolah, Email, WhatsApp */}
+          <div className="space-y-2">
+            <Label htmlFor="school-principal">Nama Kepala Sekolah</Label>
+            <Input id="school-principal" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} placeholder="Contoh: Drs. Ahmad Susanto, M.Pd." />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="school-email">Email Sekolah</Label>
+              <Input id="school-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@sekolah.sch.id" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="school-whatsapp">Nomor WhatsApp</Label>
+              <Input id="school-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="628123456789" />
+            </div>
+          </div>
+
+          {/* Subdomain (read-only) */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label>Subdomain Sekolah</Label>
+              <Badge variant="secondary" className="text-[10px]"><Lock className="h-3 w-3 mr-1" /> Hubungi Super Admin</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center rounded-lg border border-border bg-muted/40 overflow-hidden">
+                <span className="pl-3 pr-2 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <Link2 className="h-3.5 w-3.5" />
+                  https://
+                </span>
+                <input
+                  readOnly
+                  value={slug || "-"}
+                  className="flex-1 bg-transparent py-2 text-sm font-medium text-foreground outline-none"
+                />
+                <span className="pl-1 pr-3 py-2 text-sm text-muted-foreground">
+                  .{getRootDomain()}
+                </span>
+              </div>
+              {slug && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => { navigator.clipboard.writeText(buildTenantUrl(slug, "/")); toast.success("URL disalin"); }}
+                    title="Salin URL"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => window.open(buildTenantUrl(slug, "/"), "_blank")}
+                    title="Buka"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Subdomain adalah alamat unik login sekolah Anda. Perubahan subdomain hanya dapat dilakukan oleh Super Admin.
+            </p>
+          </div>
+
 
           {/* Logo */}
           <div className="space-y-2">
