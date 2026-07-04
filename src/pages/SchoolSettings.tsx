@@ -280,6 +280,72 @@ const SchoolSettings = () => {
             </div>
           </div>
 
+          {/* Kepala Sekolah, Email, WhatsApp */}
+          <div className="space-y-2">
+            <Label htmlFor="school-principal">Nama Kepala Sekolah</Label>
+            <Input id="school-principal" value={principalName} onChange={(e) => setPrincipalName(e.target.value)} placeholder="Contoh: Drs. Ahmad Susanto, M.Pd." />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="school-email">Email Sekolah</Label>
+              <Input id="school-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="info@sekolah.sch.id" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="school-whatsapp">Nomor WhatsApp</Label>
+              <Input id="school-whatsapp" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="628123456789" />
+            </div>
+          </div>
+
+          {/* Subdomain (read-only) */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label>Subdomain Sekolah</Label>
+              <Badge variant="secondary" className="text-[10px]"><Lock className="h-3 w-3 mr-1" /> Hubungi Super Admin</Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex items-center rounded-lg border border-border bg-muted/40 overflow-hidden">
+                <span className="pl-3 pr-2 py-2 text-sm text-muted-foreground flex items-center gap-2">
+                  <Link2 className="h-3.5 w-3.5" />
+                  https://
+                </span>
+                <input
+                  readOnly
+                  value={slug || "-"}
+                  className="flex-1 bg-transparent py-2 text-sm font-medium text-foreground outline-none"
+                />
+                <span className="pl-1 pr-3 py-2 text-sm text-muted-foreground">
+                  .{getRootDomain()}
+                </span>
+              </div>
+              {slug && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => { navigator.clipboard.writeText(buildTenantUrl(slug, "/")); toast.success("URL disalin"); }}
+                    title="Salin URL"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => window.open(buildTenantUrl(slug, "/"), "_blank")}
+                    title="Buka"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Subdomain adalah alamat unik login sekolah Anda. Perubahan subdomain hanya dapat dilakukan oleh Super Admin.
+            </p>
+          </div>
+
+
           {/* Logo */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
