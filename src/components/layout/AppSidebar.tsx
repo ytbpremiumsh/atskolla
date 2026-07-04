@@ -305,14 +305,6 @@ export function AppSidebar() {
                               </NavLink>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
-                          <SidebarMenuSubItem>
-                            <SidebarMenuSubButton asChild isActive={location.pathname === "/laporan-absensi/riwayat"}>
-                              <NavLink to="/laporan-absensi/riwayat" onClick={handleNavClick} className="text-[12.5px]">
-                                <PenLine className="h-3.5 w-3.5" />
-                                <span>Riwayat Edit</span>
-                              </NavLink>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
                         </SidebarMenuSub>
                       </CollapsibleContent>
                     </SidebarMenuItem>
