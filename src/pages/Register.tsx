@@ -239,11 +239,6 @@ const Register = () => {
     }
     setRegistering(false);
   };
-    } catch (err: any) {
-      toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
-    }
-    setRegistering(false);
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
