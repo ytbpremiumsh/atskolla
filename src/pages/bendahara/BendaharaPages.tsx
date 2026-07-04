@@ -4315,12 +4315,13 @@ export function BendaharaPencairan() {
 
           {!otpStep ? (
             <div className="space-y-3 pt-2 max-h-[70vh] overflow-y-auto">
-              {/* Rekening Tujuan */}
+              {/* Rekening / E-Wallet Tujuan */}
               <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 space-y-2">
-                <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">Rekening Tujuan</p>
-                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Bank</span><span className="font-bold">{bank.bank_name}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted-foreground">No. Rekening</span><span className="font-mono font-bold tracking-wider">{bank.account_number}</span></div>
+                <p className="text-[11px] uppercase tracking-wider font-semibold text-amber-700 dark:text-amber-400">{bank.account_type === "ewallet" ? "E-Wallet Tujuan" : "Rekening Tujuan"}</p>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">{bank.account_type === "ewallet" ? "E-Wallet" : "Bank"}</span><span className="font-bold">{bank.bank_name}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">{bank.account_type === "ewallet" ? "Nomor" : "No. Rekening"}</span><span className="font-mono font-bold tracking-wider">{bank.account_number}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Atas Nama</span><span className="font-bold">{bank.account_holder}</span></div>
+                <div className="flex justify-between text-sm border-t border-amber-200 dark:border-amber-800 pt-2"><span className="text-muted-foreground">Penanggung Jawab OTP</span><span className="font-semibold">{staffList.find((s) => s.user_id === bank.responsible_user_id)?.full_name || "—"}</span></div>
               </div>
 
               {/* Rincian Perhitungan */}
