@@ -18,8 +18,10 @@ const SuperAdminPaymentGateway = () => {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<GatewayId | null>(null);
 
-  // Active gateway
-  const [gateway, setGateway] = useState<GatewayId>("mayar");
+  // Per-channel gateway
+  const [gatewayVa, setGatewayVa] = useState<GatewayId>("doku");
+  const [gatewayQris, setGatewayQris] = useState<GatewayId>("mayar");
+  const [gatewayRetail, setGatewayRetail] = useState<GatewayId>("doku");
 
   // Mayar
   const [mayarMasked, setMayarMasked] = useState("");
