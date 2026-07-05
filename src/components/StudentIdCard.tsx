@@ -26,7 +26,7 @@ function formatCard(n?: string) {
   return `${digits.slice(0, 4)} ${digits.slice(4, 8)} ${digits.slice(8, 12)} ${digits.slice(12, 16)}`;
 }
 
-export function StudentIdCard({ student }: Props) {
+export function StudentIdCard({ student, hideQrDownload = false }: Props) {
   const [cardNumber, setCardNumber] = useState<string>("");
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const cardRef = useRef<HTMLDivElement>(null);
