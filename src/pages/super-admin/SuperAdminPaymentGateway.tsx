@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { CreditCard, KeyRound, Loader2, Save, ShieldCheck, Webhook, Copy, Check, Eye, EyeOff, Zap, RefreshCw } from "lucide-react";
+import { CreditCard, KeyRound, Loader2, Save, ShieldCheck, Webhook, Copy, Check, Eye, EyeOff, Zap, RefreshCw, QrCode, Store, Banknote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -17,8 +18,10 @@ const SuperAdminPaymentGateway = () => {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<GatewayId | null>(null);
 
-  // Active gateway
-  const [gateway, setGateway] = useState<GatewayId>("mayar");
+  // Per-channel gateway
+  const [gatewayVa, setGatewayVa] = useState<GatewayId>("doku");
+  const [gatewayQris, setGatewayQris] = useState<GatewayId>("mayar");
+  const [gatewayRetail, setGatewayRetail] = useState<GatewayId>("doku");
 
   // Mayar
   const [mayarMasked, setMayarMasked] = useState("");
@@ -54,7 +57,10 @@ const SuperAdminPaymentGateway = () => {
       setMayarHasKey(!!m.has_key);
 
       const d: any = dokuRes.data || {};
-      setGateway((d.active_payment_gateway === "doku" ? "doku" : "mayar") as GatewayId);
+      const norm = (v: any): GatewayId => (v === "doku" ? "doku" : "mayar");
+      setGatewayVa(norm(d.gateway_va));
+      setGatewayQris(norm(d.gateway_qris));
+      setGatewayRetail(norm(d.gateway_retail));
       setDokuEnv((d.doku_env === "sandbox" ? "sandbox" : "production"));
       setDokuClientMasked(d.doku_client_id_masked || "");
       setDokuSecretMasked(d.doku_secret_key_masked || "");
@@ -69,15 +75,19 @@ const SuperAdminPaymentGateway = () => {
 
   useEffect(() => { fetchAll(); }, []);
 
-  const handleSaveGateway = async (next: GatewayId) => {
-    setGateway(next);
+  const handleSaveChannel = async (channel: "va" | "qris" | "retail", next: GatewayId) => {
+    if (channel === "va") setGatewayVa(next);
+    if (channel === "qris") setGatewayQris(next);
+    if (channel === "retail") setGatewayRetail(next);
     setSaving(true);
     try {
+      const key = channel === "va" ? "gateway_va" : channel === "qris" ? "gateway_qris" : "gateway_retail";
       const { data, error } = await supabase.functions.invoke("manage-payment-gateway", {
-        body: { action: "set", updates: { active_payment_gateway: next } },
+        body: { action: "set", updates: { [key]: next } },
       });
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
-      toast.success(`Gateway aktif: ${next.toUpperCase()}`);
+      const label = channel === "va" ? "Virtual Account" : channel === "qris" ? "QRIS" : "Retail";
+      toast.success(`${label} → ${next.toUpperCase()}`);
     } catch (e: any) {
       toast.error("Gagal simpan: " + e.message);
     } finally {
@@ -157,11 +167,11 @@ const SuperAdminPaymentGateway = () => {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Payment Gateway</h1>
         <p className="text-muted-foreground text-sm">
-          Kelola gateway pembayaran SPP wali murid. Hanya satu gateway aktif dalam satu waktu.
+          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail).
         </p>
       </div>
 
-      {/* Toggle Aktif */}
+      {/* Per-Channel Gateway */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-3">
@@ -169,53 +179,57 @@ const SuperAdminPaymentGateway = () => {
               <Zap className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Gateway Aktif</h3>
-              <p className="text-xs text-muted-foreground">Berlaku untuk semua sekolah</p>
+              <h3 className="font-semibold text-foreground">Gateway per Channel</h3>
+              <p className="text-xs text-muted-foreground">Pilih gateway berbeda untuk setiap metode pembayaran</p>
             </div>
-            <Badge className="ml-auto bg-primary text-primary-foreground">{gateway.toUpperCase()}</Badge>
           </div>
 
-          <RadioGroup
-            value={gateway}
-            onValueChange={(v) => handleSaveGateway(v as GatewayId)}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-          >
-            <label
-              className={`cursor-pointer rounded-xl border-2 p-4 transition ${gateway === "mayar" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}
-            >
-              <div className="flex items-start gap-3">
-                <RadioGroupItem value="mayar" id="gw-mayar" className="mt-1" />
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">Mayar</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Payment link Mayar.id — QRIS, VA, e-wallet</p>
-                  {mayarHasKey ? (
-                    <Badge className="mt-2 bg-emerald-100 text-emerald-700 text-[10px]">Key terpasang</Badge>
-                  ) : (
-                    <Badge className="mt-2 bg-amber-100 text-amber-800 text-[10px]">Belum ada key</Badge>
-                  )}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {([
+              { key: "va" as const, label: "Virtual Account", desc: "BCA, Mandiri, BRI, BNI, BSI, Permata", icon: Banknote, value: gatewayVa },
+              { key: "qris" as const, label: "QRIS", desc: "Semua e-wallet & mobile banking", icon: QrCode, value: gatewayQris },
+              { key: "retail" as const, label: "Retail", desc: "Alfamart, Indomaret", icon: Store, value: gatewayRetail },
+            ]).map(({ key, label, desc, icon: Icon, value }) => (
+              <div key={key} className="rounded-xl border-2 border-border p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Icon className="h-4 w-4 text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm">{label}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{desc}</p>
+                  </div>
+                  <Badge className={`text-[10px] ${value === "doku" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
+                    {value.toUpperCase()}
+                  </Badge>
                 </div>
+                <Select value={value} onValueChange={(v) => handleSaveChannel(key, v as GatewayId)} disabled={saving}>
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mayar">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Mayar</span>
+                        {!mayarHasKey && <span className="text-[9px] text-amber-600">(no key)</span>}
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="doku">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Doku</span>
+                        {!(hasDokuClient && hasDokuSecret) && <span className="text-[9px] text-amber-600">(belum lengkap)</span>}
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </label>
+            ))}
+          </div>
 
-            <label
-              className={`cursor-pointer rounded-xl border-2 p-4 transition ${gateway === "doku" ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}
-            >
-              <div className="flex items-start gap-3">
-                <RadioGroupItem value="doku" id="gw-doku" className="mt-1" />
-                <div className="flex-1">
-                  <p className="font-semibold text-sm">Doku</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Doku Jokul Checkout — VA (BCA, Mandiri, BRI, BNI, BSI, Permata), QRIS, Retail</p>
-                  {hasDokuClient && hasDokuSecret ? (
-                    <Badge className="mt-2 bg-emerald-100 text-emerald-700 text-[10px]">Kredensial lengkap</Badge>
-                  ) : (
-                    <Badge className="mt-2 bg-amber-100 text-amber-800 text-[10px]">Belum lengkap</Badge>
-                  )}
-                </div>
-              </div>
-            </label>
-          </RadioGroup>
+          <p className="text-[11px] text-muted-foreground">
+            Wali murid akan otomatis diarahkan ke gateway yang dipilih sesuai metode pembayaran mereka. Pastikan kredensial gateway terkait sudah terpasang di bawah.
+          </p>
         </CardContent>
       </Card>
+
 
       {/* MAYAR CONFIG */}
       <Card className="border-0 shadow-card">
