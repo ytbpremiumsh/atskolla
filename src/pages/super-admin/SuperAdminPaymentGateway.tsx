@@ -40,10 +40,16 @@ const SuperAdminPaymentGateway = () => {
   const [hasDokuSecret, setHasDokuSecret] = useState(false);
   const [showDokuSecret, setShowDokuSecret] = useState(false);
 
+  // Doku method overrides (per-channel)
+  const [dokuVaMethods, setDokuVaMethods] = useState("");
+  const [dokuQrisMethods, setDokuQrisMethods] = useState("");
+  const [dokuRetailMethods, setDokuRetailMethods] = useState("");
+  const [dokuWebhookVerify, setDokuWebhookVerify] = useState("true");
+
   const [copied, setCopied] = useState<string | null>(null);
 
   const mayarWebhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mayar-webhook`;
-  const dokuNotifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/spp-doku`;
+  const dokuNotifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/doku-webhook`;
 
   const fetchAll = async () => {
     setLoading(true);
