@@ -464,6 +464,7 @@ const ManageStaff = () => {
     }
   };
 
+  const getRoleBadges = (roles: string[]) => (
     <div className="flex flex-wrap gap-1 mt-1">
       {roles.map((r) => {
         const meta = ROLE_META[r];
