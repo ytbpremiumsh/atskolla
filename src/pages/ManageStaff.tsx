@@ -493,6 +493,9 @@ const ManageStaff = () => {
     <div className="space-y-6">
       <PageHeader icon={Shield} title="Guru & Staff" subtitle="Kelola akun guru, staff/operator, dan bendahara" actions={
         <div className="flex flex-wrap gap-2">
+          <Button onClick={() => { setTestRfidValue(""); setTestRfidResult(null); setTestRfidOpen(true); }} variant="outline" className="bg-emerald-500/90 hover:bg-emerald-500 text-white border-0 rounded-xl text-xs">
+            <Nfc className="h-4 w-4 mr-2" /> Test RFID
+          </Button>
           <Button onClick={() => setImportDialog(true)} variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl text-xs">
             <Upload className="h-4 w-4 mr-2" /> Import Excel
           </Button>
