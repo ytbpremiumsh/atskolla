@@ -18,6 +18,9 @@ interface StudentData {
   gender: string;
   parent_name: string;
   parent_phone: string;
+  photo_url?: string | null;
+  card_number?: string | null;
+  qr_code?: string | null;
 }
 
 interface ClassData {
