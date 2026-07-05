@@ -188,12 +188,32 @@ export default function ParentDashboard() {
     }
   }, [tab, selectedStudent, invoke]);
 
-  const paySpp = async (invoiceId: string) => {
-    setSppBusy(invoiceId);
-    const d = await invoke("spp_pay", { student_id: selectedStudent, invoice_id: invoiceId });
+  // Membuka picker channel pembayaran (sebelum benar-benar membuat link Mayar).
+  const paySpp = (invoiceOrId: any) => {
+    // Cari objek invoice lengkap supaya bisa tampilkan info di picker.
+    const list = [...(sppData.tunggakan || []), ...(sppData.aktif || [])];
+    const inv = typeof invoiceOrId === "string"
+      ? list.find((x: any) => x.id === invoiceOrId)
+      : invoiceOrId;
+    if (!inv) { toast.error("Tagihan tidak ditemukan"); return; }
+    setPickerInvoice(inv);
+    setPickerOpen(true);
+  };
+
+  const confirmPaySpp = async (channel: PaymentChannelId, _fee: number, _total: number) => {
+    if (!pickerInvoice) return;
+    setPickerLoading(true);
+    setSppBusy(pickerInvoice.id);
+    const d = await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel });
     setSppBusy(null);
+    setPickerLoading(false);
     if (d?.error) { toast.error(d.error); return; }
-    if (d?.payment_url) { setPayingInvoiceId(invoiceId); setPaymentIframe(d.payment_url); toast.success("Membuka halaman pembayaran..."); }
+    if (d?.payment_url) {
+      setPickerOpen(false);
+      setPayingInvoiceId(pickerInvoice.id);
+      setPaymentIframe(d.payment_url);
+      toast.success("Membuka halaman pembayaran...");
+    }
   };
 
   const downloadSppPdf = async (inv: any) => {
