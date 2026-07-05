@@ -849,7 +849,7 @@ const Students = () => {
                                 <TableHead className="hidden xl:table-cell w-[180px] whitespace-nowrap">Nomor Kartu Identitas</TableHead>
                                 <TableHead className="hidden md:table-cell">Wali</TableHead>
                                 <TableHead className="hidden lg:table-cell">No. HP</TableHead>
-                                <TableHead className="text-right w-[140px]">Aksi</TableHead>
+                                <TableHead className="text-right w-[180px]">Aksi</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
