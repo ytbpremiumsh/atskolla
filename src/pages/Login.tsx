@@ -303,8 +303,9 @@ const Login = ({ forcedMode }: LoginProps) => {
       <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-indigo-300/[0.05] rounded-full blur-3xl pointer-events-none" />
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
-        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center justify-items-center">
-          {/* Left: Features */}
+        <div className={`w-full grid gap-8 items-center justify-items-center ${mode === "school" ? "max-w-6xl lg:grid-cols-2" : "max-w-md justify-center"}`}>
+          {/* Left: Features (only for school admin login) */}
+          {mode === "school" && (
           <motion.div
             initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
             className="hidden lg:block text-white w-full max-w-lg"
@@ -333,6 +334,8 @@ const Login = ({ forcedMode }: LoginProps) => {
               ))}
             </div>
           </motion.div>
+          )}
+
 
           {/* Right: Login card */}
           <motion.div
