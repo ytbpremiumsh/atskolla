@@ -55,7 +55,7 @@ const SchoolDetailDialog = ({ school, onClose, getStatusBadge }: SchoolDetailDia
     setLoadingStudents(true);
     const { data } = await supabase
       .from("students")
-      .select("id, name, student_id, class, gender, parent_name, parent_phone")
+      .select("id, name, student_id, class, gender, parent_name, parent_phone, photo_url, card_number, qr_code")
       .eq("school_id", schoolId)
       .order("class")
       .order("name");
