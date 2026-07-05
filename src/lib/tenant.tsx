@@ -112,6 +112,22 @@ const TenantContext = createContext<TenantState>({
 });
 
 export function TenantProvider({ children }: { children: ReactNode }) {
+  // If we're on a root host with a path-based tenant (/t/{slug}/...),
+  // redirect to the school's subdomain form so URLs are always consistent.
+  if (typeof window !== "undefined") {
+    const pathSlug = parseTenantPath(window.location.pathname);
+    const host = window.location.hostname.toLowerCase().split(":")[0];
+    const root = getRootDomain();
+    const isLocal = host === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(host);
+    // Only redirect on a real root host (not already a subdomain, not local)
+    const isRoot = ROOT_HOSTS.has(host) || (host.startsWith("www.") && ROOT_HOSTS.has(host.slice(4)));
+    if (pathSlug && isRoot && !isLocal && root && root !== "localhost") {
+      const rest = window.location.pathname.replace(/^\/t\/[^/]+/, "") || "/";
+      const target = `${window.location.protocol}//${pathSlug}.${root}${rest}${window.location.search}${window.location.hash}`;
+      window.location.replace(target);
+    }
+  }
+
   const [state, setState] = useState<TenantState>(() => {
     const slug = typeof window !== "undefined" ? parseSubdomain() : null;
     return { loading: !!slug, slug, school: null, notFound: false };
