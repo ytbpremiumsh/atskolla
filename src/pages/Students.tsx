@@ -899,6 +899,15 @@ const Students = () => {
                                       </div>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-4 w-4 text-primary" /></Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-4 w-4 text-primary" /></Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title={student.rfid_uid ? `RFID: ${student.rfid_uid}` : "Daftarkan RFID"}
+                                        className={`h-8 w-8 ${student.rfid_uid ? "bg-emerald-50 dark:bg-emerald-950/40" : ""}`}
+                                        onClick={() => openRfidDialog(student)}
+                                      >
+                                        <Nfc className={`h-4 w-4 ${student.rfid_uid ? "text-emerald-600" : "text-muted-foreground"}`} />
+                                      </Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                   </TableCell>
