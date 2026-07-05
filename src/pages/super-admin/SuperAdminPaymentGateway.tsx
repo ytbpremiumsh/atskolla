@@ -167,7 +167,7 @@ const SuperAdminPaymentGateway = () => {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Payment Gateway</h1>
         <p className="text-muted-foreground text-sm">
-          Kelola gateway pembayaran SPP wali murid. Hanya satu gateway aktif dalam satu waktu.
+          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail).
         </p>
       </div>
 
