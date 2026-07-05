@@ -217,7 +217,7 @@ const SchoolSettings = () => {
     setSaving(true);
 
     // Handle subdomain change with 14-day cooldown + uniqueness check
-    const normalizedSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    const normalizedSlug = slug.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
     const slugChanged = normalizedSlug !== initialSlug;
     let slugUpdatePayload: any = {};
     if (slugChanged) {
@@ -228,7 +228,7 @@ const SchoolSettings = () => {
       }
       if (normalizedSlug.length < 3) {
         setSaving(false);
-        toast.error("Subdomain minimal 3 karakter (huruf, angka, tanda -).");
+        toast.error("Subdomain minimal 3 karakter — hanya huruf & angka (tanpa tanda hubung).");
         return;
       }
       const { data: taken } = await supabase.from("schools").select("id").eq("slug", normalizedSlug).neq("id", profile.school_id).maybeSingle();
