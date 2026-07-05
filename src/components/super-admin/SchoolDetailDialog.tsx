@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Users, BookOpen, GraduationCap } from "lucide-react";
+import { Search, Users, BookOpen, GraduationCap, Mail, Phone, IdCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SchoolData } from "./SchoolCard";
+import { StudentIdCard } from "@/components/StudentIdCard";
 
 interface StudentData {
   id: string;
