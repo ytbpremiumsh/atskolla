@@ -166,6 +166,62 @@ const Students = () => {
     fetchData();
   };
 
+  const openRfidDialog = (student: any) => {
+    setRfidStudent(student);
+    setRfidValue(student.rfid_uid || "");
+    setRfidDialogOpen(true);
+  };
+
+  const handleSaveRfid = async () => {
+    if (!rfidStudent) return;
+    const uid = rfidValue.trim();
+    if (uid.length < 4) { toast.error("UID RFID minimal 4 karakter"); return; }
+    setRfidSaving(true);
+    // Cek konflik UID di sekolah yg sama
+    const { data: existing } = await supabase
+      .from("students")
+      .select("id, name, class")
+      .eq("school_id", profile?.school_id)
+      .eq("rfid_uid", uid)
+      .neq("id", rfidStudent.id)
+      .maybeSingle();
+    if (existing) {
+      setRfidSaving(false);
+      toast.error(`UID sudah terdaftar untuk ${existing.name} (${existing.class})`);
+      return;
+    }
+    const { error } = await supabase.from("students").update({ rfid_uid: uid } as any).eq("id", rfidStudent.id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal simpan RFID: " + error.message); return; }
+    toast.success(`RFID untuk ${rfidStudent.name} berhasil didaftarkan`);
+    setRfidDialogOpen(false);
+    setRfidStudent(null);
+    setRfidValue("");
+    fetchData();
+  };
+
+  const handleRemoveRfid = async () => {
+    if (!rfidStudent) return;
+    setRfidSaving(true);
+    const { error } = await supabase.from("students").update({ rfid_uid: null } as any).eq("id", rfidStudent.id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal hapus RFID: " + error.message); return; }
+    toast.success("RFID dihapus");
+    setRfidDialogOpen(false);
+    fetchData();
+  };
+
+  const handleTestRfid = () => {
+    const uid = testRfidValue.trim();
+    if (!uid) { setTestRfidResult({ ok: false, msg: "Silakan scan atau ketik UID kartu terlebih dahulu" }); return; }
+    const match = students.find((s) => (s.rfid_uid || "").toString() === uid);
+    if (match) {
+      setTestRfidResult({ ok: true, msg: `Kartu dikenali`, student: match });
+    } else {
+      setTestRfidResult({ ok: false, msg: `UID "${uid}" belum terdaftar untuk siswa mana pun.` });
+    }
+  };
+
   const handlePhotoUpload = async (studentId: string, file: File) => {
     if (!features.canUploadPhoto) {
       toast.error("Fitur upload foto tersedia di paket Basic ke atas");
