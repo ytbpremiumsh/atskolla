@@ -229,7 +229,11 @@ export default function ParentDashboard() {
     setUploadingFile(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `${selectedStudent}/${Date.now()}.${ext}`;
+      // Use an unguessable random path so filenames do not encode any
+      // identifiable info (student id, timestamp). The bucket is public-read,
+      // so unpredictability is what protects the file.
+      const rand = (crypto as any)?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const path = `leave/${rand}.${ext}`;
       const { error } = await supabase.storage.from("parent-attachments").upload(path, file);
       if (error) throw error;
       const { data } = supabase.storage.from("parent-attachments").getPublicUrl(path);
