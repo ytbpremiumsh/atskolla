@@ -117,6 +117,9 @@ export default function ParentDashboard() {
   const [sppBusy, setSppBusy] = useState<string | null>(null);
   const [paymentIframe, setPaymentIframe] = useState<string | null>(null);
   const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerInvoice, setPickerInvoice] = useState<any>(null);
+  const [pickerLoading, setPickerLoading] = useState(false);
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
 
   useEffect(() => {
