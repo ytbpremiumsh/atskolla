@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ArrowLeft, User, Phone, GraduationCap, Hash, Clock, UserCheck, Calendar,
   QrCode, Shield, Camera, Loader2, Pencil, Save, X, FileSpreadsheet, FileText,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, CreditCard, ScanLine,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
@@ -43,7 +44,9 @@ const StudentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L" });
+  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L", rfid_uid: "" });
+  const [rfidScanOpen, setRfidScanOpen] = useState(false);
+  const [rfidCapture, setRfidCapture] = useState("");
   const [saving, setSaving] = useState(false);
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "monthly">("list");
@@ -76,6 +79,7 @@ const StudentDetail = () => {
         name: studentRes.data.name, class: studentRes.data.class, student_id: studentRes.data.student_id,
         parent_name: studentRes.data.parent_name, parent_phone: studentRes.data.parent_phone,
         gender: studentRes.data.gender || "L",
+        rfid_uid: studentRes.data.rfid_uid || "",
       });
     }
     setLoading(false);
@@ -148,6 +152,7 @@ const StudentDetail = () => {
     const { error } = await supabase.from("students").update({
       name: editForm.name, class: editForm.class, student_id: editForm.student_id,
       parent_name: editForm.parent_name, parent_phone: editForm.parent_phone, gender: editForm.gender,
+      rfid_uid: editForm.rfid_uid ? editForm.rfid_uid.trim() : null,
     }).eq("id", student.id);
     setSaving(false);
     if (error) { toast.error("Gagal menyimpan: " + error.message); return; }
@@ -423,6 +428,26 @@ const StudentDetail = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label className="flex items-center gap-2"><CreditCard className="h-3.5 w-3.5 text-primary" /> Kartu RFID (UID)</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Contoh: 0004829173 (kosongkan jika belum punya)"
+                      value={editForm.rfid_uid}
+                      onChange={(e) => setEditForm({ ...editForm, rfid_uid: e.target.value.replace(/[^a-zA-Z0-9]/g, "") })}
+                      className="font-mono"
+                    />
+                    <Button type="button" variant="outline" onClick={() => { setRfidCapture(""); setRfidScanOpen(true); }}>
+                      <ScanLine className="h-4 w-4 mr-1" /> Scan Kartu
+                    </Button>
+                    {editForm.rfid_uid && (
+                      <Button type="button" variant="ghost" size="icon" onClick={() => setEditForm({ ...editForm, rfid_uid: "" })}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Tempelkan kartu ke reader saat dialog scan aktif, atau ketik UID manual. Kartu ini akan digunakan untuk absensi via RFID.</p>
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleSaveEdit} disabled={saving} className="gradient-primary hover:opacity-90">
@@ -455,6 +480,14 @@ const StudentDetail = () => {
                     <p className="font-mono text-sm font-bold tracking-[0.15em] text-foreground break-all">
                       {String(student.card_number).replace(/(\d{4})(?=\d)/g, "$1 ")}
                     </p>
+                  </div>
+                </div>
+              )}
+              {student.rfid_uid && (
+                <div className="border-t pt-4">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><CreditCard className="h-3 w-3" /> Kartu RFID Terdaftar</p>
+                  <div className="rounded-lg bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 px-3 py-2.5">
+                    <p className="font-mono text-sm font-bold tracking-[0.15em] text-foreground break-all">{student.rfid_uid}</p>
                   </div>
                 </div>
               )}
@@ -642,6 +675,47 @@ const StudentDetail = () => {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* RFID Scan Dialog */}
+      <Dialog open={rfidScanOpen} onOpenChange={setRfidScanOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><ScanLine className="h-5 w-5 text-primary" /> Scan Kartu RFID</DialogTitle>
+            <DialogDescription>Pastikan RFID reader terhubung (mode keyboard emulation), lalu tempelkan kartu ke reader.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              autoFocus
+              placeholder="Menunggu kartu…"
+              value={rfidCapture}
+              onChange={(e) => setRfidCapture(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && rfidCapture.trim().length >= 4) {
+                  setEditForm({ ...editForm, rfid_uid: rfidCapture.trim() });
+                  setRfidScanOpen(false);
+                  toast.success("Kartu RFID terbaca. Klik Simpan Perubahan untuk menyimpan.");
+                }
+              }}
+              className="font-mono text-lg text-center tracking-widest"
+            />
+            <div className="rounded-lg bg-muted/40 border border-dashed border-border p-3 text-xs text-muted-foreground">
+              Tips: kebanyakan RFID reader (125kHz / 13.56MHz) otomatis mengetik nomor UID lalu menekan Enter. Setelah muncul di kolom di atas, dialog akan tertutup otomatis.
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setRfidScanOpen(false)}>Batal</Button>
+              <Button
+                onClick={() => {
+                  if (rfidCapture.trim().length < 4) { toast.error("UID minimal 4 karakter"); return; }
+                  setEditForm({ ...editForm, rfid_uid: rfidCapture.trim() });
+                  setRfidScanOpen(false);
+                }}
+              >
+                Gunakan UID
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
