@@ -461,5 +461,3 @@ async function ensureFreshLink(
   };
 }
 
-  return { success: true, payment_url: link.link, invoice_id: parentInvoiceId };
-}
