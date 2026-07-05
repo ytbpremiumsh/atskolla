@@ -15,7 +15,7 @@ import {
   Sparkles, TrendingUp, Pin, Paperclip, MessageCircle, User, MapPin, Bell,
   Wallet, AlertCircle, Download, ExternalLink, RefreshCw, Receipt, MoreHorizontal,
   Send, ScanLine, History as HistoryIcon, Home, Briefcase, LayoutGrid, UserCircle2,
-  ArrowUpRight, Grid3x3, CreditCard, ChevronRight,
+  ArrowUpRight, Grid3x3, CreditCard, ChevronRight, Copy,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -1168,7 +1168,22 @@ export default function ParentDashboard() {
                 <StudentIdCard student={current as any} hideQrDownload />
                 {(current as any).card_number && (
                   <Card className="p-4 border-0 shadow-card rounded-2xl">
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1.5">Nomor Kartu Identitas</p>
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Nomor Kartu Identitas</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const num = String((current as any).card_number).replace(/\D/g, "");
+                          navigator.clipboard.writeText(num).then(
+                            () => toast.success("Nomor kartu disalin"),
+                            () => toast.error("Gagal menyalin")
+                          );
+                        }}
+                        className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:underline"
+                      >
+                        <Copy className="h-3 w-3" /> Salin
+                      </button>
+                    </div>
                     <p className="font-mono text-sm font-bold tracking-[0.15em] text-foreground break-all">
                       {String((current as any).card_number).replace(/(\d{4})(?=\d)/g, "$1 ")}
                     </p>
