@@ -2,14 +2,21 @@
 // dengan edge function `spp-mayar` (sisi server juga meng-clamp fee via whitelist).
 // Fee ditambahkan ke amount tagihan wali (ditanggung wali murid).
 
+import mandiriAsset from "@/assets/payment/mandiri.png.asset.json";
+import briAsset from "@/assets/payment/bri.png.asset.json";
+import bniAsset from "@/assets/payment/bni.png.asset.json";
+import bcaAsset from "@/assets/payment/bca.png.asset.json";
+import bsiAsset from "@/assets/payment/bsi.png.asset.json";
+import qrisAsset from "@/assets/payment/qris.png.asset.json";
+import alfamartAsset from "@/assets/payment/alfamart.png.asset.json";
+import indomaretAsset from "@/assets/payment/indomaret.png.asset.json";
+
 export type PaymentChannelId = "va" | "qris" | "retail";
 
 export type BankBadge = {
   code: string;
   name: string;
-  // Warna brand bank untuk pill/badge (tidak pakai logo eksternal supaya cepat load & konsisten).
-  bg: string;
-  fg?: string;
+  logo: string;
 };
 
 export type PaymentChannel = {
@@ -27,15 +34,11 @@ export const PAYMENT_CHANNELS: PaymentChannel[] = [
     description: "Transfer via ATM / Mobile Banking / Internet Banking",
     fee: 5000,
     banks: [
-      { code: "BRI", name: "BRI", bg: "#00529C", fg: "#FFFFFF" },
-      { code: "BNI", name: "BNI", bg: "#EE7623", fg: "#FFFFFF" },
-      { code: "MANDIRI", name: "Mandiri", bg: "#003D79", fg: "#FFCC29" },
-      { code: "BSI", name: "BSI", bg: "#00A39D", fg: "#FFFFFF" },
-      { code: "BCA", name: "BCA", bg: "#0060AF", fg: "#FFFFFF" },
-      { code: "PERMATA", name: "Permata", bg: "#00754A", fg: "#FFFFFF" },
-      { code: "CIMB", name: "CIMB Niaga", bg: "#A6192E", fg: "#FFFFFF" },
-      { code: "BJB", name: "BJB", bg: "#1E4B8F", fg: "#FFFFFF" },
-      { code: "DANAMON", name: "Danamon", bg: "#F58220", fg: "#FFFFFF" },
+      { code: "MANDIRI", name: "Mandiri", logo: mandiriAsset.url },
+      { code: "BRI", name: "BRI", logo: briAsset.url },
+      { code: "BNI", name: "BNI", logo: bniAsset.url },
+      { code: "BCA", name: "BCA", logo: bcaAsset.url },
+      { code: "BSI", name: "BSI", logo: bsiAsset.url },
     ],
   },
   {
@@ -44,11 +47,7 @@ export const PAYMENT_CHANNELS: PaymentChannel[] = [
     description: "Scan QR dari semua e-wallet & mobile banking (GoPay, OVO, DANA, ShopeePay, dll)",
     fee: 5000,
     banks: [
-      { code: "QRIS", name: "QRIS", bg: "#EC1B23", fg: "#FFFFFF" },
-      { code: "GOPAY", name: "GoPay", bg: "#00AAE4", fg: "#FFFFFF" },
-      { code: "OVO", name: "OVO", bg: "#4C2A86", fg: "#FFFFFF" },
-      { code: "DANA", name: "DANA", bg: "#118EEA", fg: "#FFFFFF" },
-      { code: "SHOPEEPAY", name: "ShopeePay", bg: "#EE4D2D", fg: "#FFFFFF" },
+      { code: "QRIS", name: "QRIS", logo: qrisAsset.url },
     ],
   },
   {
@@ -57,8 +56,8 @@ export const PAYMENT_CHANNELS: PaymentChannel[] = [
     description: "Bayar tunai di kasir Alfamart atau Indomaret terdekat",
     fee: 8000,
     banks: [
-      { code: "ALFAMART", name: "Alfamart", bg: "#E60012", fg: "#FFFFFF" },
-      { code: "INDOMARET", name: "Indomaret", bg: "#F7C61D", fg: "#1A1A1A" },
+      { code: "ALFAMART", name: "Alfamart", logo: alfamartAsset.url },
+      { code: "INDOMARET", name: "Indomaret", logo: indomaretAsset.url },
     ],
   },
 ];
