@@ -238,9 +238,9 @@ const Register = () => {
       }
 
       if (data.school_slug) {
-        // Use path-based tenant URL so it works with valid SSL on the root domain.
-        const targetUrl = `${window.location.protocol}//${rootDomain}/t/${data.school_slug}/admin`;
-        toast.success(`Registrasi berhasil! Login di ${rootDomain}/t/${data.school_slug}/admin`, { duration: 10000 });
+        // Use the school's own subdomain URL (wildcard SSL is provisioned on the root domain).
+        const targetUrl = `${window.location.protocol}//${data.school_slug}.${rootDomain}/admin`;
+        toast.success(`Registrasi berhasil! Login di ${data.school_slug}.${rootDomain}/admin`, { duration: 10000 });
         setTimeout(() => { window.location.href = targetUrl; }, 2500);
       } else {
         toast.success("Registrasi berhasil! Silakan login.");
