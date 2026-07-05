@@ -349,6 +349,15 @@ const Login = ({ forcedMode }: LoginProps) => {
             </motion.div>
 
             <div className="text-center mb-5">
+              {mode === "parent" && (
+                <div className="flex justify-center mb-4">
+                  <img
+                    src={tenantLogo || loginLogo}
+                    alt={tenantName || "ATSkolla"}
+                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl shadow-2xl shadow-black/30 object-contain bg-white p-2"
+                  />
+                </div>
+              )}
               <h2 className={`font-bold text-white ${mode === "parent" ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"}`}>
                 {mode === "school" ? "Selamat Datang" : "Portal Wali Murid"}
               </h2>
