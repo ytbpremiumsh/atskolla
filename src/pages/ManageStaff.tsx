@@ -639,6 +639,15 @@ const ManageStaff = () => {
                           </p>
                         </div>
                         <div className="flex gap-0 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-7 w-7 ${member.rfid_uid ? "bg-emerald-50 dark:bg-emerald-950/40" : ""}`}
+                            title={member.rfid_uid ? `RFID: ${member.rfid_uid}` : "Daftarkan RFID"}
+                            onClick={() => openRfidDialog(member)}
+                          >
+                            <Nfc className={`h-3.5 w-3.5 ${member.rfid_uid ? "text-emerald-600" : "text-muted-foreground"}`} />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" title="QR Absensi" onClick={() => { setQrTarget(member); setQrDialog(true); }}>
                             <QrCode className="h-3.5 w-3.5 text-[#5B6CF9]" />
                           </Button>
