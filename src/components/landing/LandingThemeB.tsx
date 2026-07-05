@@ -669,9 +669,11 @@ const LandingThemeB = () => {
               {/* Brand */}
               <div className="col-span-2 space-y-4">
                 <div className="flex items-center gap-3">
-                  {get("footer_logo")
-                    ? <img src={get("footer_logo")} alt="Logo" className="h-10 w-10 rounded-xl object-cover" />
-                    : <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow"><GraduationCap className="h-5 w-5 text-white" /></div>}
+                  <img
+                    src={get("footer_logo") || "/images/logo-atskolla.png"}
+                    alt="ATSkolla"
+                    className="h-10 w-10 rounded-xl object-contain bg-white"
+                  />
                   <p className="font-extrabold text-slate-900 dark:text-white text-lg">{get("footer_brand_name", "ATSkolla")}</p>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
