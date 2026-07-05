@@ -43,7 +43,9 @@ const StudentDetail = () => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L" });
+  const [editForm, setEditForm] = useState({ name: "", class: "", student_id: "", parent_name: "", parent_phone: "", gender: "L", rfid_uid: "" });
+  const [rfidScanOpen, setRfidScanOpen] = useState(false);
+  const [rfidCapture, setRfidCapture] = useState("");
   const [saving, setSaving] = useState(false);
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<"list" | "monthly">("list");
