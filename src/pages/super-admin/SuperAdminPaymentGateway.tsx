@@ -72,6 +72,10 @@ const SuperAdminPaymentGateway = () => {
       setDokuSecretMasked(d.doku_secret_key_masked || "");
       setHasDokuClient(!!d.has_doku_client_id);
       setHasDokuSecret(!!d.has_doku_secret_key);
+      setDokuVaMethods(d.doku_va_methods || "");
+      setDokuQrisMethods(d.doku_qris_methods || "");
+      setDokuRetailMethods(d.doku_retail_methods || "");
+      setDokuWebhookVerify(d.doku_webhook_verify || "true");
     } catch (e: any) {
       toast.error("Gagal memuat: " + (e.message || "unknown"));
     } finally {
