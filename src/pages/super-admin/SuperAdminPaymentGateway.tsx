@@ -57,7 +57,10 @@ const SuperAdminPaymentGateway = () => {
       setMayarHasKey(!!m.has_key);
 
       const d: any = dokuRes.data || {};
-      setGateway((d.active_payment_gateway === "doku" ? "doku" : "mayar") as GatewayId);
+      const norm = (v: any): GatewayId => (v === "doku" ? "doku" : "mayar");
+      setGatewayVa(norm(d.gateway_va));
+      setGatewayQris(norm(d.gateway_qris));
+      setGatewayRetail(norm(d.gateway_retail));
       setDokuEnv((d.doku_env === "sandbox" ? "sandbox" : "production"));
       setDokuClientMasked(d.doku_client_id_masked || "");
       setDokuSecretMasked(d.doku_secret_key_masked || "");
