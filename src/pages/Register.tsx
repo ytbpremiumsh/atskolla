@@ -598,7 +598,7 @@ const Register = () => {
                         <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
                           <Input
                             id="schoolSlug"
-                            placeholder="nama-sekolah"
+                            placeholder="namasekolah"
                             value={slug}
                             onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); }}
                             maxLength={40}
