@@ -1246,6 +1246,16 @@ export default function ParentDashboard() {
         onPaid={() => { /* refresh dilakukan saat onClose */ }}
         onClose={() => { setPaymentIframe(null); setPayingInvoiceId(null); loadTab(); }}
       />
+
+      <PaymentMethodPicker
+        open={pickerOpen}
+        onOpenChange={(o) => { if (!pickerLoading) { setPickerOpen(o); if (!o) setPickerInvoice(null); } }}
+        billAmount={pickerInvoice?.total_amount || 0}
+        title="Pilih Metode Pembayaran"
+        subtitle={pickerInvoice ? `Tagihan SPP ${pickerInvoice.period_label || ""}` : undefined}
+        loading={pickerLoading}
+        onConfirm={confirmPaySpp}
+      />
     </div>
   );
 }
