@@ -216,10 +216,11 @@ const ScanQR = () => {
       }
 
       // Try teacher/staff lookup (qr_code = user_id)
-      const { data: teacherProfile } = await supabase
-        .from("profiles").select("user_id, full_name, photo_url, qr_code")
+      const { data: teacherProfile } = await (supabase
+        .from("profiles") as any)
+        .select("user_id, full_name, photo_url, qr_code, rfid_uid")
         .eq("school_id", profile.school_id)
-        .or(`user_id.eq.${trimmed},qr_code.eq.${trimmed}`).maybeSingle();
+        .or(`user_id.eq.${trimmed},qr_code.eq.${trimmed},rfid_uid.eq.${trimmed}`).maybeSingle();
 
       if (teacherProfile) {
         // Verify role is teacher/staff/bendahara

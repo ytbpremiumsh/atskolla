@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, GraduationCap, Upload, Download, FileSpreadsheet, CheckCircle2, XCircle, Wallet, Camera, QrCode,
+  Plus, Trash2, Users2, Mail, Lock, Loader2, Phone, Shield, Pencil, GraduationCap, Upload, Download, FileSpreadsheet, CheckCircle2, XCircle, Wallet, Camera, QrCode, Nfc,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,6 +43,7 @@ interface StaffMember {
   phone: string | null;
   nip: string | null;
   position: string | null;
+  rfid_uid: string | null;
   roles: string[];
   presentToday?: boolean;
   arrivalTime?: string | null;
@@ -89,6 +90,15 @@ const ManageStaff = () => {
   const [qrDialog, setQrDialog] = useState(false);
   const [qrTarget, setQrTarget] = useState<StaffMember | null>(null);
 
+  // RFID dialogs
+  const [rfidDialogOpen, setRfidDialogOpen] = useState(false);
+  const [rfidTarget, setRfidTarget] = useState<StaffMember | null>(null);
+  const [rfidValue, setRfidValue] = useState("");
+  const [rfidSaving, setRfidSaving] = useState(false);
+  const [testRfidOpen, setTestRfidOpen] = useState(false);
+  const [testRfidValue, setTestRfidValue] = useState("");
+  const [testRfidResult, setTestRfidResult] = useState<{ ok: boolean; msg: string; member?: StaffMember } | null>(null);
+
   // Attendance detail dialog
   const [attendanceDialog, setAttendanceDialog] = useState(false);
   const [attendanceTarget, setAttendanceTarget] = useState<StaffMember | null>(null);
@@ -103,7 +113,7 @@ const ManageStaff = () => {
 
   const fetchStaff = async () => {
     if (!schoolId) { setLoading(false); return; }
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip, position" as any).eq("school_id", schoolId);
+    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip, position, rfid_uid" as any).eq("school_id", schoolId);
     if (!profiles || profiles.length === 0) { setStaff([]); setLoading(false); return; }
 
     const userIds = profiles.map((p: any) => p.user_id);
@@ -118,7 +128,7 @@ const ManageStaff = () => {
 
     const staffList: StaffMember[] = (profiles as any[])
       .filter((p) => roleMap.has(p.user_id))
-      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, position: p.position || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
+      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, position: p.position || null, rfid_uid: p.rfid_uid || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
 
     // Fetch today's attendance (datang) to color cards green/red
     const today = new Date();
@@ -393,6 +403,67 @@ const ManageStaff = () => {
     fetchStaff();
   };
 
+  const openRfidDialog = (member: StaffMember) => {
+    setRfidTarget(member);
+    setRfidValue(member.rfid_uid || "");
+    setRfidDialogOpen(true);
+  };
+
+  const handleSaveRfid = async () => {
+    if (!rfidTarget) return;
+    const uid = rfidValue.trim();
+    if (uid.length < 4) { toast.error("UID RFID minimal 4 karakter"); return; }
+    setRfidSaving(true);
+    // Check dup on profiles + students
+    const { data: dupProfile } = await (supabase.from("profiles") as any)
+      .select("user_id, full_name")
+      .eq("school_id", schoolId).eq("rfid_uid", uid).neq("user_id", rfidTarget.user_id).maybeSingle();
+    if (dupProfile) {
+      setRfidSaving(false);
+      toast.error(`UID sudah dipakai oleh ${dupProfile.full_name}`);
+      return;
+    }
+    const { data: dupStudent } = await supabase.from("students")
+      .select("id, name").eq("school_id", schoolId).eq("rfid_uid", uid).maybeSingle();
+    if (dupStudent) {
+      setRfidSaving(false);
+      toast.error(`UID sudah dipakai oleh siswa ${dupStudent.name}`);
+      return;
+    }
+    const { error } = await (supabase.from("profiles") as any).update({ rfid_uid: uid }).eq("user_id", rfidTarget.user_id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal simpan RFID: " + error.message); return; }
+    toast.success(`RFID untuk ${rfidTarget.full_name} berhasil didaftarkan`);
+    setRfidDialogOpen(false);
+    setRfidTarget(null);
+    setRfidValue("");
+    fetchStaff();
+  };
+
+  const handleRemoveRfid = async () => {
+    if (!rfidTarget) return;
+    setRfidSaving(true);
+    const { error } = await (supabase.from("profiles") as any).update({ rfid_uid: null }).eq("user_id", rfidTarget.user_id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal hapus RFID: " + error.message); return; }
+    toast.success("RFID dihapus");
+    setRfidDialogOpen(false);
+    setRfidTarget(null);
+    setRfidValue("");
+    fetchStaff();
+  };
+
+  const handleTestRfid = () => {
+    const uid = testRfidValue.trim();
+    if (!uid) { setTestRfidResult({ ok: false, msg: "Silakan scan atau ketik UID kartu terlebih dahulu" }); return; }
+    const match = staff.find((s) => (s.rfid_uid || "").toString() === uid);
+    if (match) {
+      setTestRfidResult({ ok: true, msg: "Kartu dikenali", member: match });
+    } else {
+      setTestRfidResult({ ok: false, msg: `UID "${uid}" belum terdaftar untuk guru/staff mana pun.` });
+    }
+  };
+
   const getRoleBadges = (roles: string[]) => (
     <div className="flex flex-wrap gap-1 mt-1">
       {roles.map((r) => {
@@ -422,6 +493,9 @@ const ManageStaff = () => {
     <div className="space-y-6">
       <PageHeader icon={Shield} title="Guru & Staff" subtitle="Kelola akun guru, staff/operator, dan bendahara" actions={
         <div className="flex flex-wrap gap-2">
+          <Button onClick={() => { setTestRfidValue(""); setTestRfidResult(null); setTestRfidOpen(true); }} variant="outline" className="bg-emerald-500/90 hover:bg-emerald-500 text-white border-0 rounded-xl text-xs">
+            <Nfc className="h-4 w-4 mr-2" /> Test RFID
+          </Button>
           <Button onClick={() => setImportDialog(true)} variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl text-xs">
             <Upload className="h-4 w-4 mr-2" /> Import Excel
           </Button>
@@ -565,6 +639,15 @@ const ManageStaff = () => {
                           </p>
                         </div>
                         <div className="flex gap-0 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-7 w-7 ${member.rfid_uid ? "bg-emerald-50 dark:bg-emerald-950/40" : ""}`}
+                            title={member.rfid_uid ? `RFID: ${member.rfid_uid}` : "Daftarkan RFID"}
+                            onClick={() => openRfidDialog(member)}
+                          >
+                            <Nfc className={`h-3.5 w-3.5 ${member.rfid_uid ? "text-emerald-600" : "text-muted-foreground"}`} />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-7 w-7" title="QR Absensi" onClick={() => { setQrTarget(member); setQrDialog(true); }}>
                             <QrCode className="h-3.5 w-3.5 text-[#5B6CF9]" />
                           </Button>
@@ -901,6 +984,99 @@ const ManageStaff = () => {
         nip={attendanceTarget?.nip || null}
         phone={attendanceTarget?.phone || null}
       />
+
+      {/* RFID Register Dialog */}
+      <Dialog open={rfidDialogOpen} onOpenChange={(o) => { setRfidDialogOpen(o); if (!o) { setRfidTarget(null); setRfidValue(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Nfc className="h-5 w-5 text-emerald-600" /> Daftarkan Kartu RFID
+            </DialogTitle>
+            <DialogDescription>
+              {rfidTarget ? (<>Tempelkan kartu RFID pada reader untuk <b>{rfidTarget.full_name}</b>.</>) : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>UID Kartu RFID</Label>
+              <Input
+                autoFocus
+                placeholder="Tempel kartu atau ketik UID..."
+                value={rfidValue}
+                onChange={(e) => setRfidValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && rfidValue.trim().length >= 4) handleSaveRfid(); }}
+                className="font-mono text-lg tracking-wider"
+              />
+              <p className="text-xs text-muted-foreground">
+                Sebagian besar RFID reader USB akan otomatis mengetik UID lalu menekan Enter.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {rfidTarget?.rfid_uid && (
+                <Button variant="outline" onClick={handleRemoveRfid} disabled={rfidSaving} className="text-destructive hover:text-destructive">
+                  Hapus RFID
+                </Button>
+              )}
+              <Button onClick={handleSaveRfid} disabled={rfidSaving || rfidValue.trim().length < 4} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                {rfidSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Nfc className="h-4 w-4 mr-1" />}
+                Simpan
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Test RFID Dialog */}
+      <Dialog open={testRfidOpen} onOpenChange={(o) => { setTestRfidOpen(o); if (!o) { setTestRfidValue(""); setTestRfidResult(null); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Nfc className="h-5 w-5 text-emerald-600" /> Test RFID Reader
+            </DialogTitle>
+            <DialogDescription>
+              Tempelkan kartu pada reader untuk memastikan RFID berfungsi & UID terdaftar untuk guru/staff.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>UID Kartu</Label>
+              <Input
+                autoFocus
+                placeholder="Menunggu scan kartu..."
+                value={testRfidValue}
+                onChange={(e) => { setTestRfidValue(e.target.value); setTestRfidResult(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleTestRfid(); }}
+                className="font-mono text-lg tracking-wider"
+              />
+            </div>
+            <Button onClick={handleTestRfid} disabled={!testRfidValue.trim()} className="w-full bg-[#5B6CF9] hover:bg-[#5065E8] text-white">
+              Cek UID
+            </Button>
+            {testRfidResult && (
+              <div className={`rounded-lg border p-3 ${testRfidResult.ok ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900" : "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900"}`}>
+                <div className="flex items-start gap-2">
+                  {testRfidResult.ok
+                    ? <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+                    : <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />}
+                  <div className="text-sm">
+                    <p className={`font-semibold ${testRfidResult.ok ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                      {testRfidResult.msg}
+                    </p>
+                    {testRfidResult.member && (
+                      <div className="mt-2 space-y-0.5 text-muted-foreground">
+                        <p><b className="text-foreground">{testRfidResult.member.full_name}</b></p>
+                        <p>Jabatan: {testRfidResult.member.position || "-"}</p>
+                        {testRfidResult.member.nip && <p>NIP: <span className="font-mono">{testRfidResult.member.nip}</span></p>}
+                        <p>UID: <span className="font-mono">{testRfidResult.member.rfid_uid}</span></p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
     </PremiumGate>
   );
