@@ -104,7 +104,7 @@ const ManageStaff = () => {
 
   const fetchStaff = async () => {
     if (!schoolId) { setLoading(false); return; }
-    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip, position" as any).eq("school_id", schoolId);
+    const { data: profiles } = await supabase.from("profiles").select("user_id, full_name, photo_url, qr_code, phone, nip, position, rfid_uid" as any).eq("school_id", schoolId);
     if (!profiles || profiles.length === 0) { setStaff([]); setLoading(false); return; }
 
     const userIds = profiles.map((p: any) => p.user_id);
@@ -119,7 +119,7 @@ const ManageStaff = () => {
 
     const staffList: StaffMember[] = (profiles as any[])
       .filter((p) => roleMap.has(p.user_id))
-      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, position: p.position || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
+      .map((p: any) => ({ user_id: p.user_id, full_name: p.full_name, photo_url: p.photo_url, qr_code: p.qr_code || p.user_id, phone: p.phone || null, nip: p.nip || null, position: p.position || null, rfid_uid: p.rfid_uid || null, roles: roleMap.get(p.user_id) || [], presentToday: false, arrivalTime: null }));
 
     // Fetch today's attendance (datang) to color cards green/red
     const today = new Date();
