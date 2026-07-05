@@ -344,8 +344,8 @@ const Login = ({ forcedMode }: LoginProps) => {
           >
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
               className="flex lg:hidden items-center justify-center gap-3 mb-6">
-              <img src={tenantLogo || loginLogo} alt={tenantName || "ATSkolla"} className="h-11 w-11 rounded-xl shadow-lg object-contain bg-white/10" />
-              <span className="font-bold text-xl text-white tracking-tight">{tenantName || "ATSkolla"}</span>
+              <img src={mode === "parent" ? loginLogo : (tenantLogo || loginLogo)} alt="ATSkolla" className="h-11 w-11 rounded-xl shadow-lg object-contain bg-white/10" />
+              <span className="font-bold text-xl text-white tracking-tight">{mode === "parent" ? "ATSkolla" : (tenantName || "ATSkolla")}</span>
             </motion.div>
 
             <div className="text-center mb-5">
