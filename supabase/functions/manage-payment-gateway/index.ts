@@ -48,6 +48,9 @@ serve(async (req) => {
       (data || []).forEach((r: any) => { map[r.key] = r.value || ""; });
       return ok({
         active_payment_gateway: map.active_payment_gateway || "mayar",
+        gateway_va: map.gateway_va || map.active_payment_gateway || "mayar",
+        gateway_qris: map.gateway_qris || map.active_payment_gateway || "mayar",
+        gateway_retail: map.gateway_retail || map.active_payment_gateway || "mayar",
         doku_env: map.doku_env || "production",
         doku_client_id: map.doku_client_id || "",
         doku_client_id_masked: mask(map.doku_client_id || ""),
