@@ -78,6 +78,7 @@ const StudentDetail = () => {
         name: studentRes.data.name, class: studentRes.data.class, student_id: studentRes.data.student_id,
         parent_name: studentRes.data.parent_name, parent_phone: studentRes.data.parent_phone,
         gender: studentRes.data.gender || "L",
+        rfid_uid: studentRes.data.rfid_uid || "",
       });
     }
     setLoading(false);
