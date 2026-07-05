@@ -356,8 +356,8 @@ const SchoolSettings = () => {
                 <input
                   readOnly={!canEditSlug}
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"))}
-                  placeholder="nama-sekolah"
+                  onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""))}
+                  placeholder="namasekolah"
                   className="flex-1 bg-transparent py-2 text-sm font-medium text-foreground outline-none"
                 />
                 <span className="pl-1 pr-3 py-2 text-sm text-muted-foreground">
