@@ -127,7 +127,13 @@ const SuperAdminPaymentGateway = () => {
   const handleSaveDoku = async () => {
     setSaving(true);
     try {
-      const updates: any = { doku_env: dokuEnv };
+      const updates: any = {
+        doku_env: dokuEnv,
+        doku_va_methods: dokuVaMethods.trim(),
+        doku_qris_methods: dokuQrisMethods.trim(),
+        doku_retail_methods: dokuRetailMethods.trim(),
+        doku_webhook_verify: dokuWebhookVerify,
+      };
       if (dokuClientId.trim()) updates.doku_client_id = dokuClientId.trim();
       if (dokuSecretKey.trim()) updates.doku_secret_key = dokuSecretKey.trim();
       const { data, error } = await supabase.functions.invoke("manage-payment-gateway", {
