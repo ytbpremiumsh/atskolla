@@ -109,31 +109,54 @@ async function dokuFetch(cfg: { clientId: string; secretKey: string; baseUrl: st
   return { ok: res.ok, status: res.status, json, requestId };
 }
 
-// Map ATSkolla channel → Doku payment_method_types.
-function paymentMethodsFor(channel: string | null): string[] {
+// Default Doku Checkout payment_method_types per channel.
+// Admin bisa override via platform_settings key `doku_va_methods` /
+// `doku_qris_methods` / `doku_retail_methods` (comma-separated).
+// Set nilainya menjadi "*" atau kosong untuk MENGIZINKAN semua metode
+// yang aktif di Doku Merchant Dashboard tampil di halaman checkout
+// (rekomendasi: kalau Mandiri / bank tertentu tidak muncul, gunakan "*").
+const DEFAULT_VA_METHODS = [
+  "VIRTUAL_ACCOUNT_BCA",
+  "VIRTUAL_ACCOUNT_BANK_MANDIRI",
+  "VIRTUAL_ACCOUNT_MANDIRI",
+  "VIRTUAL_ACCOUNT_DOKU",
+  "VIRTUAL_ACCOUNT_BRI",
+  "VIRTUAL_ACCOUNT_BNI",
+  "VIRTUAL_ACCOUNT_BANK_PERMATA",
+  "VIRTUAL_ACCOUNT_BANK_CIMB",
+  "VIRTUAL_ACCOUNT_BANK_SYARIAH_INDONESIA",
+  "VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",
+  "VIRTUAL_ACCOUNT_BANK_DANAMON",
+];
+const DEFAULT_QRIS_METHODS = [
+  "QRIS", "EMONEY_SHOPEEPAY", "EMONEY_OVO", "EMONEY_DANA",
+];
+const DEFAULT_RETAIL_METHODS = [
+  "ONLINE_TO_OFFLINE_ALFA", "PERURI_INDOMARET",
+];
+
+function parseMethodOverride(raw: string, fallback: string[]): string[] | null {
+  const v = (raw || "").trim();
+  if (!v) return fallback;
+  // "*" atau "all" berarti JANGAN kirim filter → semua metode aktif tampil
+  if (v === "*" || v.toLowerCase() === "all") return null;
+  return v.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
+}
+
+function paymentMethodsFor(
+  channel: string | null,
+  cfg: { vaMethods: string; qrisMethods: string; retailMethods: string },
+): string[] | null {
   switch (channel) {
-    case "va":
-      return [
-        "VIRTUAL_ACCOUNT_BCA",
-        "VIRTUAL_ACCOUNT_BANK_MANDIRI",
-        "VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",
-        "VIRTUAL_ACCOUNT_DOKU",
-        "VIRTUAL_ACCOUNT_BRI",
-        "VIRTUAL_ACCOUNT_BNI",
-        "VIRTUAL_ACCOUNT_BANK_PERMATA",
-        "VIRTUAL_ACCOUNT_BANK_CIMB",
-      ];
-    case "qris":
-      return ["QRIS", "EMONEY_SHOPEEPAY", "EMONEY_OVO", "EMONEY_DANA"];
-    case "retail":
-      return ["ONLINE_TO_OFFLINE_ALFA", "PERURI_INDOMARET"];
-    default:
-      return [];
+    case "va":     return parseMethodOverride(cfg.vaMethods, DEFAULT_VA_METHODS);
+    case "qris":   return parseMethodOverride(cfg.qrisMethods, DEFAULT_QRIS_METHODS);
+    case "retail": return parseMethodOverride(cfg.retailMethods, DEFAULT_RETAIL_METHODS);
+    default:       return null; // no channel → tampil semua
   }
 }
 
 async function createDokuPayment(
-  cfg: { clientId: string; secretKey: string; baseUrl: string },
+  cfg: { clientId: string; secretKey: string; baseUrl: string; vaMethods: string; qrisMethods: string; retailMethods: string },
   inv: any,
   channel: string | null,
 ) {
@@ -161,8 +184,11 @@ async function createDokuPayment(
     },
   };
 
-  const methods = paymentMethodsFor(channel);
-  if (methods.length) body.override_configuration = { payment_method_types: methods };
+  const methods = paymentMethodsFor(channel, cfg);
+  // null → jangan kirim override_configuration (semua metode Doku Dashboard aktif tampil)
+  if (methods && methods.length) {
+    body.override_configuration = { payment_method_types: methods };
+  }
 
   const res = await dokuFetch(cfg, "/checkout/v1/payment", body);
   const url =
