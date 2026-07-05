@@ -27,7 +27,14 @@ async function getDokuConfig(supabaseAdmin: any) {
   const { data } = await supabaseAdmin
     .from("platform_settings")
     .select("key,value")
-    .in("key", ["doku_client_id", "doku_secret_key", "doku_env"]);
+    .in("key", [
+      "doku_client_id",
+      "doku_secret_key",
+      "doku_env",
+      "doku_va_methods",
+      "doku_qris_methods",
+      "doku_retail_methods",
+    ]);
   const map: Record<string, string> = {};
   (data || []).forEach((r: any) => { map[r.key] = r.value || ""; });
   const clientId = map.doku_client_id || Deno.env.get("DOKU_CLIENT_ID") || "";
@@ -36,7 +43,12 @@ async function getDokuConfig(supabaseAdmin: any) {
   const baseUrl = env === "sandbox"
     ? "https://api-sandbox.doku.com"
     : "https://api.doku.com";
-  return { clientId, secretKey, baseUrl, env };
+  return {
+    clientId, secretKey, baseUrl, env,
+    vaMethods: map.doku_va_methods || "",
+    qrisMethods: map.doku_qris_methods || "",
+    retailMethods: map.doku_retail_methods || "",
+  };
 }
 
 // Doku SNAP signature (Jokul HMAC scheme):
