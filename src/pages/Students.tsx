@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Plus, Search, QrCode, Trash2, Loader2, Users, GraduationCap, Phone, ChevronDown, ChevronRight,
   Eye, Upload, Download, Camera, Lock, ArrowRightLeft, LayoutGrid, List, MoreVertical, FileSpreadsheet,
+  Nfc, CheckCircle2, XCircle,
 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -71,6 +72,13 @@ const Students = () => {
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [schoolInfo, setSchoolInfo] = useState<{ name?: string; logo?: string }>({});
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [rfidDialogOpen, setRfidDialogOpen] = useState(false);
+  const [rfidStudent, setRfidStudent] = useState<any>(null);
+  const [rfidValue, setRfidValue] = useState("");
+  const [rfidSaving, setRfidSaving] = useState(false);
+  const [testRfidOpen, setTestRfidOpen] = useState(false);
+  const [testRfidValue, setTestRfidValue] = useState("");
+  const [testRfidResult, setTestRfidResult] = useState<{ ok: boolean; msg: string; student?: any } | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -156,6 +164,62 @@ const Students = () => {
     if (error) { toast.error("Gagal menghapus: " + error.message); return; }
     toast.success("Siswa dihapus");
     fetchData();
+  };
+
+  const openRfidDialog = (student: any) => {
+    setRfidStudent(student);
+    setRfidValue(student.rfid_uid || "");
+    setRfidDialogOpen(true);
+  };
+
+  const handleSaveRfid = async () => {
+    if (!rfidStudent) return;
+    const uid = rfidValue.trim();
+    if (uid.length < 4) { toast.error("UID RFID minimal 4 karakter"); return; }
+    setRfidSaving(true);
+    // Cek konflik UID di sekolah yg sama
+    const { data: existing } = await supabase
+      .from("students")
+      .select("id, name, class")
+      .eq("school_id", profile?.school_id)
+      .eq("rfid_uid", uid)
+      .neq("id", rfidStudent.id)
+      .maybeSingle();
+    if (existing) {
+      setRfidSaving(false);
+      toast.error(`UID sudah terdaftar untuk ${existing.name} (${existing.class})`);
+      return;
+    }
+    const { error } = await supabase.from("students").update({ rfid_uid: uid } as any).eq("id", rfidStudent.id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal simpan RFID: " + error.message); return; }
+    toast.success(`RFID untuk ${rfidStudent.name} berhasil didaftarkan`);
+    setRfidDialogOpen(false);
+    setRfidStudent(null);
+    setRfidValue("");
+    fetchData();
+  };
+
+  const handleRemoveRfid = async () => {
+    if (!rfidStudent) return;
+    setRfidSaving(true);
+    const { error } = await supabase.from("students").update({ rfid_uid: null } as any).eq("id", rfidStudent.id);
+    setRfidSaving(false);
+    if (error) { toast.error("Gagal hapus RFID: " + error.message); return; }
+    toast.success("RFID dihapus");
+    setRfidDialogOpen(false);
+    fetchData();
+  };
+
+  const handleTestRfid = () => {
+    const uid = testRfidValue.trim();
+    if (!uid) { setTestRfidResult({ ok: false, msg: "Silakan scan atau ketik UID kartu terlebih dahulu" }); return; }
+    const match = students.find((s) => (s.rfid_uid || "").toString() === uid);
+    if (match) {
+      setTestRfidResult({ ok: true, msg: `Kartu dikenali`, student: match });
+    } else {
+      setTestRfidResult({ ok: false, msg: `UID "${uid}" belum terdaftar untuk siswa mana pun.` });
+    }
   };
 
   const handlePhotoUpload = async (studentId: string, file: File) => {
@@ -524,6 +588,15 @@ const Students = () => {
               <FileSpreadsheet className="h-4 w-4 mr-1.5" /> Template
             </Button>
 
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => { setTestRfidValue(""); setTestRfidResult(null); setTestRfidOpen(true); }}
+              className="bg-emerald-500/90 hover:bg-emerald-500 text-white border-0"
+            >
+              <Nfc className="h-4 w-4 mr-1.5" /> Test RFID
+            </Button>
+
             <div className="relative">
               {features.canImportExport && (
                 <input type="file" accept=".xlsx,.xls" onChange={handleImportExcel} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
@@ -729,6 +802,15 @@ const Students = () => {
                           <div className="flex items-center justify-center gap-1 pt-1" onClick={(e) => e.stopPropagation()}>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-3.5 w-3.5 text-[#5B6CF9]" /></Button>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-3.5 w-3.5 text-[#5B6CF9]" /></Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className={`h-7 w-7 border-border/60 ${student.rfid_uid ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300" : ""}`}
+                              title={student.rfid_uid ? `RFID: ${student.rfid_uid}` : "Daftarkan RFID"}
+                              onClick={() => openRfidDialog(student)}
+                            >
+                              <Nfc className={`h-3.5 w-3.5 ${student.rfid_uid ? "text-emerald-600" : "text-muted-foreground"}`} />
+                            </Button>
                             <Button variant="outline" size="icon" className="h-7 w-7 border-border/60" onClick={() => handleDelete(student.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                           </div>
                         </CardContent>
@@ -767,7 +849,7 @@ const Students = () => {
                                 <TableHead className="hidden xl:table-cell w-[180px] whitespace-nowrap">Nomor Kartu Identitas</TableHead>
                                 <TableHead className="hidden md:table-cell">Wali</TableHead>
                                 <TableHead className="hidden lg:table-cell">No. HP</TableHead>
-                                <TableHead className="text-right w-[140px]">Aksi</TableHead>
+                                <TableHead className="text-right w-[180px]">Aksi</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -817,6 +899,15 @@ const Students = () => {
                                       </div>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/students/${student.id}`)}><Eye className="h-4 w-4 text-primary" /></Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setSelectedStudent(student); setQrDialogOpen(true); }}><QrCode className="h-4 w-4 text-primary" /></Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title={student.rfid_uid ? `RFID: ${student.rfid_uid}` : "Daftarkan RFID"}
+                                        className={`h-8 w-8 ${student.rfid_uid ? "bg-emerald-50 dark:bg-emerald-950/40" : ""}`}
+                                        onClick={() => openRfidDialog(student)}
+                                      >
+                                        <Nfc className={`h-4 w-4 ${student.rfid_uid ? "text-emerald-600" : "text-muted-foreground"}`} />
+                                      </Button>
                                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(student.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                   </TableCell>
@@ -856,6 +947,99 @@ const Students = () => {
               />
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* RFID Register Dialog */}
+      <Dialog open={rfidDialogOpen} onOpenChange={(o) => { setRfidDialogOpen(o); if (!o) { setRfidStudent(null); setRfidValue(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Nfc className="h-5 w-5 text-emerald-600" /> Daftarkan Kartu RFID
+            </DialogTitle>
+            <DialogDescription>
+              {rfidStudent ? (<>Tempelkan kartu RFID pada reader untuk siswa <b>{rfidStudent.name}</b> — {rfidStudent.class}.</>) : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>UID Kartu RFID</Label>
+              <Input
+                autoFocus
+                placeholder="Tempel kartu atau ketik UID..."
+                value={rfidValue}
+                onChange={(e) => setRfidValue(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && rfidValue.trim().length >= 4) handleSaveRfid(); }}
+                className="font-mono text-lg tracking-wider"
+              />
+              <p className="text-xs text-muted-foreground">
+                Sebagian besar RFID reader USB akan otomatis mengetik UID lalu menekan Enter.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {rfidStudent?.rfid_uid && (
+                <Button variant="outline" onClick={handleRemoveRfid} disabled={rfidSaving} className="text-destructive hover:text-destructive">
+                  Hapus RFID
+                </Button>
+              )}
+              <Button onClick={handleSaveRfid} disabled={rfidSaving || rfidValue.trim().length < 4} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                {rfidSaving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Nfc className="h-4 w-4 mr-1" />}
+                Simpan
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Test RFID Dialog */}
+      <Dialog open={testRfidOpen} onOpenChange={(o) => { setTestRfidOpen(o); if (!o) { setTestRfidValue(""); setTestRfidResult(null); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Nfc className="h-5 w-5 text-emerald-600" /> Test RFID Reader
+            </DialogTitle>
+            <DialogDescription>
+              Tempelkan kartu pada reader untuk memastikan RFID berfungsi & UID terdaftar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>UID Kartu</Label>
+              <Input
+                autoFocus
+                placeholder="Menunggu scan kartu..."
+                value={testRfidValue}
+                onChange={(e) => { setTestRfidValue(e.target.value); setTestRfidResult(null); }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleTestRfid(); }}
+                className="font-mono text-lg tracking-wider"
+              />
+            </div>
+            <Button onClick={handleTestRfid} disabled={!testRfidValue.trim()} className="w-full bg-[#5B6CF9] hover:bg-[#5065E8] text-white">
+              Cek UID
+            </Button>
+            {testRfidResult && (
+              <div className={`rounded-lg border p-3 ${testRfidResult.ok ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900" : "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900"}`}>
+                <div className="flex items-start gap-2">
+                  {testRfidResult.ok
+                    ? <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+                    : <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />}
+                  <div className="text-sm">
+                    <p className={`font-semibold ${testRfidResult.ok ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                      {testRfidResult.msg}
+                    </p>
+                    {testRfidResult.student && (
+                      <div className="mt-2 space-y-0.5 text-muted-foreground">
+                        <p><b className="text-foreground">{testRfidResult.student.name}</b></p>
+                        <p>Kelas: {testRfidResult.student.class}</p>
+                        <p>NIS: <span className="font-mono">{testRfidResult.student.student_id}</span></p>
+                        <p>UID: <span className="font-mono">{testRfidResult.student.rfid_uid}</span></p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
