@@ -72,6 +72,13 @@ const Students = () => {
   const [qrInstructions, setQrInstructions] = useState<string[]>([]);
   const [schoolInfo, setSchoolInfo] = useState<{ name?: string; logo?: string }>({});
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [rfidDialogOpen, setRfidDialogOpen] = useState(false);
+  const [rfidStudent, setRfidStudent] = useState<any>(null);
+  const [rfidValue, setRfidValue] = useState("");
+  const [rfidSaving, setRfidSaving] = useState(false);
+  const [testRfidOpen, setTestRfidOpen] = useState(false);
+  const [testRfidValue, setTestRfidValue] = useState("");
+  const [testRfidResult, setTestRfidResult] = useState<{ ok: boolean; msg: string; student?: any } | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
