@@ -92,15 +92,19 @@ export function PaymentMethodPicker({
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{c.description}</p>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    <div className="flex flex-wrap items-center gap-2 mt-2">
                       {c.banks.map((b) => (
-                        <span
+                        <div
                           key={b.code}
-                          className="text-[10px] font-bold px-2 py-1 rounded shadow-sm"
-                          style={{ backgroundColor: b.bg, color: b.fg || "#FFFFFF" }}
+                          className="h-8 w-16 rounded-md bg-white border border-border/50 flex items-center justify-center p-1 shadow-sm"
                         >
-                          {b.name}
-                        </span>
+                          <img
+                            src={b.logo}
+                            alt={b.name}
+                            loading="lazy"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
