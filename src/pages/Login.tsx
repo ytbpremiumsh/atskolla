@@ -350,7 +350,7 @@ const Login = ({ forcedMode }: LoginProps) => {
 
             <div className="text-center mb-5">
               <h2 className={`font-bold text-white ${mode === "parent" ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"}`}>
-                {mode === "school" ? "Selamat Datang" : `Portal Wali Murid${tenantName ? ` — ${tenantName}` : ""}`}
+                {mode === "school" ? "Selamat Datang" : "Portal Wali Murid"}
               </h2>
               <p className="text-white/60 text-sm mt-1">
                 {mode === "school" ? "Masuk ke akun Anda untuk melanjutkan" : "Pantau aktivitas ananda dengan mudah"}
