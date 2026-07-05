@@ -74,9 +74,7 @@ const Register = () => {
 
   const slugify = (s: string) =>
     s.toLowerCase()
-      .replace(/[^a-z0-9-]+/g, "-")
-      .replace(/-+/g, "-")
-      .replace(/^-+|-+$/g, "")
+      .replace(/[^a-z0-9]+/g, "")
       .slice(0, 40);
 
   // Auto-suggest slug from school name (only if user hasn't manually edited)
@@ -87,10 +85,10 @@ const Register = () => {
     }
   }, [schoolData, slugTouched]);
 
-  // Debounced availability check
+  // Debounced availability check — subdomains must be letters/digits only (no dashes).
   useEffect(() => {
     if (!slug) { setSlugStatus("idle"); return; }
-    if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/.test(slug)) {
+    if (!/^[a-z0-9]{3,40}$/.test(slug)) {
       setSlugStatus("invalid"); return;
     }
     setSlugStatus("checking");
