@@ -169,7 +169,7 @@ const PublicAttendanceMonitoring = () => {
   }
 
   const { stats } = data;
-  const percentage = stats.total ? Math.round(((stats.total - stats.belum) / stats.total) * 100) : 0;
+  const percentage = stats.total ? Math.round((stats.hadir / stats.total) * 100) : 0;
   const classNames = Object.keys(data.classes).sort();
   const currentTime = realtimeClock.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   const currentDate = realtimeClock.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
