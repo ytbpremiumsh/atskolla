@@ -358,6 +358,39 @@ export function BendaharaDashboard() {
         variant="primary"
       />
 
+      {/* Ringkasan Cepat — Pemasukan Hari/Bulan/Tahun, Jatuh Tempo, Saldo Kas */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <StatCard label="Pemasukan Hari Ini" value={fmtIDR(quickMetrics.incomeToday)} icon={TrendingUp} gradient="from-emerald-500 to-teal-600" />
+        <StatCard label="Pemasukan Bulan Ini" value={fmtIDR(quickMetrics.incomeMonth)} icon={BarChart3} gradient="from-[#5B6CF9] to-[#4c5ded]" />
+        <StatCard label="Pemasukan Tahun Ini" value={fmtIDR(quickMetrics.incomeYear)} icon={Banknote} gradient="from-indigo-500 to-violet-600" />
+        <StatCard label="Jatuh Tempo Hari Ini" value={quickMetrics.dueTodayCount} sub={fmtIDR(quickMetrics.dueTodayTotal)} icon={AlertCircle} gradient="from-amber-500 to-orange-600" />
+        <StatCard label="Sudah Bayar (Bulan Ini)" value={quickMetrics.paidStudentsMonth} sub={`${quickMetrics.unpaidStudentsMonth} belum bayar`} icon={CheckCircle2} gradient="from-emerald-500 to-lime-600" />
+        <StatCard label="Total Saldo Kas" value={fmtIDR(quickMetrics.saldoKas)} sub="Kas manual + siap cair" icon={Wallet} gradient="from-sky-500 to-blue-600" />
+      </div>
+
+      {quickMetrics.dueTodayList.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2"><AlertCircle className="h-4 w-4 text-amber-600" /> Tagihan Jatuh Tempo Hari Ini</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="divide-y">
+              {quickMetrics.dueTodayList.map((i: any) => (
+                <div key={i.id} className="flex items-center justify-between py-2 text-sm">
+                  <div className="min-w-0">
+                    <p className="font-semibold truncate">{i.student_name} <span className="text-muted-foreground font-normal">• {i.class_name}</span></p>
+                    <p className="text-[11px] text-muted-foreground">{i.period_label}</p>
+                  </div>
+                  <p className="font-mono font-semibold text-amber-600 shrink-0">{fmtIDR(i.total_amount)}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+
+
       {/* KEUANGAN AKTIF — Siap Dicairkan (dipisah supaya jelas beda dengan rincian pembayaran) */}
       <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-emerald-200/70 dark:ring-emerald-800/40">
         <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3.5 flex items-center gap-2.5">
