@@ -380,7 +380,7 @@ async function ensureFreshLink(
 
   const now = Date.now();
   const isExpired = inv.expired_at ? new Date(inv.expired_at).getTime() < now : false;
-  const serviceFee = serviceFeeFor(channel);
+  const serviceFee = await serviceFeeFor(supabaseAdmin, channel);
 
   // Reuse if fresh & not forced AND channel matches previously chosen one.
   const sameChannel = channel ? inv.payment_channel === channel : true;
