@@ -3,12 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  School, Users, CreditCard, GraduationCap, UserCheck, MessageSquare, TrendingUp,
-  ChevronRight, LifeBuoy, Wallet, Bell, AlertCircle, ArrowUpRight, PieChart as PieIcon, Sparkles,
+  School, CreditCard, GraduationCap, UserCheck, MessageSquare, TrendingUp,
+  ChevronRight, LifeBuoy, Wallet, Bell, AlertCircle, ArrowUpRight, Sparkles,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
 
