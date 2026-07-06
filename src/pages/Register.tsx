@@ -223,20 +223,6 @@ const Register = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!schoolData) { toast.error("Data sekolah belum diisi"); return; }
-    if (!principalName.trim()) { toast.error("Nama Kepala Sekolah wajib diisi"); return; }
-    if (!schoolEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(schoolEmail.trim())) {
-      toast.error("Email sekolah tidak valid"); return;
-    }
-    if (!schoolAddress.trim() || schoolAddress.trim().length < 8) {
-      toast.error("Alamat lengkap sekolah wajib diisi (min 8 karakter)"); return;
-    }
-    if (!schoolCity.trim()) { toast.error("Kota/Kabupaten wajib diisi"); return; }
-    if (!schoolProvince.trim()) { toast.error("Provinsi wajib diisi"); return; }
-    const waDigits = schoolWhatsapp.replace(/\D/g, '');
-    if (waDigits.length < 9 || waDigits.length > 15) {
-      toast.error("Nomor WhatsApp sekolah tidak valid"); return;
-    }
-    if (!studentCountRange) { toast.error("Perkiraan jumlah siswa wajib dipilih"); return; }
 
     if (!fullName.trim() || fullName.trim().length < 3) { toast.error("Nama lengkap penanggung jawab wajib diisi"); return; }
     if (!position) { toast.error("Jabatan penanggung jawab wajib dipilih"); return; }
@@ -258,8 +244,6 @@ const Register = () => {
 
     setRegistering(true);
     try {
-      // Compose full address including city & province for the schools table
-      const fullAddress = [schoolAddress.trim(), schoolCity.trim(), schoolProvince.trim()].filter(Boolean).join(", ");
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-user`, {
         method: 'POST',
         headers: {
@@ -273,10 +257,7 @@ const Register = () => {
           role: 'school_admin',
           npsn: schoolData.npsn || undefined,
           school_name: schoolData.name,
-          school_address: fullAddress || schoolData.address,
-          school_principal_name: principalName.trim(),
-          school_email: schoolEmail.trim(),
-          school_whatsapp: waDigits,
+          school_address: schoolData.address || undefined,
           phone: personalWa,
           position,
           referral_code: referralInput || undefined,
@@ -300,6 +281,7 @@ const Register = () => {
         toast.success("Registrasi berhasil! Silakan login.");
         navigate("/admin");
       }
+
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
     }
