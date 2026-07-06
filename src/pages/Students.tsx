@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { StudentIdCard } from "@/components/StudentIdCard";
+import { NfcScanButton } from "@/components/NfcScanButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import * as XLSX from "xlsx";
