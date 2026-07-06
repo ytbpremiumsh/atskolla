@@ -212,7 +212,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
   }, []);
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled ? "bg-white/90 backdrop-blur-md border-b border-slate-200" : "bg-transparent"}`}>
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled ? "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_1px_0_0_rgba(15,23,42,0.04)]" : "bg-white border-b border-slate-100"}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2.5 group">
           <img src={atskollaLogo.url} alt="ATSkolla" className="h-9 w-9 object-contain" />
@@ -221,14 +221,14 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <nav className="hidden lg:flex items-center gap-8">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-sm font-semibold text-[#5B6CF9] hover:text-[#5B6CF9]/80 transition-colors">
+            <a key={n.href} href={n.href} className="text-sm font-semibold text-[#0b1020] hover:text-[#5B6CF9] transition-colors">
               {n.label}
             </a>
           ))}
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <button onClick={() => nav("/login")} className="text-sm font-semibold text-[#0b1020]/75 hover:text-[#5B6CF9] px-3 py-2">
+          <button onClick={() => nav("/login")} className="text-sm font-semibold text-[#0b1020] hover:text-[#5B6CF9] px-3 py-2">
             Masuk
           </button>
           <button
@@ -249,7 +249,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
       {open && (
         <div className="lg:hidden bg-white border-t border-slate-100 px-6 py-4 space-y-3">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-[#5B6CF9] hover:text-[#5B6CF9]/80 py-2 text-sm font-semibold">
+            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-[#0b1020] hover:text-[#5B6CF9] py-2 text-sm font-semibold">
               {n.label}
             </a>
           ))}
