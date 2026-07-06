@@ -21,6 +21,7 @@ import * as XLSX from "xlsx";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import StaffAttendanceDetailDialog from "@/components/staff/StaffAttendanceDetailDialog";
 import { TeacherIdCard } from "@/components/TeacherIdCard";
+import { NfcScanButton } from "@/components/NfcScanButton";
 
 const POSITION_PRESETS = [
   "Guru",
