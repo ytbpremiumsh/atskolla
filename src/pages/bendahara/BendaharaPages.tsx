@@ -4621,6 +4621,148 @@ export function BendaharaPencairan() {
   );
 }
 
+// ============ Preset Laporan Cepat (PDF & Excel) ============
+function PresetLaporan({ items, students, school, year }: { items: any[]; students: any[]; school: any; year: number }) {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const currentMonth = today.getMonth() + 1;
+
+  const paid = items.filter((i: any) => i.status === "paid" && i.paid_at);
+
+  const buildRows = (list: any[]) => list.map((i: any, idx: number) => ({
+    "No": idx + 1,
+    "Invoice": i.invoice_number,
+    "NIS": students.find((s: any) => s.id === i.student_id)?.student_id || "",
+    "Nama Siswa": i.student_name,
+    "Kelas": i.class_name,
+    "Periode": i.period_label,
+    "Nominal": i.total_amount,
+    "Tgl Bayar": i.paid_at ? new Date(i.paid_at).toLocaleDateString("id-ID") : "",
+    "Metode": formatPaymentMethodLabel(i.payment_method),
+    "Status": i.status === "paid" ? "Lunas" : "Belum",
+  }));
+
+  const buildAggRows = (agg: { key: string; label: string; total: number; count: number }[]) =>
+    agg.map((a, idx) => ({
+      "No": idx + 1,
+      [a.label]: a.key,
+      "Jumlah Transaksi": a.count,
+      "Total": a.total,
+    }));
+
+  const exportXlsx = (fname: string, rows: any[]) => {
+    if (rows.length === 0) { toast.error("Tidak ada data untuk periode ini"); return; }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = Object.keys(rows[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 12), 30) }));
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+    XLSX.writeFile(wb, `${fname}.xlsx`);
+    toast.success("Excel diunduh");
+  };
+
+  const exportPdf = (title: string, subtitle: string, rows: any[]) => {
+    if (rows.length === 0) { toast.error("Tidak ada data untuk periode ini"); return; }
+    const doc = new jsPDF("l", "mm", "a4");
+    doc.setFontSize(14); doc.setFont("helvetica", "bold");
+    doc.text(title, 14, 14);
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text(school?.name || "-", 14, 21);
+    doc.setFontSize(9);
+    doc.text(subtitle, 14, 27);
+    const total = rows.reduce((s, r) => s + (r["Total"] || r["Nominal"] || 0), 0);
+    doc.text(`Total: ${rows.length} baris • Rp ${total.toLocaleString("id-ID")}`, 14, 33);
+    const head = [Object.keys(rows[0])];
+    const body = rows.map(r => Object.values(r).map(v => typeof v === "number" ? v.toLocaleString("id-ID") : String(v ?? "")));
+    autoTable(doc, {
+      startY: 39, head, body,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [91, 108, 249], textColor: 255 },
+      alternateRowStyles: { fillColor: [248, 249, 252] },
+    });
+    doc.save(`${title.replace(/\s+/g, "_")}.pdf`);
+    toast.success("PDF diunduh");
+  };
+
+  // Presets
+  const dailyRows = () => buildRows(paid.filter((i: any) => (i.paid_at || "").slice(0, 10) === todayStr));
+  const monthlyRows = () => buildRows(paid.filter((i: any) => {
+    const d = new Date(i.paid_at); return d.getFullYear() === year && d.getMonth() + 1 === currentMonth;
+  }));
+  const yearlyRows = () => buildRows(paid.filter((i: any) => new Date(i.paid_at).getFullYear() === year));
+
+  const perClassRows = () => {
+    const map = new Map<string, { total: number; count: number }>();
+    paid.filter((i: any) => new Date(i.paid_at).getFullYear() === year).forEach((i: any) => {
+      const e = map.get(i.class_name) || { total: 0, count: 0 };
+      e.total += i.total_amount || 0; e.count += 1;
+      map.set(i.class_name, e);
+    });
+    return buildAggRows(Array.from(map.entries()).map(([k, v]) => ({ key: k, label: "Kelas", ...v })).sort((a, b) => b.total - a.total));
+  };
+  const perTypeRows = () => {
+    const map = new Map<string, { total: number; count: number }>();
+    paid.filter((i: any) => new Date(i.paid_at).getFullYear() === year).forEach((i: any) => {
+      const k = i.period_label || "Tanpa Kategori";
+      const e = map.get(k) || { total: 0, count: 0 };
+      e.total += i.total_amount || 0; e.count += 1;
+      map.set(k, e);
+    });
+    return buildAggRows(Array.from(map.entries()).map(([k, v]) => ({ key: k, label: "Jenis/Periode", ...v })).sort((a, b) => b.total - a.total));
+  };
+  const perStudentRows = () => {
+    const map = new Map<string, { name: string; class: string; total: number; count: number }>();
+    paid.filter((i: any) => new Date(i.paid_at).getFullYear() === year).forEach((i: any) => {
+      const e = map.get(i.student_id) || { name: i.student_name, class: i.class_name, total: 0, count: 0 };
+      e.total += i.total_amount || 0; e.count += 1;
+      map.set(i.student_id, e);
+    });
+    return Array.from(map.values())
+      .sort((a, b) => b.total - a.total)
+      .map((v, idx) => ({
+        "No": idx + 1,
+        "Nama Siswa": v.name,
+        "Kelas": v.class,
+        "Jumlah Transaksi": v.count,
+        "Total": v.total,
+      }));
+  };
+
+  const presets = [
+    { key: "harian", title: "Pembayaran Harian", subtitle: `Tanggal ${today.toLocaleDateString("id-ID")}`, rows: dailyRows },
+    { key: "bulanan", title: "Pembayaran Bulanan", subtitle: `${MONTHS[currentMonth - 1]} ${year}`, rows: monthlyRows },
+    { key: "tahunan", title: "Pembayaran Tahunan", subtitle: `Tahun ${year}`, rows: yearlyRows },
+    { key: "kelas", title: "Rekap per Kelas", subtitle: `Tahun ${year}`, rows: perClassRows },
+    { key: "jenis", title: "Rekap per Jenis Pembayaran", subtitle: `Tahun ${year}`, rows: perTypeRows },
+    { key: "siswa", title: "Rekap per Siswa", subtitle: `Tahun ${year}`, rows: perStudentRows },
+  ];
+
+  return (
+    <Card className="border-0 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-[#5B6CF9]" /> Laporan Cepat (PDF & Excel)</CardTitle>
+        <p className="text-[11px] text-muted-foreground">Klik untuk mengunduh laporan langsung dari data pembayaran online yang sudah tercatat.</p>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {presets.map((p) => (
+          <div key={p.key} className="rounded-xl border border-border/60 p-3 bg-gradient-to-br from-muted/20 to-transparent">
+            <p className="text-sm font-bold">{p.title}</p>
+            <p className="text-[11px] text-muted-foreground mb-2">{p.subtitle}</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => exportPdf(p.title, p.subtitle, p.rows())}>
+                <Download className="h-3.5 w-3.5 mr-1" /> PDF
+              </Button>
+              <Button size="sm" variant="outline" className="flex-1 h-8 text-xs" onClick={() => exportXlsx(`${p.title.replace(/\s+/g, "_")}_${todayStr}`, p.rows())}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Excel
+              </Button>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+
 // Backward-compat alias: route /bendahara/settlement now redirects to gabungan
 export function BendaharaSettlement() {
   return <BendaharaPencairan />;
