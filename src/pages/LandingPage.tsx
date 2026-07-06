@@ -216,7 +216,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2.5 group">
           <img src={atskollaLogo.url} alt="ATSkolla" className="h-9 w-9 object-contain" />
-          <span className="font-display font-bold text-white text-lg tracking-tight">ATSkolla</span>
+          <span className="font-display font-bold text-[#0b1020] text-lg tracking-tight">ATSkolla</span>
         </a>
 
         <nav className="hidden lg:flex items-center gap-8">
@@ -234,7 +234,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
           </button>
           <button
             onClick={() => nav("/register")}
-            className="inline-flex items-center gap-1.5 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-lg shadow-[#5B6CF9]/25"
+            className="inline-flex items-center gap-1.5 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90  text-[#0b1020] text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-lg shadow-[#5B6CF9]/25"
           >
             Mulai Gratis <ArrowRight className="h-3.5 w-3.5" />
           </button>
@@ -242,7 +242,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <div className="lg:hidden flex items-center gap-2">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <button onClick={() => setOpen((v) => !v)} className="text-white p-2" aria-label="Menu">
+          <button onClick={() => setOpen((v) => !v)} className="text-[#0b1020] p-2" aria-label="Menu">
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
@@ -256,10 +256,10 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
             </a>
           ))}
           <div className="pt-3 border-t border-slate-100 flex gap-2">
-            <button onClick={() => nav("/login")} className="flex-1 text-sm font-semibold text-white border border-slate-200 rounded-lg py-2.5">
+            <button onClick={() => nav("/login")} className="flex-1 text-sm font-semibold text-[#0b1020] border border-slate-200 rounded-lg py-2.5">
               Masuk
             </button>
-            <button onClick={() => nav("/register")} className="flex-1 text-sm font-semibold bg-[#5B6CF9] text-white rounded-lg py-2.5">
+            <button onClick={() => nav("/register")} className="flex-1 text-sm font-semibold bg-[#5B6CF9]  text-[#0b1020] rounded-lg py-2.5">
               Mulai Gratis
             </button>
           </div>
@@ -294,7 +294,7 @@ function Hero() {
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-8">
           <Eyebrow>Platform Digital Sekolah Terintegrasi</Eyebrow>
 
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-[1.05] tracking-tight">
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[#0b1020] leading-[1.05] tracking-tight">
             ATSkolla — Platform Digital Sekolah <span className="text-[#5B6CF9]">Terintegrasi</span>.
           </h1>
 
@@ -305,13 +305,13 @@ function Hero() {
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               onClick={() => nav("/register")}
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90 text-white font-semibold rounded-xl transition-all shadow-lg shadow-[#5B6CF9]/25 font-display"
+              className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90  text-[#0b1020] font-semibold rounded-xl transition-all shadow-lg shadow-[#5B6CF9]/25 font-display"
             >
               Mulai Gratis <ArrowRight className="h-4 w-4" />
             </button>
             <a
               href="#kontak"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-slate-50 hover:bg-slate-50/70 text-white border border-slate-200 font-semibold rounded-xl transition-all font-display"
+              className="inline-flex items-center gap-2 px-6 py-3.5 bg-slate-50 hover:bg-slate-50/70  text-[#0b1020] border border-slate-200 font-semibold rounded-xl transition-all font-display"
             >
               Jadwalkan Demo
             </a>
@@ -328,15 +328,15 @@ function Hero() {
 
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-100">
             <div>
-              <div className="font-display text-2xl font-bold text-white">500+</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">500+</div>
               <div className="text-xs text-[#0b1020]/50 mt-0.5">Sekolah Aktif</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-bold text-white">99.9%</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">99.9%</div>
               <div className="text-xs text-[#0b1020]/50 mt-0.5">Uptime SLA</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-bold text-white">24/7</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">24/7</div>
               <div className="text-xs text-[#0b1020]/50 mt-0.5">Support Indonesia</div>
             </div>
           </div>
@@ -363,17 +363,17 @@ function Hero() {
               <div className="grid grid-cols-3 gap-3 mb-5">
                 <div className="rounded-xl bg-[#5B6CF9]/10 border border-[#5B6CF9]/25 p-3">
                   <div className="text-[9px] uppercase tracking-wider text-[#5B6CF9] font-semibold">Kehadiran</div>
-                  <div className="text-white font-display font-bold text-xl mt-1">94.8%</div>
+                  <div className="text-[#0b1020] font-display font-bold text-xl mt-1">94.8%</div>
                   <div className="text-[10px] text-[#0b1020]/40 mt-0.5">1.204 hadir</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
                   <div className="text-[9px] uppercase tracking-wider text-[#0b1020]/40 font-semibold">SPP</div>
-                  <div className="text-white font-display font-bold text-xl mt-1">312<span className="text-xs text-[#0b1020]/40">Jt</span></div>
+                  <div className="text-[#0b1020] font-display font-bold text-xl mt-1">312<span className="text-xs text-[#0b1020]/40">Jt</span></div>
                   <div className="text-[10px] text-[#0b1020]/40 mt-0.5">87% terkumpul</div>
                 </div>
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
                   <div className="text-[9px] uppercase tracking-wider text-[#0b1020]/40 font-semibold">Aktif</div>
-                  <div className="text-white font-display font-bold text-xl mt-1">1.270</div>
+                  <div className="text-[#0b1020] font-display font-bold text-xl mt-1">1.270</div>
                   <div className="text-[10px] text-[#0b1020]/40 mt-0.5">siswa</div>
                 </div>
               </div>
@@ -406,7 +406,7 @@ function Hero() {
             <div className="absolute -bottom-6 -left-6 w-44 h-60 bg-gradient-to-br from-[#5B6CF9] to-[#1a2340] rounded-2xl border border-slate-200 shadow-2xl p-5 flex flex-col justify-between transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
               <div className="flex justify-between items-start">
                 <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
-                  <GraduationCap className="h-4 w-4 text-white" />
+                  <GraduationCap className="h-4 w-4 text-[#0b1020]" />
                 </div>
                 <div className="text-[9px] text-[#0b1020]/65 font-mono tracking-widest">SMART CARD</div>
               </div>
@@ -508,7 +508,7 @@ function ProblemSolution() {
                     <s.icon className="h-4 w-4 text-[#5B6CF9]" />
                   </div>
                   <div>
-                    <div className="font-display font-semibold text-white">{s.title}</div>
+                    <div className="font-display font-semibold text-[#0b1020]">{s.title}</div>
                     <div className="text-sm text-[#0b1020]/55 mt-0.5">{s.desc}</div>
                   </div>
                 </li>
@@ -561,9 +561,9 @@ function Ecosystem() {
               <div className="absolute inset-0 rounded-full bg-[#5B6CF9]/25 blur-2xl" />
               <div className="relative h-28 w-28 lg:h-36 lg:w-36 rounded-3xl bg-white border border-[#5B6CF9]/40 flex flex-col items-center justify-center shadow-2xl">
                 <div className="h-10 w-10 rounded-xl bg-[#5B6CF9] flex items-center justify-center mb-1">
-                  <Sparkles className="h-5 w-5 text-white" />
+                  <Sparkles className="h-5 w-5 text-[#0b1020]" />
                 </div>
-                <div className="font-display font-bold text-white text-sm">ATSkolla</div>
+                <div className="font-display font-bold text-[#0b1020] text-sm">ATSkolla</div>
                 <div className="text-[9px] text-[#0b1020]/50 uppercase tracking-widest">Core Platform</div>
               </div>
             </div>
@@ -669,7 +669,7 @@ function PaymentSystem() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <div className="text-[#0b1020]/50 text-xs">Dashboard Bendahara</div>
-                <div className="font-display text-white font-bold text-lg">SPP Bulan November</div>
+                <div className="font-display  text-[#0b1020] font-bold text-lg">SPP Bulan November</div>
               </div>
               <div className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
@@ -679,17 +679,17 @@ function PaymentSystem() {
             <div className="grid grid-cols-3 gap-3 mb-5">
               <div className="rounded-xl bg-slate-50 p-4">
                 <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Terkumpul</div>
-                <div className="font-display text-white text-xl font-bold mt-1">Rp 271Jt</div>
+                <div className="font-display  text-[#0b1020] text-xl font-bold mt-1">Rp 271Jt</div>
                 <div className="text-[10px] text-emerald-400 mt-1">+12% MoM</div>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
                 <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Tunggakan</div>
-                <div className="font-display text-white text-xl font-bold mt-1">Rp 41Jt</div>
+                <div className="font-display  text-[#0b1020] text-xl font-bold mt-1">Rp 41Jt</div>
                 <div className="text-[10px] text-amber-400 mt-1">42 siswa</div>
               </div>
               <div className="rounded-xl bg-[#5B6CF9]/15 border border-[#5B6CF9]/30 p-4">
                 <div className="text-[10px] text-[#5B6CF9] uppercase tracking-wider">Target</div>
-                <div className="font-display text-white text-xl font-bold mt-1">87%</div>
+                <div className="font-display  text-[#0b1020] text-xl font-bold mt-1">87%</div>
                 <div className="text-[10px] text-[#0b1020]/50 mt-1">tercapai</div>
               </div>
             </div>
@@ -711,7 +711,7 @@ function PaymentSystem() {
                 { name: "Rendi Pratama — IV-C", status: "Lunas via VA BCA", color: "emerald" },
               ].map((r) => (
                 <div key={r.name} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5">
-                  <div className="text-white text-sm font-medium">{r.name}</div>
+                  <div className="text-[#0b1020] text-sm font-medium">{r.name}</div>
                   <div className={`text-[10px] font-semibold ${r.color === "emerald" ? "text-emerald-400" : "text-amber-400"}`}>{r.status}</div>
                 </div>
               ))}
@@ -753,7 +753,7 @@ function Hardware() {
                   <h.icon className="h-8 w-8 text-[#5B6CF9]" />
                 </div>
               </div>
-              <div className="font-display font-bold text-white text-lg">{h.name}</div>
+              <div className="font-display font-bold text-[#0b1020] text-lg">{h.name}</div>
               <div className="text-sm text-[#0b1020]/55 mt-1.5 leading-relaxed">{h.desc}</div>
             </motion.div>
           ))}
@@ -781,7 +781,7 @@ function DashboardPreview() {
             key={r.key}
             onClick={() => setActive(i)}
             className={`px-4 py-2 rounded-full text-sm font-semibold font-display transition-all ${
-              i === active ? "bg-white text-white" : "bg-slate-100 text-[#0b1020]/70 hover:bg-slate-200"
+              i === active ? "bg-white text-[#0b1020]" : "bg-slate-100 text-[#0b1020]/70 hover:bg-slate-200"
             }`}
           >
             {r.label}
@@ -800,10 +800,10 @@ function DashboardPreview() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <div className="text-xs text-[#0b1020]/50">{role.label}</div>
-              <div className="font-display text-white font-bold text-xl">{role.metric.top}</div>
+              <div className="font-display  text-[#0b1020] font-bold text-xl">{role.metric.top}</div>
             </div>
             <div className="text-right">
-              <div className="font-display text-white text-3xl font-bold">{role.metric.val}</div>
+              <div className="font-display  text-[#0b1020] text-3xl font-bold">{role.metric.val}</div>
               <div className="text-xs text-[#0b1020]/50 mt-0.5">{role.metric.sub}</div>
             </div>
           </div>
@@ -811,7 +811,7 @@ function DashboardPreview() {
             {role.blocks.map((b) => (
               <div key={b} className="rounded-xl bg-white border border-slate-200 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-[#5B6CF9] font-semibold">Modul</div>
-                <div className="font-display text-white font-semibold mt-1">{b}</div>
+                <div className="font-display  text-[#0b1020] font-semibold mt-1">{b}</div>
                 <div className="mt-3 space-y-1.5">
                   <div className="h-1.5 rounded-full bg-slate-100" />
                   <div className="h-1.5 rounded-full bg-slate-100 w-4/5" />
@@ -866,7 +866,7 @@ function WhyFree() {
                 { l: "Backup data harian", v: "Termasuk" },
               ].map((row) => (
                 <div key={row.l} className="flex items-center justify-between border-b border-slate-200 pb-4 last:border-0">
-                  <div className={`text-sm ${row.accent ? "text-white font-semibold" : "text-[#0b1020]/65"}`}>{row.l}</div>
+                  <div className={`text-sm ${row.accent ? "text-[#0b1020] font-semibold" : "text-[#0b1020]/65"}`}>{row.l}</div>
                   <div className={`font-display font-bold ${row.accent ? "text-[#5B6CF9] text-2xl" : "text-white"}`}>{row.v}</div>
                 </div>
               ))}
@@ -927,7 +927,7 @@ function FinalCTA() {
 
       <div className="relative text-center max-w-3xl mx-auto">
         <Eyebrow>Siap Memulai</Eyebrow>
-        <h2 className="mt-5 font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05]">
+        <h2 className="mt-5 font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[#0b1020] tracking-tight leading-[1.05]">
           Siap Membangun Sekolah Digital <span className="text-[#5B6CF9]">Bersama ATSkolla</span>?
         </h2>
         <p className="mt-5 text-lg text-[#0b1020]/65 max-w-xl mx-auto">
@@ -936,14 +936,14 @@ function FinalCTA() {
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <button
             onClick={() => nav("/register")}
-            className="inline-flex items-center gap-2 px-7 py-4 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90 text-white font-semibold rounded-xl shadow-lg shadow-[#5B6CF9]/25 font-display"
+            className="inline-flex items-center gap-2 px-7 py-4 bg-[#5B6CF9] hover:bg-[#5B6CF9]/90  text-[#0b1020] font-semibold rounded-xl shadow-lg shadow-[#5B6CF9]/25 font-display"
           >
             Mulai Gratis <ArrowRight className="h-4 w-4" />
           </button>
           <a
             href="https://wa.me/6285155124304"
             target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-4 bg-transparent hover:bg-slate-100 text-white border border-slate-200 font-semibold rounded-xl font-display"
+            className="inline-flex items-center gap-2 px-7 py-4 bg-transparent hover:bg-slate-100  text-[#0b1020] border border-slate-200 font-semibold rounded-xl font-display"
           >
             Hubungi Kami <ArrowUpRight className="h-4 w-4" />
           </a>
@@ -963,12 +963,12 @@ function Footer() {
             <div className="h-9 w-9 rounded-lg bg-white/95 flex items-center justify-center p-1">
               <img src={atskollaLogo.url} alt="ATSkolla" className="h-full w-full object-contain" />
             </div>
-            <span className="font-display font-bold text-white text-lg">ATSkolla</span>
+            <span className="font-display font-bold text-[#0b1020] text-lg">ATSkolla</span>
           </div>
           <p className="text-sm leading-relaxed">Platform Digital Sekolah Terintegrasi untuk sekolah & yayasan di seluruh Indonesia.</p>
         </div>
         <div>
-          <div className="font-display font-semibold text-white text-sm mb-4">Platform</div>
+          <div className="font-display font-semibold text-[#0b1020] text-sm mb-4">Platform</div>
           <ul className="space-y-2 text-sm">
             <li><a href="#modul" className="hover:text-white">Modul</a></li>
             <li><a href="#pembayaran" className="hover:text-white">Pembayaran</a></li>
@@ -977,7 +977,7 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <div className="font-display font-semibold text-white text-sm mb-4">Perusahaan</div>
+          <div className="font-display font-semibold text-[#0b1020] text-sm mb-4">Perusahaan</div>
           <ul className="space-y-2 text-sm">
             <li><a href="/panduan" className="hover:text-white">Panduan</a></li>
             <li><a href="#faq" className="hover:text-white">FAQ</a></li>
@@ -986,7 +986,7 @@ function Footer() {
           </ul>
         </div>
         <div>
-          <div className="font-display font-semibold text-white text-sm mb-4">Kontak</div>
+          <div className="font-display font-semibold text-[#0b1020] text-sm mb-4">Kontak</div>
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#5B6CF9]" /> +62 851 5512 4304</li>
             <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#5B6CF9]" /> halo@atskolla.com</li>
