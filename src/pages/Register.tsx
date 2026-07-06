@@ -482,8 +482,60 @@ const Register = () => {
                       </motion.div>
                     )}
 
-                    {/* School Data Result */}
+                    {/* Subdomain / Alamat Website Sekolah — shown once schoolData is ready */}
                     {schoolData && (
+                      <motion.div variants={itemVariants} className="space-y-2">
+                        <Label htmlFor="schoolSlug">Alamat Website Sekolah <span className="text-red-500">*</span></Label>
+                        <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
+                          <Input
+                            id="schoolSlug"
+                            placeholder="namasekolah"
+                            value={slug}
+                            onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); }}
+                            maxLength={40}
+                            className="h-11 border-0 rounded-none focus-visible:ring-0 flex-1"
+                          />
+                          <div className="flex items-center px-3 bg-muted/60 text-xs text-muted-foreground whitespace-nowrap font-mono">
+                            .{rootDomain}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 min-h-[16px]">
+                          {slugStatus === "checking" && (
+                            <><Loader2 className="h-3 w-3 animate-spin text-muted-foreground" /><span className="text-[11px] text-muted-foreground">Mengecek ketersediaan…</span></>
+                          )}
+                          {slugStatus === "available" && (
+                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Tersedia — akses di <span className="font-mono">{slug}.{rootDomain}</span></span></>
+                          )}
+                          {slugStatus === "taken" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Sudah dipakai sekolah lain</span>
+                          )}
+                          {slugStatus === "reserved" && (
+                            <span className="text-[11px] text-red-600 font-medium">✗ Kata ini dipesan sistem</span>
+                          )}
+                          {slugStatus === "invalid" && slug.length > 0 && (
+                            <span className="text-[11px] text-amber-600 font-medium">Min 3 karakter — hanya huruf kecil &amp; angka.</span>
+                          )}
+                          {slugStatus === "idle" && !slug && (
+                            <span className="text-[11px] text-muted-foreground">Contoh: <span className="font-mono">smpn1jakarta</span></span>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <motion.div variants={itemVariants}>
+                      <Button
+                        type="button"
+                        onClick={() => { if (validateStep1Slug()) setStep(2); }}
+                        disabled={!canProceed || slugStatus !== "available"}
+                        className="w-full h-11 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all"
+                      >
+                        Lanjutkan
+                      </Button>
+                      <p className="text-[11px] text-muted-foreground text-center mt-2">
+                        Data lain seperti kepala sekolah, email &amp; alamat lengkap dapat dilengkapi nanti di <span className="font-medium">Pengaturan → Identitas Sekolah</span>.
+                      </p>
+                    </motion.div>
+
                       <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
