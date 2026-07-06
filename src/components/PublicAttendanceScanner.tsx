@@ -63,6 +63,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   // RFID listener: most RFID readers emulate keyboard and type card number + Enter rapidly
+  // Uses lookupRef (declared below) via closure to avoid stale onAttendanceRecorded
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -72,7 +73,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
         const code = rfidBuffer.current.trim();
         rfidBuffer.current = "";
         if (rfidTimeout.current) clearTimeout(rfidTimeout.current);
-        lookupAndRecord(code, "rfid");
+        lookupRef.current(code, "rfid");
         return;
       }
 
