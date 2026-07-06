@@ -40,8 +40,8 @@ export function StudentIdCard({ student, hideQrDownload = false, watermark = tru
   const [capturing, setCapturing] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [qrDataUrl, setQrDataUrl] = useState<string>("");
-  const cardRef = useRef<HTMLDivElement>(null);
+
+
 
   useEffect(() => {
     let mounted = true;
