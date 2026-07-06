@@ -452,9 +452,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
               <Button onClick={() => startCamera()} className="h-11 px-6 rounded-xl bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:opacity-90 text-white font-semibold shadow-lg shadow-[#5B6CF9]/25 gap-2">
                 <Camera className="h-4 w-4" /> Aktifkan Kamera
               </Button>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 flex-wrap justify-center text-xs text-muted-foreground">
                 <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
-                  <ScanLine className="h-3.5 w-3.5 text-[#5B6CF9]" /> Barcode
+                  <ScanLine className="h-3.5 w-3.5 text-[#5B6CF9]" /> QR
                 </div>
                 {canFaceRecognition ? (
                   <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
@@ -465,6 +465,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                     <Lock className="h-3 w-3" /> Face <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold ml-1">PREMIUM</span>
                   </div>
                 )}
+                <div className={`flex items-center gap-1 px-2.5 py-1 rounded-lg ${nfc.scanning ? "bg-emerald-100 text-emerald-700" : "bg-muted/50"}`}>
+                  <Nfc className={`h-3.5 w-3.5 ${nfc.scanning ? "text-emerald-600" : "text-[#5B6CF9]"}`} /> RFID
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground/60">Atau gunakan input NIS manual di bawah</p>
             </div>
