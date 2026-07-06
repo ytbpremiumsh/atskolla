@@ -693,6 +693,7 @@ const ScanQR = () => {
                       ) : (
                         <><span className="text-white/40">•</span><Lock className="h-3 w-3 opacity-50" /><span className="opacity-50">Face</span><span className="text-[9px] text-amber-400 font-bold ml-1">PREMIUM</span></>
                       )}
+                      <span className="text-white/40">•</span><Nfc className="h-3.5 w-3.5" /> RFID
                     </div>
                   </div>
                 </div>
