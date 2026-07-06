@@ -7,6 +7,7 @@ import {
   PaymentChannelId,
   formatIDR,
   getChannel,
+  computeChannelFee,
 } from "@/lib/paymentChannels";
 
 type Props = {
@@ -37,10 +38,7 @@ export function PaymentMethodPicker({
   onConfirm,
 }: Props) {
   const [selected, setSelected] = useState<PaymentChannelId>("qris");
-  const feeFor = (id: PaymentChannelId) => {
-    const o = feeOverrides?.[id];
-    return typeof o === "number" && !isNaN(o) ? o : (getChannel(id)?.fee ?? 0);
-  };
+  const feeFor = (id: PaymentChannelId) => computeChannelFee(id, billAmount, feeOverrides);
   const chan = getChannel(selected)!;
   const fee = feeFor(selected);
   const total = (billAmount || 0) + fee;
