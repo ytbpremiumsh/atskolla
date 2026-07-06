@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Database, Download, RefreshCw, Shield, Clock, HardDrive, Loader2,
-  CheckCircle, Table2, BarChart3, FileDown, Cloud,
+  Database, Download, Upload, RefreshCw, Shield, Clock, HardDrive, Loader2,
+  CheckCircle, AlertTriangle, Table2, BarChart3, FileDown, FileUp, Cloud,
   BookOpen, ExternalLink, Key, FolderOpen, Folder, FileText, Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +30,10 @@ const SuperAdminBackup = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [googleClientId, setGoogleClientId] = useState<string>("");
   const [showAllTables, setShowAllTables] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importMode, setImportMode] = useState<"upsert" | "replace">("upsert");
+  const [importResult, setImportResult] = useState<any>(null);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -72,11 +76,13 @@ const SuperAdminBackup = () => {
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || "Export gagal");
 
-      const blob = new Blob([JSON.stringify(data.backup, null, 2)], { type: "application/json" });
+      // Wrap in a portable envelope { meta, backup } so import knows the schema/version
+      const envelope = { meta: data.meta, backup: data.backup };
+      const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backup_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+      a.download = `atskolla-backup_${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -189,6 +195,46 @@ const SuperAdminBackup = () => {
     } else {
       setGoogleClientId(input.trim());
       toast.success("Google Client ID berhasil disimpan!");
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile) { toast.error("Pilih file backup JSON terlebih dahulu"); return; }
+    if (importMode === "replace") {
+      const ok = window.confirm(
+        "MODE REPLACE akan MENGHAPUS semua data yang ada di tabel yang di-import lalu menggantinya dengan isi backup.\n\nAksi ini TIDAK DAPAT DIBATALKAN.\n\nLanjutkan?"
+      );
+      if (!ok) return;
+    }
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const text = await importFile.text();
+      const parsed = JSON.parse(text);
+      // Accept envelope { meta, backup } or raw { table: [...] }
+      const backup = parsed?.backup && typeof parsed.backup === "object" ? parsed.backup : parsed;
+      const tableCount = Object.keys(backup || {}).length;
+      if (!tableCount) throw new Error("File tidak berisi data tabel yang valid");
+
+      toast.info(`Mengimport ${tableCount} tabel (mode ${importMode})...`);
+      const { data, error } = await supabase.functions.invoke("database-backup", {
+        body: { action: "import", backup, mode: importMode },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Import gagal");
+
+      setImportResult(data);
+      const { inserted, failed, tables } = data.summary || {};
+      if (failed > 0) {
+        toast.warning(`Import selesai: ${inserted} baris masuk, ${failed} gagal (${tables} tabel).`);
+      } else {
+        toast.success(`Import berhasil! ${inserted} baris di ${tables} tabel.`);
+      }
+      fetchStats();
+    } catch (err: any) {
+      toast.error("Gagal import: " + (err.message || String(err)));
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -322,6 +368,95 @@ const SuperAdminBackup = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Import / Restore */}
+      <Card className="border-0 shadow-card overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/20">
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Upload className="h-4 w-4 text-primary" />
+            Import / Restore Database
+          </h3>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            Pindahkan seluruh data ke website / instance lain. Upload file backup JSON hasil export.
+          </p>
+        </div>
+        <CardContent className="p-4 space-y-4">
+          <div className="rounded-xl border border-amber-500/30 bg-amber-500/[0.05] p-3 flex gap-2 items-start">
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+              <p className="font-semibold">Peringatan:</p>
+              <p><strong>Upsert</strong> menambah / memperbarui baris berdasarkan ID (aman, idempotent). <strong>Replace</strong> akan MENGHAPUS seluruh isi tabel sebelum mengisi ulang — hanya untuk migrasi ke database kosong.</p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] items-end">
+            <div className="grid gap-1.5">
+              <label className="text-[11px] font-medium text-foreground flex items-center gap-1.5">
+                <FileUp className="h-3.5 w-3.5" /> File Backup JSON
+              </label>
+              <input
+                type="file"
+                accept="application/json,.json"
+                onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                className="text-xs file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-primary/10 file:text-primary file:font-medium file:cursor-pointer hover:file:bg-primary/20"
+              />
+              {importFile && (
+                <p className="text-[10px] text-muted-foreground truncate">{importFile.name} • {(importFile.size / 1024).toFixed(1)} KB</p>
+              )}
+            </div>
+            <div className="grid gap-1.5">
+              <label className="text-[11px] font-medium text-foreground">Mode</label>
+              <select
+                value={importMode}
+                onChange={(e) => setImportMode(e.target.value as any)}
+                className="h-9 rounded-lg border border-input bg-background px-2 text-xs"
+              >
+                <option value="upsert">Upsert (aman)</option>
+                <option value="replace">Replace (hapus & ganti)</option>
+              </select>
+            </div>
+            <Button
+              onClick={handleImport}
+              disabled={!importFile || importing}
+              className="h-9 gap-2"
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              {importing ? "Mengimport..." : "Mulai Import"}
+            </Button>
+          </div>
+
+          {importResult && (
+            <div className="rounded-xl border border-success/15 bg-success/[0.03] p-3 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-3.5 w-3.5 text-success" />
+                <p className="text-xs font-semibold text-foreground">Import Selesai</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {importResult.summary?.inserted?.toLocaleString("id-ID")} baris masuk •{" "}
+                {importResult.summary?.failed || 0} gagal •{" "}
+                {importResult.summary?.tables} tabel • mode {importResult.mode}
+              </p>
+              {importResult.stats && (
+                <details className="text-[11px]">
+                  <summary className="cursor-pointer text-primary font-medium">Lihat detail per tabel</summary>
+                  <div className="mt-2 max-h-48 overflow-auto rounded-lg bg-muted/40 p-2 font-mono space-y-0.5">
+                    {Object.entries(importResult.stats).map(([t, s]: any) => (
+                      <div key={t} className="flex justify-between gap-2">
+                        <span className="truncate">{t}</span>
+                        <span className={s.failed > 0 ? "text-amber-600" : "text-muted-foreground"}>
+                          {s.inserted}✓ {s.failed > 0 && `• ${s.failed}✗`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       {/* Google Drive Backup */}
       <Card className="border-0 shadow-card overflow-hidden">

@@ -165,16 +165,26 @@ async function syncPaidInvoicesFromMayar(supabaseAdmin: any, schoolId: string) {
   return { checked: (invoices || []).length, paid, wa_sent: waSent };
 }
 
-// Whitelist channel + fee. Fee ditambahkan ke amount yang dikirim ke Mayar
-// (biaya ditanggung wali murid).
-const SERVICE_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
+// Fees are configurable via platform_settings (fee_va / fee_qris / fee_retail).
+// Fallback to sensible defaults if unset. Fee is added to invoice total charged to wali murid.
+const DEFAULT_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
 function normalizeChannel(c: any): string | null {
   const v = String(c || "").toLowerCase();
-  return v in SERVICE_FEES ? v : null;
+  return v in DEFAULT_FEES ? v : null;
 }
-function serviceFeeFor(c: any): number {
+async function serviceFeeFor(supabaseAdmin: any, c: any): Promise<number> {
   const v = normalizeChannel(c);
-  return v ? SERVICE_FEES[v] : 0;
+  if (!v) return 0;
+  try {
+    const { data } = await supabaseAdmin
+      .from("platform_settings")
+      .select("value")
+      .eq("key", `fee_${v}`)
+      .maybeSingle();
+    const n = parseInt(data?.value ?? "", 10);
+    if (Number.isFinite(n) && n >= 0) return n;
+  } catch (_) {}
+  return DEFAULT_FEES[v];
 }
 
 async function createMayarLink(apiKey: string, inv: any, attempt = 0): Promise<{ ok: boolean; json: any; expiry: Date; status: number }> {
@@ -370,7 +380,7 @@ async function ensureFreshLink(
 
   const now = Date.now();
   const isExpired = inv.expired_at ? new Date(inv.expired_at).getTime() < now : false;
-  const serviceFee = serviceFeeFor(channel);
+  const serviceFee = await serviceFeeFor(supabaseAdmin, channel);
 
   // Reuse if fresh & not forced AND channel matches previously chosen one.
   const sameChannel = channel ? inv.payment_channel === channel : true;

@@ -181,7 +181,94 @@ Deno.serve(async (req) => {
       })
     }
 
-    return new Response(JSON.stringify({ success: false, error: 'Invalid action. Use "export" or "stats"' }), {
+    if (action === 'import') {
+      const payload = body.backup as Record<string, any[]> | undefined
+      const mode = (body.mode as string) || 'upsert' // 'upsert' | 'replace'
+      if (!payload || typeof payload !== 'object') {
+        return new Response(JSON.stringify({ success: false, error: 'Body harus mengandung "backup" (object per-tabel)' }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      // Dependency order: parents first, children last.
+      const RESTORE_ORDER = [
+        'subscription_plans', 'schools', 'school_groups', 'school_subscriptions',
+        'profiles', 'user_roles',
+        'classes', 'subjects', 'teaching_schedules', 'class_teachers',
+        'students', 'student_grades',
+        'attendance_logs', 'subject_attendance', 'teacher_attendance_logs',
+        'dismissal_settings', 'dismissal_logs',
+        'school_holidays', 'school_announcements', 'school_integrations',
+        'spp_tariffs', 'spp_invoices', 'spp_logs', 'spp_settlements',
+        'bendahara_settings', 'bendahara_bank_accounts',
+        'id_card_designs', 'id_card_orders', 'id_card_order_items',
+        'landing_content', 'landing_testimonials', 'landing_trusted_schools',
+        'promo_content', 'panduan_content', 'qr_instructions',
+        'platform_settings', 'email_settings', 'email_logs',
+        'notifications', 'login_logs',
+        'affiliates', 'affiliate_commissions', 'affiliate_withdrawals', 'referrals',
+        'rewards', 'reward_claims', 'point_transactions',
+        'short_links', 'short_link_clicks',
+        'parent_leave_requests', 'parent_messages',
+        'payment_transactions', 'school_addons',
+        'support_tickets', 'ticket_replies',
+        'wa_credits', 'wa_message_logs',
+      ]
+
+      const CHUNK = 200
+      const stats: Record<string, { inserted: number; failed: number; error?: string }> = {}
+
+      const tablesInPayload = new Set(Object.keys(payload))
+      const orderedTables = RESTORE_ORDER.filter(t => tablesInPayload.has(t))
+      // Append any extra tables that were in payload but not in our order
+      for (const t of tablesInPayload) if (!orderedTables.includes(t)) orderedTables.push(t)
+
+      for (const table of orderedTables) {
+        if (SKIP_TABLES.has(table)) continue
+        const rows = payload[table] || []
+        if (!Array.isArray(rows) || rows.length === 0) { stats[table] = { inserted: 0, failed: 0 }; continue }
+
+        // Replace mode: wipe existing rows first (dangerous — for full migrations only).
+        if (mode === 'replace') {
+          try { await supabase.from(table).delete().not('id', 'is', null) } catch (_) {}
+        }
+
+        let inserted = 0
+        let failed = 0
+        let lastErr: string | undefined
+        for (let i = 0; i < rows.length; i += CHUNK) {
+          const chunk = rows.slice(i, i + CHUNK)
+          const { error } = await supabase.from(table).upsert(chunk, { onConflict: 'id', ignoreDuplicates: false })
+          if (error) {
+            // Retry row-by-row so a single bad row doesn't drop the whole chunk
+            for (const row of chunk) {
+              const { error: rowErr } = await supabase.from(table).upsert(row, { onConflict: 'id' })
+              if (rowErr) { failed++; lastErr = rowErr.message } else { inserted++ }
+            }
+          } else {
+            inserted += chunk.length
+          }
+        }
+        stats[table] = { inserted, failed, error: lastErr }
+      }
+
+      const totalInserted = Object.values(stats).reduce((a, s) => a + s.inserted, 0)
+      const totalFailed = Object.values(stats).reduce((a, s) => a + s.failed, 0)
+
+      return new Response(JSON.stringify({
+        success: true,
+        mode,
+        summary: {
+          tables: Object.keys(stats).length,
+          inserted: totalInserted,
+          failed: totalFailed,
+          imported_at: new Date().toISOString(),
+        },
+        stats,
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    return new Response(JSON.stringify({ success: false, error: 'Invalid action. Use "export", "import" or "stats"' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

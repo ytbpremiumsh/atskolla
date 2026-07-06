@@ -40,10 +40,10 @@ const SuperAdminPaymentGateway = () => {
   const [hasDokuSecret, setHasDokuSecret] = useState(false);
   const [showDokuSecret, setShowDokuSecret] = useState(false);
 
-  // Doku method overrides (per-channel)
-  const [dokuVaMethods, setDokuVaMethods] = useState("");
-  const [dokuQrisMethods, setDokuQrisMethods] = useState("");
-  const [dokuRetailMethods, setDokuRetailMethods] = useState("");
+  // Custom admin fee per channel (charged to wali murid)
+  const [feeVa, setFeeVa] = useState("5000");
+  const [feeQris, setFeeQris] = useState("5000");
+  const [feeRetail, setFeeRetail] = useState("8000");
   const [dokuWebhookVerify, setDokuWebhookVerify] = useState("true");
 
   const [copied, setCopied] = useState<string | null>(null);
@@ -72,9 +72,9 @@ const SuperAdminPaymentGateway = () => {
       setDokuSecretMasked(d.doku_secret_key_masked || "");
       setHasDokuClient(!!d.has_doku_client_id);
       setHasDokuSecret(!!d.has_doku_secret_key);
-      setDokuVaMethods(d.doku_va_methods || "");
-      setDokuQrisMethods(d.doku_qris_methods || "");
-      setDokuRetailMethods(d.doku_retail_methods || "");
+      setFeeVa(d.fee_va || "5000");
+      setFeeQris(d.fee_qris || "5000");
+      setFeeRetail(d.fee_retail || "8000");
       setDokuWebhookVerify(d.doku_webhook_verify || "true");
     } catch (e: any) {
       toast.error("Gagal memuat: " + (e.message || "unknown"));
@@ -129,9 +129,9 @@ const SuperAdminPaymentGateway = () => {
     try {
       const updates: any = {
         doku_env: dokuEnv,
-        doku_va_methods: dokuVaMethods.trim(),
-        doku_qris_methods: dokuQrisMethods.trim(),
-        doku_retail_methods: dokuRetailMethods.trim(),
+        fee_va: feeVa.trim() || "0",
+        fee_qris: feeQris.trim() || "0",
+        fee_retail: feeRetail.trim() || "0",
         doku_webhook_verify: dokuWebhookVerify,
       };
       if (dokuClientId.trim()) updates.doku_client_id = dokuClientId.trim();
@@ -243,6 +243,37 @@ const SuperAdminPaymentGateway = () => {
           <p className="text-[11px] text-muted-foreground">
             Wali murid akan otomatis diarahkan ke gateway yang dipilih sesuai metode pembayaran mereka. Pastikan kredensial gateway terkait sudah terpasang di bawah.
           </p>
+
+          {/* Custom Admin Fee per channel */}
+          <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Custom Fee Admin per Channel (Rp)</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Biaya tambahan yang ditagihkan ke wali murid saat membayar SPP & tagihan lainnya. Berlaku untuk Mayar maupun Doku.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-1">
+                <Label className="text-[11px] flex items-center gap-1"><Banknote className="h-3 w-3" /> Virtual Account</Label>
+                <Input type="number" min="0" value={feeVa} onChange={(e) => setFeeVa(e.target.value)} placeholder="5000" className="font-mono text-sm h-9" />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-[11px] flex items-center gap-1"><QrCode className="h-3 w-3" /> QRIS</Label>
+                <Input type="number" min="0" value={feeQris} onChange={(e) => setFeeQris(e.target.value)} placeholder="5000" className="font-mono text-sm h-9" />
+              </div>
+              <div className="grid gap-1">
+                <Label className="text-[11px] flex items-center gap-1"><Store className="h-3 w-3" /> Retail (Alfa/Indomaret)</Label>
+                <Input type="number" min="0" value={feeRetail} onChange={(e) => setFeeRetail(e.target.value)} placeholder="8000" className="font-mono text-sm h-9" />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={handleSaveDoku} disabled={saving}>
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}
+                Simpan Fee
+              </Button>
+            </div>
+          </div>
+
         </CardContent>
       </Card>
 
@@ -356,29 +387,6 @@ const SuperAdminPaymentGateway = () => {
           </div>
 
 
-          {/* Method overrides */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 space-y-3">
-            <div>
-              <p className="text-xs font-semibold text-amber-900">Filter Metode Pembayaran per Channel</p>
-              <p className="text-[10px] text-amber-800/80 mt-0.5">
-                Ketik <code className="px-1 bg-white rounded">*</code> agar SEMUA metode aktif di Doku Dashboard tampil (rekomendasi kalau Mandiri / bank baru tidak muncul). Atau isi daftar dipisah koma, contoh: <code className="px-1 bg-white rounded">VIRTUAL_ACCOUNT_BCA,VIRTUAL_ACCOUNT_MANDIRI</code>. Kosong = pakai daftar default sistem.
-              </p>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="grid gap-1">
-                <Label className="text-[11px]">VA Methods</Label>
-                <Input value={dokuVaMethods} onChange={(e) => setDokuVaMethods(e.target.value)} placeholder="* atau kosong" className="font-mono text-[11px] h-8" />
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[11px]">QRIS Methods</Label>
-                <Input value={dokuQrisMethods} onChange={(e) => setDokuQrisMethods(e.target.value)} placeholder="* atau kosong" className="font-mono text-[11px] h-8" />
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[11px]">Retail Methods</Label>
-                <Input value={dokuRetailMethods} onChange={(e) => setDokuRetailMethods(e.target.value)} placeholder="* atau kosong" className="font-mono text-[11px] h-8" />
-              </div>
-            </div>
-          </div>
 
           <div className="rounded-lg bg-secondary/40 p-3">
             <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"><Webhook className="h-3 w-3" /> Webhook URL Doku (WAJIB didaftarkan)</p>
