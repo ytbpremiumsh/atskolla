@@ -316,20 +316,39 @@ export function BendaharaDashboard() {
         variant="primary"
       />
 
-      {/* RINCIAN KEUANGAN — colorful tile grid (di bawah header dashboard) */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/70 dark:ring-slate-800/60">
-        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center gap-2.5">
+      {/* KEUANGAN AKTIF — Siap Dicairkan (dipisah supaya jelas beda dengan rincian pembayaran) */}
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-emerald-200/70 dark:ring-emerald-800/40">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3.5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
             <Wallet className="h-4 w-4 text-white" />
           </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-tight">Rincian Keuangan</p>
-            <p className="text-[10px] text-white/70 leading-tight">Saldo live, tagihan, lunas, dan tunggakan</p>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-white leading-tight">Keuangan Aktif — Siap Dicairkan</p>
+            <p className="text-[10px] text-white/80 leading-tight">Saldo online yang dapat langsung di-withdraw ke rekening sekolah</p>
           </div>
         </div>
-        <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Saldo Live (Siap Cair)</p>
+            <p className="text-3xl font-extrabold text-emerald-600 mt-1">{fmtIDR(stats.availableBalance)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Otomatis dari invoice online (bukan offline) yang sudah lunas & belum di-settle.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* RINCIAN KEUANGAN PEMBAYARAN SEKOLAH — snapshot tagihan/lunas/tunggakan */}
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/70 dark:ring-slate-800/60">
+        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+            <Receipt className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white leading-tight">Rincian Keuangan Pembayaran Sekolah</p>
+            <p className="text-[10px] text-white/70 leading-tight">Tagihan bulan berjalan, total lunas, dan tunggakan</p>
+          </div>
+        </div>
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { label: "Saldo (Live)", value: fmtIDR(stats.availableBalance), grad: "from-emerald-500 to-teal-600", icon: Wallet, sub: "Bisa dicairkan" },
             { label: "Tagihan Bulan Ini", value: fmtIDR(stats.monthBills), grad: "from-sky-500 to-blue-600", icon: Receipt, sub: `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}` },
             { label: "Lunas", value: fmtIDR(stats.totalGross), grad: "from-violet-500 to-indigo-600", icon: CheckCircle2, sub: `${stats.paidCount} transaksi` },
             { label: "Tunggakan", value: fmtIDR(stats.tunggakan), grad: "from-rose-500 to-red-600", icon: AlertCircle, sub: `${stats.pendingCount} pending` },
@@ -4618,7 +4637,30 @@ export function BendaharaLaporan() {
 
     if (format === "xlsx") {
       const wb = XLSX.utils.book_new();
+
+      // Ringkasan Per Tahun Ajaran (selalu ada — memudahkan pembacaan lintas TA)
+      const perTA = new Map<string, any[]>();
+      rows.forEach(r => {
+        const ta = String(r["Tahun Ajaran"] || "-");
+        if (!perTA.has(ta)) perTA.set(ta, []);
+        perTA.get(ta)!.push(r);
+      });
+      const summaryTA = Array.from(perTA.entries())
+        .sort(([a],[b]) => a.localeCompare(b))
+        .map(([ta, list]) => ({
+          "Tahun Ajaran": ta,
+          "Jumlah Tagihan": list.length,
+          "Lunas": list.filter(x => x.Status === "Lunas").length,
+          "Belum Bayar": list.filter(x => x.Status !== "Lunas").length,
+          "Total Tagihan": list.reduce((a, x) => a + (x.Total || 0), 0),
+          "Total Diterima": list.filter(x => x.Status === "Lunas").reduce((a, x) => a + (x.Total || 0), 0),
+        }));
+      const wsTA = XLSX.utils.json_to_sheet(summaryTA);
+      wsTA["!cols"] = [{ wch: 14 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, wsTA, "Ringkasan per TA");
+
       if (expClass === "all") {
+        // Ringkasan per Kelas
         const grouped = new Map<string, any[]>();
         rows.forEach(r => {
           const cls = String(r["Kelas"]);
@@ -4631,14 +4673,29 @@ export function BendaharaLaporan() {
           "Lunas": list.filter(x => x.Status === "Lunas").length,
           "Belum Bayar": list.filter(x => x.Status !== "Lunas").length,
           "Total Tagihan": list.reduce((a, x) => a + (x.Total || 0), 0),
+          "Total Diterima": list.filter(x => x.Status === "Lunas").reduce((a, x) => a + (x.Total || 0), 0),
         }));
         const wsSum = XLSX.utils.json_to_sheet(summary);
-        wsSum["!cols"] = [{ wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }];
-        XLSX.utils.book_append_sheet(wb, wsSum, "Ringkasan");
+        wsSum["!cols"] = [{ wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+        XLSX.utils.book_append_sheet(wb, wsSum, "Ringkasan per Kelas");
+
+        // Rincian per Kelas × TA supaya ekspor lebih rapih (satu sheet per Kelas-TA jika multi-TA)
         Array.from(grouped.entries()).forEach(([cls, list]) => {
-          const ws = XLSX.utils.json_to_sheet(list);
-          ws["!cols"] = Object.keys(list[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
-          XLSX.utils.book_append_sheet(wb, ws, cls.slice(0, 31));
+          const tas = new Set(list.map(x => String(x["Tahun Ajaran"] || "-")));
+          if (tas.size > 1) {
+            // Split per TA
+            Array.from(tas).sort().forEach((ta) => {
+              const subset = list.filter(x => String(x["Tahun Ajaran"]) === ta);
+              const ws = XLSX.utils.json_to_sheet(subset);
+              ws["!cols"] = Object.keys(subset[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
+              const sheetName = `${cls} ${ta}`.slice(0, 31);
+              XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+          } else {
+            const ws = XLSX.utils.json_to_sheet(list);
+            ws["!cols"] = Object.keys(list[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
+            XLSX.utils.book_append_sheet(wb, ws, cls.slice(0, 31));
+          }
         });
       } else {
         const ws = XLSX.utils.json_to_sheet(rows);

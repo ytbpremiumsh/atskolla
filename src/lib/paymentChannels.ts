@@ -85,6 +85,30 @@ export function getChannel(id: PaymentChannelId | string | null | undefined): Pa
   return PAYMENT_CHANNELS.find((x) => x.id === id);
 }
 
+// QRIS: 1% dari tagihan dengan minimum Rp 2.500.
+// Sengaja tidak menampilkan "1%" di UI — hanya "Biaya Layanan".
+export const QRIS_MIN_FEE = 2500;
+export const QRIS_PERCENT = 0.01;
+export function computeQrisFee(amount: number): number {
+  const base = Math.max(0, Number(amount) || 0);
+  return Math.max(QRIS_MIN_FEE, Math.round(base * QRIS_PERCENT));
+}
+
+// Hitung fee untuk channel tertentu berdasarkan amount tagihan.
+// - QRIS = max(Rp2.500, 1% * amount) — dinamis
+// - VA / Retail = fee flat (dari override atau default channel)
+export function computeChannelFee(
+  id: PaymentChannelId | string | null | undefined,
+  amount: number,
+  overrides?: Partial<Record<PaymentChannelId, number>>,
+): number {
+  const key = String(id || "").toLowerCase() as PaymentChannelId;
+  if (key === "qris") return computeQrisFee(amount);
+  const ov = overrides?.[key];
+  if (typeof ov === "number" && !isNaN(ov)) return ov;
+  return getChannel(key)?.fee ?? 0;
+}
+
 export function formatIDR(n: number): string {
   return "Rp " + (Number(n) || 0).toLocaleString("id-ID");
 }

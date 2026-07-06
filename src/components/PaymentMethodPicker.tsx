@@ -7,6 +7,7 @@ import {
   PaymentChannelId,
   formatIDR,
   getChannel,
+  computeChannelFee,
 } from "@/lib/paymentChannels";
 
 type Props = {
@@ -37,10 +38,7 @@ export function PaymentMethodPicker({
   onConfirm,
 }: Props) {
   const [selected, setSelected] = useState<PaymentChannelId>("qris");
-  const feeFor = (id: PaymentChannelId) => {
-    const o = feeOverrides?.[id];
-    return typeof o === "number" && !isNaN(o) ? o : (getChannel(id)?.fee ?? 0);
-  };
+  const feeFor = (id: PaymentChannelId) => computeChannelFee(id, billAmount, feeOverrides);
   const chan = getChannel(selected)!;
   const fee = feeFor(selected);
   const total = (billAmount || 0) + fee;
@@ -132,7 +130,7 @@ export function PaymentMethodPicker({
             <span className="font-medium">{formatIDR(billAmount)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Biaya Layanan ({chan.label.split(" ")[0]})</span>
+            <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
