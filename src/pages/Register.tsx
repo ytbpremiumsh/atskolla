@@ -724,6 +724,7 @@ const Register = () => {
                         <Input id="loginEmail" type="email" placeholder="admin@sekolah.sch.id" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={200} className="h-11 rounded-xl" required />
                         <p className="text-[11px] text-muted-foreground">Email ini digunakan untuk login ke dashboard</p>
                       </motion.div>
+                      </>)}
 
                       {step === 4 && (<>
                       {/* ===== SECTION C: Keamanan ===== */}
