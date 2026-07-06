@@ -3,9 +3,12 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { School, Eye, EyeOff, Loader2, Search, CheckCircle2, MapPin, GraduationCap, PenLine, ArrowLeft, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { School, Eye, EyeOff, Loader2, Search, CheckCircle2, MapPin, GraduationCap, PenLine, ArrowLeft, Sparkles, ShieldCheck, Zap, User, Mail, Phone, Building2, Globe2, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Fragment, type ReactNode } from "react";
 // Animations disabled on this page — motion.* & AnimatePresence are inert passthroughs
 type Easing = string;
