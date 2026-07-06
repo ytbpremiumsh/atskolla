@@ -93,6 +93,8 @@ const SuperAdminSubscriptionsHub = lazy(() => import("./pages/super-admin/SuperA
 const SuperAdminWhatsAppHub = lazy(() => import("./pages/super-admin/SuperAdminWhatsAppHub"));
 const SuperAdminCMS = lazy(() => import("./pages/super-admin/SuperAdminCMS"));
 const SuperAdminSekolahHub = lazy(() => import("./pages/super-admin/SuperAdminSekolahHub"));
+const SuperAdminRFID = lazy(() => import("./pages/super-admin/SuperAdminRFID"));
+const SchoolRFIDDevices = lazy(() => import("./pages/SchoolRFIDDevices"));
 
 // Bendahara grouped
 const BendaharaPagesMod = () => import("./pages/bendahara/BendaharaPages");
@@ -223,7 +225,9 @@ function AppRoutes() {
           <Route path="/super-admin/bendahara" element={<SuperAdminBendahara />} />
           <Route path="/super-admin/shortlinks" element={<SuperAdminShortlinks />} />
           <Route path="/super-admin/meta-pixel" element={<SuperAdminMetaPixel />} />
+          <Route path="/super-admin/rfid" element={<SuperAdminRFID />} />
         </Route>
+
         <Route path="/s/:code" element={<ShortlinkRedirect />} />
         {/* School Admin / Staff */}
         <Route element={<AppLayout />}>
@@ -262,6 +266,8 @@ function AppRoutes() {
           <Route path="/school-settings" element={<SchoolSettings />} />
           <Route path="/holidays" element={<HolidayManagement />} />
           <Route path="/attendance-time" element={<AttendanceTime />} />
+          <Route path="/rfid-devices" element={<SchoolRFIDDevices />} />
+
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/support" element={<SupportTickets />} />
           <Route path="/referral" element={<ReferralDashboard />} />

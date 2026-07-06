@@ -114,3 +114,7 @@ verify_jwt = false
 [functions.manage-payment-gateway]
 verify_jwt = false
 
+[functions.rfid-device]
+verify_jwt = false
+
+

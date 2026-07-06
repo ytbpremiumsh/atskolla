@@ -1501,6 +1501,181 @@ export type Database = {
         }
         Relationships: []
       }
+      rfid_device_licenses: {
+        Row: {
+          created_at: string
+          id: string
+          license_count: number
+          notes: string | null
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          license_count?: number
+          notes?: string | null
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          license_count?: number
+          notes?: string | null
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfid_device_licenses_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfid_device_logs: {
+        Row: {
+          created_at: string
+          device_id: string | null
+          device_ref: string | null
+          event_type: string
+          id: string
+          payload: Json
+          school_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_id?: string | null
+          device_ref?: string | null
+          event_type: string
+          id?: string
+          payload?: Json
+          school_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_id?: string | null
+          device_ref?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          school_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfid_device_logs_device_ref_fkey"
+            columns: ["device_ref"]
+            isOneToOne: false
+            referencedRelation: "rfid_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfid_device_logs_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfid_devices: {
+        Row: {
+          activated_at: string | null
+          activation_code: string
+          created_at: string
+          device_id: string
+          firmware_version: string | null
+          id: string
+          last_heartbeat_at: string | null
+          last_ip: string | null
+          last_online_at: string | null
+          location_label: string | null
+          mac_address: string | null
+          notes: string | null
+          school_id: string | null
+          secret_token_hash: string | null
+          serial_number: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activation_code: string
+          created_at?: string
+          device_id: string
+          firmware_version?: string | null
+          id?: string
+          last_heartbeat_at?: string | null
+          last_ip?: string | null
+          last_online_at?: string | null
+          location_label?: string | null
+          mac_address?: string | null
+          notes?: string | null
+          school_id?: string | null
+          secret_token_hash?: string | null
+          serial_number: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          activation_code?: string
+          created_at?: string
+          device_id?: string
+          firmware_version?: string | null
+          id?: string
+          last_heartbeat_at?: string | null
+          last_ip?: string | null
+          last_online_at?: string | null
+          location_label?: string | null
+          mac_address?: string | null
+          notes?: string | null
+          school_id?: string | null
+          secret_token_hash?: string | null
+          serial_number?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfid_devices_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfid_size_tiers: {
+        Row: {
+          created_at: string
+          id: string
+          max_students: number | null
+          min_devices: number
+          min_students: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_students?: number | null
+          min_devices: number
+          min_students: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_students?: number | null
+          min_devices?: number
+          min_students?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       school_addons: {
         Row: {
           addon_type: string
@@ -2743,9 +2918,14 @@ export type Database = {
       }
       increment_shortlink_click: { Args: { _code: string }; Returns: undefined }
       is_reserved_slug: { Args: { _slug: string }; Returns: boolean }
+      mark_offline_rfid_devices: { Args: never; Returns: undefined }
       notify_admin_wa: {
         Args: { _event_type: string; _payload: Json }
         Returns: undefined
+      }
+      rfid_required_min_devices: {
+        Args: { _school_id: string }
+        Returns: number
       }
       slugify: { Args: { _input: string }; Returns: string }
     }
