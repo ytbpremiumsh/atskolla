@@ -165,13 +165,6 @@ function AppContent() {
                   <KeyRound className="h-4 w-4 mr-2.5 text-muted-foreground" />
                   Ganti Password
                 </DropdownMenuItem>
-                {/* Admin Sekolah pakai Referral & Point */}
-                {roles.includes("school_admin") && (
-                  <DropdownMenuItem onClick={() => navigate("/referral")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
-                    <Award className="h-4 w-4 mr-2.5 text-muted-foreground" />
-                    Referral & Point
-                  </DropdownMenuItem>
-                )}
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
                     <HelpCircle className="h-4 w-4 mr-2.5 text-muted-foreground" />

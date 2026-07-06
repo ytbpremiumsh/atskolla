@@ -365,9 +365,9 @@ serve(async (req) => {
       if (!inv) return err("Invoice tidak ditemukan");
       if (inv.status === "paid") return err("Invoice sudah dibayar");
 
-      const result = await ensureFreshLink(supabaseAdmin, inv, action === "regenerate_payment_link");
+      const result = await ensureFreshLink(supabaseAdmin, inv, action === "regenerate_payment_link", normalizeChannel(body.channel));
       if (!result.success) return err(result.error || "Gagal");
-      return ok({ payment_url: brandPaymentUrl(result.payment_url), invoice_id: result.invoice_id });
+      return ok({ payment_url: brandPaymentUrl(result.payment_url), invoice_id: result.invoice_id, service_fee: result.service_fee || 0, total_charged: result.total_charged || inv.total_amount });
     }
 
     // ====== SYNC PAID INVOICES ======

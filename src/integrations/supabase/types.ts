@@ -1962,6 +1962,7 @@ export type Database = {
           npsn: string | null
           principal_name: string | null
           province: string | null
+          rfid_mode: string
           slug: string
           slug_updated_at: string | null
           timezone: string | null
@@ -1984,6 +1985,7 @@ export type Database = {
           npsn?: string | null
           principal_name?: string | null
           province?: string | null
+          rfid_mode?: string
           slug: string
           slug_updated_at?: string | null
           timezone?: string | null
@@ -2006,6 +2008,7 @@ export type Database = {
           npsn?: string | null
           principal_name?: string | null
           province?: string | null
+          rfid_mode?: string
           slug?: string
           slug_updated_at?: string | null
           timezone?: string | null

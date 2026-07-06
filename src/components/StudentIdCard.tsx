@@ -140,15 +140,6 @@ export function StudentIdCard({ student, hideQrDownload = false, watermark = tru
                 ))}
               </div>
             </div>
-            {/* Center stamp */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div
-                className="border-4 border-white/70 rounded-2xl px-5 py-2 text-white/90 font-black tracking-widest"
-                style={{ transform: "rotate(-18deg)", fontSize: 22, backgroundColor: "rgba(0,0,0,0.15)" }}
-              >
-                CETAK RESMI ATSKOLLA
-              </div>
-            </div>
           </div>
         )}
 
