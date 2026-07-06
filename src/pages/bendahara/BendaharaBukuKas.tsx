@@ -33,7 +33,7 @@ type Entry = {
 };
 
 export default function BendaharaBukuKas() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [manual, setManual] = useState<Entry[]>([]);
   const [autoEntries, setAutoEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
