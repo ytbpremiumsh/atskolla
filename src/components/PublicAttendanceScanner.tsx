@@ -93,7 +93,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const isMobile = useIsMobile();
   const nfc = useNfcScanner((uid) => {
 
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     lookupRef.current(uid, "rfid");
   });
 
@@ -102,7 +102,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     if (isLookingUp.current) return;
     if (!code && !studentId) return;
     isLookingUp.current = true;
-    scanPaused.current = true;
+    scanPaused.current = true; setPaused(true);
 
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/public-scan-attendance`, {
@@ -131,7 +131,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
       if (!res.ok) {
         toast.error(data.error || "Siswa tidak ditemukan");
-        scanPaused.current = false;
+        scanPaused.current = false; setPaused(false);
         return;
       }
 
@@ -147,7 +147,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
       setTimeout(() => resetState(), 3000);
     } catch (err: any) {
       toast.error("Gagal menghubungi server");
-      scanPaused.current = false;
+      scanPaused.current = false; setPaused(false);
     } finally {
       isLookingUp.current = false;
     }
@@ -297,7 +297,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
   };
 
   useEffect(() => { return () => { stopCamera(); }; }, []);
@@ -307,14 +307,14 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     setConfirmed(false);
     setManualCode("");
     setAlreadyRecorded(false);
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     setScanMethod("barcode");
     setAttendanceType("datang");
   };
 
   const handleSearch = () => {
     if (!manualCode.trim()) return;
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     lookupAndRecord(manualCode.trim(), "barcode");
   };
 
