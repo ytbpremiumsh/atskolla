@@ -330,15 +330,22 @@ const Register = () => {
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-3 mb-5">
-          <div className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-500 ${step === 1 ? "bg-[#5B6CF9] text-white shadow-md shadow-[#5B6CF9]/20" : "bg-slate-100 text-slate-500"}`}>
-            <span>1</span> Data Sekolah
-          </div>
-          <div className="w-8 h-px bg-slate-200" />
-          <div className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-500 ${step === 2 ? "bg-[#5B6CF9] text-white shadow-md shadow-[#5B6CF9]/20" : "bg-slate-100 text-slate-500"}`}>
-            <span>2</span> Data Admin
-          </div>
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-5 flex-wrap">
+          {[
+            { n: 1, label: "Sekolah" },
+            { n: 2, label: "Profil" },
+            { n: 3, label: "PJ" },
+            { n: 4, label: "Keamanan" },
+          ].map((s, i) => (
+            <Fragment key={s.n}>
+              {i > 0 && <div className="w-4 sm:w-6 h-px bg-slate-200" />}
+              <div className={`flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition-all duration-300 ${step === s.n ? "bg-[#5B6CF9] text-white shadow-md shadow-[#5B6CF9]/20" : step > s.n ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
+                {step > s.n ? <CheckCircle2 className="h-3 w-3" /> : <span>{s.n}</span>} {s.label}
+              </div>
+            </Fragment>
+          ))}
         </div>
+
 
         {/* Main Card */}
         <div className="relative">
