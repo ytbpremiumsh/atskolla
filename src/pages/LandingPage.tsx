@@ -221,7 +221,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <nav className="hidden lg:flex items-center gap-8">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-sm font-semibold text-[#5B6CF9] hover:text-[#5B6CF9]/80 transition-colors">
+            <a key={n.href} href={n.href} className="text-sm font-semibold text-[#0b1020] hover:text-[#5B6CF9] transition-colors">
               {n.label}
             </a>
           ))}
