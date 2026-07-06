@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
+import { RFIDDeviceWarning } from "@/components/dashboard/RFIDDeviceWarning";
 import { getLocalDateString } from "@/lib/dateLocal";
 import { fetchSchoolHolidayStatus, type HolidayStatus } from "@/lib/schoolHoliday";
 import { buildTenantUrl, useTenant } from "@/lib/tenant";
