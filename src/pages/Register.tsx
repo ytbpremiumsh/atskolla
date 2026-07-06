@@ -434,16 +434,39 @@ const Register = () => {
                     {inputMode === "manual" && !schoolData && (
                       <motion.div variants={itemVariants} className="space-y-3">
                         <div className="space-y-2">
-                          <Label htmlFor="schoolName">Nama Sekolah</Label>
+                          <Label htmlFor="schoolName">Nama Sekolah <span className="text-red-500">*</span></Label>
                           <Input id="schoolName" placeholder="Contoh: SDN 1 Surabaya" value={manualName} onChange={(e) => setManualName(e.target.value)} className="h-11 rounded-xl" />
                         </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-2">
+                            <Label>Jenjang <span className="text-red-500">*</span></Label>
+                            <Select value={manualLevel} onValueChange={setManualLevel}>
+                              <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Pilih jenjang" /></SelectTrigger>
+                              <SelectContent>
+                                {["PAUD","TK","SD","MI","SMP","MTs","SMA","MA","SMK","SLB","Pesantren","Lainnya"].map((l) => (
+                                  <SelectItem key={l} value={l}>{l}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Status <span className="text-red-500">*</span></Label>
+                            <Select value={manualStatus} onValueChange={setManualStatus}>
+                              <SelectTrigger className="h-11 rounded-xl"><SelectValue placeholder="Pilih status" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Negeri">Negeri</SelectItem>
+                                <SelectItem value="Swasta">Swasta</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                         <div className="space-y-2">
-                          <Label htmlFor="schoolAddress">Alamat Sekolah <span className="text-muted-foreground font-normal">(opsional)</span></Label>
-                          <Input id="schoolAddress" placeholder="Jl. Pendidikan No. 1, Kota ..." value={manualAddress} onChange={(e) => setManualAddress(e.target.value)} className="h-11 rounded-xl" />
+                          <Label htmlFor="schoolAddressManual">Alamat Sekolah <span className="text-muted-foreground font-normal">(opsional)</span></Label>
+                          <Input id="schoolAddressManual" placeholder="Jl. Pendidikan No. 1, Kota ..." value={manualAddress} onChange={(e) => setManualAddress(e.target.value)} className="h-11 rounded-xl" />
                         </div>
                         <div className="flex gap-2">
                           <Button type="button" variant="ghost" size="sm" onClick={resetStep1} className="text-xs text-muted-foreground">← Kembali</Button>
-                          <Button type="button" onClick={handleManualConfirm} disabled={!manualName.trim()} className="flex-1 h-10 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl">Konfirmasi</Button>
+                          <Button type="button" onClick={handleManualConfirm} disabled={!manualName.trim() || !manualLevel || !manualStatus} className="flex-1 h-10 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl">Konfirmasi</Button>
                         </div>
                       </motion.div>
                     )}
