@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import atskollaLogo from "@/assets/atskolla-logo.png.asset.json";
 import {
   ArrowRight, CheckCircle2, ShieldCheck, Zap, MapPin, Menu, X,
   QrCode, ScanFace, CreditCard, Wallet, Receipt, Banknote,
@@ -211,10 +212,8 @@ function Nav() {
   return (
     <header className={`fixed top-0 inset-x-0 z-50 transition-all bg-white ${scrolled ? "shadow-[0_1px_0_0_rgba(15,23,42,0.06),0_8px_24px_-12px_rgba(15,23,42,0.08)]" : "border-b border-slate-100"}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-lg bg-[#5B6CF9] flex items-center justify-center shadow-lg shadow-[#5B6CF9]/25">
-            <span className="font-display font-bold text-white text-sm">A</span>
-          </div>
+        <a href="/" className="flex items-center gap-2.5 group">
+          <img src={atskollaLogo.url} alt="ATSkolla" className="h-9 w-9 object-contain" />
           <span className="font-display font-bold text-[#0b1020] text-lg tracking-tight">ATSkolla</span>
         </a>
 
@@ -954,9 +953,9 @@ function Footer() {
     <footer className="bg-[#0b1020] border-t border-white/5 text-white/60">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-14 grid md:grid-cols-4 gap-10">
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-8 w-8 rounded-lg bg-[#5B6CF9] flex items-center justify-center">
-              <span className="font-display font-bold text-white text-sm">A</span>
+          <div className="flex items-center gap-2.5 mb-4">
+            <div className="h-9 w-9 rounded-lg bg-white/95 flex items-center justify-center p-1">
+              <img src={atskollaLogo.url} alt="ATSkolla" className="h-full w-full object-contain" />
             </div>
             <span className="font-display font-bold text-white text-lg">ATSkolla</span>
           </div>
