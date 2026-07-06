@@ -251,6 +251,7 @@ async function syncSppInvoicesFromDoku(invoices: any[]) {
   return invoices.map((i) => byId.get(i.id) || i);
 }
 
+function phoneVariants(phone: string): string[] {
   const digits = (phone || "").replace(/\D/g, "");
   const variants = new Set<string>();
   variants.add(digits);
