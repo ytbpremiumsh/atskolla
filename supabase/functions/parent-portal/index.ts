@@ -606,7 +606,8 @@ Deno.serve(async (req) => {
         .eq("student_id", studentId)
         .order("period_year", { ascending: false })
         .order("period_month", { ascending: false });
-      const syncedData = await syncSppInvoicesFromMayar(data || []);
+      let syncedData = await syncSppInvoicesFromMayar(data || []);
+      syncedData = await syncSppInvoicesFromDoku(syncedData);
       // Auto-mark as expired if past expiry and not paid
       const now = Date.now();
       const list = syncedData.map((i: any) => {
