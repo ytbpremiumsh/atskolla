@@ -107,6 +107,9 @@ const BendaharaTransaksi = lazy(() => BendaharaPagesMod().then(m => ({ default: 
 const BendaharaSPPDetail = lazy(() => BendaharaPagesMod().then(m => ({ default: m.BendaharaSPPDetail })));
 const BendaharaImportExport = lazy(() => BendaharaPagesMod().then(m => ({ default: m.BendaharaImportExport })));
 const BendaharaSettlement = lazy(() => BendaharaPagesMod().then(m => ({ default: m.BendaharaSettlement })));
+const BendaharaJenisPembayaran = lazy(() => import("./pages/bendahara/BendaharaJenisPembayaran"));
+const BendaharaBukuKas = lazy(() => import("./pages/bendahara/BendaharaBukuKas"));
+const BendaharaTunggakan = lazy(() => import("./pages/bendahara/BendaharaTunggakan"));
 
 import { GoogleAnalytics } from "./components/GoogleAnalytics";
 import MetaPixel from "./components/MetaPixel";
