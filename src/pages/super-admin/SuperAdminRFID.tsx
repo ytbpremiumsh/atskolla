@@ -371,7 +371,7 @@ export default function SuperAdminRFID() {
         </div>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">USB RFID</h1>
-          <p className="text-sm text-muted-foreground">Manajemen perangkat, lisensi, mode RFID per sekolah, dan aktivitas perangkat resmi ATSkolla.</p>
+          <p className="text-sm text-muted-foreground">Bantu sekolah daftarkan kartu siswa via USB RFID Reader, test kartu, kelola perangkat & lisensi.</p>
         </div>
       </div>
 
