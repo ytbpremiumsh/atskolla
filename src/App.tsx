@@ -73,6 +73,8 @@ const Addons = lazy(() => import("./pages/Addons"));
 const OrderIdCard = lazy(() => import("./pages/OrderIdCard"));
 const WaCredit = lazy(() => import("./pages/WaCredit"));
 const LiveSchedule = lazy(() => import("./pages/LiveSchedule"));
+const RFIDCards = lazy(() => import("./pages/RFIDCards"));
+const RFIDTest = lazy(() => import("./pages/RFIDTest"));
 
 const SchoolAnnouncements = lazy(() => import("./pages/SchoolAnnouncements"));
 const TeacherAttendanceRecap = lazy(() => import("./pages/TeacherAttendanceRecap"));

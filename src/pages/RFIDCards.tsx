@@ -94,23 +94,30 @@ export default function RFIDCards() {
     if (!target) return;
     const uid = uidInput.trim().toUpperCase();
     if (!uid) return toast.error("UID kosong");
-    const table = target.kind === "student" ? "students" : "profiles";
-    const idCol = target.kind === "student" ? "id" : "user_id";
-    // uniqueness check
-    const { data: dup } = await supabase.from(table).select(idCol).eq("rfid_uid", uid).neq(idCol, target.id).maybeSingle();
-    if (dup) return toast.error("UID sudah dipakai orang lain di tabel ini");
-    const { error } = await supabase.from(table).update({ rfid_uid: uid }).eq(idCol, target.id);
-    if (error) return toast.error(error.message);
+    if (target.kind === "student") {
+      const { data: dup } = await supabase.from("students").select("id").eq("rfid_uid", uid).neq("id", target.id).maybeSingle();
+      if (dup) return toast.error("UID sudah dipakai siswa lain");
+      const { error } = await supabase.from("students").update({ rfid_uid: uid }).eq("id", target.id);
+      if (error) return toast.error(error.message);
+    } else {
+      const { data: dup } = await supabase.from("profiles").select("user_id").eq("rfid_uid", uid).neq("user_id", target.id).maybeSingle();
+      if (dup) return toast.error("UID sudah dipakai staff lain");
+      const { error } = await supabase.from("profiles").update({ rfid_uid: uid }).eq("user_id", target.id);
+      if (error) return toast.error(error.message);
+    }
     toast.success("Kartu terdaftar");
     closeAssign(); load();
   };
 
   const clear = async () => {
     if (!target) return;
-    const table = target.kind === "student" ? "students" : "profiles";
-    const idCol = target.kind === "student" ? "id" : "user_id";
-    const { error } = await supabase.from(table).update({ rfid_uid: null }).eq(idCol, target.id);
-    if (error) return toast.error(error.message);
+    if (target.kind === "student") {
+      const { error } = await supabase.from("students").update({ rfid_uid: null }).eq("id", target.id);
+      if (error) return toast.error(error.message);
+    } else {
+      const { error } = await supabase.from("profiles").update({ rfid_uid: null }).eq("user_id", target.id);
+      if (error) return toast.error(error.message);
+    }
     toast.success("Kartu dihapus"); closeAssign(); load();
   };
 
