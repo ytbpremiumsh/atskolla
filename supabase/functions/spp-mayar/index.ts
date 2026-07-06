@@ -165,16 +165,24 @@ async function syncPaidInvoicesFromMayar(supabaseAdmin: any, schoolId: string) {
   return { checked: (invoices || []).length, paid, wa_sent: waSent };
 }
 
-// Fees are configurable via platform_settings (fee_va / fee_qris / fee_retail).
-// Fallback to sensible defaults if unset. Fee is added to invoice total charged to wali murid.
+// Fees are configurable via platform_settings (fee_va / fee_retail).
+// QRIS uses a dynamic formula: max(Rp2.500, 1% * amount) — server & client agree.
+// Fee is added to invoice total charged to wali murid.
 const DEFAULT_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
+const QRIS_MIN_FEE = 2500;
+const QRIS_PERCENT = 0.01;
+function computeQrisFee(amount: number): number {
+  const base = Math.max(0, Number(amount) || 0);
+  return Math.max(QRIS_MIN_FEE, Math.round(base * QRIS_PERCENT));
+}
 function normalizeChannel(c: any): string | null {
   const v = String(c || "").toLowerCase();
   return v in DEFAULT_FEES ? v : null;
 }
-async function serviceFeeFor(supabaseAdmin: any, c: any): Promise<number> {
+async function serviceFeeFor(supabaseAdmin: any, c: any, amount = 0): Promise<number> {
   const v = normalizeChannel(c);
   if (!v) return 0;
+  if (v === "qris") return computeQrisFee(amount);
   try {
     const { data } = await supabaseAdmin
       .from("platform_settings")
