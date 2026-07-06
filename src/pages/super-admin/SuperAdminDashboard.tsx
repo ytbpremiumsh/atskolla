@@ -235,26 +235,14 @@ const SuperAdminDashboard = () => {
         subtitle={`Pantau seluruh platform ATSkolla — ${new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`}
         variant="purple"
         actions={
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center">
-                <Bell className="h-5 w-5 text-white" />
-              </div>
-              {totalPending > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-white text-[#6d28d9] text-[10px] font-bold flex items-center justify-center shadow">
-                  {totalPending > 99 ? "99+" : totalPending}
-                </span>
-              )}
-            </div>
-            <Button
-              onClick={() => navigate("/super-admin/sekolah")}
-              className="bg-white text-[#6d28d9] hover:bg-white/90 rounded-xl shadow-sm font-semibold"
-            >
-              <School className="h-4 w-4 mr-2" />
-              Kelola Sekolah
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate("/super-admin/sekolah")}
+            className="bg-white text-[#6d28d9] hover:bg-white/90 rounded-xl shadow-sm font-semibold"
+          >
+            <School className="h-4 w-4 mr-2" />
+            Kelola Sekolah
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         }
       />
 
