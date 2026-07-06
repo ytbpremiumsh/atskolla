@@ -166,14 +166,25 @@ async function syncPaidInvoicesFromMayar(supabaseAdmin: any, schoolId: string) {
 }
 
 // Fees are configurable via platform_settings (fee_va / fee_retail).
-// QRIS uses a dynamic formula: max(Rp2.500, 1% * amount) — server & client agree.
+// QRIS uses a dynamic formula: max(Rp3.000, N% * amount) — N dari platform_settings.
 // Fee is added to invoice total charged to wali murid.
 const DEFAULT_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
-const QRIS_MIN_FEE = 2500;
-const QRIS_PERCENT = 0.01;
-function computeQrisFee(amount: number): number {
+const QRIS_MIN_FEE = 3000;
+const QRIS_PERCENT_DEFAULT = 0.01;
+function computeQrisFee(amount: number, percent: number = QRIS_PERCENT_DEFAULT): number {
   const base = Math.max(0, Number(amount) || 0);
-  return Math.max(QRIS_MIN_FEE, Math.round(base * QRIS_PERCENT));
+  const p = Number.isFinite(percent) && percent >= 0 ? percent : QRIS_PERCENT_DEFAULT;
+  return Math.max(QRIS_MIN_FEE, Math.round(base * p));
+}
+async function getQrisPercent(supabaseAdmin: any): Promise<number> {
+  try {
+    const { data } = await supabaseAdmin
+      .from("platform_settings").select("value").eq("key", "fee_qris_percent").maybeSingle();
+    const raw = String(data?.value ?? "").replace(",", ".");
+    const n = parseFloat(raw);
+    if (Number.isFinite(n) && n >= 0) return n / 100;
+  } catch (_) {}
+  return QRIS_PERCENT_DEFAULT;
 }
 function normalizeChannel(c: any): string | null {
   const v = String(c || "").toLowerCase();
@@ -182,7 +193,7 @@ function normalizeChannel(c: any): string | null {
 async function serviceFeeFor(supabaseAdmin: any, c: any, amount = 0): Promise<number> {
   const v = normalizeChannel(c);
   if (!v) return 0;
-  if (v === "qris") return computeQrisFee(amount);
+  if (v === "qris") return computeQrisFee(amount, await getQrisPercent(supabaseAdmin));
   try {
     const { data } = await supabaseAdmin
       .from("platform_settings")
