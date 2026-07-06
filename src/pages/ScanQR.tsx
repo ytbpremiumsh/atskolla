@@ -738,6 +738,9 @@ const ScanQR = () => {
                     <Lock className="h-3 w-3" /> Face <span className="text-[9px] text-amber-600 dark:text-amber-400 font-bold ml-1">PREMIUM</span>
                   </div>
                 )}
+                <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
+                  <Nfc className="h-3.5 w-3.5 text-[#5B6CF9]" /> RFID
+                </div>
               </div>
               <p className="text-[11px] text-muted-foreground/60">Atau gunakan input NIS manual di bawah</p>
             </div>
