@@ -131,7 +131,7 @@ const ROLES = [
 const FAQ = [
   {
     q: "Benarkah ATSkolla gratis?",
-    a: "Ya. Sekolah dapat menggunakan platform inti ATSkolla tanpa biaya lisensi bulanan. Pendapatan kami berasal dari layanan tambahan seperti pembayaran online, pencetakan kartu pelajar, dan perangkat pendukung — bukan dari langganan sekolah.",
+    a: "Ya. Sekolah dapat menggunakan platform inti ATSkolla sepenuhnya gratis, tanpa biaya lisensi bulanan dan tanpa komitmen berlangganan.",
   },
   {
     q: "Bagaimana sistem pembayaran SPP bekerja?",
