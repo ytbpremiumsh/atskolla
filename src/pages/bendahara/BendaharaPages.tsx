@@ -4411,9 +4411,9 @@ export function BendaharaPencairan() {
               {loadingHistory ? <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div> : (
                 <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Gross</TableHead><TableHead>Biaya Layanan</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Gross</TableHead><TableHead>Biaya Layanan</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead><TableHead>DOKU</TableHead><TableHead className="text-right">Aksi</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {history.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
+                    {history.length === 0 && <TableRow><TableCell colSpan={10} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
                     {history.map(s => (
                       <TableRow key={s.id} className="[&_td]:whitespace-nowrap">
                         <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
@@ -4424,8 +4424,29 @@ export function BendaharaPencairan() {
                         <TableCell className="text-xs">{fmtIDR(s.withdraw_fee)}</TableCell>
                         <TableCell className="font-semibold text-emerald-600">{fmtIDR(s.final_payout)}</TableCell>
                         <TableCell>{badge(s.status)}</TableCell>
+                        <TableCell className="text-xs">
+                          {s.disbursement_method === "doku" ? (
+                            <Badge className={
+                              s.disbursement_status === "success" ? "bg-emerald-500" :
+                              s.disbursement_status === "processing" ? "bg-blue-500" :
+                              s.disbursement_status === "failed" ? "bg-red-500" : "bg-slate-500"
+                            }>{(s.disbursement_status || "-").toUpperCase()}</Badge>
+                          ) : <span className="text-muted-foreground">Manual</span>}
+                          {s.disbursement_error && <div className="text-[10px] text-red-600 mt-0.5 max-w-[180px] truncate" title={s.disbursement_error}>{s.disbursement_error}</div>}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {s.disbursement_method === "doku" && s.disbursement_status !== "success" && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs" onClick={async () => {
+                              const { data } = await supabase.functions.invoke("doku-disbursement", { body: { action: s.disbursement_status ? "check_status" : "disburse", settlement_id: s.id } });
+                              if (data?.error) toast.error(data.error);
+                              else toast.success(`Status: ${data?.status || "OK"}`);
+                              setRefreshKey(k => k + 1);
+                            }}>{s.disbursement_status ? "Sync" : "Kirim DOKU"}</Button>
+                          )}
+                        </TableCell>
                       </TableRow>
                     ))}
+
                   </TableBody>
                 </Table>
                 </div>
