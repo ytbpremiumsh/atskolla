@@ -18,6 +18,7 @@ const KEYS = [
   "doku_webhook_verify",
   "fee_va",
   "fee_qris",
+  "fee_qris_percent",
   "fee_retail",
 ];
 
