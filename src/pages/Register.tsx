@@ -725,6 +725,7 @@ const Register = () => {
                         <p className="text-[11px] text-muted-foreground">Email ini digunakan untuk login ke dashboard</p>
                       </motion.div>
 
+                      {step === 4 && (<>
                       {/* ===== SECTION C: Keamanan ===== */}
                       <motion.div variants={itemVariants} className="pt-2">
                         <div className="flex items-center gap-2 mb-1">
