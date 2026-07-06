@@ -52,13 +52,13 @@ const WhatsAppSettings = lazy(() => import("./pages/WhatsAppSettings"));
 const SuperAdminAnnouncements = lazy(() => import("./pages/super-admin/SuperAdminAnnouncements"));
 const SuperAdminTickets = lazy(() => import("./pages/super-admin/SuperAdminTickets"));
 const SuperAdminEmail = lazy(() => import("./pages/super-admin/SuperAdminEmail"));
-const SuperAdminReferral = lazy(() => import("./pages/super-admin/SuperAdminReferral"));
+
 const Panduan = lazy(() => import("./pages/Panduan"));
 const PanduanDetail = lazy(() => import("./pages/PanduanDetail"));
 const Presentation = lazy(() => import("./pages/Presentation"));
 const Proposal = lazy(() => import("./pages/Proposal"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
-const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
+
 const Penawaran = lazy(() => import("./pages/Penawaran"));
 const SuperAdminPenawaran = lazy(() => import("./pages/super-admin/SuperAdminPenawaran"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
@@ -94,7 +94,7 @@ const SuperAdminWhatsAppHub = lazy(() => import("./pages/super-admin/SuperAdminW
 const SuperAdminCMS = lazy(() => import("./pages/super-admin/SuperAdminCMS"));
 const SuperAdminSekolahHub = lazy(() => import("./pages/super-admin/SuperAdminSekolahHub"));
 const SuperAdminRFID = lazy(() => import("./pages/super-admin/SuperAdminRFID"));
-const SchoolRFIDDevices = lazy(() => import("./pages/SchoolRFIDDevices"));
+
 
 // Bendahara grouped
 const BendaharaPagesMod = () => import("./pages/bendahara/BendaharaPages");
@@ -197,7 +197,7 @@ function AppRoutes() {
           <Route path="/super-admin" element={<SuperAdminDashboard />} />
           <Route path="/super-admin/sekolah" element={<SuperAdminSekolahHub />} />
           <Route path="/super-admin/schools" element={<Navigate to="/super-admin/sekolah?tab=schools" replace />} />
-          <Route path="/super-admin/branches" element={<Navigate to="/super-admin/sekolah?tab=branches" replace />} />
+          <Route path="/super-admin/branches" element={<Navigate to="/super-admin/sekolah?tab=schools" replace />} />
           <Route path="/super-admin/login-logs" element={<Navigate to="/super-admin/sekolah?tab=logs" replace />} />
           <Route path="/super-admin/langganan" element={<SuperAdminSubscriptionsHub />} />
           <Route path="/super-admin/plans" element={<Navigate to="/super-admin/langganan?tab=plans" replace />} />
@@ -218,7 +218,7 @@ function AppRoutes() {
           <Route path="/super-admin/panduan" element={<Navigate to="/super-admin/cms?tab=panduan" replace />} />
           <Route path="/super-admin/testimonials" element={<Navigate to="/super-admin/cms?tab=testimoni" replace />} />
           <Route path="/super-admin/auto-caption" element={<Navigate to="/super-admin/cms?tab=caption" replace />} />
-          <Route path="/super-admin/referral" element={<SuperAdminReferral />} />
+          <Route path="/super-admin/referral" element={<Navigate to="/super-admin" replace />} />
           
           <Route path="/super-admin/backup" element={<SuperAdminBackup />} />
           <Route path="/super-admin/server-info" element={<SuperAdminServerInfo />} />
@@ -266,11 +266,11 @@ function AppRoutes() {
           <Route path="/school-settings" element={<SchoolSettings />} />
           <Route path="/holidays" element={<HolidayManagement />} />
           <Route path="/attendance-time" element={<AttendanceTime />} />
-          <Route path="/rfid-devices" element={<SchoolRFIDDevices />} />
+          <Route path="/rfid-devices" element={<Navigate to="/dashboard" replace />} />
 
           <Route path="/account-settings" element={<AccountSettings />} />
           <Route path="/support" element={<SupportTickets />} />
-          <Route path="/referral" element={<ReferralDashboard />} />
+          <Route path="/referral" element={<Navigate to="/dashboard" replace />} />
           
           <Route path="/whatsapp" element={<WhatsAppSettings />} />
           <Route path="/custom-domain" element={<CustomDomain />} />

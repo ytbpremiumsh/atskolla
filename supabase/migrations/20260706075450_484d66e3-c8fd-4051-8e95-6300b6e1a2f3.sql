@@ -1,0 +1,1 @@
+ALTER TABLE public.schools ADD COLUMN IF NOT EXISTS rfid_mode text NOT NULL DEFAULT 'online' CHECK (rfid_mode IN ('online','usb'));

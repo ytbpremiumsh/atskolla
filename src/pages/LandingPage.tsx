@@ -776,29 +776,6 @@ const LandingPage = () => {
       {/* ─── Testimonials ─── */}
       <TestimonialSlider testimonials={testimonials} />
 
-      {/* ─── Payment Methods ─── */}
-      <section className="py-16 sm:py-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0} className="text-center mb-10">
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 mb-3 block">Pembayaran</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Semua Metode Pembayaran</h2>
-            <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm">Bebas pilih cara bayar yang paling nyaman.</p>
-          </motion.div>
-          <div className="space-y-6">
-            {[
-              { title: "E-Wallet", img: "/images/payments/ewallet.webp", small: false },
-              { title: "Transfer Bank", img: "/images/payments/transfer-bank.webp", small: false },
-              { title: "Gerai / Outlet", img: "/images/payments/gerai.webp", small: true },
-            ].map((cat, ci) => (
-              <motion.div key={ci} custom={ci} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-                className="bg-white dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-5 sm:p-6">
-                <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-3">{cat.title}</h4>
-                <img src={cat.img} alt={cat.title} className={cat.small ? "h-8 sm:h-10 w-auto object-contain" : "max-w-full sm:max-w-2xl h-auto object-contain"} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ─── CTA Banner ─── */}
       <section className="py-20 sm:py-28 px-4">

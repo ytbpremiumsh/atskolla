@@ -77,7 +77,7 @@ export default function SuperAdminRFID() {
     setLoading(true);
     const [d, s, l, t] = await Promise.all([
       supabase.from("rfid_devices").select("*").order("created_at", { ascending: false }),
-      supabase.from("schools").select("id, name, slug").order("name"),
+      supabase.from("schools").select("id, name, slug, rfid_mode").order("name"),
       supabase.from("rfid_device_licenses").select("*"),
       supabase.from("rfid_size_tiers").select("*").order("min_students"),
     ]);
@@ -267,8 +267,8 @@ export default function SuperAdminRFID() {
           <Radio className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Perangkat RFID</h1>
-          <p className="text-sm text-muted-foreground">Manajemen inventaris, lisensi, dan aktivitas perangkat resmi ATSkolla.</p>
+          <h1 className="text-2xl font-bold tracking-tight">USB RFID</h1>
+          <p className="text-sm text-muted-foreground">Manajemen perangkat, lisensi, mode RFID per sekolah, dan aktivitas perangkat resmi ATSkolla.</p>
         </div>
       </div>
 
@@ -374,6 +374,7 @@ export default function SuperAdminRFID() {
                   <tr>
                     <th className="text-left px-3 py-2">Sekolah</th>
                     <th className="text-left px-3 py-2">Siswa</th>
+                    <th className="text-left px-3 py-2">Mode</th>
                     <th className="text-left px-3 py-2">Min. Perangkat</th>
                     <th className="text-left px-3 py-2">Terpasang</th>
                     <th className="text-left px-3 py-2">Lisensi</th>
@@ -393,6 +394,23 @@ export default function SuperAdminRFID() {
                       <tr key={s.id} className="border-t">
                         <td className="px-3 py-2">{s.name}</td>
                         <td className="px-3 py-2"><span className="inline-flex items-center gap-1 text-xs"><Users className="h-3 w-3" />{nStu}</span></td>
+                        <td className="px-3 py-2">
+                          <Select
+                            value={(s as any).rfid_mode || "online"}
+                            onValueChange={async (v) => {
+                              const { error } = await (supabase as any).from("schools").update({ rfid_mode: v }).eq("id", s.id);
+                              if (error) return toast.error(error.message);
+                              setSchools((prev) => prev.map((x: any) => x.id === s.id ? { ...x, rfid_mode: v } : x));
+                              toast.success("Mode RFID diperbarui");
+                            }}
+                          >
+                            <SelectTrigger className="h-7 w-[130px] text-xs"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="online">RFID Online</SelectItem>
+                              <SelectItem value="usb">USB RFID Reader</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
                         <td className="px-3 py-2 text-xs">{need}</td>
                         <td className="px-3 py-2 text-xs">{have}</td>
                         <td className="px-3 py-2">

@@ -29,10 +29,6 @@ const navItems = [
   { title: "Manajemen Bendahara", url: "/super-admin/bendahara", icon: Banknote, group: "finance" },
   { title: "Langganan & Add-on", url: "/super-admin/langganan", icon: Wallet, group: "finance" },
 
-  // PROGRAM PARTNER
-  { title: "Referral & Poin", url: "/super-admin/referral", icon: Gift, group: "partner" },
-  
-
   // KOMUNIKASI
   { title: "Pengumuman", url: "/super-admin/announcements", icon: Megaphone, group: "comms" },
   { title: "Tiket Bantuan", url: "/super-admin/tickets", icon: UsersRound, group: "comms" },
@@ -45,7 +41,7 @@ const navItems = [
   { title: "Meta Pixel & CAPI", url: "/super-admin/meta-pixel", icon: Activity, group: "content" },
 
   // SISTEM
-  { title: "Perangkat RFID", url: "/super-admin/rfid", icon: Radio, group: "system" },
+  { title: "USB RFID", url: "/super-admin/rfid", icon: Radio, group: "system" },
   { title: "Backup & Migrasi", url: "/super-admin/backup", icon: Database, group: "system" },
   { title: "Server Info", url: "/super-admin/server-info", icon: Server, group: "system" },
 ];
@@ -55,7 +51,6 @@ const groups = [
   { key: "overview", label: "OVERVIEW" },
   { key: "schools", label: "SEKOLAH & PENGGUNA" },
   { key: "finance", label: "KEUANGAN" },
-  { key: "partner", label: "PROGRAM PARTNER" },
   { key: "comms", label: "KOMUNIKASI" },
   { key: "content", label: "KONTEN PUBLIK" },
   { key: "system", label: "SISTEM" },

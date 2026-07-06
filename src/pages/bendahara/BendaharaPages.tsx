@@ -28,6 +28,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { downloadSppInvoicePDF, generateSppInvoicePDF } from "@/lib/sppInvoicePDF";
 import { PaymentIframeDialog } from "@/components/PaymentIframeDialog";
+import { PaymentMethodPicker } from "@/components/PaymentMethodPicker";
+import type { PaymentChannelId } from "@/lib/paymentChannels";
 import { brandPaymentUrl } from "@/lib/utils";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 
@@ -2703,17 +2705,29 @@ export function BendaharaSPPDetail() {
     return { ...m, inv };
   }), [ayMonths, enrichedInvoices]);
 
-  const createPaymentLink = async (inv: any, regen = false) => {
+  // Channel picker state (VA / QRIS) — Bendahara pilih metode saat buat link, sama seperti wali murid.
+  const [linkPicker, setLinkPicker] = useState<{ inv: any; regen: boolean } | null>(null);
+  const [linkPickerLoading, setLinkPickerLoading] = useState(false);
+
+  const createPaymentLink = (inv: any, regen = false) => {
+    setLinkPicker({ inv, regen });
+  };
+
+  const confirmCreatePaymentLink = async (channel: PaymentChannelId, _fee: number, _total: number) => {
+    if (!linkPicker) return;
+    const { inv, regen } = linkPicker;
+    setLinkPickerLoading(true);
     setBusy(`link-${inv.id}`);
-    toast.loading(regen ? "Membuat ulang link pembayaran..." : "Membuat link pembayaran (QRIS / Transfer Bank)...");
+    toast.loading(regen ? "Membuat ulang link pembayaran..." : "Membuat link pembayaran...");
     const action = regen ? "regenerate_payment_link" : "create_payment_link";
-    const { data, error } = await supabase.functions.invoke("spp-mayar", { body: { action, invoice_id: inv.id } });
+    const { data, error } = await supabase.functions.invoke("spp-mayar", { body: { action, invoice_id: inv.id, channel } });
     toast.dismiss();
     setBusy(null);
+    setLinkPickerLoading(false);
     if (error || !data?.success) { toast.error(data?.error || error?.message || "Gagal"); return; }
     if (data.payment_url) {
+      setLinkPicker(null);
       toast.success(regen ? "Link baru berhasil dibuat" : "Link berhasil dibuat");
-      // Auto kirim WA tagihan ke wali (pakai NOMOR TERKINI dari data siswa, bukan snapshot invoice)
       const currentPhone = student?.parent_phone || inv.parent_phone;
       const currentName = student?.parent_name || inv.parent_name;
       if (currentPhone) {
@@ -3417,6 +3431,16 @@ export function BendaharaSPPDetail() {
           )}
         </DialogContent>
       </Dialog>
+
+      <PaymentMethodPicker
+        open={!!linkPicker}
+        onOpenChange={(o) => { if (!linkPickerLoading && !o) setLinkPicker(null); }}
+        billAmount={linkPicker?.inv?.total_amount || 0}
+        title="Pilih Metode Pembayaran"
+        subtitle={linkPicker?.inv ? `Tagihan SPP ${linkPicker.inv.period_label || ""}` : undefined}
+        loading={linkPickerLoading}
+        onConfirm={confirmCreatePaymentLink}
+      />
     </div>
   );
 }
