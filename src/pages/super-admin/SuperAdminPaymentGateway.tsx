@@ -129,9 +129,9 @@ const SuperAdminPaymentGateway = () => {
     try {
       const updates: any = {
         doku_env: dokuEnv,
-        doku_va_methods: dokuVaMethods.trim(),
-        doku_qris_methods: dokuQrisMethods.trim(),
-        doku_retail_methods: dokuRetailMethods.trim(),
+        fee_va: feeVa.trim() || "0",
+        fee_qris: feeQris.trim() || "0",
+        fee_retail: feeRetail.trim() || "0",
         doku_webhook_verify: dokuWebhookVerify,
       };
       if (dokuClientId.trim()) updates.doku_client_id = dokuClientId.trim();
