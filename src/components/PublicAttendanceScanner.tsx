@@ -44,6 +44,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const [faceScanning, setFaceScanning] = useState(false);
   const [attendanceType, setAttendanceType] = useState<string>("datang");
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [paused, setPaused] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
