@@ -44,6 +44,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const [faceScanning, setFaceScanning] = useState(false);
   const [attendanceType, setAttendanceType] = useState<string>("datang");
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [paused, setPaused] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -62,6 +63,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   // RFID listener: most RFID readers emulate keyboard and type card number + Enter rapidly
+  // Uses lookupRef (declared below) via closure to avoid stale onAttendanceRecorded
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -71,7 +73,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
         const code = rfidBuffer.current.trim();
         rfidBuffer.current = "";
         if (rfidTimeout.current) clearTimeout(rfidTimeout.current);
-        lookupAndRecord(code, "rfid");
+        lookupRef.current(code, "rfid");
         return;
       }
 
@@ -92,7 +94,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   const isMobile = useIsMobile();
   const nfc = useNfcScanner((uid) => {
 
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     lookupRef.current(uid, "rfid");
   });
 
@@ -101,7 +103,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     if (isLookingUp.current) return;
     if (!code && !studentId) return;
     isLookingUp.current = true;
-    scanPaused.current = true;
+    scanPaused.current = true; setPaused(true);
 
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/public-scan-attendance`, {
@@ -130,7 +132,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
 
       if (!res.ok) {
         toast.error(data.error || "Siswa tidak ditemukan");
-        scanPaused.current = false;
+        scanPaused.current = false; setPaused(false);
         return;
       }
 
@@ -146,7 +148,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
       setTimeout(() => resetState(), 3000);
     } catch (err: any) {
       toast.error("Gagal menghubungi server");
-      scanPaused.current = false;
+      scanPaused.current = false; setPaused(false);
     } finally {
       isLookingUp.current = false;
     }
@@ -296,7 +298,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
     if (videoRef.current) videoRef.current.srcObject = null;
     setCameraActive(false);
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
   };
 
   useEffect(() => { return () => { stopCamera(); }; }, []);
@@ -306,14 +308,14 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     setConfirmed(false);
     setManualCode("");
     setAlreadyRecorded(false);
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     setScanMethod("barcode");
     setAttendanceType("datang");
   };
 
   const handleSearch = () => {
     if (!manualCode.trim()) return;
-    scanPaused.current = false;
+    scanPaused.current = false; setPaused(false);
     lookupAndRecord(manualCode.trim(), "barcode");
   };
 
@@ -381,7 +383,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                       <div className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-[#5B6CF9] rounded-tr-lg" />
                       <div className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-[#5B6CF9] rounded-bl-lg" />
                       <div className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-[#5B6CF9] rounded-br-lg" />
-                      {!scanPaused.current && (
+                      {!paused && (
                         <div className="absolute left-2 right-2 h-0.5 bg-gradient-to-r from-transparent via-[#5B6CF9] to-transparent animate-pulse top-1/2" />
                       )}
                     </div>
@@ -398,7 +400,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-lg">
                     {faceScanning ? (
                       <><Loader2 className="h-3 w-3 animate-spin text-[#5B6CF9]" /><span className="text-[11px] text-white font-medium">Mengenali wajah...</span></>
-                    ) : scanPaused.current ? (
+                    ) : paused ? (
                       <><CheckCircle2 className="h-3 w-3 text-emerald-400" /><span className="text-[11px] text-white font-medium">Terdeteksi!</span></>
                     ) : (
                       <><div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /><span className="text-[11px] text-white/80">Memindai...</span></>
