@@ -1309,6 +1309,7 @@ export default function ParentDashboard() {
         subtitle={pickerInvoice ? `Tagihan SPP ${pickerInvoice.period_label || ""}` : undefined}
         loading={pickerLoading}
         feeOverrides={channelFees}
+        qrisPercent={qrisPercent}
         onConfirm={confirmPaySpp}
       />
     </div>
