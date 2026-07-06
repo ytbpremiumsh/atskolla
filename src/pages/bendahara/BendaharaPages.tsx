@@ -4637,7 +4637,30 @@ export function BendaharaLaporan() {
 
     if (format === "xlsx") {
       const wb = XLSX.utils.book_new();
+
+      // Ringkasan Per Tahun Ajaran (selalu ada — memudahkan pembacaan lintas TA)
+      const perTA = new Map<string, any[]>();
+      rows.forEach(r => {
+        const ta = String(r["Tahun Ajaran"] || "-");
+        if (!perTA.has(ta)) perTA.set(ta, []);
+        perTA.get(ta)!.push(r);
+      });
+      const summaryTA = Array.from(perTA.entries())
+        .sort(([a],[b]) => a.localeCompare(b))
+        .map(([ta, list]) => ({
+          "Tahun Ajaran": ta,
+          "Jumlah Tagihan": list.length,
+          "Lunas": list.filter(x => x.Status === "Lunas").length,
+          "Belum Bayar": list.filter(x => x.Status !== "Lunas").length,
+          "Total Tagihan": list.reduce((a, x) => a + (x.Total || 0), 0),
+          "Total Diterima": list.filter(x => x.Status === "Lunas").reduce((a, x) => a + (x.Total || 0), 0),
+        }));
+      const wsTA = XLSX.utils.json_to_sheet(summaryTA);
+      wsTA["!cols"] = [{ wch: 14 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+      XLSX.utils.book_append_sheet(wb, wsTA, "Ringkasan per TA");
+
       if (expClass === "all") {
+        // Ringkasan per Kelas
         const grouped = new Map<string, any[]>();
         rows.forEach(r => {
           const cls = String(r["Kelas"]);
@@ -4650,14 +4673,29 @@ export function BendaharaLaporan() {
           "Lunas": list.filter(x => x.Status === "Lunas").length,
           "Belum Bayar": list.filter(x => x.Status !== "Lunas").length,
           "Total Tagihan": list.reduce((a, x) => a + (x.Total || 0), 0),
+          "Total Diterima": list.filter(x => x.Status === "Lunas").reduce((a, x) => a + (x.Total || 0), 0),
         }));
         const wsSum = XLSX.utils.json_to_sheet(summary);
-        wsSum["!cols"] = [{ wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }];
-        XLSX.utils.book_append_sheet(wb, wsSum, "Ringkasan");
+        wsSum["!cols"] = [{ wch: 12 }, { wch: 16 }, { wch: 10 }, { wch: 12 }, { wch: 16 }, { wch: 16 }];
+        XLSX.utils.book_append_sheet(wb, wsSum, "Ringkasan per Kelas");
+
+        // Rincian per Kelas × TA supaya ekspor lebih rapih (satu sheet per Kelas-TA jika multi-TA)
         Array.from(grouped.entries()).forEach(([cls, list]) => {
-          const ws = XLSX.utils.json_to_sheet(list);
-          ws["!cols"] = Object.keys(list[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
-          XLSX.utils.book_append_sheet(wb, ws, cls.slice(0, 31));
+          const tas = new Set(list.map(x => String(x["Tahun Ajaran"] || "-")));
+          if (tas.size > 1) {
+            // Split per TA
+            Array.from(tas).sort().forEach((ta) => {
+              const subset = list.filter(x => String(x["Tahun Ajaran"]) === ta);
+              const ws = XLSX.utils.json_to_sheet(subset);
+              ws["!cols"] = Object.keys(subset[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
+              const sheetName = `${cls} ${ta}`.slice(0, 31);
+              XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+          } else {
+            const ws = XLSX.utils.json_to_sheet(list);
+            ws["!cols"] = Object.keys(list[0]).map(k => ({ wch: Math.min(Math.max(k.length + 2, 10), 28) }));
+            XLSX.utils.book_append_sheet(wb, ws, cls.slice(0, 31));
+          }
         });
       } else {
         const ws = XLSX.utils.json_to_sheet(rows);
