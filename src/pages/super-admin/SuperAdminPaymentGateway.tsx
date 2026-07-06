@@ -42,7 +42,8 @@ const SuperAdminPaymentGateway = () => {
 
   // Custom admin fee per channel (charged to wali murid)
   const [feeVa, setFeeVa] = useState("5000");
-  const [feeQris, setFeeQris] = useState("5000");
+  const [feeQris, setFeeQris] = useState("5000"); // legacy flat (unused for QRIS charging)
+  const [feeQrisPercent, setFeeQrisPercent] = useState("1"); // dalam persen
   const [feeRetail, setFeeRetail] = useState("8000");
   const [dokuWebhookVerify, setDokuWebhookVerify] = useState("true");
 
