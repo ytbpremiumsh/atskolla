@@ -2,7 +2,9 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Nfc, Loader2, Smartphone } from "lucide-react";
 import { useNfcScanner } from "@/hooks/useNfcScanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
+
 
 interface Props {
   onUid: (uid: string) => void;
