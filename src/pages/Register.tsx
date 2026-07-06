@@ -337,9 +337,8 @@ const Register = () => {
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-5 flex-wrap">
           {[
             { n: 1, label: "Sekolah" },
-            { n: 2, label: "Profil" },
-            { n: 3, label: "PJ" },
-            { n: 4, label: "Keamanan" },
+            { n: 2, label: "Penanggung Jawab" },
+            { n: 3, label: "Keamanan" },
           ].map((s, i) => (
             <Fragment key={s.n}>
               {i > 0 && <div className="w-4 sm:w-6 h-px bg-slate-200" />}
@@ -349,6 +348,7 @@ const Register = () => {
             </Fragment>
           ))}
         </div>
+
 
 
         {/* Main Card */}
