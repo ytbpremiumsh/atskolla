@@ -423,6 +423,10 @@ const Dashboard = () => {
         }
       />
 
+      <RFIDDeviceWarning />
+
+
+
       {/* Login URL Info — helps admin share the right link to guru/wali kelas & wali murid */}
       {showLoginInfo && tenant.slug && (
         <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
