@@ -157,7 +157,100 @@ async function syncSppInvoicesFromMayar(invoices: any[]) {
   return synced;
 }
 
-function phoneVariants(phone: string): string[] {
+// ---- Doku status sync (mirrors Mayar sync) --------------------------------
+async function getDokuCfg() {
+  const { data } = await supabase
+    .from("platform_settings")
+    .select("key,value")
+    .in("key", ["doku_client_id", "doku_secret_key", "doku_env"]);
+  const map: Record<string, string> = {};
+  (data || []).forEach((r: any) => { map[r.key] = r.value || ""; });
+  const clientId = map.doku_client_id || Deno.env.get("DOKU_CLIENT_ID") || "";
+  const secretKey = map.doku_secret_key || Deno.env.get("DOKU_SECRET_KEY") || "";
+  const env = (map.doku_env || "production").toLowerCase();
+  const baseUrl = env === "sandbox" ? "https://api-sandbox.doku.com" : "https://api.doku.com";
+  return { clientId, secretKey, baseUrl };
+}
+
+function isPaidDokuStatus(status: unknown) {
+  const s = String(status || "").toUpperCase();
+  return ["PAID", "SUCCESS", "SETTLED", "COMPLETED", "SUCCESSFUL"].includes(s);
+}
+
+async function checkDokuOrder(cfg: { clientId: string; secretKey: string; baseUrl: string }, invoiceNumber: string) {
+  const target = `/orders/v1/status/${encodeURIComponent(invoiceNumber)}`;
+  const requestId = crypto.randomUUID();
+  const requestTimestamp = new Date().toISOString().split(".")[0] + "Z";
+  const digest = createHash("sha256").update("", "utf8").digest("base64");
+  const stringToSign =
+    `Client-Id:${cfg.clientId}\n` +
+    `Request-Id:${requestId}\n` +
+    `Request-Timestamp:${requestTimestamp}\n` +
+    `Request-Target:${target}\n` +
+    `Digest:${digest}`;
+  const signature = "HMACSHA256=" + createHmac("sha256", cfg.secretKey).update(stringToSign, "utf8").digest("base64");
+  const res = await fetch(`${cfg.baseUrl}${target}`, {
+    method: "GET",
+    headers: {
+      "Client-Id": cfg.clientId,
+      "Request-Id": requestId,
+      "Request-Timestamp": requestTimestamp,
+      "Signature": signature,
+      "Digest": digest,
+    },
+  });
+  const json = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, json };
+}
+
+// Doku invoice_numbers created by spp-doku start with "SPP-".
+const looksLikeDokuInvoice = (id: string | null | undefined) => !!id && /^SPP-/i.test(id);
+
+async function syncSppInvoicesFromDoku(invoices: any[]) {
+  const pending = invoices.filter((i) => i.status !== "paid" && looksLikeDokuInvoice(i.mayar_invoice_id));
+  if (pending.length === 0) return invoices;
+  const cfg = await getDokuCfg();
+  if (!cfg.clientId || !cfg.secretKey) return invoices;
+  const byId = new Map(invoices.map((i) => [i.id, i]));
+  for (const inv of pending) {
+    try {
+      const stat = await checkDokuOrder(cfg, inv.mayar_invoice_id);
+      const s = stat.json?.response?.order?.status || stat.json?.order?.status;
+      if (!isPaidDokuStatus(s)) continue;
+      const paidAt = new Date().toISOString();
+      await supabase.from("spp_invoices").update({
+        status: "paid",
+        paid_at: paidAt,
+        payment_method: "doku",
+      }).eq("id", inv.id);
+      await supabase.from("payment_transactions").update({
+        status: "paid",
+        paid_at: paidAt,
+      }).eq("school_id", inv.school_id).eq("mayar_transaction_id", inv.mayar_invoice_id).eq("status", "pending");
+      await supabase.from("spp_logs").insert({
+        school_id: inv.school_id,
+        invoice_id: inv.id,
+        event_type: "doku_sync",
+        status: "paid",
+        payload: stat.json,
+        message: "SPP paid (parent portal Doku sync)",
+      });
+      await supabase.from("notifications").insert({
+        school_id: inv.school_id,
+        title: "Pembayaran SPP Diterima",
+        message: `Pembayaran SPP ${inv.student_name} (${inv.class_name}) untuk ${inv.period_label} sebesar Rp ${(inv.total_amount || 0).toLocaleString("id-ID")} telah diterima.`,
+        type: "success",
+      });
+      const waResult = await sendSppPaidWhatsApp(inv, paidAt).catch((waErr) => ({ sent: false, error: String(waErr) }));
+      console.log("SPP WA notif (Doku sync):", JSON.stringify(waResult));
+      byId.set(inv.id, { ...inv, status: "paid", paid_at: paidAt, payment_method: "doku" });
+    } catch (e) {
+      console.error("Doku SPP sync failed", inv.id, e);
+    }
+  }
+  return invoices.map((i) => byId.get(i.id) || i);
+}
+
   const digits = (phone || "").replace(/\D/g, "");
   const variants = new Set<string>();
   variants.add(digits);
