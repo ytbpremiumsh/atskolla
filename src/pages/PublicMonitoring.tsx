@@ -330,7 +330,7 @@ const PublicMonitoring = () => {
   const safeClassIndex = currentClassIndex % Math.max(classNames.length, 1);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background">
+    <div ref={containerRef} className={`min-h-screen bg-background ${isFullscreen ? "h-screen overflow-y-auto" : ""}`}>
       {/* Header */}
       <header className="gradient-hero text-primary-foreground sticky top-0 z-50 shadow-elevated">
         <div className="max-w-7xl mx-auto px-4 py-3">
