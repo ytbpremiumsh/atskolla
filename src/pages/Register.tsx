@@ -680,7 +680,9 @@ const Register = () => {
                           )}
                         </div>
                       </motion.div>
+                      </>)}
 
+                      {step === 3 && (<>
                       {/* ===== SECTION B: Penanggung Jawab ===== */}
                       <motion.div variants={itemVariants} className="pt-2">
                         <div className="flex items-center gap-2 mb-1">
