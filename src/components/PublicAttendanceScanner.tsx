@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   Camera, X, Search, ScanLine, UserCheck, CheckCircle2,
   Loader2, AlertTriangle, CreditCard, LogIn, LogOut, Lock,
-  SwitchCamera,
+  SwitchCamera, Nfc,
 } from "lucide-react";
 import { toast } from "sonner";
 import jsQR from "jsqr";
+import { useNfcScanner } from "@/hooks/useNfcScanner";
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -84,6 +85,12 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Web NFC scanner (Android Chrome). Uses lookupRef so tidak butuh dep.
+  const nfc = useNfcScanner((uid) => {
+    scanPaused.current = false;
+    lookupRef.current(uid, "rfid");
+  });
 
   // Lookup student via public edge function - directly records attendance
   const lookupAndRecord = useCallback(async (code: string, method: string = "barcode", studentId?: string) => {
