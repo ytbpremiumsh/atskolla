@@ -775,7 +775,7 @@ const ScanQR = () => {
               <Search className="h-4 w-4" />
             </Button>
           </div>
-          <div className="pt-2 border-t border-border/40">
+          {isMobile && <div className="pt-2 border-t border-border/40">
             <div className="flex items-center gap-2 mb-2">
               <div className="h-7 w-7 rounded-lg bg-[#5B6CF9]/10 flex items-center justify-center">
                 <Nfc className="h-3.5 w-3.5 text-[#5B6CF9]" />
