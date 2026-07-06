@@ -49,7 +49,22 @@ function timeAgo(iso: string | null) {
 
 // ---------- page ----------
 export default function SuperAdminRFID() {
-  const [tab, setTab] = useState("devices");
+  const [tab, setTab] = useState("register");
+
+  // ===== Student RFID registration state =====
+  const [regSchoolId, setRegSchoolId] = useState<string>("");
+  const [regSearch, setRegSearch] = useState("");
+  const [regStudents, setRegStudents] = useState<any[]>([]);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regTarget, setRegTarget] = useState<any | null>(null);
+  const [regUid, setRegUid] = useState("");
+  const [regSaving, setRegSaving] = useState(false);
+
+  // ===== Test RFID state =====
+  const [testSchoolId, setTestSchoolId] = useState<string>("");
+  const [testUid, setTestUid] = useState("");
+  const [testResult, setTestResult] = useState<{ ok: boolean; msg: string; student?: any } | null>(null);
+  const [testBusy, setTestBusy] = useState(false);
 
   const [devices, setDevices] = useState<any[]>([]);
   const [schools, setSchools] = useState<any[]>([]);
