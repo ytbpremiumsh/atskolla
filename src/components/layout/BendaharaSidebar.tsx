@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Receipt, FileText, CreditCard, Wallet, ArrowDownToLine,
-  History, BarChart3, LogOut, ChevronRight, Crown, Upload, Landmark,
+  History, BarChart3, LogOut, ChevronRight, Crown, Upload, Landmark, Tag, BookOpen, AlertTriangle,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
