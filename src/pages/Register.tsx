@@ -649,7 +649,7 @@ const Register = () => {
                       </motion.div>
                       </>)}
 
-                      {step === 4 && (<>
+                      {step === 3 && (<>
                       {/* ===== SECTION C: Keamanan ===== */}
                       <motion.div variants={itemVariants} className="pt-2">
                         <div className="flex items-center gap-2 mb-1">
