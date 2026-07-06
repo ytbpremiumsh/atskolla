@@ -316,20 +316,39 @@ export function BendaharaDashboard() {
         variant="primary"
       />
 
-      {/* RINCIAN KEUANGAN — colorful tile grid (di bawah header dashboard) */}
-      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/70 dark:ring-slate-800/60">
-        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center gap-2.5">
+      {/* KEUANGAN AKTIF — Siap Dicairkan (dipisah supaya jelas beda dengan rincian pembayaran) */}
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-emerald-200/70 dark:ring-emerald-800/40">
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-3.5 flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
             <Wallet className="h-4 w-4 text-white" />
           </div>
-          <div>
-            <p className="text-sm font-bold text-white leading-tight">Rincian Keuangan</p>
-            <p className="text-[10px] text-white/70 leading-tight">Saldo live, tagihan, lunas, dan tunggakan</p>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-white leading-tight">Keuangan Aktif — Siap Dicairkan</p>
+            <p className="text-[10px] text-white/80 leading-tight">Saldo online yang dapat langsung di-withdraw ke rekening sekolah</p>
           </div>
         </div>
-        <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Saldo Live (Siap Cair)</p>
+            <p className="text-3xl font-extrabold text-emerald-600 mt-1">{fmtIDR(stats.availableBalance)}</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Otomatis dari invoice online (bukan offline) yang sudah lunas & belum di-settle.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* RINCIAN KEUANGAN PEMBAYARAN SEKOLAH — snapshot tagihan/lunas/tunggakan */}
+      <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-slate-900/5 ring-1 ring-slate-200/70 dark:ring-slate-800/60">
+        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+            <Receipt className="h-4 w-4 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white leading-tight">Rincian Keuangan Pembayaran Sekolah</p>
+            <p className="text-[10px] text-white/70 leading-tight">Tagihan bulan berjalan, total lunas, dan tunggakan</p>
+          </div>
+        </div>
+        <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { label: "Saldo (Live)", value: fmtIDR(stats.availableBalance), grad: "from-emerald-500 to-teal-600", icon: Wallet, sub: "Bisa dicairkan" },
             { label: "Tagihan Bulan Ini", value: fmtIDR(stats.monthBills), grad: "from-sky-500 to-blue-600", icon: Receipt, sub: `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}` },
             { label: "Lunas", value: fmtIDR(stats.totalGross), grad: "from-violet-500 to-indigo-600", icon: CheckCircle2, sub: `${stats.paidCount} transaksi` },
             { label: "Tunggakan", value: fmtIDR(stats.tunggakan), grad: "from-rose-500 to-red-600", icon: AlertCircle, sub: `${stats.pendingCount} pending` },
