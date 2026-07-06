@@ -2,12 +2,25 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { School, Users, CreditCard, CheckCircle2, GraduationCap, UserCheck, MessageSquare, TrendingUp, Settings, LifeBuoy, ChevronRight } from "lucide-react";
+import {
+  School, Users, CreditCard, GraduationCap, UserCheck, MessageSquare, TrendingUp,
+  ChevronRight, LifeBuoy, Wallet, Bell, AlertCircle, ArrowUpRight, PieChart as PieIcon, Sparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
+
+interface PendingItem {
+  id: string;
+  title: string;
+  detail: string;
+  amount?: number;
+  created_at: string;
+  path: string;
+  kind: "ticket" | "settlement" | "withdrawal";
+}
 
 interface DashboardStats {
   totalSchools: number;
@@ -23,7 +36,21 @@ interface DashboardStats {
   paidCount: number;
   waActiveCount: number;
   planDistribution: { name: string; value: number; color: string }[];
+  pendingTickets: number;
+  pendingSettlements: number;
+  pendingWithdrawals: number;
+  actionQueue: PendingItem[];
+  notifications: any[];
 }
+
+const fmtIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
+const timeAgo = (iso: string) => {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return `${s}d lalu`;
+  if (s < 3600) return `${Math.floor(s / 60)}m lalu`;
+  if (s < 86400) return `${Math.floor(s / 3600)}j lalu`;
+  return `${Math.floor(s / 86400)}h lalu`;
+};
 
 const SuperAdminDashboard = () => {
   const [stats, setStats] = useState<DashboardStats>({
@@ -31,21 +58,29 @@ const SuperAdminDashboard = () => {
     activeSubscriptions: 0, pendingPayments: 0,
     totalRevenue: 0, monthlyRevenue: 0, paidCount: 0, waActiveCount: 0,
     recentPayments: [], schools: [], planDistribution: [],
+    pendingTickets: 0, pendingSettlements: 0, pendingWithdrawals: 0,
+    actionQueue: [], notifications: [],
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [schoolsRes, studentsRes, classesRes, profilesRes, subsRes, paymentsRes, rolesRes, integrationsRes] = await Promise.all([
+      const [
+        schoolsRes, studentsRes, classesRes, subsRes, paymentsRes, rolesRes, integrationsRes,
+        ticketsRes, settlementsRes, withdrawalsRes, notifRes,
+      ] = await Promise.all([
         supabase.from("schools").select("id, name, created_at, logo, address"),
         supabase.from("students").select("id, school_id"),
         supabase.from("classes").select("id, school_id"),
-        supabase.from("profiles").select("id, school_id"),
         supabase.from("school_subscriptions").select("id, school_id, plan_id, status, started_at, expires_at, subscription_plans(name)"),
         supabase.from("payment_transactions").select("id, school_id, amount, status, paid_at, created_at, schools(name), subscription_plans(name)").order("created_at", { ascending: false }).limit(10),
         supabase.from("user_roles").select("id, role"),
         supabase.from("school_integrations").select("school_id, is_active").eq("is_active", true),
+        supabase.from("support_tickets").select("id, subject, priority, status, created_at, schools(name)").in("status", ["open", "pending"]).order("created_at", { ascending: false }).limit(20),
+        supabase.from("spp_settlements").select("id, settlement_code, final_payout, bank_name, status, created_at, schools(name)").in("status", ["pending", "requested", "review"]).order("created_at", { ascending: false }).limit(20),
+        supabase.from("affiliate_withdrawals").select("id, amount, bank_name, account_holder, status, created_at, affiliates(full_name)").eq("status", "pending").order("created_at", { ascending: false }).limit(20),
+        supabase.from("notifications").select("id, title, message, type, is_read, created_at").is("school_id", null).order("created_at", { ascending: false }).limit(12),
       ]);
 
       const schools = schoolsRes.data || [];
@@ -54,6 +89,10 @@ const SuperAdminDashboard = () => {
       const payments = paymentsRes.data || [];
       const roles = rolesRes.data || [];
       const integrations = integrationsRes.data || [];
+      const tickets = ticketsRes.data || [];
+      const settlements = settlementsRes.data || [];
+      const withdrawals = withdrawalsRes.data || [];
+      const notifications = notifRes.data || [];
 
       const activeSubs = subs.filter((s: any) => s.status === "active");
       const pendingPayments = payments.filter((p: any) => p.status === "pending");
@@ -69,17 +108,37 @@ const SuperAdminDashboard = () => {
       const staffCount = roles.filter((r: any) => r.role !== "super_admin").length;
       const waActiveSchools = new Set(integrations.map((i: any) => i.school_id)).size;
 
-      // Plan distribution
       const planCounts: Record<string, number> = {};
       schools.forEach((s: any) => {
         const sub = activeSubs.find((sub: any) => sub.school_id === s.id);
         const planName = sub ? (sub as any).subscription_plans?.name || "Gratis" : "Gratis";
         planCounts[planName] = (planCounts[planName] || 0) + 1;
       });
-      const PLAN_COLORS = ["hsl(220, 15%, 75%)", "hsl(217, 91%, 60%)", "hsl(262, 83%, 58%)", "hsl(142, 71%, 45%)"];
+      const PLAN_COLORS = ["hsl(262, 25%, 82%)", "hsl(262, 83%, 58%)", "hsl(280, 70%, 55%)", "hsl(217, 91%, 60%)"];
       const planDistribution = Object.entries(planCounts).map(([name, value], i) => ({
         name, value, color: PLAN_COLORS[i % PLAN_COLORS.length],
       }));
+
+      const actionQueue: PendingItem[] = [
+        ...tickets.map((t: any) => ({
+          id: `t-${t.id}`, kind: "ticket" as const,
+          title: t.subject || "Tiket Baru",
+          detail: `${t.schools?.name || "—"} • Prioritas ${t.priority || "normal"}`,
+          created_at: t.created_at, path: "/super-admin/tickets",
+        })),
+        ...settlements.map((s: any) => ({
+          id: `s-${s.id}`, kind: "settlement" as const,
+          title: `Pencairan SPP • ${s.settlement_code || "—"}`,
+          detail: `${s.schools?.name || "—"} → ${s.bank_name || "-"}`,
+          amount: s.final_payout, created_at: s.created_at, path: "/super-admin/bendahara",
+        })),
+        ...withdrawals.map((w: any) => ({
+          id: `w-${w.id}`, kind: "withdrawal" as const,
+          title: `Pencairan Affiliate`,
+          detail: `${w.affiliates?.full_name || w.account_holder || "—"} → ${w.bank_name || "-"}`,
+          amount: w.amount, created_at: w.created_at, path: "/super-admin/referral",
+        })),
+      ].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
       setStats({
         totalSchools: schools.length,
@@ -88,55 +147,82 @@ const SuperAdminDashboard = () => {
         totalClasses: (classesRes.data || []).length,
         activeSubscriptions: activeSubs.length,
         pendingPayments: pendingPayments.length,
-        totalRevenue,
-        monthlyRevenue,
+        totalRevenue, monthlyRevenue,
         paidCount: paidPayments.length,
         waActiveCount: waActiveSchools,
-        recentPayments: payments,
-        schools,
-        planDistribution,
+        recentPayments: payments, schools, planDistribution,
+        pendingTickets: tickets.length,
+        pendingSettlements: settlements.length,
+        pendingWithdrawals: withdrawals.length,
+        actionQueue, notifications,
       });
       setLoading(false);
     };
     fetchStats();
+
+    const channel = supabase
+      .channel("super-admin-dashboard")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => fetchStats())
+      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" }, () => fetchStats())
+      .on("postgres_changes", { event: "*", schema: "public", table: "spp_settlements" }, () => fetchStats())
+      .on("postgres_changes", { event: "*", schema: "public", table: "affiliate_withdrawals" }, () => fetchStats())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const formatRupiah = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
-
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-[#7c3aed] border-t-transparent rounded-full" /></div>;
 
   const statCards = [
-    { label: "TOTAL SEKOLAH", value: stats.totalSchools, desc: "terdaftar di platform", icon: School, iconBg: "bg-indigo-100 dark:bg-indigo-900/40", iconColor: "text-indigo-600 dark:text-indigo-400" },
-    { label: "TOTAL SISWA", value: stats.totalStudents.toLocaleString("id-ID"), desc: "di seluruh sekolah", icon: GraduationCap, iconBg: "bg-emerald-100 dark:bg-emerald-900/40", iconColor: "text-emerald-600 dark:text-emerald-400" },
-    { label: "TOTAL PENGGUNA", value: stats.totalStaff, desc: "admin & operator", icon: UserCheck, iconBg: "bg-blue-100 dark:bg-blue-900/40", iconColor: "text-blue-600 dark:text-blue-400" },
-    { label: "WA AKTIF", value: stats.waActiveCount, desc: "sekolah pakai notif WA", icon: MessageSquare, iconBg: "bg-teal-100 dark:bg-teal-900/40", iconColor: "text-teal-600 dark:text-teal-400" },
+    { label: "TOTAL SEKOLAH", value: stats.totalSchools, desc: "terdaftar di platform", icon: School, iconBg: "bg-violet-100 dark:bg-violet-900/40", iconColor: "text-violet-600 dark:text-violet-300" },
+    { label: "TOTAL SISWA", value: stats.totalStudents.toLocaleString("id-ID"), desc: "di seluruh sekolah", icon: GraduationCap, iconBg: "bg-purple-100 dark:bg-purple-900/40", iconColor: "text-purple-600 dark:text-purple-300" },
+    { label: "TOTAL PENGGUNA", value: stats.totalStaff, desc: "admin & operator", icon: UserCheck, iconBg: "bg-fuchsia-100 dark:bg-fuchsia-900/40", iconColor: "text-fuchsia-600 dark:text-fuchsia-300" },
+    { label: "WA AKTIF", value: stats.waActiveCount, desc: "sekolah pakai notif WA", icon: MessageSquare, iconBg: "bg-indigo-100 dark:bg-indigo-900/40", iconColor: "text-indigo-600 dark:text-indigo-300" },
   ];
+
+  const alertBadges = [
+    { label: "Tiket Bantuan", value: stats.pendingTickets, icon: LifeBuoy, path: "/super-admin/tickets", tone: "from-rose-500 to-pink-600" },
+    { label: "Pencairan SPP", value: stats.pendingSettlements, icon: Wallet, path: "/super-admin/bendahara", tone: "from-amber-500 to-orange-600" },
+    { label: "Pencairan Affiliate", value: stats.pendingWithdrawals, icon: TrendingUp, path: "/super-admin/referral", tone: "from-violet-500 to-purple-600" },
+    { label: "Pembayaran Pending", value: stats.pendingPayments, icon: CreditCard, path: "/super-admin/payments", tone: "from-fuchsia-500 to-purple-600" },
+  ];
+  const totalPending = alertBadges.reduce((s, a) => s + a.value, 0);
 
   const quickActions = [
-    { label: "Kelola Sekolah", desc: "Daftar & detail sekolah", icon: School, bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-400", path: "/super-admin/schools" },
-    { label: "Langganan", desc: "Konfirmasi pembayaran", icon: CreditCard, bg: "bg-amber-50 dark:bg-amber-950/30", iconColor: "text-amber-600 dark:text-amber-400", path: "/super-admin/payments" },
-    { label: "WA Integrasi", desc: "Status notif per sekolah", icon: MessageSquare, bg: "bg-teal-50 dark:bg-teal-950/30", iconColor: "text-teal-600 dark:text-teal-400", path: "/super-admin/whatsapp" },
-    { label: "Manajemen User", desc: "Akun admin sekolah", icon: Users, bg: "bg-blue-50 dark:bg-blue-950/30", iconColor: "text-blue-600 dark:text-blue-400", path: "/super-admin/schools" },
+    { label: "Kelola Sekolah", desc: "Daftar & detail sekolah", icon: School, bg: "bg-violet-50 dark:bg-violet-950/30", iconColor: "text-violet-600 dark:text-violet-300", path: "/super-admin/sekolah" },
+    { label: "Langganan", desc: "Konfirmasi pembayaran", icon: CreditCard, bg: "bg-purple-50 dark:bg-purple-950/30", iconColor: "text-purple-600 dark:text-purple-300", path: "/super-admin/payments" },
+    { label: "Pencairan SPP", desc: "Review permintaan bendahara", icon: Wallet, bg: "bg-fuchsia-50 dark:bg-fuchsia-950/30", iconColor: "text-fuchsia-600 dark:text-fuchsia-300", path: "/super-admin/bendahara" },
+    { label: "Tiket Bantuan", desc: "Balas pertanyaan sekolah", icon: LifeBuoy, bg: "bg-indigo-50 dark:bg-indigo-950/30", iconColor: "text-indigo-600 dark:text-indigo-300", path: "/super-admin/tickets" },
   ];
 
-  const allPaid = stats.pendingPayments === 0;
+  const kindMeta: Record<PendingItem["kind"], { color: string; icon: any; label: string }> = {
+    ticket: { color: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300", icon: LifeBuoy, label: "Tiket" },
+    settlement: { color: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300", icon: Wallet, label: "SPP" },
+    withdrawal: { color: "bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300", icon: TrendingUp, label: "Affiliate" },
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <PageHeader
-        icon={TrendingUp}
+        icon={Sparkles}
         title="Super Admin Dashboard"
         subtitle={`Pantau seluruh platform ATSkolla — ${new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`}
+        variant="purple"
         actions={
           <div className="flex items-center gap-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-2xl font-bold leading-none">{stats.totalSchools}</p>
-              <p className="text-[11px] text-white/70 mt-1">Sekolah Aktif</p>
+            <div className="relative">
+              <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center">
+                <Bell className="h-5 w-5 text-white" />
+              </div>
+              {totalPending > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-white text-[#6d28d9] text-[10px] font-bold flex items-center justify-center shadow">
+                  {totalPending > 99 ? "99+" : totalPending}
+                </span>
+              )}
             </div>
             <Button
-              onClick={() => navigate("/super-admin/schools")}
-              className="bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-sm border border-white/20"
+              onClick={() => navigate("/super-admin/sekolah")}
+              className="bg-white text-[#6d28d9] hover:bg-white/90 rounded-xl shadow-sm font-semibold"
             >
               <School className="h-4 w-4 mr-2" />
               Kelola Sekolah
@@ -145,6 +231,49 @@ const SuperAdminDashboard = () => {
           </div>
         }
       />
+
+      {/* Pending alerts banner */}
+      {totalPending > 0 && (
+        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl border border-violet-200/60 dark:border-violet-800/40 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/40 dark:to-fuchsia-950/30 p-4 sm:p-5">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-white dark:bg-violet-900/60 flex items-center justify-center shadow-sm border border-violet-200/60 dark:border-violet-700/40 shrink-0">
+              <AlertCircle className="h-5 w-5 text-violet-600 dark:text-violet-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-violet-900 dark:text-violet-100">
+                {totalPending} item butuh perhatian Anda
+              </p>
+              <p className="text-xs text-violet-700/80 dark:text-violet-300/80 mt-0.5">
+                Pencairan, tiket, dan pembayaran menunggu review.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Alert badges */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {alertBadges.map((a, i) => (
+          <motion.button key={a.label}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
+            onClick={() => navigate(a.path)}
+            className={`relative overflow-hidden rounded-2xl p-4 text-left text-white bg-gradient-to-br ${a.tone} shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all`}
+          >
+            <div className="absolute -top-6 -right-6 h-24 w-24 rounded-full bg-white/10 blur-xl" />
+            <div className="relative flex items-start justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider font-semibold text-white/80">{a.label}</p>
+                <p className="text-3xl font-bold mt-1">{a.value}</p>
+                <p className="text-[11px] text-white/80 mt-0.5">menunggu tindakan</p>
+              </div>
+              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <a.icon className="h-5 w-5" />
+              </div>
+            </div>
+          </motion.button>
+        ))}
+      </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -168,49 +297,102 @@ const SuperAdminDashboard = () => {
         ))}
       </div>
 
-      {/* Payment + Plan Distribution */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Payment Status */}
-        <Card className="rounded-2xl border border-border/60 shadow-sm">
-          <CardHeader className="pb-3">
+      {/* Action Queue + Notifications */}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Card className="rounded-2xl border border-border/60 shadow-sm lg:col-span-2">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-              Status Pembayaran
+              <AlertCircle className="h-4 w-4 text-violet-600" />
+              Antrian Tindakan
             </CardTitle>
+            <Badge className="rounded-full bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 border-0 text-xs font-bold px-2.5">
+              {stats.actionQueue.length}
+            </Badge>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {allPaid && (
-              <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                Semua pembayaran terkonfirmasi
+          <CardContent>
+            {stats.actionQueue.length === 0 ? (
+              <div className="text-center py-10">
+                <div className="h-14 w-14 mx-auto rounded-2xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center mb-3">
+                  <Sparkles className="h-6 w-6 text-emerald-600 dark:text-emerald-300" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Semua bersih</p>
+                <p className="text-xs text-muted-foreground mt-1">Tidak ada pencairan, tiket, atau pembayaran yang menunggu.</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[420px] overflow-auto pr-1">
+                {stats.actionQueue.slice(0, 12).map((item) => {
+                  const meta = kindMeta[item.kind];
+                  return (
+                    <button key={item.id} onClick={() => navigate(item.path)}
+                      className="w-full flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-violet-200 dark:hover:border-violet-800/60 hover:bg-violet-50/60 dark:hover:bg-violet-950/30 transition-all text-left">
+                      <div className={`h-9 w-9 rounded-xl ${meta.color} flex items-center justify-center shrink-0`}>
+                        <meta.icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="rounded-full text-[10px] font-semibold px-2 py-0 h-4">{meta.label}</Badge>
+                          <span className="text-[11px] text-muted-foreground">{timeAgo(item.created_at)}</span>
+                        </div>
+                        <p className="text-sm font-semibold text-foreground truncate mt-0.5">{item.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        {item.amount != null && (
+                          <p className="text-sm font-bold text-foreground">{fmtIDR(item.amount)}</p>
+                        )}
+                        <ArrowUpRight className="h-4 w-4 text-muted-foreground ml-auto mt-0.5" />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Lunas</span>
-                <Badge className="rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 border-0 text-xs font-bold px-2.5">{stats.paidCount}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Menunggu</span>
-                <Badge className="rounded-full bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 border-0 text-xs font-bold px-2.5">{stats.pendingPayments}</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Total Aktif</span>
-                <Badge variant="outline" className="rounded-full text-xs font-bold px-2.5">{stats.activeSubscriptions}</Badge>
-              </div>
-            </div>
-            <Button variant="outline" className="w-full rounded-xl mt-2 text-sm" onClick={() => navigate("/super-admin/payments")}>
-              <CreditCard className="h-4 w-4 mr-2" />
-              Kelola Pembayaran
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Plan Distribution */}
+        <Card className="rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Bell className="h-4 w-4 text-violet-600" />
+              Notifikasi Platform
+            </CardTitle>
+            <Badge variant="outline" className="rounded-full text-xs font-bold px-2.5">
+              {stats.notifications.filter((n) => !n.is_read).length}
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            {stats.notifications.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Belum ada notifikasi</p>
+            ) : (
+              <div className="space-y-2 max-h-[420px] overflow-auto pr-1">
+                {stats.notifications.map((n: any) => {
+                  const tone =
+                    n.type === "warning" ? "bg-amber-500" :
+                    n.type === "error" ? "bg-rose-500" :
+                    n.type === "success" ? "bg-emerald-500" : "bg-violet-500";
+                  return (
+                    <div key={n.id} className={`flex gap-3 p-3 rounded-xl border ${n.is_read ? "border-border/40 bg-background" : "border-violet-200/70 dark:border-violet-800/40 bg-violet-50/50 dark:bg-violet-950/20"}`}>
+                      <div className={`h-2 w-2 rounded-full ${tone} mt-1.5 shrink-0`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{n.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
+                        <p className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo(n.created_at)}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Plan Distribution + Quick Actions */}
+      <div className="grid md:grid-cols-2 gap-4">
         <Card className="rounded-2xl border border-border/60 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+              <PieIcon className="h-4 w-4 text-violet-600" />
               Distribusi Paket Langganan
             </CardTitle>
           </CardHeader>
@@ -220,12 +402,12 @@ const SuperAdminDashboard = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(220, 10%, 90%)" }]}
+                      data={stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(262, 20%, 90%)" }]}
                       cx="50%" cy="50%"
                       innerRadius={40} outerRadius={70}
                       paddingAngle={2} dataKey="value"
                     >
-                      {(stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(220, 10%, 90%)" }]).map((entry, index) => (
+                      {(stats.planDistribution.length > 0 ? stats.planDistribution : [{ name: "Kosong", value: 1, color: "hsl(262, 20%, 90%)" }]).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -250,36 +432,39 @@ const SuperAdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-base font-bold text-foreground mb-3">Aksi Cepat</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {quickActions.map((action, i) => (
-            <motion.div key={action.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
-              <Card
-                className={`rounded-2xl border border-border/40 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer ${action.bg}`}
-                onClick={() => navigate(action.path)}
-              >
-                <CardContent className="p-4 sm:p-5">
+        <Card className="rounded-2xl border border-border/60 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-violet-600" />
+              Aksi Cepat
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-3">
+              {quickActions.map((action) => (
+                <button key={action.label} onClick={() => navigate(action.path)}
+                  className={`text-left rounded-2xl border border-border/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-4 ${action.bg}`}>
                   <action.icon className={`h-6 w-6 ${action.iconColor} mb-3`} />
                   <p className={`text-sm font-semibold ${action.iconColor}`}>{action.label}</p>
                   <p className="text-[11px] text-muted-foreground mt-0.5">{action.desc}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Payments */}
       <Card className="rounded-2xl border border-border/60 shadow-sm">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-3 flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
+            <CreditCard className="h-4 w-4 text-violet-600" />
             Transaksi Terbaru
           </CardTitle>
+          <Button size="sm" variant="ghost" className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 dark:hover:bg-violet-950/40" onClick={() => navigate("/super-admin/payments")}>
+            Lihat semua <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </CardHeader>
         <CardContent>
           {stats.recentPayments.length === 0 ? (
@@ -287,13 +472,13 @@ const SuperAdminDashboard = () => {
           ) : (
             <div className="space-y-2">
               {stats.recentPayments.slice(0, 5).map((p: any) => (
-                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors">
+                <div key={p.id} className="flex items-center justify-between p-3 rounded-xl hover:bg-violet-50/50 dark:hover:bg-violet-950/20 transition-colors">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{(p as any).schools?.name || "—"}</p>
                     <p className="text-xs text-muted-foreground">{(p as any).subscription_plans?.name} • {new Date(p.created_at).toLocaleDateString("id-ID")}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-foreground">{formatRupiah(p.amount)}</p>
+                    <p className="text-sm font-bold text-foreground">{fmtIDR(p.amount)}</p>
                     <Badge className={`text-[10px] rounded-full border-0 px-2 ${p.status === "paid" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"}`}>
                       {p.status === "paid" ? "Lunas" : p.status === "pending" ? "Pending" : p.status}
                     </Badge>
