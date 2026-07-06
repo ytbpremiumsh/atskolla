@@ -11,6 +11,8 @@ import {
 import { toast } from "sonner";
 import jsQR from "jsqr";
 import { useNfcScanner } from "@/hooks/useNfcScanner";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
