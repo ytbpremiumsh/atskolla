@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   Radio, Plus, Copy, RefreshCw, Trash2, ShieldOff, Building2, Users, Cpu, AlertTriangle, Activity,
+  Nfc, CheckCircle2, XCircle, Search, User as UserIcon, Loader2, School as SchoolIcon,
 } from "lucide-react";
 
 // ---------- helpers ----------
