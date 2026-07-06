@@ -505,7 +505,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
             <p className="text-[11px] text-muted-foreground text-center mt-1.5">
               Tempelkan kartu ke bagian belakang HP Android. iPhone belum mendukung Web NFC.
             </p>
-          </div>
+          </div>}
+
         </div>
       </Card>
 
