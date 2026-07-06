@@ -264,11 +264,11 @@ const Login = ({ forcedMode }: LoginProps) => {
   const scanBars = Array.from({ length: 24 }, (_, i) => i);
 
   const features = [
-    { icon: Users, title: "Sistem Multi Role", desc: "Dashboard Admin Sekolah, Guru, Wali Kelas, Bendahara, hingga Wali Murid" },
-    { icon: ScanFace, title: "Absensi Barcode & Face Recognition", desc: "Pencatatan kehadiran dengan QR/Barcode dan pengenalan wajah otomatis" },
-    { icon: Calendar, title: "Jadwal Pelajaran Real-time", desc: "Sinkronisasi jadwal mengajar dan kehadiran secara langsung" },
-    { icon: Wallet, title: "Manajemen Keuangan SPP", desc: "Tagihan, pembayaran, dan rekap SPP otomatis dalam satu dashboard" },
-    { icon: MessageCircle, title: "Notifikasi WhatsApp Otomatis", desc: "Info kehadiran dan tagihan langsung terkirim ke wali murid via WA" },
+    { icon: ScanFace, title: "Absensi RFID, Face & QR Code", desc: "Pencatatan kehadiran otomatis via RFID, pengenalan wajah, dan QR/Barcode." },
+    { icon: Calendar, title: "Jadwal Pelajaran Real-time", desc: "Sinkronisasi jadwal guru & kelas yang selalu terkini di semua dashboard." },
+    { icon: Wallet, title: "Pembayaran SPP Otomatis", desc: "Tagihan, VA, QRIS, dan rekap SPP siap audit dalam satu sistem." },
+    { icon: Users, title: "Dashboard Multi Peran", desc: "Kepala sekolah, bendahara, guru, wali kelas, dan wali murid dalam satu platform." },
+    { icon: MessageCircle, title: "Notifikasi WhatsApp Otomatis", desc: "Kehadiran & tagihan langsung terkirim ke wali murid secara real-time." },
   ];
 
   return (
