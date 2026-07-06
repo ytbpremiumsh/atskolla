@@ -385,11 +385,188 @@ export default function SuperAdminRFID() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid grid-cols-3 w-full max-w-xl">
+        <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full max-w-3xl">
+          <TabsTrigger value="register">Kartu Siswa</TabsTrigger>
+          <TabsTrigger value="test">Test Kartu</TabsTrigger>
           <TabsTrigger value="devices">Perangkat</TabsTrigger>
           <TabsTrigger value="licenses">Lisensi Sekolah</TabsTrigger>
           <TabsTrigger value="tiers">Aturan Ukuran</TabsTrigger>
         </TabsList>
+
+        {/* ===== Register student RFID (Super Admin helper) ===== */}
+        <TabsContent value="register" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Nfc className="h-4 w-4 text-emerald-600" /> Daftarkan Kartu RFID Siswa
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Bantu sekolah mendaftarkan kartu siswa dengan USB RFID Reader. Pilih sekolah, cari siswa, lalu tempelkan kartu pada reader.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="md:col-span-1">
+                  <Label className="text-xs">Sekolah</Label>
+                  <Select value={regSchoolId || "__none"} onValueChange={(v) => setRegSchoolId(v === "__none" ? "" : v)}>
+                    <SelectTrigger className="h-10 mt-1">
+                      <SelectValue placeholder="Pilih sekolah" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">— Pilih sekolah —</SelectItem>
+                      {schools.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-xs">Cari Siswa</Label>
+                  <div className="relative mt-1">
+                    <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={regSearch}
+                      onChange={(e) => setRegSearch(e.target.value)}
+                      placeholder="Nama, NIS, kelas, atau UID..."
+                      className="pl-9 h-10"
+                      disabled={!regSchoolId}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {!regSchoolId ? (
+                <div className="text-sm text-muted-foreground text-center py-10 border border-dashed rounded-lg">
+                  <SchoolIcon className="h-6 w-6 mx-auto mb-2 opacity-60" />
+                  Pilih sekolah untuk memuat daftar siswa.
+                </div>
+              ) : regLoading ? (
+                <div className="text-sm text-muted-foreground text-center py-10">Memuat siswa…</div>
+              ) : filteredRegStudents.length === 0 ? (
+                <div className="text-sm text-muted-foreground text-center py-10">Tidak ada siswa cocok.</div>
+              ) : (
+                <div className="overflow-x-auto max-h-[520px] overflow-y-auto border rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted/40 text-xs uppercase text-muted-foreground sticky top-0">
+                      <tr>
+                        <th className="text-left px-3 py-2">Siswa</th>
+                        <th className="text-left px-3 py-2">Kelas</th>
+                        <th className="text-left px-3 py-2">NIS</th>
+                        <th className="text-left px-3 py-2">UID RFID</th>
+                        <th className="text-right px-3 py-2">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredRegStudents.map((s) => (
+                        <tr key={s.id} className="border-t">
+                          <td className="px-3 py-2">
+                            <div className="flex items-center gap-2">
+                              <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex items-center justify-center shrink-0">
+                                {s.photo_url ? <img src={s.photo_url} alt="" className="h-full w-full object-cover" /> : <UserIcon className="h-4 w-4 text-muted-foreground" />}
+                              </div>
+                              <span className="font-medium">{s.name}</span>
+                            </div>
+                          </td>
+                          <td className="px-3 py-2 text-xs">{s.class}</td>
+                          <td className="px-3 py-2 text-xs font-mono">{s.student_id}</td>
+                          <td className="px-3 py-2 text-xs">
+                            {s.rfid_uid ? (
+                              <span className="inline-flex items-center gap-1 font-mono text-emerald-700 dark:text-emerald-400">
+                                <CheckCircle2 className="h-3.5 w-3.5" /> {s.rfid_uid}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground italic">belum ada</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <Button size="sm" variant={s.rfid_uid ? "outline" : "default"} className="gap-1.5" onClick={() => openRegister(s)}>
+                              <Nfc className="h-3.5 w-3.5" />
+                              {s.rfid_uid ? "Ubah" : "Daftar"}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ===== Test card ===== */}
+        <TabsContent value="test" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Nfc className="h-4 w-4 text-[#5B6CF9]" /> Test Kartu RFID
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Verifikasi reader & pastikan kartu sudah terdaftar untuk siswa yang benar.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <Label className="text-xs">Batasi Sekolah (opsional)</Label>
+                  <Select value={testSchoolId || "__all"} onValueChange={(v) => { setTestSchoolId(v === "__all" ? "" : v); setTestResult(null); }}>
+                    <SelectTrigger className="h-10 mt-1">
+                      <SelectValue placeholder="Semua sekolah" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all">— Semua sekolah —</SelectItem>
+                      {schools.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-xs">UID Kartu</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      autoFocus
+                      value={testUid}
+                      onChange={(e) => { setTestUid(e.target.value); setTestResult(null); }}
+                      onKeyDown={(e) => { if (e.key === "Enter") runTest(); }}
+                      placeholder="Tempel kartu pada reader…"
+                      className="font-mono tracking-wider h-10"
+                    />
+                    <Button onClick={runTest} disabled={testBusy || !testUid.trim()} className="h-10 gap-1.5">
+                      {testBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                      Cek
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {testResult && (
+                <div className={`rounded-lg border p-3 ${testResult.ok ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900" : "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900"}`}>
+                  <div className="flex items-start gap-2">
+                    {testResult.ok
+                      ? <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+                      : <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />}
+                    <div className="text-sm">
+                      <p className={`font-semibold ${testResult.ok ? "text-emerald-800 dark:text-emerald-200" : "text-red-800 dark:text-red-200"}`}>
+                        {testResult.msg}
+                      </p>
+                      {testResult.student && (
+                        <div className="mt-2 space-y-0.5 text-muted-foreground text-xs">
+                          <p><b className="text-foreground">{testResult.student.name}</b> — {testResult.student.class}</p>
+                          <p>NIS: <span className="font-mono">{testResult.student.student_id}</span></p>
+                          <p>UID: <span className="font-mono">{testResult.student.rfid_uid}</span></p>
+                          {testResult.student.schools?.name && (
+                            <p>Sekolah: {testResult.student.schools.name}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* ===== Devices ===== */}
         <TabsContent value="devices" className="space-y-4">
