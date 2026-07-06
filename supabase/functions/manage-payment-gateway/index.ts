@@ -15,10 +15,10 @@ const KEYS = [
   "doku_client_id",
   "doku_secret_key",
   "doku_env",
-  "doku_va_methods",
-  "doku_qris_methods",
-  "doku_retail_methods",
   "doku_webhook_verify",
+  "fee_va",
+  "fee_qris",
+  "fee_retail",
 ];
 
 function mask(v: string) {
