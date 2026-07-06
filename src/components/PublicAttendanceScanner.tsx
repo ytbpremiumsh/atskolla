@@ -89,7 +89,9 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
   }, []);
 
   // Web NFC scanner (Android Chrome). Uses lookupRef so tidak butuh dep.
+  const isMobile = useIsMobile();
   const nfc = useNfcScanner((uid) => {
+
     scanPaused.current = false;
     lookupRef.current(uid, "rfid");
   });
