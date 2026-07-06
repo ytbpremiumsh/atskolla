@@ -378,14 +378,11 @@ const SuperAdminDashboard = () => {
         </Card>
 
         <Card className="rounded-2xl border border-border/60 shadow-sm">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Bell className="h-4 w-4 text-violet-600" />
               Notifikasi Platform
             </CardTitle>
-            <Badge variant="outline" className="rounded-full text-xs font-bold px-2.5">
-              {stats.notifications.filter((n) => !n.is_read).length}
-            </Badge>
           </CardHeader>
           <CardContent>
             {stats.notifications.length === 0 ? (
