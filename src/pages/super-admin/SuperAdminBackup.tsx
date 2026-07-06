@@ -4,8 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Database, Download, RefreshCw, Shield, Clock, HardDrive, Loader2,
-  CheckCircle, Table2, BarChart3, FileDown, Cloud,
+  Database, Download, Upload, RefreshCw, Shield, Clock, HardDrive, Loader2,
+  CheckCircle, AlertTriangle, Table2, BarChart3, FileDown, FileUp, Cloud,
   BookOpen, ExternalLink, Key, FolderOpen, Folder, FileText, Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
