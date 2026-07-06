@@ -191,7 +191,7 @@ function SectionHeader({ eyebrow, title, sub, dark = false }: { eyebrow: string;
         {title}
       </h2>
       {sub && (
-        <p className={`mt-4 text-base md:text-lg leading-relaxed ${dark ? "text-white/65" : "text-[#0b1020]/65"}`}>
+        <p className={`mt-4 text-base md:text-lg leading-relaxed ${dark ? "text-[#0b1020]/60" : "text-[#0b1020]/65"}`}>
           {sub}
         </p>
       )}
@@ -212,7 +212,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
   }, []);
 
   return (
-    <header className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled ? "bg-[#0b1020]/95 backdrop-blur-md border-b border-white/5" : "bg-transparent"}`}>
+    <header className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled ? "bg-white/90 backdrop-blur-md border-b border-slate-200" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center gap-2.5 group">
           <img src={atskollaLogo.url} alt="ATSkolla" className="h-9 w-9 object-contain" />
@@ -221,7 +221,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <nav className="hidden lg:flex items-center gap-8">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-sm font-medium text-white/70 hover:text-white transition-colors">
+            <a key={n.href} href={n.href} className="text-sm font-medium text-[#0b1020]/65 hover:text-white transition-colors">
               {n.label}
             </a>
           ))}
@@ -229,7 +229,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <div className="hidden lg:flex items-center gap-3">
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
-          <button onClick={() => nav("/login")} className="text-sm font-semibold text-white/80 hover:text-white px-3 py-2">
+          <button onClick={() => nav("/login")} className="text-sm font-semibold text-[#0b1020]/75 hover:text-white px-3 py-2">
             Masuk
           </button>
           <button
@@ -249,14 +249,14 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
       </div>
 
       {open && (
-        <div className="lg:hidden bg-[#0b1020] border-t border-white/5 px-6 py-4 space-y-3">
+        <div className="lg:hidden bg-white border-t border-slate-100 px-6 py-4 space-y-3">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-white/80 hover:text-white py-2 text-sm font-medium">
+            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-[#0b1020]/75 hover:text-white py-2 text-sm font-medium">
               {n.label}
             </a>
           ))}
-          <div className="pt-3 border-t border-white/10 flex gap-2">
-            <button onClick={() => nav("/login")} className="flex-1 text-sm font-semibold text-white border border-white/15 rounded-lg py-2.5">
+          <div className="pt-3 border-t border-slate-100 flex gap-2">
+            <button onClick={() => nav("/login")} className="flex-1 text-sm font-semibold text-white border border-slate-200 rounded-lg py-2.5">
               Masuk
             </button>
             <button onClick={() => nav("/register")} className="flex-1 text-sm font-semibold bg-[#5B6CF9] text-white rounded-lg py-2.5">
@@ -274,7 +274,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 function Hero() {
   const nav = useNavigate();
   return (
-    <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-[#0b1020] overflow-hidden">
+    <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-white overflow-hidden">
       {/* grid pattern */}
       <div
         className="absolute inset-0 z-0 opacity-30 pointer-events-none"
@@ -298,7 +298,7 @@ function Hero() {
             ATSkolla — Platform Digital Sekolah <span className="text-[#5B6CF9]">Terintegrasi</span>.
           </h1>
 
-          <p className="text-base md:text-lg text-white/70 max-w-xl leading-relaxed">
+          <p className="text-base md:text-lg text-[#0b1020]/65 max-w-xl leading-relaxed">
             Kelola absensi, pembayaran SPP online, keuangan sekolah, kartu pelajar, komunikasi orang tua, dan administrasi sekolah dalam satu platform.
           </p>
 
@@ -311,7 +311,7 @@ function Hero() {
             </button>
             <a
               href="#kontak"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#1a2340] hover:bg-[#1a2340]/70 text-white border border-white/10 font-semibold rounded-xl transition-all font-display"
+              className="inline-flex items-center gap-2 px-6 py-3.5 bg-slate-50 hover:bg-slate-50/70 text-white border border-slate-200 font-semibold rounded-xl transition-all font-display"
             >
               Jadwalkan Demo
             </a>
@@ -319,44 +319,44 @@ function Hero() {
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
             {TRUST_BADGES.map((b) => (
-              <div key={b.label} className="flex items-center gap-2 text-sm text-white/70">
+              <div key={b.label} className="flex items-center gap-2 text-sm text-[#0b1020]/65">
                 <b.icon className="h-4 w-4 text-[#5B6CF9]" />
                 <span>{b.label}</span>
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+          <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-100">
             <div>
               <div className="font-display text-2xl font-bold text-white">500+</div>
-              <div className="text-xs text-white/50 mt-0.5">Sekolah Aktif</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Sekolah Aktif</div>
             </div>
             <div>
               <div className="font-display text-2xl font-bold text-white">99.9%</div>
-              <div className="text-xs text-white/50 mt-0.5">Uptime SLA</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Uptime SLA</div>
             </div>
             <div>
               <div className="font-display text-2xl font-bold text-white">24/7</div>
-              <div className="text-xs text-white/50 mt-0.5">Support Indonesia</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Support Indonesia</div>
             </div>
           </div>
         </motion.div>
 
         {/* Right — dashboard + hardware mockup */}
         <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }} className="relative">
-          <div className="relative bg-[#1a2340] rounded-3xl border border-[#5B6CF9]/20 p-4 shadow-2xl overflow-hidden group">
+          <div className="relative bg-slate-50 rounded-3xl border border-[#5B6CF9]/20 p-4 shadow-2xl overflow-hidden group">
             {/* dashboard mockup */}
-            <div className="bg-[#0b1020] rounded-2xl w-full border border-white/5 p-5">
+            <div className="bg-white rounded-2xl w-full border border-slate-200 p-5">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-red-500/40" />
                   <div className="h-2 w-2 rounded-full bg-yellow-500/40" />
                   <div className="h-2 w-2 rounded-full bg-green-500/40" />
-                  <div className="ml-3 text-[10px] font-mono text-white/40">app.atskolla.com/dashboard</div>
+                  <div className="ml-3 text-[10px] font-mono text-[#0b1020]/40">app.atskolla.com/dashboard</div>
                 </div>
                 <div className="flex gap-1.5">
-                  <div className="w-7 h-7 rounded-lg bg-[#1a2340]" />
-                  <div className="w-7 h-7 rounded-lg bg-[#1a2340]" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-50" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-50" />
                 </div>
               </div>
 
@@ -364,74 +364,74 @@ function Hero() {
                 <div className="rounded-xl bg-[#5B6CF9]/10 border border-[#5B6CF9]/25 p-3">
                   <div className="text-[9px] uppercase tracking-wider text-[#5B6CF9] font-semibold">Kehadiran</div>
                   <div className="text-white font-display font-bold text-xl mt-1">94.8%</div>
-                  <div className="text-[10px] text-white/40 mt-0.5">1.204 hadir</div>
+                  <div className="text-[10px] text-[#0b1020]/40 mt-0.5">1.204 hadir</div>
                 </div>
-                <div className="rounded-xl bg-[#1a2340] border border-white/5 p-3">
-                  <div className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">SPP</div>
-                  <div className="text-white font-display font-bold text-xl mt-1">312<span className="text-xs text-white/40">Jt</span></div>
-                  <div className="text-[10px] text-white/40 mt-0.5">87% terkumpul</div>
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                  <div className="text-[9px] uppercase tracking-wider text-[#0b1020]/40 font-semibold">SPP</div>
+                  <div className="text-white font-display font-bold text-xl mt-1">312<span className="text-xs text-[#0b1020]/40">Jt</span></div>
+                  <div className="text-[10px] text-[#0b1020]/40 mt-0.5">87% terkumpul</div>
                 </div>
-                <div className="rounded-xl bg-[#1a2340] border border-white/5 p-3">
-                  <div className="text-[9px] uppercase tracking-wider text-white/40 font-semibold">Aktif</div>
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+                  <div className="text-[9px] uppercase tracking-wider text-[#0b1020]/40 font-semibold">Aktif</div>
                   <div className="text-white font-display font-bold text-xl mt-1">1.270</div>
-                  <div className="text-[10px] text-white/40 mt-0.5">siswa</div>
+                  <div className="text-[10px] text-[#0b1020]/40 mt-0.5">siswa</div>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-[#1a2340] border border-white/5 p-4 h-32 flex items-end gap-1.5">
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 h-32 flex items-end gap-1.5">
                 {[38, 55, 62, 48, 70, 82, 65, 74, 90, 68, 78, 88].map((h, i) => (
                   <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-[#5B6CF9]/70 to-[#5B6CF9]/20" style={{ height: `${h}%` }} />
                 ))}
               </div>
 
               <div className="mt-4 space-y-2">
-                <div className="flex items-center gap-3 rounded-lg bg-[#1a2340] px-3 py-2">
+                <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2">
                   <div className="h-6 w-6 rounded-full bg-[#5B6CF9]/20" />
-                  <div className="h-2 flex-1 rounded-full bg-white/5">
+                  <div className="h-2 flex-1 rounded-full bg-slate-100">
                     <div className="h-full w-4/5 rounded-full bg-[#5B6CF9]/60" />
                   </div>
-                  <div className="text-[10px] text-white/50 font-mono">07:12</div>
+                  <div className="text-[10px] text-[#0b1020]/50 font-mono">07:12</div>
                 </div>
-                <div className="flex items-center gap-3 rounded-lg bg-[#1a2340] px-3 py-2">
+                <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2">
                   <div className="h-6 w-6 rounded-full bg-[#5B6CF9]/20" />
-                  <div className="h-2 flex-1 rounded-full bg-white/5">
+                  <div className="h-2 flex-1 rounded-full bg-slate-100">
                     <div className="h-full w-3/5 rounded-full bg-[#5B6CF9]/50" />
                   </div>
-                  <div className="text-[10px] text-white/50 font-mono">07:15</div>
+                  <div className="text-[10px] text-[#0b1020]/50 font-mono">07:15</div>
                 </div>
               </div>
             </div>
 
             {/* Floating smart card */}
-            <div className="absolute -bottom-6 -left-6 w-44 h-60 bg-gradient-to-br from-[#5B6CF9] to-[#1a2340] rounded-2xl border border-white/20 shadow-2xl p-5 flex flex-col justify-between transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
+            <div className="absolute -bottom-6 -left-6 w-44 h-60 bg-gradient-to-br from-[#5B6CF9] to-[#1a2340] rounded-2xl border border-slate-200 shadow-2xl p-5 flex flex-col justify-between transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
               <div className="flex justify-between items-start">
-                <div className="h-8 w-8 rounded-full bg-white/15 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center">
                   <GraduationCap className="h-4 w-4 text-white" />
                 </div>
-                <div className="text-[9px] text-white/70 font-mono tracking-widest">SMART CARD</div>
+                <div className="text-[9px] text-[#0b1020]/65 font-mono tracking-widest">SMART CARD</div>
               </div>
               <div className="space-y-1.5">
                 <div className="h-1.5 w-full bg-white/25 rounded-full" />
                 <div className="h-1.5 w-2/3 bg-white/20 rounded-full" />
               </div>
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-md bg-white/10 border border-white/25 flex items-center justify-center">
-                  <Radio className="h-4 w-4 text-white/80" />
+                <div className="w-9 h-9 rounded-md bg-slate-100 border border-white/25 flex items-center justify-center">
+                  <Radio className="h-4 w-4 text-[#0b1020]/75" />
                 </div>
-                <div className="text-[8px] text-white/80 leading-tight uppercase font-bold tracking-widest">
+                <div className="text-[8px] text-[#0b1020]/75 leading-tight uppercase font-bold tracking-widest">
                   RFID<br />Secure
                 </div>
               </div>
             </div>
 
             {/* RFID scanner mockup */}
-            <div className="absolute top-14 -right-6 w-36 h-36 bg-[#1a2340] rounded-2xl border border-[#5B6CF9]/30 shadow-2xl flex items-center justify-center transform rotate-6 group-hover:rotate-0 transition-transform duration-500">
+            <div className="absolute top-14 -right-6 w-36 h-36 bg-slate-50 rounded-2xl border border-[#5B6CF9]/30 shadow-2xl flex items-center justify-center transform rotate-6 group-hover:rotate-0 transition-transform duration-500">
               <div className="text-center">
-                <div className="w-14 h-16 mx-auto bg-[#0b1020] rounded-lg border border-[#5B6CF9]/25 flex flex-col items-center justify-center gap-2">
+                <div className="w-14 h-16 mx-auto bg-white rounded-lg border border-[#5B6CF9]/25 flex flex-col items-center justify-center gap-2">
                   <div className="w-7 h-0.5 bg-[#5B6CF9] rounded-full animate-pulse" />
                   <div className="w-6 h-6 rounded-full border-2 border-[#5B6CF9]/40" />
                 </div>
-                <div className="mt-2 text-[9px] text-white/50 font-bold tracking-widest">RFID SCANNER</div>
+                <div className="mt-2 text-[9px] text-[#0b1020]/50 font-bold tracking-widest">RFID SCANNER</div>
               </div>
             </div>
           </div>
@@ -497,7 +497,7 @@ function ProblemSolution() {
         </div>
 
         {/* Solutions */}
-        <div className="rounded-3xl bg-[#0b1020] p-8 relative overflow-hidden">
+        <div className="rounded-3xl bg-white p-8 relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-64 h-64 bg-[#5B6CF9] rounded-full blur-[100px] opacity-20" />
           <div className="relative">
             <div className="text-xs font-semibold tracking-widest text-[#5B6CF9] uppercase mb-6">Dengan ATSkolla</div>
@@ -509,7 +509,7 @@ function ProblemSolution() {
                   </div>
                   <div>
                     <div className="font-display font-semibold text-white">{s.title}</div>
-                    <div className="text-sm text-white/60 mt-0.5">{s.desc}</div>
+                    <div className="text-sm text-[#0b1020]/55 mt-0.5">{s.desc}</div>
                   </div>
                 </li>
               ))}
@@ -559,12 +559,12 @@ function Ecosystem() {
           <div className="flex flex-col items-center justify-center py-6">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-[#5B6CF9]/25 blur-2xl" />
-              <div className="relative h-28 w-28 lg:h-36 lg:w-36 rounded-3xl bg-[#0b1020] border border-[#5B6CF9]/40 flex flex-col items-center justify-center shadow-2xl">
+              <div className="relative h-28 w-28 lg:h-36 lg:w-36 rounded-3xl bg-white border border-[#5B6CF9]/40 flex flex-col items-center justify-center shadow-2xl">
                 <div className="h-10 w-10 rounded-xl bg-[#5B6CF9] flex items-center justify-center mb-1">
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <div className="font-display font-bold text-white text-sm">ATSkolla</div>
-                <div className="text-[9px] text-white/50 uppercase tracking-widest">Core Platform</div>
+                <div className="text-[9px] text-[#0b1020]/50 uppercase tracking-widest">Core Platform</div>
               </div>
             </div>
           </div>
@@ -600,7 +600,7 @@ function Modules() {
         {MODULES.map((group) => (
           <div key={group.group}>
             <div className="flex items-center gap-3 mb-5">
-              <div className="h-9 w-9 rounded-xl bg-[#0b1020] flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center">
                 <group.icon className="h-4 w-4 text-[#5B6CF9]" />
               </div>
               <div className="font-display text-xl font-bold text-[#0b1020]">{group.group}</div>
@@ -663,12 +663,12 @@ function PaymentSystem() {
         </div>
 
         {/* Dashboard mock */}
-        <div className="lg:col-span-3 rounded-3xl bg-[#0b1020] p-6 shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-3 rounded-3xl bg-white p-6 shadow-2xl relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-64 h-64 bg-[#5B6CF9] rounded-full blur-[100px] opacity-15" />
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <div className="text-white/50 text-xs">Dashboard Bendahara</div>
+                <div className="text-[#0b1020]/50 text-xs">Dashboard Bendahara</div>
                 <div className="font-display text-white font-bold text-lg">SPP Bulan November</div>
               </div>
               <div className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
@@ -677,29 +677,29 @@ function PaymentSystem() {
             </div>
 
             <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="rounded-xl bg-[#1a2340] p-4">
-                <div className="text-[10px] text-white/50 uppercase tracking-wider">Terkumpul</div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Terkumpul</div>
                 <div className="font-display text-white text-xl font-bold mt-1">Rp 271Jt</div>
                 <div className="text-[10px] text-emerald-400 mt-1">+12% MoM</div>
               </div>
-              <div className="rounded-xl bg-[#1a2340] p-4">
-                <div className="text-[10px] text-white/50 uppercase tracking-wider">Tunggakan</div>
+              <div className="rounded-xl bg-slate-50 p-4">
+                <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Tunggakan</div>
                 <div className="font-display text-white text-xl font-bold mt-1">Rp 41Jt</div>
                 <div className="text-[10px] text-amber-400 mt-1">42 siswa</div>
               </div>
               <div className="rounded-xl bg-[#5B6CF9]/15 border border-[#5B6CF9]/30 p-4">
                 <div className="text-[10px] text-[#5B6CF9] uppercase tracking-wider">Target</div>
                 <div className="font-display text-white text-xl font-bold mt-1">87%</div>
-                <div className="text-[10px] text-white/50 mt-1">tercapai</div>
+                <div className="text-[10px] text-[#0b1020]/50 mt-1">tercapai</div>
               </div>
             </div>
 
-            <div className="rounded-xl bg-[#1a2340] p-4 mb-4">
-              <div className="text-white/50 text-xs mb-3">Progress pembayaran</div>
-              <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+            <div className="rounded-xl bg-slate-50 p-4 mb-4">
+              <div className="text-[#0b1020]/50 text-xs mb-3">Progress pembayaran</div>
+              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full w-[87%] rounded-full bg-gradient-to-r from-[#5B6CF9] to-[#7c8bff]" />
               </div>
-              <div className="flex justify-between text-[10px] text-white/40 mt-2">
+              <div className="flex justify-between text-[10px] text-[#0b1020]/40 mt-2">
                 <span>Rp 0</span><span>Rp 312.000.000</span>
               </div>
             </div>
@@ -710,7 +710,7 @@ function PaymentSystem() {
                 { name: "Sari Mulyani — V-B", status: "Reminder terkirim", color: "amber" },
                 { name: "Rendi Pratama — IV-C", status: "Lunas via VA BCA", color: "emerald" },
               ].map((r) => (
-                <div key={r.name} className="flex items-center justify-between rounded-lg bg-[#1a2340] px-4 py-2.5">
+                <div key={r.name} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5">
                   <div className="text-white text-sm font-medium">{r.name}</div>
                   <div className={`text-[10px] font-semibold ${r.color === "emerald" ? "text-emerald-400" : "text-amber-400"}`}>{r.status}</div>
                 </div>
@@ -726,7 +726,7 @@ function PaymentSystem() {
 // ---------- Hardware ----------
 function Hardware() {
   return (
-    <Section id="hardware" className="py-20 lg:py-28 bg-[#0b1020] relative overflow-hidden">
+    <Section id="hardware" className="py-20 lg:py-28 bg-white relative overflow-hidden">
       <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#5B6CF9] rounded-full blur-[160px] opacity-10" />
       <div className="relative">
         <SectionHeader
@@ -745,16 +745,16 @@ function Hardware() {
               viewport={{ once: true, margin: "-40px" }}
               variants={fadeUp}
               transition={{ duration: 0.45, delay: i * 0.06 }}
-              className="rounded-3xl bg-[#1a2340] border border-white/10 p-6 hover:border-[#5B6CF9]/50 hover:-translate-y-1 transition-all"
+              className="rounded-3xl bg-slate-50 border border-slate-200 p-6 hover:border-[#5B6CF9]/50 hover:-translate-y-1 transition-all"
             >
-              <div className="aspect-square rounded-2xl bg-[#0b1020] border border-white/5 flex items-center justify-center mb-5 relative overflow-hidden">
+              <div className="aspect-square rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-5 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
                 <div className="relative h-16 w-16 rounded-2xl bg-[#5B6CF9]/15 border border-[#5B6CF9]/30 flex items-center justify-center">
                   <h.icon className="h-8 w-8 text-[#5B6CF9]" />
                 </div>
               </div>
               <div className="font-display font-bold text-white text-lg">{h.name}</div>
-              <div className="text-sm text-white/60 mt-1.5 leading-relaxed">{h.desc}</div>
+              <div className="text-sm text-[#0b1020]/55 mt-1.5 leading-relaxed">{h.desc}</div>
             </motion.div>
           ))}
         </div>
@@ -781,7 +781,7 @@ function DashboardPreview() {
             key={r.key}
             onClick={() => setActive(i)}
             className={`px-4 py-2 rounded-full text-sm font-semibold font-display transition-all ${
-              i === active ? "bg-[#0b1020] text-white" : "bg-slate-100 text-[#0b1020]/70 hover:bg-slate-200"
+              i === active ? "bg-white text-white" : "bg-slate-100 text-[#0b1020]/70 hover:bg-slate-200"
             }`}
           >
             {r.label}
@@ -794,28 +794,28 @@ function DashboardPreview() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35 }}
-        className="rounded-3xl bg-[#0b1020] p-4 lg:p-6 shadow-2xl border border-white/5"
+        className="rounded-3xl bg-white p-4 lg:p-6 shadow-2xl border border-slate-200"
       >
-        <div className="rounded-2xl bg-[#1a2340] p-6">
+        <div className="rounded-2xl bg-slate-50 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <div className="text-xs text-white/50">{role.label}</div>
+              <div className="text-xs text-[#0b1020]/50">{role.label}</div>
               <div className="font-display text-white font-bold text-xl">{role.metric.top}</div>
             </div>
             <div className="text-right">
               <div className="font-display text-white text-3xl font-bold">{role.metric.val}</div>
-              <div className="text-xs text-white/50 mt-0.5">{role.metric.sub}</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">{role.metric.sub}</div>
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-3">
             {role.blocks.map((b) => (
-              <div key={b} className="rounded-xl bg-[#0b1020] border border-white/5 p-4">
+              <div key={b} className="rounded-xl bg-white border border-slate-200 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-[#5B6CF9] font-semibold">Modul</div>
                 <div className="font-display text-white font-semibold mt-1">{b}</div>
                 <div className="mt-3 space-y-1.5">
-                  <div className="h-1.5 rounded-full bg-white/10" />
-                  <div className="h-1.5 rounded-full bg-white/10 w-4/5" />
-                  <div className="h-1.5 rounded-full bg-white/10 w-3/5" />
+                  <div className="h-1.5 rounded-full bg-slate-100" />
+                  <div className="h-1.5 rounded-full bg-slate-100 w-4/5" />
+                  <div className="h-1.5 rounded-full bg-slate-100 w-3/5" />
                 </div>
               </div>
             ))}
@@ -855,7 +855,7 @@ function WhyFree() {
         </div>
 
         <div className="relative">
-          <div className="rounded-3xl bg-[#0b1020] p-8 shadow-2xl relative overflow-hidden">
+          <div className="rounded-3xl bg-white p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-56 h-56 bg-[#5B6CF9] rounded-full blur-[100px] opacity-20" />
             <div className="relative space-y-5">
               {[
@@ -865,8 +865,8 @@ function WhyFree() {
                 { l: "Support dasar", v: "24/7" },
                 { l: "Backup data harian", v: "Termasuk" },
               ].map((row) => (
-                <div key={row.l} className="flex items-center justify-between border-b border-white/10 pb-4 last:border-0">
-                  <div className={`text-sm ${row.accent ? "text-white font-semibold" : "text-white/70"}`}>{row.l}</div>
+                <div key={row.l} className="flex items-center justify-between border-b border-slate-200 pb-4 last:border-0">
+                  <div className={`text-sm ${row.accent ? "text-white font-semibold" : "text-[#0b1020]/65"}`}>{row.l}</div>
                   <div className={`font-display font-bold ${row.accent ? "text-[#5B6CF9] text-2xl" : "text-white"}`}>{row.v}</div>
                 </div>
               ))}
@@ -921,7 +921,7 @@ function Faq() {
 function FinalCTA() {
   const nav = useNavigate();
   return (
-    <Section id="kontak" className="py-20 lg:py-28 bg-[#0b1020] relative overflow-hidden">
+    <Section id="kontak" className="py-20 lg:py-28 bg-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)" }} />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#5B6CF9] rounded-full blur-[160px] opacity-15" />
 
@@ -930,7 +930,7 @@ function FinalCTA() {
         <h2 className="mt-5 font-display text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05]">
           Siap Membangun Sekolah Digital <span className="text-[#5B6CF9]">Bersama ATSkolla</span>?
         </h2>
-        <p className="mt-5 text-lg text-white/70 max-w-xl mx-auto">
+        <p className="mt-5 text-lg text-[#0b1020]/65 max-w-xl mx-auto">
           Aktifkan platform hari ini — tanpa biaya lisensi, tanpa komitmen jangka panjang.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
@@ -943,7 +943,7 @@ function FinalCTA() {
           <a
             href="https://wa.me/6285155124304"
             target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-2 px-7 py-4 bg-transparent hover:bg-white/5 text-white border border-white/20 font-semibold rounded-xl font-display"
+            className="inline-flex items-center gap-2 px-7 py-4 bg-transparent hover:bg-slate-100 text-white border border-slate-200 font-semibold rounded-xl font-display"
           >
             Hubungi Kami <ArrowUpRight className="h-4 w-4" />
           </a>
@@ -956,7 +956,7 @@ function FinalCTA() {
 // ---------- Footer ----------
 function Footer() {
   return (
-    <footer className="bg-[#0b1020] border-t border-white/5 text-white/60">
+    <footer className="bg-white border-t border-slate-100 text-[#0b1020]/55">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 py-14 grid md:grid-cols-4 gap-10">
         <div>
           <div className="flex items-center gap-2.5 mb-4">
@@ -994,8 +994,8 @@ function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-white/5 py-6">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-3 text-xs text-white/40">
+      <div className="border-t border-slate-100 py-6">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row justify-between gap-3 text-xs text-[#0b1020]/40">
           <div>© {new Date().getFullYear()} ATSkolla. Platform Digital Sekolah Terintegrasi.</div>
           <div>Made with care for Indonesian schools.</div>
         </div>
