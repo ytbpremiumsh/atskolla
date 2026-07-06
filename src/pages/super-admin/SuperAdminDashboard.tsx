@@ -60,7 +60,7 @@ const SuperAdminDashboard = () => {
     totalRevenue: 0, monthlyRevenue: 0, paidCount: 0, waActiveCount: 0,
     recentPayments: [], schools: [], planDistribution: [],
     pendingTickets: 0, pendingSettlements: 0, pendingWithdrawals: 0,
-    actionQueue: [], notifications: [],
+    actionQueue: [], notifications: [], expiringSoon: [],
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
