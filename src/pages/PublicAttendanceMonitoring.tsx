@@ -353,7 +353,7 @@ const PublicAttendanceMonitoring = () => {
               />
             </div>
             <span className={`text-base font-extrabold ${theme.text} whitespace-nowrap tabular-nums`}>{percentage}%</span>
-            <span className={`text-[10px] ${theme.textMuted} whitespace-nowrap tabular-nums`}>{stats.total - stats.belum}/{stats.total}</span>
+            <span className={`text-[10px] ${theme.textMuted} whitespace-nowrap tabular-nums`}>{stats.hadir}/{stats.total}</span>
           </div>
         </div>
 
