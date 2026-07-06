@@ -198,6 +198,46 @@ const SuperAdminBackup = () => {
     }
   };
 
+  const handleImport = async () => {
+    if (!importFile) { toast.error("Pilih file backup JSON terlebih dahulu"); return; }
+    if (importMode === "replace") {
+      const ok = window.confirm(
+        "MODE REPLACE akan MENGHAPUS semua data yang ada di tabel yang di-import lalu menggantinya dengan isi backup.\n\nAksi ini TIDAK DAPAT DIBATALKAN.\n\nLanjutkan?"
+      );
+      if (!ok) return;
+    }
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const text = await importFile.text();
+      const parsed = JSON.parse(text);
+      // Accept envelope { meta, backup } or raw { table: [...] }
+      const backup = parsed?.backup && typeof parsed.backup === "object" ? parsed.backup : parsed;
+      const tableCount = Object.keys(backup || {}).length;
+      if (!tableCount) throw new Error("File tidak berisi data tabel yang valid");
+
+      toast.info(`Mengimport ${tableCount} tabel (mode ${importMode})...`);
+      const { data, error } = await supabase.functions.invoke("database-backup", {
+        body: { action: "import", backup, mode: importMode },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Import gagal");
+
+      setImportResult(data);
+      const { inserted, failed, tables } = data.summary || {};
+      if (failed > 0) {
+        toast.warning(`Import selesai: ${inserted} baris masuk, ${failed} gagal (${tables} tabel).`);
+      } else {
+        toast.success(`Import berhasil! ${inserted} baris di ${tables} tabel.`);
+      }
+      fetchStats();
+    } catch (err: any) {
+      toast.error("Gagal import: " + (err.message || String(err)));
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const formatDate = (iso: string) => {
     try { return new Date(iso).toLocaleString("id-ID", { dateStyle: "full", timeStyle: "short" }); }
     catch { return iso; }
