@@ -18,6 +18,7 @@ const KEYS = [
   "doku_webhook_verify",
   "fee_va",
   "fee_qris",
+  "fee_qris_percent",
   "fee_retail",
 ];
 
@@ -64,6 +65,7 @@ serve(async (req) => {
         doku_webhook_verify: map.doku_webhook_verify || "true",
         fee_va: map.fee_va || "5000",
         fee_qris: map.fee_qris || "5000",
+        fee_qris_percent: map.fee_qris_percent || "1",
         fee_retail: map.fee_retail || "8000",
       });
     }

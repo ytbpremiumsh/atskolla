@@ -124,6 +124,7 @@ export default function ParentDashboard() {
   const [pickerLoading, setPickerLoading] = useState(false);
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
   const [channelFees, setChannelFees] = useState<Partial<Record<PaymentChannelId, number>>>({});
+  const [qrisPercent, setQrisPercent] = useState<number>(0.01);
 
   useEffect(() => {
     supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
@@ -136,7 +137,10 @@ export default function ParentDashboard() {
       body: JSON.stringify({ action: "payment_config" }),
     })
       .then((r) => r.json())
-      .then((d) => { if (d?.ok && d.fees) setChannelFees(d.fees); })
+      .then((d) => {
+        if (d?.ok && d.fees) setChannelFees(d.fees);
+        if (d?.ok && typeof d.qris_percent === "number") setQrisPercent(d.qris_percent);
+      })
       .catch(() => {});
   }, []);
 
@@ -1305,6 +1309,7 @@ export default function ParentDashboard() {
         subtitle={pickerInvoice ? `Tagihan SPP ${pickerInvoice.period_label || ""}` : undefined}
         loading={pickerLoading}
         feeOverrides={channelFees}
+        qrisPercent={qrisPercent}
         onConfirm={confirmPaySpp}
       />
     </div>
