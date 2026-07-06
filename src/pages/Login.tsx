@@ -577,7 +577,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                   )}
                 </AnimatePresence>
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         </div>
         <p className="text-center text-[#0b1020]/40 text-xs mt-8 w-full max-w-6xl">© 2026 ATSkolla — Platform Digital Sekolah</p>
