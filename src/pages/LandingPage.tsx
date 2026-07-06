@@ -221,7 +221,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
 
         <nav className="hidden lg:flex items-center gap-8">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-sm font-medium text-[#0b1020]/65 hover:text-[#5B6CF9] transition-colors">
+            <a key={n.href} href={n.href} className="text-sm font-semibold text-[#5B6CF9] hover:text-[#5B6CF9]/80 transition-colors">
               {n.label}
             </a>
           ))}
@@ -249,7 +249,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
       {open && (
         <div className="lg:hidden bg-white border-t border-slate-100 px-6 py-4 space-y-3">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-[#0b1020]/75 hover:text-[#5B6CF9] py-2 text-sm font-medium">
+            <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="block text-[#5B6CF9] hover:text-[#5B6CF9]/80 py-2 text-sm font-semibold">
               {n.label}
             </a>
           ))}
@@ -275,11 +275,11 @@ function Hero() {
     <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 bg-white overflow-hidden">
       {/* grid pattern */}
       <div
-        className="absolute inset-0 z-0 opacity-30 pointer-events-none"
+        className="absolute inset-0 z-0 pointer-events-none"
         style={{
           backgroundImage:
-            "linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
+            "linear-gradient(rgba(11,16,32,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(11,16,32,.05) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
           maskImage: "radial-gradient(ellipse at top, black 40%, transparent 80%)",
           WebkitMaskImage: "radial-gradient(ellipse at top, black 40%, transparent 80%)",
         }}
@@ -745,7 +745,7 @@ function Hardware() {
               className="rounded-3xl bg-slate-50 border border-slate-200 p-6 hover:border-[#5B6CF9]/50 hover:-translate-y-1 transition-all"
             >
               <div className="aspect-square rounded-2xl bg-white border border-slate-200 flex items-center justify-center mb-5 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+                <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(11,16,32,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(11,16,32,.05) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
                 <div className="relative h-16 w-16 rounded-2xl bg-[#5B6CF9]/15 border border-[#5B6CF9]/30 flex items-center justify-center">
                   <h.icon className="h-8 w-8 text-[#5B6CF9]" />
                 </div>
@@ -919,7 +919,7 @@ function FinalCTA() {
   const nav = useNavigate();
   return (
     <Section id="kontak" className="py-20 lg:py-28 bg-white relative overflow-hidden">
-      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)", backgroundSize: "44px 44px", maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)" }} />
+      <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(rgba(11,16,32,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(11,16,32,.05) 1px, transparent 1px)", backgroundSize: "56px 56px", maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)" }} />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#5B6CF9] rounded-full blur-[160px] opacity-15" />
 
       <div className="relative text-center max-w-3xl mx-auto">
