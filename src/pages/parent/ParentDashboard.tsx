@@ -450,19 +450,37 @@ export default function ParentDashboard() {
                 )}
               </div>
 
-              {/* Big metric */}
-              <div className="relative mt-4 md:mt-6 flex items-end justify-between gap-3">
-                <div>
-                  <p className="text-4xl md:text-6xl font-extrabold tracking-tight leading-none">{monthRate}<span className="text-2xl md:text-3xl">%</span></p>
-                  <p className="text-[11px] md:text-sm text-white/80 mt-1.5">Tingkat Kehadiran • {monthHadir}/{workingDaysElapsed} hari sekolah</p>
+              {/* Nomor Kartu Identitas Siswa */}
+              <div className="relative mt-4 md:mt-6">
+                <p className="text-[10px] md:text-xs uppercase tracking-wider text-white/70 font-semibold">Nomor Kartu Identitas</p>
+                <div className="mt-1.5 flex items-center justify-between gap-3">
+                  <p className="font-mono font-extrabold tracking-[0.15em] tabular-nums whitespace-nowrap text-lg md:text-2xl leading-none">
+                    {(current as any)?.card_number
+                      ? String((current as any).card_number).replace(/(\d{4})(?=\d)/g, "$1 ")
+                      : "—"}
+                  </p>
+                  {(current as any)?.card_number && (
+                    <button
+                      onClick={() => {
+                        const num = String((current as any).card_number).replace(/\D/g, "");
+                        navigator.clipboard?.writeText(num);
+                        toast.success("Nomor kartu disalin");
+                      }}
+                      className="shrink-0 inline-flex items-center gap-1 text-[10px] md:text-xs font-semibold text-white/90 bg-white/15 hover:bg-white/25 backdrop-blur ring-1 ring-white/30 rounded-full px-2.5 py-1 transition-all active:scale-95"
+                      aria-label="Salin nomor kartu"
+                    >
+                      <Copy className="h-3 w-3" /> Salin
+                    </button>
+                  )}
                 </div>
-                <div className="flex flex-col items-end">
+                <div className="mt-3 flex items-center gap-2">
                   <Badge className="bg-white/20 text-white border-0 text-[10px] md:text-xs backdrop-blur">
                     {todayLog ? STATUS_LABEL[todayLog.status]?.label || todayLog.status : "Belum Absen"}
                   </Badge>
-                  <p className="text-[10px] md:text-xs text-white/70 mt-1">Hari ini</p>
+                  <span className="text-[10px] md:text-xs text-white/70">Status hari ini</span>
                 </div>
               </div>
+
 
               {/* 3 round action buttons */}
               <div className="relative mt-5 md:mt-6 flex items-center justify-around md:justify-start md:gap-10">
