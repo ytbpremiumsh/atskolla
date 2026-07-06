@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import atskollaLogo from "@/assets/atskolla-logo.png.asset.json";
+import { useLandingTheme, LANDING_THEME_CSS } from "@/hooks/useLandingTheme";
+import ThemeToggle from "@/components/landing/ThemeToggle";
 import {
   ArrowRight, CheckCircle2, ShieldCheck, Zap, MapPin, Menu, X,
   QrCode, ScanFace, CreditCard, Wallet, Receipt, Banknote,
@@ -198,7 +200,7 @@ function SectionHeader({ eyebrow, title, sub, dark = false }: { eyebrow: string;
 }
 
 // ---------- Nav ----------
-function Nav() {
+function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme: () => void }) {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -226,6 +228,7 @@ function Nav() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
           <button onClick={() => nav("/login")} className="text-sm font-semibold text-[#0b1020]/80 hover:text-[#0b1020] px-3 py-2">
             Masuk
           </button>
@@ -237,9 +240,12 @@ function Nav() {
           </button>
         </div>
 
-        <button onClick={() => setOpen((v) => !v)} className="lg:hidden text-[#0b1020] p-2" aria-label="Menu">
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="lg:hidden flex items-center gap-2">
+          <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <button onClick={() => setOpen((v) => !v)} className="text-[#0b1020] p-2" aria-label="Menu">
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -1013,9 +1019,15 @@ export default function LandingPage() {
     supabase.auth.getSession().catch(() => {});
   }, []);
 
+  const { theme, toggle } = useLandingTheme();
+
   return (
-    <div className="min-h-screen bg-white font-sans text-[#0b1020] antialiased selection:bg-[#5B6CF9]/30 selection:text-white">
-      <Nav />
+    <div
+      data-ls-theme={theme}
+      className="min-h-screen bg-white font-sans text-[#0b1020] antialiased selection:bg-[#5B6CF9]/30 selection:text-white transition-colors"
+    >
+      <style dangerouslySetInnerHTML={{ __html: LANDING_THEME_CSS }} />
+      <Nav theme={theme} onToggleTheme={toggle} />
       <main>
         <Hero />
         <StatsBar />

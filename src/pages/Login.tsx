@@ -14,6 +14,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import BackendStatusBanner, { isBackendNetworkError } from "@/components/BackendStatusBanner";
 import { useTenant, buildTenantUrl, getRootDomain } from "@/lib/tenant";
 import { Search, School as SchoolIcon } from "lucide-react";
+import { useLandingTheme, LANDING_THEME_CSS } from "@/hooks/useLandingTheme";
+import ThemeToggle from "@/components/landing/ThemeToggle";
 
 type Mode = "school" | "parent";
 
@@ -35,6 +37,7 @@ const Login = ({ forcedMode }: LoginProps) => {
   const tenantName = tenant.school?.name || null;
   const tenantSlug = tenant.slug;
   const tenantSchoolId = tenant.school?.id ?? null;
+  const { theme, toggle: toggleTheme } = useLandingTheme();
 
 
   // school
@@ -269,47 +272,80 @@ const Login = ({ forcedMode }: LoginProps) => {
   ];
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-[#5B6CF9]">
-      <button
-        onClick={() => navigate("/")}
-        className="absolute top-4 left-4 z-50 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white px-3 py-2 rounded-xl text-sm font-medium transition-all backdrop-blur-sm"
-      >
-        <ArrowLeft className="h-4 w-4" /> Kembali
-      </button>
+    <div
+      data-ls-theme={theme}
+      className="min-h-screen flex relative overflow-hidden bg-white text-[#0b1020] transition-colors"
+    >
+      <style dangerouslySetInnerHTML={{ __html: LANDING_THEME_CSS }} />
 
-      <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      {/* subtle grid background */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-40"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(11,16,32,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(11,16,32,.05) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+          maskImage: 'radial-gradient(ellipse at top, black 40%, transparent 80%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at top, black 40%, transparent 80%)',
+        }}
+      />
 
+      {/* top bar: back + theme toggle */}
+      <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
+        <button
+          onClick={() => navigate("/")}
+          className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-[#5B6CF9]/40 text-[#0b1020] px-3 py-2 rounded-xl text-sm font-medium transition-all"
+        >
+          <ArrowLeft className="h-4 w-4" /> Kembali
+        </button>
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+      </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
         <div className={`w-full grid gap-8 items-center justify-items-center ${mode === "school" ? "max-w-6xl lg:grid-cols-2" : "max-w-md justify-center"}`}>
-          {/* Left: Features (only for school admin login) */}
+          {/* Left: Dark hero card (only for school admin login) */}
           {mode === "school" && (
           <motion.div
             initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
-            className="hidden lg:block text-white w-full max-w-lg"
+            className="hidden lg:block w-full max-w-lg"
           >
-            <div className="flex items-center gap-3 mb-5">
-              <img src={tenantLogo || loginLogo} alt={tenantName || "ATSkolla"} className="h-11 w-11 rounded-xl shadow-lg object-contain bg-white/10" />
-              <span className="font-bold text-2xl tracking-tight">{tenantName || "ATSkolla"}</span>
-            </div>
-            <h2 className="text-3xl xl:text-[2rem] font-bold mb-2 leading-tight">{tenantName ? `Selamat Datang di ${tenantName}` : "Platform Digital Sekolah Modern"}</h2>
-            <p className="text-white/70 text-sm mb-5">{tenantName ? "Masuk untuk mengakses dashboard sekolah Anda." : "Solusi lengkap absensi, keuangan, dan komunikasi sekolah dalam satu sistem."}</p>
-            <div className="space-y-2.5">
-              {features.map((f, i) => (
-                <motion.div
-                  key={f.title}
-                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.08 }}
-                  className="flex items-start gap-3 bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3 backdrop-blur-sm"
-                >
-                  <div className="h-10 w-10 rounded-xl bg-white/15 border border-white/20 flex items-center justify-center shrink-0">
-                    <f.icon className="h-5 w-5 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm leading-tight">{f.title}</p>
-                    <p className="text-[12px] text-white/65 mt-1 leading-snug">{f.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
+            <div className="relative rounded-3xl bg-[#0b1020] border border-[#5B6CF9]/20 p-8 overflow-hidden shadow-2xl">
+              <div
+                className="absolute inset-0 opacity-30 pointer-events-none"
+                style={{
+                  backgroundImage: 'linear-gradient(#1a2340 1px, transparent 1px), linear-gradient(90deg, #1a2340 1px, transparent 1px)',
+                  backgroundSize: '44px 44px',
+                  maskImage: 'radial-gradient(ellipse at top, black 40%, transparent 80%)',
+                  WebkitMaskImage: 'radial-gradient(ellipse at top, black 40%, transparent 80%)',
+                }}
+              />
+              <div className="absolute -top-16 -left-16 w-72 h-72 bg-[#5B6CF9] rounded-full blur-[120px] opacity-20 pointer-events-none" />
+
+              <div className="relative text-white">
+                <div className="flex items-center gap-3 mb-5">
+                  <img src={tenantLogo || loginLogo} alt={tenantName || "ATSkolla"} className="h-11 w-11 rounded-xl shadow-lg object-contain bg-white/10 p-1" />
+                  <span className="font-bold text-2xl tracking-tight">{tenantName || "ATSkolla"}</span>
+                </div>
+                <h2 className="text-3xl xl:text-[2rem] font-bold mb-2 leading-tight">{tenantName ? `Selamat Datang di ${tenantName}` : "Platform Digital Sekolah Modern"}</h2>
+                <p className="text-white/70 text-sm mb-5">{tenantName ? "Masuk untuk mengakses dashboard sekolah Anda." : "Solusi lengkap absensi, keuangan, dan komunikasi sekolah dalam satu sistem."}</p>
+                <div className="space-y-2.5">
+                  {features.map((f, i) => (
+                    <motion.div
+                      key={f.title}
+                      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.08 }}
+                      className="flex items-start gap-3 bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3 backdrop-blur-sm"
+                    >
+                      <div className="h-10 w-10 rounded-xl bg-[#5B6CF9]/20 border border-[#5B6CF9]/30 flex items-center justify-center shrink-0">
+                        <f.icon className="h-5 w-5 text-[#5B6CF9]" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm leading-tight">{f.title}</p>
+                        <p className="text-[12px] text-white/65 mt-1 leading-snug">{f.desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
             </div>
           </motion.div>
           )}
@@ -322,8 +358,8 @@ const Login = ({ forcedMode }: LoginProps) => {
           >
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
               className="flex lg:hidden items-center justify-center gap-3 mb-6">
-              <img src={mode === "parent" ? loginLogo : (tenantLogo || loginLogo)} alt="ATSkolla" className="h-11 w-11 rounded-xl shadow-lg object-contain bg-white/10" />
-              <span className="font-bold text-xl text-white tracking-tight">{mode === "parent" ? "ATSkolla" : (tenantName || "ATSkolla")}</span>
+              <img src={mode === "parent" ? loginLogo : (tenantLogo || loginLogo)} alt="ATSkolla" className="h-11 w-11 rounded-xl shadow-lg object-contain bg-[#5B6CF9]/10 p-1" />
+              <span className="font-bold text-xl text-[#0b1020] tracking-tight">{mode === "parent" ? "ATSkolla" : (tenantName || "ATSkolla")}</span>
             </motion.div>
 
             <div className="text-center mb-5">
@@ -332,22 +368,23 @@ const Login = ({ forcedMode }: LoginProps) => {
                   <img
                     src={tenantLogo || loginLogo}
                     alt={tenantName || "ATSkolla"}
-                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl shadow-2xl shadow-black/30 object-contain bg-white p-2"
+                    className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl shadow-xl object-contain bg-white border border-slate-200 p-2"
                   />
                 </div>
               )}
-              <h2 className={`font-bold text-white ${mode === "parent" ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"}`}>
+              <h2 className={`font-bold text-[#0b1020] ${mode === "parent" ? "text-3xl sm:text-4xl" : "text-2xl sm:text-3xl"}`}>
                 {mode === "school" ? "Selamat Datang" : "Portal Wali Murid"}
               </h2>
-              <p className="text-white/60 text-sm mt-1">
+              <p className="text-[#0b1020]/60 text-sm mt-1">
                 {mode === "school" ? "Masuk ke akun Anda untuk melanjutkan" : "Pantau aktivitas ananda dengan mudah"}
               </p>
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ delay: 0.25, duration: 0.6 }} className="relative">
-              <div className="absolute -inset-1 bg-white/10 rounded-[2rem] blur-xl" />
-              <div className={`relative bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl shadow-black/20 ${mode === "parent" ? "p-8 sm:p-10" : "p-6 sm:p-7"}`}>
+              <div className="absolute -inset-1 bg-[#5B6CF9]/10 rounded-[2rem] blur-xl" />
+              <div className={`relative bg-white border border-slate-200 rounded-[2rem] shadow-xl shadow-slate-900/5 ${mode === "parent" ? "p-8 sm:p-10" : "p-6 sm:p-7"}`}>
+
 
                 {/* Tabs (hidden when a forced mode is provided via /admin or /login routes) */}
                 {!forcedMode && (
@@ -545,10 +582,8 @@ const Login = ({ forcedMode }: LoginProps) => {
             </motion.div>
           </motion.div>
         </div>
-        <p className="text-center text-white/40 text-xs mt-8 w-full max-w-6xl">© 2026 ATSkolla — Platform Digital Sekolah</p>
+        <p className="text-center text-[#0b1020]/40 text-xs mt-8 w-full max-w-6xl">© 2026 ATSkolla — Platform Digital Sekolah</p>
       </div>
-
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-white dark:bg-slate-950 rounded-t-[2rem] z-[5]" />
     </div>
   );
 };
