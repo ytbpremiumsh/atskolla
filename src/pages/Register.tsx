@@ -653,21 +653,13 @@ const Register = () => {
               </motion.div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="text-center text-white/40 text-xs mt-6"
-        >
+        <p className="text-center text-slate-400 text-xs mt-6">
           © 2026 ATSkolla — Platform Digital Sekolah
-        </motion.p>
-      </motion.div>
+        </p>
+        </div>
       </div>
-
-      {/* Bottom rounded accent */}
-      <div className="absolute bottom-0 left-0 right-0 h-8 bg-white dark:bg-slate-950 rounded-t-[2rem] z-[5]" />
     </div>
   );
 };
