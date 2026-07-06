@@ -276,6 +276,93 @@ export default function SuperAdminRFID() {
     load();
   };
 
+  // ------- Student RFID registration (Super Admin helper) -------
+  const loadRegStudents = async (schoolId: string) => {
+    if (!schoolId) { setRegStudents([]); return; }
+    setRegLoading(true);
+    const { data, error } = await supabase
+      .from("students")
+      .select("id, name, class, student_id, rfid_uid, school_id, photo_url")
+      .eq("school_id", schoolId)
+      .order("class", { ascending: true })
+      .order("name", { ascending: true });
+    setRegLoading(false);
+    if (error) return toast.error(error.message);
+    setRegStudents(data || []);
+  };
+
+  useEffect(() => { loadRegStudents(regSchoolId); }, [regSchoolId]);
+
+  const openRegister = (s: any) => {
+    setRegTarget(s);
+    setRegUid(s.rfid_uid || "");
+  };
+
+  const saveStudentRfid = async () => {
+    if (!regTarget) return;
+    const uid = regUid.trim();
+    if (uid.length < 4) return toast.error("UID RFID minimal 4 karakter");
+    setRegSaving(true);
+    // Cek konflik di sekolah yang sama
+    const { data: existing } = await supabase
+      .from("students")
+      .select("id, name, class")
+      .eq("school_id", regTarget.school_id)
+      .eq("rfid_uid", uid)
+      .neq("id", regTarget.id)
+      .maybeSingle();
+    if (existing) {
+      setRegSaving(false);
+      return toast.error(`UID sudah dipakai: ${existing.name} (${existing.class})`);
+    }
+    const { error } = await (supabase as any).from("students")
+      .update({ rfid_uid: uid }).eq("id", regTarget.id);
+    setRegSaving(false);
+    if (error) return toast.error("Gagal simpan: " + error.message);
+    toast.success(`RFID ${regTarget.name} tersimpan`);
+    setRegTarget(null); setRegUid("");
+    loadRegStudents(regSchoolId);
+  };
+
+  const removeStudentRfid = async () => {
+    if (!regTarget) return;
+    setRegSaving(true);
+    const { error } = await (supabase as any).from("students")
+      .update({ rfid_uid: null }).eq("id", regTarget.id);
+    setRegSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("RFID dilepas");
+    setRegTarget(null); setRegUid("");
+    loadRegStudents(regSchoolId);
+  };
+
+  // ------- Test RFID -------
+  const runTest = async () => {
+    const uid = testUid.trim();
+    if (!uid) return setTestResult({ ok: false, msg: "Tempelkan kartu terlebih dahulu" });
+    setTestBusy(true);
+    let q = supabase.from("students")
+      .select("id, name, class, student_id, rfid_uid, school_id, schools(name)")
+      .eq("rfid_uid", uid);
+    if (testSchoolId) q = q.eq("school_id", testSchoolId);
+    const { data, error } = await q.maybeSingle();
+    setTestBusy(false);
+    if (error) return setTestResult({ ok: false, msg: error.message });
+    if (data) setTestResult({ ok: true, msg: "Kartu dikenali", student: data });
+    else setTestResult({ ok: false, msg: `UID "${uid}" belum terdaftar${testSchoolId ? " di sekolah ini" : ""}` });
+  };
+
+  const filteredRegStudents = useMemo(() => {
+    const q = regSearch.trim().toLowerCase();
+    if (!q) return regStudents;
+    return regStudents.filter((s) =>
+      s.name?.toLowerCase().includes(q) ||
+      s.class?.toLowerCase().includes(q) ||
+      s.student_id?.toLowerCase().includes(q) ||
+      (s.rfid_uid || "").toLowerCase().includes(q),
+    );
+  }, [regStudents, regSearch]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
