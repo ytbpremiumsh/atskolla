@@ -629,8 +629,24 @@ Deno.serve(async (req) => {
       const invoiceId = body.invoice_id;
       const channel = body.channel; // "va" | "qris" | "retail"
       if (!invoiceId) return json({ error: "invoice_id wajib" });
-      const { data: inv } = await supabase.from("spp_invoices").select("id, student_id").eq("id", invoiceId).maybeSingle();
-      if (!inv || inv.student_id !== studentId) return json({ error: "Invoice tidak valid" });
+      const { data: inv } = await supabase
+        .from("spp_invoices")
+        .select("id, student_id, students:student_id(parent_phone)")
+        .eq("id", invoiceId)
+        .maybeSingle();
+      if (!inv) return json({ error: "Tagihan tidak ditemukan" });
+      // Ownership: prefer parent-phone match against the invoice's student
+      // (so switching selectedStudent client-side doesn't break payment
+      // for a sibling under the same wali). Fall back to strict student_id
+      // match for legacy invoices missing a linked student.
+      const invoiceStudentPhone = (inv as any).students?.parent_phone || "";
+      const sesVariants = phoneVariants(session.phone);
+      const invVariants = phoneVariants(invoiceStudentPhone);
+      const ownedByParent = invVariants.some((p) => sesVariants.includes(p));
+      const legacyMatch = !invoiceStudentPhone && inv.student_id === studentId;
+      if (!ownedByParent && !legacyMatch) return json({ error: "Invoice tidak valid" });
+
+
 
       // Pilih gateway per channel (fallback ke active_payment_gateway lalu mayar)
       const ch = (channel || "va").toString().toLowerCase();
