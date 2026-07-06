@@ -117,4 +117,12 @@ verify_jwt = false
 [functions.rfid-device]
 verify_jwt = false
 
+[functions.doku-disbursement]
+verify_jwt = false
+
+[functions.doku-disbursement-webhook]
+verify_jwt = false
+
+
+
 
