@@ -764,12 +764,24 @@ const Register = () => {
                         <p className="text-[11px] text-muted-foreground">Masukkan kode referral jika Anda mendapat undangan dari sekolah lain</p>
                       </motion.div>
 
+                      <motion.div variants={itemVariants} className="flex items-start gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
+                        <Checkbox id="tos" checked={agreeTos} onCheckedChange={(v) => setAgreeTos(v === true)} className="mt-0.5" />
+                        <label htmlFor="tos" className="text-[12px] leading-relaxed text-muted-foreground cursor-pointer">
+                          Saya menyatakan data yang diisi benar dan menyetujui{" "}
+                          <a href="/terms" target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Syarat & Ketentuan</a>{" "}
+                          serta{" "}
+                          <a href="/privacy" target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">Kebijakan Privasi</a>{" "}
+                          ATSkolla.
+                        </label>
+                      </motion.div>
+
                       <motion.div variants={itemVariants} className="flex gap-2">
                         <Button type="button" variant="outline" onClick={() => setStep(1)} className="h-11 rounded-xl">Kembali</Button>
-                        <Button type="submit" disabled={registering || slugStatus !== "available"} className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all">
+                        <Button type="submit" disabled={registering || slugStatus !== "available" || !agreeTos} className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all">
                           {registering ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Mendaftar...</> : "Daftar Sekarang"}
                         </Button>
                       </motion.div>
+
                     </form>
                   </motion.div>
                 )}
