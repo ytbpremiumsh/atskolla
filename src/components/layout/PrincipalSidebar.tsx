@@ -28,7 +28,7 @@ const groups: { label: string; items: { title: string; url: string; icon: any; e
   {
     label: "Laporan Akademik",
     items: [
-      { title: "Ringkasan Laporan", url: "/kepsek/laporan", icon: FileSpreadsheet, end: true },
+      
       { title: "Absensi Siswa", url: "/kepsek/laporan/absensi-siswa", icon: Users },
       { title: "Absensi Guru", url: "/kepsek/laporan/absensi-guru", icon: GraduationCap },
       { title: "Jurnal Mengajar", url: "/kepsek/laporan/jurnal", icon: ClipboardList },
