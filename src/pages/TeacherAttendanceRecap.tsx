@@ -3,10 +3,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronLeft, ChevronRight, UsersRound, Calendar, Download, TrendingUp, CheckCircle2, XCircle, Clock as ClockIcon, TrendingDown } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronLeft, ChevronRight, UsersRound, Calendar, Download, TrendingUp, CheckCircle2, XCircle, Clock as ClockIcon, TrendingDown, ClipboardList } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+
 
 const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
 
@@ -31,20 +33,30 @@ interface TeacherRow {
 
 const STATUS_TO_CODE: Record<string, string> = { hadir: "H", sakit: "S", izin: "I", alfa: "A" };
 
-const TeacherAttendanceRecap = () => {
+interface Props {
+  /** Optional override; falls back to signed-in user's school_id. */
+  schoolId?: string;
+  /** Hide the top gradient hero (useful when embedded in another page shell). */
+  hideHeader?: boolean;
+}
+
+const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = {}) => {
   const { profile } = useAuth();
+  const schoolId = schoolIdProp ?? profile?.school_id;
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [teachers, setTeachers] = useState<{ user_id: string; full_name: string; photo_url: string | null; roles: string[] }[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [rekapTab, setRekapTab] = useState<"datang" | "pulang">("datang");
   const [schoolName, setSchoolName] = useState("");
   const [schoolCity, setSchoolCity] = useState("");
   const [principalName, setPrincipalName] = useState("");
 
+
   useEffect(() => {
     const load = async () => {
-      if (!profile?.school_id) { setLoading(false); return; }
+      if (!schoolId) { setLoading(false); return; }
       setLoading(true);
       try {
         const year = currentMonth.getFullYear();
@@ -52,11 +64,11 @@ const TeacherAttendanceRecap = () => {
         const start = new Date(year, month, 1).toISOString().slice(0, 10);
         const end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-        const { data: school } = await supabase.from("schools").select("name, city").eq("id", profile.school_id).maybeSingle();
+        const { data: school } = await supabase.from("schools").select("name, city").eq("id", schoolId).maybeSingle();
         if (school) { setSchoolName(school.name || ""); setSchoolCity(school.city || ""); }
 
         const { data: profs } = await supabase.from("profiles")
-          .select("user_id, full_name, photo_url").eq("school_id", profile.school_id);
+          .select("user_id, full_name, photo_url").eq("school_id", schoolId);
         const ids = (profs || []).map((p) => p.user_id);
         if (ids.length === 0) { setTeachers([]); setLogs([]); return; }
 
@@ -81,12 +93,13 @@ const TeacherAttendanceRecap = () => {
 
         const { data: lgs } = await supabase.from("teacher_attendance_logs" as any)
           .select("user_id, date, status, attendance_type")
-          .eq("school_id", profile.school_id).gte("date", start).lte("date", end);
+          .eq("school_id", schoolId).gte("date", start).lte("date", end);
         setLogs(lgs || []);
       } finally { setLoading(false); }
     };
     load();
-  }, [profile?.school_id, currentMonth]);
+
+  }, [schoolId, currentMonth]);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const dayArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -101,6 +114,8 @@ const TeacherAttendanceRecap = () => {
     teachers.filter((t) => roleFilter === "all" ? true : t.roles.includes(roleFilter)),
   [teachers, roleFilter]);
 
+  const isPulangMode = rekapTab === "pulang";
+
   const rows: TeacherRow[] = useMemo(() => {
     return filteredTeachers.map((t) => {
       const days: Record<number, string> = {};
@@ -108,29 +123,34 @@ const TeacherAttendanceRecap = () => {
       const myLogs = logs.filter((l) => l.user_id === t.user_id);
       for (const d of dayArray) {
         const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        // Use 'datang' record (or any if no datang) to determine status
-        const log = myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") === "datang")
-          || myLogs.find((l) => l.date === dateStr);
-        // Check if this day has passed (today or before)
         const checkDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
         const isPast = checkDate <= today;
-        const dow = checkDate.getDay(); // 0 Sun, 6 Sat
+        const dow = checkDate.getDay();
         const isWeekend = dow === 0 || dow === 6;
 
-        if (log) {
-          const code = STATUS_TO_CODE[log.status] || "H";
-          days[d] = code;
-          totals[code as "H"|"S"|"I"|"A"]++;
-        } else if (isPast && !isWeekend && isCurrentOrPastMonth) {
-          days[d] = "A";
-          totals.A++;
+        if (isPulangMode) {
+          const pulangLog = myLogs.find((l) => l.date === dateStr && l.attendance_type === "pulang");
+          if (pulangLog) { days[d] = "H"; totals.H++; }
+          else { days[d] = ""; }
         } else {
-          days[d] = "";
+          const log = myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") === "datang")
+            || myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") !== "pulang");
+          if (log) {
+            const code = STATUS_TO_CODE[log.status] || "H";
+            days[d] = code;
+            totals[code as "H"|"S"|"I"|"A"]++;
+          } else if (isPast && !isWeekend && isCurrentOrPastMonth) {
+            days[d] = "A";
+            totals.A++;
+          } else {
+            days[d] = "";
+          }
         }
       }
       return { user_id: t.user_id, full_name: t.full_name, photo_url: t.photo_url, roles: t.roles, days, totals };
     });
-  }, [filteredTeachers, logs, dayArray, currentMonth, daysInMonth]);
+
+  }, [filteredTeachers, logs, dayArray, currentMonth, daysInMonth, isPulangMode, isCurrentOrPastMonth]);
 
   const exportExcel = () => {
     if (!rows.length) { toast.error("Tidak ada data"); return; }
@@ -205,18 +225,20 @@ const TeacherAttendanceRecap = () => {
 
   return (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] p-5 text-white shadow-xl">
-        <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
-            <UsersRound className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold">Rekap Absensi Guru & Staff</h1>
-            <p className="text-white/70 text-xs">Format bulanan dengan kode H/S/I/A — siap cetak & TTD Kepala Sekolah</p>
+      {!hideHeader && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] p-5 text-white shadow-xl">
+          <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+          <div className="relative z-10 flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+              <UsersRound className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold">Rekap Absensi Guru & Staff</h1>
+              <p className="text-white/70 text-xs">Format bulanan dengan kode H/S/I/A — siap cetak & TTD Kepala Sekolah</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <Card className="border border-border/50 shadow-none rounded-2xl">
         <CardContent className="p-4 space-y-3">
@@ -249,18 +271,34 @@ const TeacherAttendanceRecap = () => {
             </div>
           </div>
 
+          {/* Datang / Pulang Tabs */}
+          <Tabs value={rekapTab} onValueChange={(v) => setRekapTab(v as "datang" | "pulang")}>
+            <TabsList>
+              <TabsTrigger value="datang" className="text-xs gap-1.5"><ClipboardList className="h-3.5 w-3.5" /> Rekap Kehadiran</TabsTrigger>
+              <TabsTrigger value="pulang" className="text-xs gap-1.5"><ClockIcon className="h-3.5 w-3.5" /> Rekap Kepulangan</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           {/* Legend */}
-          <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
-            <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Hadir</div>
-            <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-500 text-white text-[10px] font-bold">S</span> Sakit</div>
-            <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-amber-400 text-white text-[10px] font-bold">I</span> Izin</div>
-            <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-red-500 text-white text-[10px] font-bold">A</span> Alfa</div>
-          </div>
+          {!isPulangMode ? (
+            <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Hadir</div>
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-500 text-white text-[10px] font-bold">S</span> Sakit</div>
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-amber-400 text-white text-[10px] font-bold">I</span> Izin</div>
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-red-500 text-white text-[10px] font-bold">A</span> Alfa</div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Sudah Pulang</div>
+              <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-muted/40 border border-border/30" /> Belum Absen Pulang</div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Analitik Guru */}
-      {!loading && rows.length > 0 && (() => {
+
+      {/* Analitik Guru (only for Kehadiran, not Pulang) */}
+      {!loading && rows.length > 0 && !isPulangMode && (() => {
         const totalH = rows.reduce((s, r) => s + r.totals.H, 0);
         const totalS = rows.reduce((s, r) => s + r.totals.S, 0);
         const totalI = rows.reduce((s, r) => s + r.totals.I, 0);
@@ -395,18 +433,29 @@ const TeacherAttendanceRecap = () => {
                     <th rowSpan={2} className="px-3 py-2.5 text-left font-semibold text-muted-foreground w-10 sticky left-0 bg-card z-10">No</th>
                     <th rowSpan={2} className="px-3 py-2.5 text-left font-semibold text-muted-foreground min-w-[200px]">Nama & Jabatan</th>
                     <th colSpan={daysInMonth} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Tanggal</th>
-                    <th colSpan={5} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
+                    {isPulangMode ? (
+                      <th className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Ket</th>
+                    ) : (
+                      <th colSpan={5} className="px-1 py-2 text-center font-bold text-primary uppercase text-[10px] tracking-wider">Keterangan</th>
+                    )}
                   </tr>
                   <tr className="border-b border-border bg-muted/30">
                     {dayArray.map((d) => (
                       <th key={d} className="px-0.5 py-1.5 text-center font-medium text-muted-foreground w-7 text-[10px]">{d}</th>
                     ))}
-                    <th className="px-1 py-1.5 text-center font-bold text-emerald-600 w-7 text-[10px]">H</th>
-                    <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
-                    <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
-                    <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
-                    <th className="px-1 py-1.5 text-center font-bold text-primary w-10 text-[10px]">%</th>
+                    {isPulangMode ? (
+                      <th className="px-1 py-1.5 text-center font-bold text-emerald-600 w-7 text-[10px]">✓</th>
+                    ) : (
+                      <>
+                        <th className="px-1 py-1.5 text-center font-bold text-emerald-600 w-7 text-[10px]">H</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-violet-600 w-7 text-[10px]">S</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-amber-600 w-7 text-[10px]">I</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-red-600 w-7 text-[10px]">A</th>
+                        <th className="px-1 py-1.5 text-center font-bold text-primary w-10 text-[10px]">%</th>
+                      </>
+                    )}
                   </tr>
+
                 </thead>
                 <tbody>
                   {rows.map((r, i) => {
@@ -440,13 +489,19 @@ const TeacherAttendanceRecap = () => {
                             </td>
                           );
                         })}
-                        <td className="px-1 py-2 text-center font-bold text-emerald-600">{r.totals.H || 0}</td>
-                        <td className="px-1 py-2 text-center font-bold text-violet-600">{r.totals.S || 0}</td>
-                        <td className="px-1 py-2 text-center font-bold text-amber-600">{r.totals.I || 0}</td>
-                        <td className="px-1 py-2 text-center font-bold text-red-600">{r.totals.A || 0}</td>
-                        <td className={`px-1 py-2 text-center font-bold text-[10px] ${pct >= 80 ? "text-emerald-600" : pct >= 60 ? "text-amber-600" : "text-red-600"}`}>
-                          {total > 0 ? `${pct}%` : "-"}
-                        </td>
+                        {isPulangMode ? (
+                          <td className="px-1 py-2 text-center font-bold text-emerald-600">{r.totals.H || 0}</td>
+                        ) : (
+                          <>
+                            <td className="px-1 py-2 text-center font-bold text-emerald-600">{r.totals.H || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-violet-600">{r.totals.S || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-amber-600">{r.totals.I || 0}</td>
+                            <td className="px-1 py-2 text-center font-bold text-red-600">{r.totals.A || 0}</td>
+                            <td className={`px-1 py-2 text-center font-bold text-[10px] ${pct >= 80 ? "text-emerald-600" : pct >= 60 ? "text-amber-600" : "text-red-600"}`}>
+                              {total > 0 ? `${pct}%` : "-"}
+                            </td>
+                          </>
+                        )}
                       </tr>
                     );
                   })}
@@ -454,6 +509,7 @@ const TeacherAttendanceRecap = () => {
               </table>
             </div>
           )}
+
 
           {rows.length > 0 && (
             <div className="p-6 border-t border-border">
