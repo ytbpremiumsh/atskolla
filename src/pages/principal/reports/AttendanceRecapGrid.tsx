@@ -171,26 +171,35 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
 
   return (
     <div className="space-y-3">
+      {/* Main Tabs */}
+      <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "rekap" | "analitik")}>
+        <TabsList>
+          <TabsTrigger value="rekap" className="text-xs gap-1.5"><ClipboardList className="h-3.5 w-3.5" /> Rekap Absensi</TabsTrigger>
+          <TabsTrigger value="analitik" className="text-xs gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Analitik Kehadiran</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filters */}
-      <div className="flex flex-wrap items-end gap-2">
-        <div>
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-end gap-2">
+        <div className="min-w-0">
           <label className="text-[10px] font-semibold text-muted-foreground block mb-1">Bulan</label>
           <Select value={String(month)} onValueChange={(v) => setMonth(Number(v))}>
-            <SelectTrigger className="h-9 w-32"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 w-full sm:w-32"><SelectValue /></SelectTrigger>
             <SelectContent>{MONTH_NAMES.map((m, i) => <SelectItem key={i} value={String(i)}>{m}</SelectItem>)}</SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="min-w-0">
           <label className="text-[10px] font-semibold text-muted-foreground block mb-1">Tahun</label>
           <Select value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-            <SelectTrigger className="h-9 w-24"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 w-full sm:w-24"><SelectValue /></SelectTrigger>
             <SelectContent>{years.map((y) => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
           </Select>
+        </div>
         {kind === "student" && filterOptions.length > 0 && (
-          <div>
+          <div className="col-span-2 sm:col-auto min-w-0">
             <label className="text-[10px] font-semibold text-muted-foreground block mb-1">{filterLabel}</label>
             <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="h-9 w-40"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-full sm:w-40"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {filterOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
               </SelectContent>
@@ -198,10 +207,10 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
           </div>
         )}
       </div>
-      </div>
 
       {/* Analytics (based on grid data, same as admin dashboard) */}
-      {!loading && filtered.length > 0 && !isPulangMode && (
+      {mainTab === "analitik" && !loading && filtered.length > 0 && !isPulangMode && (
+
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-[#5B6CF9]" />
