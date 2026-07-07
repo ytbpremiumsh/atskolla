@@ -114,7 +114,7 @@ export default function BendaharaTunggakan() {
   };
 
   const broadcastAll = async () => {
-    if (!waFlag) { toast.error("Pengiriman WA dinonaktifkan Super Admin"); return; }
+    // WA reminder tunggakan selalu aktif meski WA sekolah dinonaktifkan Super Admin
     const targets = perStudent.filter((s) => s.phone);
     if (targets.length === 0) { toast.error("Tidak ada nomor WA yang bisa dikirimi"); return; }
     setBroadcasting(true);
