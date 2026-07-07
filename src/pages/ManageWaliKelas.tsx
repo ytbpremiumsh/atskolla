@@ -250,18 +250,24 @@ const ManageWaliKelas = () => {
                       <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                         Kelas ({teacherAssignments.length})
                       </p>
-                      {teacherAssignments.map((a) => (
-                        <div key={a.id} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30">
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium">{a.class_name}</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {teacherAssignments.map((a) => (
+                          <div key={a.id} className="group/chip inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary">
+                            <GraduationCap className="h-3 w-3" />
+                            <span className="text-xs font-medium">{a.class_name}</span>
+                            <span className="text-[9px] font-semibold uppercase tracking-wide bg-primary/15 px-1 py-px rounded-full ml-0.5">Wali</span>
+                            <button
+                              onClick={() => handleDelete(a)}
+                              className="ml-0.5 h-4 w-4 rounded-full flex items-center justify-center text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                              aria-label={`Hapus ${a.class_name}`}
+                            >
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </button>
                           </div>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive/60 hover:text-destructive" onClick={() => handleDelete(a)}>
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
+
                   </CardContent>
                 </Card>
               </motion.div>
