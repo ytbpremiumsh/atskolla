@@ -180,7 +180,9 @@ function ClassCard({ c, tone }: { c: ClassItem; tone: string }) {
           <span className="text-muted-foreground">Progress kelas</span>
           <span className="font-semibold text-foreground">{pct}%</span>
         </div>
-        <Progress value={pct} className="h-1.5" indicatorClassName={t.bar} />
+        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+          <div className={`h-full rounded-full ${t.bar} transition-all`} style={{ width: `${pct}%` }} />
+        </div>
       </div>
 
       <div className="flex items-center justify-between pt-1 border-t border-border/40">
