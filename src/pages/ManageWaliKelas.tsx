@@ -134,8 +134,14 @@ const ManageWaliKelas = () => {
       setFormTeacherId(""); setFormClass("");
       fetchData();
     } catch (err: any) {
-      toast.error(err.message || "Gagal menugaskan wali kelas");
+      const msg = (err?.message || "").toLowerCase();
+      if (err?.code === "23505" || msg.includes("duplicate") || msg.includes("class_teachers_school_class_unique")) {
+        toast.error(`Kelas ${formClass} sudah memiliki wali kelas. Satu kelas hanya bisa memiliki 1 wali kelas.`);
+      } else {
+        toast.error(err.message || "Gagal menugaskan wali kelas");
+      }
     } finally { setCreating(false); }
+
   };
 
   const handleDelete = async (assignment: ClassTeacher) => {
@@ -184,8 +190,16 @@ const ManageWaliKelas = () => {
     const { error } = await supabase.from("class_teachers").insert({
       user_id: selectedTeacher.user_id, class_name: editClass, school_id: schoolId,
     });
-    if (error) { toast.error("Gagal: " + error.message); }
+    if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if ((error as any).code === "23505" || msg.includes("duplicate") || msg.includes("class_teachers_school_class_unique")) {
+        toast.error(`Kelas ${editClass} sudah memiliki wali kelas lain.`);
+      } else {
+        toast.error("Gagal: " + error.message);
+      }
+    }
     else { toast.success(`Kelas ${editClass} ditambahkan`); setEditClass(""); }
+
     setSavingEdit(false);
     fetchData();
     const { data: newAssignments } = await supabase.from("class_teachers").select("*").eq("user_id", selectedTeacher.user_id).eq("school_id", schoolId);
@@ -201,6 +215,8 @@ const ManageWaliKelas = () => {
 
   // Filter out teachers already assigned
   const assignedTeacherIds = new Set(assignments.map(a => a.user_id));
+  const assignedClassNames = new Set(assignments.map(a => a.class_name));
+
 
   return (
     <PremiumGate featureLabel="Kelola Wali Kelas" requiredPlan="School">
@@ -306,8 +322,17 @@ const ManageWaliKelas = () => {
               <Select value={formClass} onValueChange={setFormClass}>
                 <SelectTrigger><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
                 <SelectContent>
-                  {classes.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
+                  {classes.filter(c => !assignedClassNames.has(c)).length === 0 ? (
+                    <div className="p-3 text-center text-xs text-muted-foreground">
+                      Semua kelas sudah memiliki wali kelas.
+                    </div>
+                  ) : (
+                    classes.filter(c => !assignedClassNames.has(c)).map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
+
               </Select>
             </div>
             <Button onClick={handleAssign} disabled={creating || !formTeacherId || !formClass} className="w-full gradient-primary hover:opacity-90">
@@ -395,9 +420,10 @@ const ManageWaliKelas = () => {
                     <Select value={editClass} onValueChange={setEditClass}>
                       <SelectTrigger className="flex-1"><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
                       <SelectContent>
-                        {classes.filter(c => !selectedTeacher.assignments.some(a => a.class_name === c)).map((c) => (
+                        {classes.filter(c => !assignedClassNames.has(c)).map((c) => (
                           <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
+
                       </SelectContent>
                     </Select>
                     <Button size="sm" onClick={handleAddClass} disabled={!editClass || savingEdit}>
