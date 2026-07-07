@@ -5118,7 +5118,7 @@ export function BendaharaLaporan() {
                   <Label className="text-xs">Tahun Ajaran</Label>
                   <Select value={expAY} onValueChange={setExpAY}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectContent onCloseAutoFocus={(e) => e.preventDefault()}>
                       <SelectItem value="all">Semua TA</SelectItem>
                       {academicYearList(new Date().getFullYear()).map(ay => <SelectItem key={ay} value={ay}>{ay}</SelectItem>)}
                     </SelectContent>
@@ -5128,7 +5128,7 @@ export function BendaharaLaporan() {
                   <Label className="text-xs">Kelas</Label>
                   <Select value={expClass} onValueChange={setExpClass}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectContent onCloseAutoFocus={(e) => e.preventDefault()}>
                       <SelectItem value="all">Semua Kelas (per-sheet)</SelectItem>
                       {classes.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                     </SelectContent>
@@ -5138,7 +5138,7 @@ export function BendaharaLaporan() {
                   <Label className="text-xs">Status</Label>
                   <Select value={expStatus} onValueChange={setExpStatus}>
                     <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                    <SelectContent>
+                    <SelectContent onCloseAutoFocus={(e) => e.preventDefault()}>
                       <SelectItem value="all">Semua Status</SelectItem>
                       <SelectItem value="paid">Lunas</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
