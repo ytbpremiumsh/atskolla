@@ -54,6 +54,7 @@ export default function LaporanAbsensiGuru() {
         // Prefer teacher as primary label if present, else first meaningful role
         const primary = roles.includes("teacher") ? "teacher" : roles.find((r) => r !== "principal") || roles[0] || "staff";
         per[t.user_id] = {
+          _id: t.user_id,
           Nama: t.full_name || "-",
           Peran: ROLE_LABEL[primary] || primary,
           "No HP": t.phone || "-",
