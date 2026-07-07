@@ -915,7 +915,7 @@ export default function ParentDashboard() {
                         // Seragamkan warna header semua hari menggunakan brand gradient
                         const dayGradient = "from-[#5B6CF9] to-[#4c5ded]";
                         return (
-                          <Card key={d} className="border-0 shadow-card rounded-2xl overflow-hidden">
+                          <Card key={d} className="border shadow-none rounded-2xl overflow-hidden bg-muted/30">
                             {/* Day Header */}
                             <div className={cn("relative px-4 py-2.5 bg-gradient-to-r text-white flex items-center justify-between", dayGradient)}>
                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
