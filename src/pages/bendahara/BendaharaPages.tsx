@@ -55,6 +55,221 @@ const academicYearList = (currentYear: number) => {
   for (let y = currentYear - 2; y <= currentYear + 1; y++) arr.push(`${y}/${y + 1}`);
   return arr;
 };
+
+// ============ Helpers Export Profesional (PDF & Excel) ============
+const CURRENCY_KEYS = new Set(["Nominal","Denda","Total","Total Tagihan","Total Diterima","Total Bayar","Jumlah","Amount"]);
+const IDR_FMT = '"Rp"#,##0;[Red]"Rp"#,##0;"-"';
+
+/** Buat worksheet ber-style: header biru, zebra, border, format IDR, freeze, auto width. */
+function buildStyledSheet(rows: Record<string, any>[], opts?: { title?: string; subtitle?: string; totalsLabel?: string }) {
+  const keys = rows.length ? Object.keys(rows[0]) : [];
+  const header = opts?.title;
+  const sub = opts?.subtitle;
+  const preRows: any[][] = [];
+  if (header) preRows.push([header]);
+  if (sub) preRows.push([sub]);
+  if (header || sub) preRows.push([]);
+  const headerRowIdx = preRows.length; // 0-based
+  const dataStart = headerRowIdx + 1;
+  const aoa: any[][] = [
+    ...preRows,
+    keys,
+    ...rows.map((r) => keys.map((k) => r[k])),
+  ];
+  // Baris total untuk kolom currency
+  const totalsRow: any[] = [];
+  let hasTotal = false;
+  keys.forEach((k, i) => {
+    if (CURRENCY_KEYS.has(k)) {
+      hasTotal = true;
+      totalsRow[i] = rows.reduce((s, r) => s + (Number(r[k]) || 0), 0);
+    } else if (i === 0) {
+      totalsRow[i] = opts?.totalsLabel || "TOTAL";
+    } else {
+      totalsRow[i] = "";
+    }
+  });
+  if (hasTotal) aoa.push(totalsRow);
+  const ws = XLSXStyle.utils.aoa_to_sheet(aoa);
+
+  const border = {
+    top: { style: "thin", color: { rgb: "D9DDE8" } },
+    bottom: { style: "thin", color: { rgb: "D9DDE8" } },
+    left: { style: "thin", color: { rgb: "D9DDE8" } },
+    right: { style: "thin", color: { rgb: "D9DDE8" } },
+  } as any;
+
+  // Style baris judul & subjudul
+  if (header) {
+    const c = XLSXStyle.utils.encode_cell({ r: 0, c: 0 });
+    (ws as any)[c].s = {
+      font: { name: "Calibri", sz: 16, bold: true, color: { rgb: "1F2437" } },
+      alignment: { vertical: "center" },
+    };
+    ws["!merges"] = ws["!merges"] || [];
+    ws["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(0, keys.length - 1) } });
+  }
+  if (sub) {
+    const rIdx = header ? 1 : 0;
+    const c = XLSXStyle.utils.encode_cell({ r: rIdx, c: 0 });
+    (ws as any)[c].s = {
+      font: { name: "Calibri", sz: 10, italic: true, color: { rgb: "6B7280" } },
+    };
+    ws["!merges"] = ws["!merges"] || [];
+    ws["!merges"].push({ s: { r: rIdx, c: 0 }, e: { r: rIdx, c: Math.max(0, keys.length - 1) } });
+  }
+
+  // Header kolom
+  keys.forEach((_k, ci) => {
+    const addr = XLSXStyle.utils.encode_cell({ r: headerRowIdx, c: ci });
+    (ws as any)[addr].s = {
+      font: { name: "Calibri", sz: 11, bold: true, color: { rgb: "FFFFFF" } },
+      fill: { patternType: "solid", fgColor: { rgb: "5B6CF9" } },
+      alignment: { horizontal: "center", vertical: "center", wrapText: true },
+      border,
+    };
+  });
+
+  // Body rows (zebra + currency)
+  rows.forEach((r, ri) => {
+    keys.forEach((k, ci) => {
+      const addr = XLSXStyle.utils.encode_cell({ r: dataStart + ri, c: ci });
+      if (!(ws as any)[addr]) return;
+      const isCurrency = CURRENCY_KEYS.has(k);
+      (ws as any)[addr].s = {
+        font: { name: "Calibri", sz: 10, color: { rgb: "1F2437" } },
+        fill: { patternType: "solid", fgColor: { rgb: ri % 2 === 0 ? "FFFFFF" : "F5F7FB" } },
+        alignment: { horizontal: isCurrency ? "right" : (typeof r[k] === "number" ? "right" : "left"), vertical: "center", wrapText: false },
+        border,
+        ...(isCurrency ? { numFmt: IDR_FMT } : {}),
+      };
+    });
+  });
+
+  // Totals row style
+  if (hasTotal) {
+    const rIdx = dataStart + rows.length;
+    keys.forEach((k, ci) => {
+      const addr = XLSXStyle.utils.encode_cell({ r: rIdx, c: ci });
+      if (!(ws as any)[addr]) (ws as any)[addr] = { t: "s", v: "" };
+      const isCurrency = CURRENCY_KEYS.has(k);
+      (ws as any)[addr].s = {
+        font: { name: "Calibri", sz: 11, bold: true, color: { rgb: "FFFFFF" } },
+        fill: { patternType: "solid", fgColor: { rgb: "1F2437" } },
+        alignment: { horizontal: isCurrency ? "right" : "left", vertical: "center" },
+        border,
+        ...(isCurrency ? { numFmt: IDR_FMT } : {}),
+      };
+    });
+  }
+
+  // Kolom width
+  ws["!cols"] = keys.map((k) => {
+    const maxLen = Math.max(
+      k.length,
+      ...rows.map((r) => String(r[k] ?? "").length),
+    );
+    return { wch: Math.min(Math.max(maxLen + 2, 10), 32) };
+  });
+  // Baris tinggi header
+  ws["!rows"] = [];
+  ws["!rows"][headerRowIdx] = { hpt: 22 };
+
+  // Freeze pane di bawah header
+  ws["!freeze"] = { xSplit: 0, ySplit: dataStart } as any;
+  (ws as any)["!autofilter"] = { ref: XLSXStyle.utils.encode_range({ s: { r: headerRowIdx, c: 0 }, e: { r: headerRowIdx + rows.length, c: Math.max(0, keys.length - 1) } }) };
+
+  return ws;
+}
+
+/** PDF profesional: header brand, sub info, tabel grid berwarna, footer halaman + total. */
+function buildStyledPdf(opts: {
+  title: string;
+  subtitle?: string;
+  schoolName?: string;
+  schoolNpsn?: string;
+  meta?: string[]; // baris info tambahan
+  orientation?: "l" | "p";
+  columns: { header: string; dataKey: string; align?: "left" | "right" | "center"; isCurrency?: boolean; width?: number }[];
+  rows: Record<string, any>[];
+  fileName: string;
+}) {
+  const doc = new jsPDF(opts.orientation || "l", "mm", "a4");
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+  // Header band brand
+  doc.setFillColor(91, 108, 249);
+  doc.rect(0, 0, pageW, 22, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text(opts.title.toUpperCase(), 12, 10);
+  if (opts.schoolName) {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(opts.schoolName, 12, 16.5);
+  }
+  // Accent bar
+  doc.setFillColor(255, 214, 88);
+  doc.rect(0, 22, pageW, 1.5, "F");
+
+  // Meta block
+  let y = 30;
+  doc.setTextColor(31, 36, 55);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  if (opts.subtitle) { doc.text(opts.subtitle, 12, y); y += 5; }
+  doc.setFont("helvetica", "normal");
+  if (opts.schoolNpsn) { doc.text(`NPSN: ${opts.schoolNpsn}`, 12, y); y += 4.5; }
+  (opts.meta || []).forEach((m) => { doc.text(m, 12, y); y += 4.5; });
+  doc.text(`Dicetak: ${new Date().toLocaleString("id-ID")}`, 12, y);
+  y += 3;
+
+  // Totals summary
+  const currencyCols = opts.columns.filter((c) => c.isCurrency);
+  const totals: Record<string, number> = {};
+  currencyCols.forEach((c) => {
+    totals[c.dataKey] = opts.rows.reduce((s, r) => s + (Number(r[c.dataKey]) || 0), 0);
+  });
+
+  autoTable(doc, {
+    startY: y + 3,
+    head: [opts.columns.map((c) => c.header)],
+    body: opts.rows.map((r) => opts.columns.map((c) => {
+      const v = r[c.dataKey];
+      if (c.isCurrency) return `Rp ${Number(v || 0).toLocaleString("id-ID")}`;
+      return v == null ? "" : String(v);
+    })),
+    foot: currencyCols.length
+      ? [opts.columns.map((c, i) => {
+          if (i === 0) return "TOTAL";
+          if (c.isCurrency) return `Rp ${(totals[c.dataKey] || 0).toLocaleString("id-ID")}`;
+          return "";
+        })]
+      : undefined,
+    styles: { fontSize: 8, cellPadding: 2.2, lineColor: [217, 221, 232], lineWidth: 0.15, textColor: [31, 36, 55] },
+    headStyles: { fillColor: [91, 108, 249], textColor: 255, fontStyle: "bold", halign: "center", valign: "middle" },
+    bodyStyles: { valign: "middle" },
+    alternateRowStyles: { fillColor: [245, 247, 251] },
+    footStyles: { fillColor: [31, 36, 55], textColor: 255, fontStyle: "bold", halign: "right" },
+    columnStyles: Object.fromEntries(opts.columns.map((c, i) => [i, { halign: c.align || (c.isCurrency ? "right" : "left"), cellWidth: c.width || "auto" }])) as any,
+    margin: { left: 10, right: 10 },
+    theme: "grid",
+    didDrawPage: () => {
+      // Footer
+      const str = `Halaman ${doc.getNumberOfPages()}`;
+      doc.setFontSize(8);
+      doc.setTextColor(120, 125, 140);
+      doc.text(str, pageW - 12, pageH - 6, { align: "right" });
+      doc.text(opts.schoolName || "", 12, pageH - 6);
+    },
+  });
+
+  doc.save(`${opts.fileName}.pdf`);
+}
+
+
 const monthsOfAcademicYear = (ay: string): { month: number; year: number; label: string }[] => {
   const [y1, y2] = ay.split("/").map(Number);
   const arr: { month: number; year: number; label: string }[] = [];
