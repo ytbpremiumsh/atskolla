@@ -1,15 +1,48 @@
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Trophy, UserCheck } from "lucide-react";
+import { Trophy, UserCheck, Clock, UserX } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from "recharts";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function PrincipalKehadiran() {
   const { loading, stats, teacherAtt, classAtt, monthly, ranking } = usePrincipalData();
+  const { profile } = useAuth();
+  const [teacherList, setTeacherList] = useState<{ hadir: any[]; izin: any[]; belum: any[] }>({ hadir: [], izin: [], belum: [] });
+
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    (async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const [teachersQ, rolesQ, logsQ] = await Promise.all([
+        supabase.from("profiles").select("user_id, full_name, phone").eq("school_id", profile.school_id),
+        supabase.from("user_roles").select("user_id, role").eq("role", "teacher" as any),
+        supabase.from("teacher_attendance_logs").select("user_id, status, attendance_type, time").eq("school_id", profile.school_id).eq("date", today),
+      ]);
+      const teacherIds = new Set((rolesQ.data || []).map((r: any) => r.user_id));
+      const teachers = (teachersQ.data || []).filter((t: any) => teacherIds.has(t.user_id));
+      const arrival = new Map<string, any>();
+      (logsQ.data || []).forEach((l: any) => {
+        if ((l.attendance_type ?? "datang") === "datang") arrival.set(l.user_id, l);
+      });
+      const hadir: any[] = [], izin: any[] = [], belum: any[] = [];
+      teachers.forEach((t: any) => {
+        const l = arrival.get(t.user_id);
+        const item = { user_id: t.user_id, name: t.full_name || "-", phone: t.phone || "-", status: l?.status || "belum", time: l?.time || null };
+        if (item.status === "hadir") hadir.push(item);
+        else if (["izin", "sakit", "alfa"].includes(item.status)) izin.push(item);
+        else belum.push(item);
+      });
+      setTeacherList({ hadir, izin, belum });
+    })();
+  }, [profile?.school_id]);
 
   if (loading) return <Skeleton className="h-96 w-full rounded-2xl" />;
+
 
   return (
     <div className="space-y-6">
@@ -53,6 +86,14 @@ export default function PrincipalKehadiran() {
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid lg:grid-cols-3 gap-4">
+        <TeacherPanel title="Guru Hadir" desc={`${teacherList.hadir.length} guru`} tone="emerald" icon={UserCheck} items={teacherList.hadir} />
+        <TeacherPanel title="Izin / Sakit / Alfa" desc={`${teacherList.izin.length} guru`} tone="amber" icon={Clock} items={teacherList.izin} />
+        <TeacherPanel title="Belum Absen" desc={`${teacherList.belum.length} guru`} tone="rose" icon={UserX} items={teacherList.belum} />
+      </div>
+
+
 
       <Card className="rounded-2xl">
         <CardHeader>
@@ -117,3 +158,40 @@ export default function PrincipalKehadiran() {
     </div>
   );
 }
+
+function TeacherPanel({ title, desc, tone, icon: Icon, items }: { title: string; desc: string; tone: string; icon: any; items: any[] }) {
+  const tones: Record<string, string> = {
+    emerald: "border-emerald-500/30 bg-emerald-500/5",
+    amber: "border-amber-500/30 bg-amber-500/5",
+    rose: "border-rose-500/30 bg-rose-500/5",
+  };
+  const badge: Record<string, string> = {
+    emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+    amber: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+    rose: "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300",
+  };
+  return (
+    <Card className={`rounded-2xl border ${tones[tone]}`}>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm flex items-center gap-2"><Icon className="h-4 w-4" /> {title}</CardTitle>
+        <CardDescription className="text-xs">{desc}</CardDescription>
+      </CardHeader>
+      <CardContent className="max-h-[300px] overflow-auto space-y-1.5 pt-0">
+        {items.length === 0 && <div className="text-xs text-muted-foreground text-center py-6">Tidak ada</div>}
+        {items.map((t) => (
+          <div key={t.user_id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-background/70 border border-border/30">
+            <div className="min-w-0">
+              <div className="text-xs font-semibold truncate">{t.name}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{t.phone}</div>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {t.time && <span className="text-[10px] text-muted-foreground">{String(t.time).slice(0, 5)}</span>}
+              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${badge[tone]}`}>{t.status}</span>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
