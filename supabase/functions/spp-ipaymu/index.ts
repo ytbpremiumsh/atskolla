@@ -144,6 +144,7 @@ async function createIpaymuPayment(
   channel: string | null,
   notifyUrl: string,
   returnUrl: string,
+  subChannel: string | null = null,
 ) {
   const totalCharged = Number(inv._amount_override ?? inv.total_amount) || 0;
   const amount = Math.max(1000, Math.round(totalCharged));
@@ -156,7 +157,7 @@ async function createIpaymuPayment(
   const isCustom = (inv.bill_type || "spp") === "custom";
   const productName = `${isCustom ? (inv.bill_category || "Tagihan") : "SPP"} ${inv.period_label || ""} - ${inv.student_name || ""}`.trim();
 
-  const chMap = channelToIpaymu(channel);
+  const chMap = channelToIpaymu(channel, subChannel);
   const body: any = {
     product: [productName || `SPP ${referenceId}`],
     qty: [1],
