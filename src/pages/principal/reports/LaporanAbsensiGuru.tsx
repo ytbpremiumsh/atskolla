@@ -176,7 +176,8 @@ export default function LaporanAbsensiGuru() {
         ]} />
       }
     >
-      <ReportTable loading={loading} rows={filtered} headers={headers} />
+      <ReportTable loading={loading} rows={filtered} headers={headers} onRowClick={(r) => setDetailId(r._id)} />
+      <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="teacher" targetId={detailId} />
     </ReportShell>
   );
 }
