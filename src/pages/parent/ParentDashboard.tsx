@@ -483,13 +483,13 @@ export default function ParentDashboard() {
         <nav className="flex-1 flex flex-col gap-0.5 overflow-y-auto">
           {[
             { id: "home", label: "Beranda", icon: Home },
+            { id: "card", label: "Kartu Pelajar", icon: CreditCard },
             { id: "attendance", label: "Absensi", icon: ClipboardList },
             { id: "schedule", label: "Jadwal", icon: CalendarDays },
             { id: "spp", label: "SPP", icon: Wallet },
             { id: "info", label: "Pengumuman", icon: Megaphone },
             { id: "leave", label: "Pengajuan Izin", icon: FileText },
             { id: "contact", label: "Wali Kelas", icon: Phone },
-            { id: "card", label: "Kartu Pelajar", icon: CreditCard },
           ].map((t) => {
             const Active = tab === t.id;
             return (
