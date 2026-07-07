@@ -1,14 +1,17 @@
+import { useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, CheckCircle2, XCircle, Clock, PlayCircle, CalendarClock, Users } from "lucide-react";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
+import { ClassAttendanceDetailDialog } from "@/components/principal/ClassAttendanceDetailDialog";
 
 type ClassItem = {
   id: string;
   subject: string;
   className: string;
+  classId?: string;
   teacher: string;
   startTime: string;
   endTime: string;
@@ -21,6 +24,7 @@ type ClassItem = {
 
 export default function PrincipalPembelajaran() {
   const { loading, liveClasses } = usePrincipalData();
+  const [selected, setSelected] = useState<ClassItem | null>(null);
 
   if (loading) return <Skeleton className="h-96 w-full rounded-2xl" />;
 
@@ -48,6 +52,7 @@ export default function PrincipalPembelajaran() {
         items={live}
         emptyText="Tidak ada kelas berlangsung"
         tone="emerald"
+        onSelect={setSelected}
       />
       <Section
         title="Akan Datang"
@@ -62,6 +67,18 @@ export default function PrincipalPembelajaran() {
         items={done}
         emptyText="Belum ada kelas yang selesai"
         tone="slate"
+        onSelect={setSelected}
+      />
+
+      <ClassAttendanceDetailDialog
+        open={!!selected}
+        onOpenChange={(v) => !v && setSelected(null)}
+        scheduleId={selected?.id ?? null}
+        className={selected?.className ?? ""}
+        subject={selected?.subject ?? ""}
+        teacher={selected?.teacher ?? ""}
+        startTime={selected?.startTime ?? ""}
+        endTime={selected?.endTime ?? ""}
       />
     </div>
   );
@@ -114,12 +131,14 @@ function Section({
   items,
   emptyText,
   tone,
+  onSelect,
 }: {
   title: string;
   icon: any;
   items: ClassItem[];
   emptyText: string;
   tone: string;
+  onSelect?: (c: ClassItem) => void;
 }) {
   const t = TONE_MAP[tone];
   return (
@@ -146,7 +165,7 @@ function Section({
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {items.map((c) => (
-              <ClassCard key={c.id} c={c} tone={tone} />
+              <ClassCard key={c.id} c={c} tone={tone} onSelect={onSelect} />
             ))}
           </div>
         )}
@@ -155,13 +174,20 @@ function Section({
   );
 }
 
-function ClassCard({ c, tone }: { c: ClassItem; tone: string }) {
+function ClassCard({ c, tone, onSelect }: { c: ClassItem; tone: string; onSelect?: (c: ClassItem) => void }) {
   const t = TONE_MAP[tone];
   const pct = c.status === "done" ? 100 : Math.round(Math.max(0, Math.min(100, c.progress)));
   const attendancePct = c.total > 0 ? Math.round((c.hadir / c.total) * 100) : 0;
+  const clickable = !!onSelect;
 
   return (
-    <div className="p-4 rounded-xl border border-border/60 bg-card hover:shadow-md hover:border-border transition-all space-y-3">
+    <div
+      onClick={clickable ? () => onSelect!(c) : undefined}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect!(c); } } : undefined}
+      className={`p-4 rounded-xl border border-border/60 bg-card transition-all space-y-3 ${clickable ? "cursor-pointer hover:shadow-md hover:border-[#5B6CF9]/40 hover:-translate-y-0.5" : "hover:shadow-md hover:border-border"}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="font-semibold text-sm text-foreground truncate">{c.subject}</div>
