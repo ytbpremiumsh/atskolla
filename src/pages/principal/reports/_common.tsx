@@ -96,10 +96,10 @@ export function ReportShell({
       {!hideFilters && (
         <Card className="border-0 shadow-sm">
           <CardContent className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2 items-end [&>*]:min-w-0">
-            {!datesOptional && dateFields}
+            {!datesOptional && !hideDates && dateFields}
             {extraFilters}
-            {datesOptional && dateFields}
-            {datesOptional && (from || to) && (
+            {datesOptional && !hideDates && dateFields}
+            {datesOptional && !hideDates && (from || to) && (
               <div className="col-span-2 md:col-span-4 flex items-center justify-between text-[11px] text-muted-foreground -mt-1">
                 <span>Filter tanggal aktif — hanya menampilkan sebagian data.</span>
                 <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => { onFromChange(""); onToChange(""); }}>
