@@ -40,6 +40,7 @@ export default function BendaharaBukuKas() {
   const { profile, user } = useAuth();
   const [manual, setManual] = useState<Entry[]>([]);
   const [autoEntries, setAutoEntries] = useState<Entry[]>([]);
+  const [settlements, setSettlements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
