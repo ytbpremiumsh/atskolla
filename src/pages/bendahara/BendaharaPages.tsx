@@ -4803,7 +4803,56 @@ export function BendaharaPencairan() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Detail Settlement */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Detail Pencairan {detailSettlement?.settlement_code}</DialogTitle>
+            {detailSettlement && (
+              <p className="text-xs text-muted-foreground">
+                {new Date(detailSettlement.requested_at).toLocaleString("id-ID")} • {detailSettlement.total_transactions} transaksi • Final {fmtIDR(Math.max(0, (detailSettlement.total_gross || 0) - (detailSettlement.withdraw_fee ?? 3000)))}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto">
+            {detailLoading ? (
+              <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div>
+            ) : detailItems.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Tidak ada data invoice terkait settlement ini.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="[&_th]:whitespace-nowrap">
+                    <TableHead className="w-8">#</TableHead>
+                    <TableHead>Siswa</TableHead>
+                    <TableHead>Kelas</TableHead>
+                    <TableHead>Periode</TableHead>
+                    <TableHead>Metode</TableHead>
+                    <TableHead>Dibayar</TableHead>
+                    <TableHead className="text-right">Nominal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {detailItems.map((it, idx) => (
+                    <TableRow key={it.id} className="[&_td]:whitespace-nowrap">
+                      <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                      <TableCell className="text-xs font-medium">{it.student_name}</TableCell>
+                      <TableCell className="text-xs">{it.class_name}</TableCell>
+                      <TableCell className="text-xs">{it.period_label}</TableCell>
+                      <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method)}</TableCell>
+                      <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
+                      <TableCell className="text-xs text-right font-semibold">{fmtIDR(it.total_amount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
 
