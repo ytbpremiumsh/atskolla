@@ -69,13 +69,7 @@ export default function PrincipalKehadiran() {
               <div key={x.k} className="text-center p-3 rounded-xl bg-muted/40">
                 <div className={`text-2xl font-bold ${x.cls}`}>{x.v}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">{x.k}</div>
-      </div>
-
-      <div className="grid lg:grid-cols-3 gap-4">
-        <TeacherPanel title="Guru Hadir" desc={`${teacherList.hadir.length} guru`} tone="emerald" icon={UserCheck} items={teacherList.hadir} />
-        <TeacherPanel title="Izin / Sakit / Alfa" desc={`${teacherList.izin.length} guru`} tone="amber" icon={Clock} items={teacherList.izin} />
-        <TeacherPanel title="Belum Absen" desc={`${teacherList.belum.length} guru`} tone="rose" icon={UserX} items={teacherList.belum} />
-      </div>
+              </div>
             ))}
           </CardContent>
         </Card>
