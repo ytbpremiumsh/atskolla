@@ -3,12 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { TenantProvider, useTenant, getRootDomain, getTenantBasename } from "@/lib/tenant";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { handleError, normalizeError } from "@/lib/errorHandler";
 
 // Layouts kept eager (small + shared by many routes)
 import { AppLayout } from "@/components/layout/AppLayout";
