@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User } from "@supabase/supabase-js";
+import {
+  fetchProfileBundle,
+  profileQueryKey,
+  type ProfileBundle,
+} from "@/hooks/useProfile";
 
 interface AuthContextType {
   user: User | null;
@@ -13,24 +19,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const EMPTY_BUNDLE: ProfileBundle = { profile: null, roles: [] };
+
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [bundle, setBundle] = useState<ProfileBundle>(EMPTY_BUNDLE);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string) => {
+  const loadBundle = async (userId: string) => {
     try {
-      const [profileRes, rolesRes] = await Promise.all([
-        supabase.from("profiles").select("full_name, school_id, avatar_url").eq("user_id", userId).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", userId),
-      ]);
-      setProfile(profileRes.data ?? null);
-      setRoles(rolesRes.data ? rolesRes.data.map((r) => r.role) : []);
+      // Route through React Query cache so useProfileQuery consumers stay in sync.
+      const data = await queryClient.fetchQuery({
+        queryKey: profileQueryKey(userId),
+        queryFn: () => fetchProfileBundle(userId),
+        staleTime: 60_000,
+      });
+      setBundle(data);
     } catch (e) {
-      console.warn("fetchUserData failed", e);
-      setProfile(null);
-      setRoles([]);
+      console.warn("fetchProfileBundle failed", e);
+      setBundle(EMPTY_BUNDLE);
     }
   };
 
@@ -55,19 +63,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (mounted) setLoading(false);
     }, 4000);
 
-    const handleSession = (session: any) => {
+    const handleSession = (session: { user?: User } | null) => {
       if (!mounted) return;
       if (session?.user) {
         setUser(session.user);
         // Fire-and-forget — never block the loading flag on network.
         // Layout guards re-render once roles arrive.
-        fetchUserData(session.user.id).finally(() => {
+        loadBundle(session.user.id).finally(() => {
           if (mounted) setLoading(false);
         });
       } else {
         setUser(null);
-        setProfile(null);
-        setRoles([]);
+        setBundle(EMPTY_BUNDLE);
         setLoading(false);
       }
     };
@@ -76,8 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       if (event === 'TOKEN_REFRESHED' && !session) {
         setUser(null);
-        setProfile(null);
-        setRoles([]);
+        setBundle(EMPTY_BUNDLE);
         setLoading(false);
         return;
       }
@@ -91,8 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("Session restore failed, clearing state:", error.message);
         supabase.auth.signOut().catch(() => {});
         setUser(null);
-        setProfile(null);
-        setRoles([]);
+        setBundle(EMPTY_BUNDLE);
         setLoading(false);
         return;
       }
@@ -106,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearTimeout(safety);
       subscription.unsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -128,8 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           lower.includes("load failed");
         if (!isNetwork || attempt === maxAttempts) return { error: msg };
         lastError = msg;
-      } catch (e: any) {
-        lastError = e?.message || "Network error";
+      } catch (e: unknown) {
+        lastError = e instanceof Error ? e.message : "Network error";
         if (attempt === maxAttempts) return { error: lastError };
       }
       // backoff: 600ms, 1500ms
@@ -139,12 +145,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    try { sessionStorage.removeItem("active_dashboard"); sessionStorage.removeItem("dashboard_chosen"); } catch {}
+    try {
+      sessionStorage.removeItem("active_dashboard");
+      sessionStorage.removeItem("dashboard_chosen");
+    } catch {}
+    queryClient.removeQueries({ queryKey: ["profile-bundle"] });
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, roles, loading, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        profile: bundle.profile,
+        roles: bundle.roles,
+        loading,
+        signIn,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
