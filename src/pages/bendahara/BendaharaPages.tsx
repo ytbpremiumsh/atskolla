@@ -5279,7 +5279,7 @@ export function BendaharaLaporan() {
 
       {/* KPI Ringkasan tahun — prioritas utama di atas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-[#5B6CF9]/10 to-transparent">
+        <Card className="border-0 shadow-sm bg-indigo-50 dark:bg-indigo-950/20">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Total Tagihan {year}</p>
             <p className="text-base font-bold mt-1">{fmtIDR(yearTotals.tagihan)}</p>
@@ -5291,13 +5291,13 @@ export function BendaharaLaporan() {
             <p className="text-base font-bold mt-1 text-sky-600">{fmtIDR(yearTotals.bayar)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-amber-500/10 to-transparent">
+        <Card className="border-0 shadow-sm bg-amber-50 dark:bg-amber-950/20">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Belum Lunas</p>
             <p className="text-base font-bold mt-1 text-amber-600">{fmtIDR(yearTotals.tagihan - yearTotals.bayar)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-violet-500/10 to-transparent">
+        <Card className="border-0 shadow-sm bg-violet-50 dark:bg-violet-950/20">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Tingkat Pelunasan</p>
             <p className="text-base font-bold mt-1 text-violet-600">{collectionRate}%</p>
