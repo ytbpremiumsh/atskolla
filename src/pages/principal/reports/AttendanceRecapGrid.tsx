@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ClipboardList, Clock } from "lucide-react";
+import { ClipboardList, Clock, TrendingUp, TrendingDown, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const MONTH_NAMES = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -23,7 +23,7 @@ function cellBadge(code: string) {
 interface PersonRow {
   id: string;
   name: string;
-  sub: string; // NIS or role label
+  sub: string;
   photo_url: string | null;
   cls?: string;
   role?: string;
@@ -40,9 +40,11 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
-  const [filter, setFilter] = useState("all"); // class or role
+  const [filter, setFilter] = useState("all");
   const [rekapTab, setRekapTab] = useState<"datang" | "pulang">("datang");
-  const [rows, setRows] = useState<PersonRow[]>([]);
+  const [people, setPeople] = useState<{ id: string; name: string; sub: string; photo_url: string | null; cls?: string; role?: string }[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [holidays, setHolidays] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [filterOptions, setFilterOptions] = useState<{ value: string; label: string }[]>([]);
 
@@ -50,12 +52,17 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i);
   const start = new Date(year, month, 1).toISOString().slice(0, 10);
   const end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
+  const today = new Date();
+  const isCurrentOrPastMonth = year < today.getFullYear() || (year === today.getFullYear() && month <= today.getMonth());
 
   useEffect(() => {
     if (!schoolId) return;
     (async () => {
       setLoading(true);
       try {
+        const holQ = await supabase.from("school_holidays").select("date").eq("school_id", schoolId).gte("date", start).lte("date", end);
+        setHolidays(new Set((holQ.data || []).map((h: any) => h.date)));
+
         if (kind === "student") {
           const [studentsQ, logsQ] = await Promise.all([
             supabase.from("students").select("id, student_id, name, class, photo_url").eq("school_id", schoolId).order("class").order("name"),
@@ -64,21 +71,8 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
           const students = studentsQ.data || [];
           const classes = Array.from(new Set(students.map((s: any) => s.class))).sort();
           setFilterOptions(classes.map((c) => ({ value: c, label: c })));
-          const map: Record<string, PersonRow> = {};
-          students.forEach((s: any) => {
-            map[s.id] = { id: s.id, name: s.name, sub: s.student_id, photo_url: s.photo_url, cls: s.class, days: {}, totals: { H: 0, S: 0, I: 0, A: 0 } };
-          });
-          (logsQ.data || []).forEach((l: any) => {
-            const type = l.attendance_type ?? "datang";
-            if (type !== rekapTab) return;
-            const r = map[l.student_id]; if (!r) return;
-            const d = new Date(l.date).getDate();
-            const code = rekapTab === "pulang" ? "H" : STATUS_TO_CODE[l.status];
-            if (!code) return;
-            r.days[d] = code;
-            r.totals[code as keyof typeof r.totals]++;
-          });
-          setRows(Object.values(map));
+          setPeople(students.map((s: any) => ({ id: s.id, name: s.name, sub: s.student_id, photo_url: s.photo_url, cls: s.class })));
+          setLogs(logsQ.data || []);
         } else {
           const [profQ, rolesQ, logsQ] = await Promise.all([
             supabase.from("profiles").select("user_id, full_name, photo_url").eq("school_id", schoolId),
@@ -93,41 +87,84 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
           const allowed = new Set(["teacher", "staff", "bendahara", "principal"]);
           const staff = (profQ.data || []).filter((p: any) => (roleMap.get(p.user_id) || []).some((r) => allowed.has(r)));
           const rolesSet = new Set<string>();
-          const map: Record<string, PersonRow> = {};
-          staff.forEach((p: any) => {
+          const ppl = staff.map((p: any) => {
             const roles = (roleMap.get(p.user_id) || []).filter((r) => allowed.has(r));
             const primary = roles.includes("teacher") ? "teacher" : roles.find((r) => r !== "principal") || roles[0] || "staff";
             rolesSet.add(primary);
-            map[p.user_id] = { id: p.user_id, name: p.full_name || "-", sub: ROLE_LABEL[primary] || primary, photo_url: p.photo_url, role: primary, days: {}, totals: { H: 0, S: 0, I: 0, A: 0 } };
+            return { id: p.user_id, name: p.full_name || "-", sub: ROLE_LABEL[primary] || primary, photo_url: p.photo_url, role: primary };
           });
           setFilterOptions(Array.from(rolesSet).map((r) => ({ value: r, label: ROLE_LABEL[r] || r })));
-          (logsQ.data || []).forEach((l: any) => {
-            const type = l.attendance_type ?? "datang";
-            if (type !== rekapTab) return;
-            const r = map[l.user_id]; if (!r) return;
-            const d = new Date(l.date).getDate();
-            const code = rekapTab === "pulang" ? "H" : STATUS_TO_CODE[l.status];
-            if (!code) return;
-            r.days[d] = code;
-            r.totals[code as keyof typeof r.totals]++;
-          });
-          setRows(Object.values(map));
+          setPeople(ppl);
+          setLogs(logsQ.data || []);
         }
       } finally {
         setLoading(false);
       }
     })();
-  }, [schoolId, kind, month, year, rekapTab, start, end]);
+  }, [schoolId, kind, month, year, start, end]);
+
+  // Compute rows with auto-Alfa for past weekdays without record (only for 'datang' recap)
+  const rows: PersonRow[] = useMemo(() => {
+    const isPulang = rekapTab === "pulang";
+    const idKey = kind === "student" ? "student_id" : "user_id";
+    return people.map((p) => {
+      const days: Record<number, string> = {};
+      const totals = { H: 0, S: 0, I: 0, A: 0 };
+      const myLogs = logs.filter((l: any) => l[idKey] === p.id && (l.attendance_type ?? "datang") === rekapTab);
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const log = myLogs.find((l: any) => l.date === dateStr);
+        const dt = new Date(year, month, d);
+        const isPast = dt <= today;
+        const dow = dt.getDay();
+        const isWeekend = dow === 0 || dow === 6;
+        const isHoliday = holidays.has(dateStr);
+        if (log) {
+          const code = isPulang ? "H" : (STATUS_TO_CODE[log.status] || "H");
+          days[d] = code;
+          totals[code as "H" | "S" | "I" | "A"]++;
+        } else if (!isPulang && isPast && !isWeekend && !isHoliday && isCurrentOrPastMonth) {
+          days[d] = "A";
+          totals.A++;
+        } else {
+          days[d] = "";
+        }
+      }
+      return { ...p, days, totals };
+    });
+  }, [people, logs, holidays, rekapTab, kind, daysInMonth, year, month, isCurrentOrPastMonth]);
 
   const filtered = useMemo(() => {
     if (filter === "all") return rows;
     return rows.filter((r) => (kind === "student" ? r.cls === filter : r.role === filter));
   }, [rows, filter, kind]);
 
+  // Analytics
+  const analytics = useMemo(() => {
+    const totalH = filtered.reduce((s, r) => s + r.totals.H, 0);
+    const totalS = filtered.reduce((s, r) => s + r.totals.S, 0);
+    const totalI = filtered.reduce((s, r) => s + r.totals.I, 0);
+    const totalA = filtered.reduce((s, r) => s + r.totals.A, 0);
+    const totalAll = totalH + totalS + totalI + totalA;
+    const avgRate = totalAll ? Math.round((totalH / totalAll) * 100) : 0;
+    let workingDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dt = new Date(year, month, d);
+      if (dt > today) continue;
+      const dow = dt.getDay();
+      const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      if (dow !== 0 && dow !== 6 && !holidays.has(dateStr)) workingDays++;
+    }
+    const topPresent = [...filtered].sort((a, b) => b.totals.H - a.totals.H).slice(0, 3).filter((r) => r.totals.H > 0);
+    const topAbsent = [...filtered].sort((a, b) => (b.totals.A + b.totals.S + b.totals.I) - (a.totals.A + a.totals.S + a.totals.I)).slice(0, 3).filter((r) => r.totals.A + r.totals.S + r.totals.I > 0);
+    return { totalH, totalS, totalI, totalA, avgRate, workingDays, topPresent, topAbsent };
+  }, [filtered, daysInMonth, year, month, holidays]);
+
   const isPulangMode = rekapTab === "pulang";
   const monthLabel = `${MONTH_NAMES[month]} ${year}`;
   const label = kind === "student" ? "siswa" : "guru & staff";
   const filterLabel = kind === "student" ? "Kelas" : "Peran";
+  const analyticsTitle = kind === "student" ? "Analitik Kehadiran Siswa" : "Analitik Kehadiran Guru & Staff";
 
   return (
     <div className="space-y-3">
@@ -159,8 +196,106 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
         </div>
       </div>
 
+      {/* Analytics (based on grid data, same as admin dashboard) */}
+      {!loading && filtered.length > 0 && !isPulangMode && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-[#5B6CF9]" />
+            <h3 className="text-sm font-bold">{analyticsTitle} — {monthLabel}</h3>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2.5">
+            <Card className="border-0 rounded-xl bg-gradient-to-br from-[#5B6CF9]/10 to-transparent">
+              <CardContent className="p-3">
+                <p className="text-[10px] text-muted-foreground font-medium">TOTAL {kind === "student" ? "SISWA" : "PERSONIL"}</p>
+                <p className="text-xl font-bold text-[#5B6CF9]">{filtered.length}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{analytics.workingDays} hari kerja</p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 rounded-xl bg-emerald-50 dark:bg-emerald-500/10">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3 text-emerald-600" /><p className="text-[10px] text-emerald-700 font-medium">HADIR</p></div>
+                <p className="text-xl font-bold text-emerald-700">{analytics.totalH}</p>
+                <p className="text-[10px] text-emerald-700/70 mt-0.5">Rate {analytics.avgRate}%</p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 rounded-xl bg-violet-50 dark:bg-violet-500/10">
+              <CardContent className="p-3">
+                <p className="text-[10px] text-violet-700 font-medium">SAKIT</p>
+                <p className="text-xl font-bold text-violet-700">{analytics.totalS}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 rounded-xl bg-amber-50 dark:bg-amber-500/10">
+              <CardContent className="p-3">
+                <p className="text-[10px] text-amber-700 font-medium">IZIN</p>
+                <p className="text-xl font-bold text-amber-700">{analytics.totalI}</p>
+              </CardContent>
+            </Card>
+            <Card className="border-0 rounded-xl bg-red-50 dark:bg-red-500/10">
+              <CardContent className="p-3">
+                <div className="flex items-center gap-1.5"><XCircle className="h-3 w-3 text-red-600" /><p className="text-[10px] text-red-700 font-medium">ALFA</p></div>
+                <p className="text-xl font-bold text-red-700">{analytics.totalA}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-3">
+            <Card className="border border-border/50 rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+                  <p className="text-xs font-semibold">Paling Rajin (Terbanyak Hadir)</p>
+                </div>
+                {analytics.topPresent.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Belum ada data</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {analytics.topPresent.map((r, i) => (
+                      <div key={r.id} className="flex items-center gap-2">
+                        <span className={`h-5 w-5 rounded-full text-[10px] font-bold flex items-center justify-center ${i === 0 ? "bg-amber-400 text-white" : i === 1 ? "bg-slate-300 text-slate-700" : "bg-orange-300 text-orange-900"}`}>{i + 1}</span>
+                        <Avatar className="h-6 w-6">
+                          {r.photo_url && <AvatarImage src={r.photo_url} />}
+                          <AvatarFallback className="text-[9px] bg-[#5B6CF9]/10 text-[#5B6CF9]">{r.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs font-medium truncate flex-1">{r.name}</p>
+                        <span className="text-xs font-bold text-emerald-600">{r.totals.H}H</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border border-border/50 rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <TrendingDown className="h-3.5 w-3.5 text-red-600" />
+                  <p className="text-xs font-semibold">Perlu Perhatian (Terbanyak Absen)</p>
+                </div>
+                {analytics.topAbsent.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">Semua hadir penuh</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {analytics.topAbsent.map((r, i) => (
+                      <div key={r.id} className="flex items-center gap-2">
+                        <span className="h-5 w-5 rounded-full text-[10px] font-bold flex items-center justify-center bg-red-100 text-red-700">{i + 1}</span>
+                        <Avatar className="h-6 w-6">
+                          {r.photo_url && <AvatarImage src={r.photo_url} />}
+                          <AvatarFallback className="text-[9px] bg-red-100 text-red-700">{r.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-xs font-medium truncate flex-1">{r.name}</p>
+                        <span className="text-xs font-bold text-red-600">A:{r.totals.A} S:{r.totals.S} I:{r.totals.I}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3 text-xs pt-1">
         <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-emerald-500 text-white text-[10px] font-bold">H</span> Hadir</div>
         <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-violet-500 text-white text-[10px] font-bold">S</span> Sakit</div>
         <div className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-5 w-5 rounded-md bg-amber-400 text-white text-[10px] font-bold">I</span> Izin</div>
