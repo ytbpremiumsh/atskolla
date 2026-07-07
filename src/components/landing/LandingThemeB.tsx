@@ -725,6 +725,7 @@ const LandingThemeB = () => {
         </div>
       </footer>
     </div>
+    </MotionConfig>
   );
 };
 
