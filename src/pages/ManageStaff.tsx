@@ -54,6 +54,7 @@ const ROLE_META: Record<string, { label: string; icon: any; cls: string }> = {
   teacher: { label: "Guru", icon: GraduationCap, cls: "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400" },
   staff: { label: "Operator", icon: Shield, cls: "bg-[#5B6CF9]/10 text-[#5B6CF9]" },
   bendahara: { label: "Bendahara", icon: Wallet, cls: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400" },
+  principal: { label: "Kepala Sekolah", icon: Shield, cls: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400" },
 };
 
 const ManageStaff = () => {
