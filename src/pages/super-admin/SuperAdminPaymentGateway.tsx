@@ -11,7 +11,7 @@ import { CreditCard, KeyRound, Loader2, Save, ShieldCheck, Webhook, Copy, Check,
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type GatewayId = "mayar" | "doku";
+type GatewayId = "mayar" | "doku" | "ipaymu";
 
 const SuperAdminPaymentGateway = () => {
   const [loading, setLoading] = useState(true);
@@ -40,10 +40,20 @@ const SuperAdminPaymentGateway = () => {
   const [hasDokuSecret, setHasDokuSecret] = useState(false);
   const [showDokuSecret, setShowDokuSecret] = useState(false);
 
+  // iPaymu
+  const [ipaymuEnv, setIpaymuEnv] = useState<"production" | "sandbox">("production");
+  const [ipaymuVa, setIpaymuVa] = useState("");
+  const [ipaymuApiKey, setIpaymuApiKey] = useState("");
+  const [ipaymuVaMasked, setIpaymuVaMasked] = useState("");
+  const [ipaymuApiKeyMasked, setIpaymuApiKeyMasked] = useState("");
+  const [hasIpaymuVa, setHasIpaymuVa] = useState(false);
+  const [hasIpaymuApiKey, setHasIpaymuApiKey] = useState(false);
+  const [showIpaymuKey, setShowIpaymuKey] = useState(false);
+
   // Custom admin fee per channel (charged to wali murid)
   const [feeVa, setFeeVa] = useState("5000");
-  const [feeQris, setFeeQris] = useState("5000"); // legacy flat (unused for QRIS charging)
-  const [feeQrisPercent, setFeeQrisPercent] = useState("1"); // dalam persen
+  const [feeQris, setFeeQris] = useState("5000");
+  const [feeQrisPercent, setFeeQrisPercent] = useState("1");
   const [feeRetail, setFeeRetail] = useState("8000");
   const [dokuWebhookVerify, setDokuWebhookVerify] = useState("true");
 
@@ -51,6 +61,7 @@ const SuperAdminPaymentGateway = () => {
 
   const mayarWebhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mayar-webhook`;
   const dokuNotifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/doku-webhook`;
+  const ipaymuNotifyUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ipaymu-webhook`;
 
   const fetchAll = async () => {
     setLoading(true);
@@ -64,7 +75,8 @@ const SuperAdminPaymentGateway = () => {
       setMayarHasKey(!!m.has_key);
 
       const d: any = dokuRes.data || {};
-      const norm = (v: any): GatewayId => (v === "doku" ? "doku" : "mayar");
+      const norm = (v: any): GatewayId =>
+        v === "doku" ? "doku" : v === "ipaymu" ? "ipaymu" : "mayar";
       setGatewayVa(norm(d.gateway_va));
       setGatewayQris(norm(d.gateway_qris));
       setGatewayRetail(norm(d.gateway_retail));
@@ -73,6 +85,11 @@ const SuperAdminPaymentGateway = () => {
       setDokuSecretMasked(d.doku_secret_key_masked || "");
       setHasDokuClient(!!d.has_doku_client_id);
       setHasDokuSecret(!!d.has_doku_secret_key);
+      setIpaymuEnv((d.ipaymu_env === "sandbox" ? "sandbox" : "production"));
+      setIpaymuVaMasked(d.ipaymu_va_masked || "");
+      setIpaymuApiKeyMasked(d.ipaymu_api_key_masked || "");
+      setHasIpaymuVa(!!d.has_ipaymu_va);
+      setHasIpaymuApiKey(!!d.has_ipaymu_api_key);
       setFeeVa(d.fee_va || "5000");
       setFeeQris(d.fee_qris || "5000");
       setFeeQrisPercent(d.fee_qris_percent || "1");
@@ -154,10 +171,31 @@ const SuperAdminPaymentGateway = () => {
     }
   };
 
+  const handleSaveIpaymu = async () => {
+    setSaving(true);
+    try {
+      const updates: any = { ipaymu_env: ipaymuEnv };
+      if (ipaymuVa.trim()) updates.ipaymu_va = ipaymuVa.trim();
+      if (ipaymuApiKey.trim()) updates.ipaymu_api_key = ipaymuApiKey.trim();
+      const { data, error } = await supabase.functions.invoke("manage-payment-gateway", {
+        body: { action: "set", updates },
+      });
+      if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
+      toast.success("Kredensial iPaymu tersimpan");
+      setIpaymuVa("");
+      setIpaymuApiKey("");
+      fetchAll();
+    } catch (e: any) {
+      toast.error("Gagal: " + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleTest = async (gw: GatewayId) => {
     setTesting(gw);
     try {
-      const fn = gw === "doku" ? "spp-doku" : "spp-mayar";
+      const fn = gw === "doku" ? "spp-doku" : gw === "ipaymu" ? "spp-ipaymu" : "spp-mayar";
       const { data, error } = await supabase.functions.invoke(fn, { body: { action: "test_connection" } });
       if (error) throw error;
       const d: any = data;
@@ -177,6 +215,11 @@ const SuperAdminPaymentGateway = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const gwBadgeClass = (v: GatewayId) =>
+    v === "doku" ? "bg-orange-100 text-orange-700"
+    : v === "ipaymu" ? "bg-violet-100 text-violet-700"
+    : "bg-blue-100 text-blue-700";
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -186,7 +229,7 @@ const SuperAdminPaymentGateway = () => {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Payment Gateway</h1>
         <p className="text-muted-foreground text-sm">
-          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail).
+          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail). Tersedia 3 gateway: Mayar, Doku, iPaymu.
         </p>
       </div>
 
@@ -216,7 +259,7 @@ const SuperAdminPaymentGateway = () => {
                     <p className="font-semibold text-sm">{label}</p>
                     <p className="text-[10px] text-muted-foreground truncate">{desc}</p>
                   </div>
-                  <Badge className={`text-[10px] ${value === "doku" ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"}`}>
+                  <Badge className={`text-[10px] ${gwBadgeClass(value)}`}>
                     {value.toUpperCase()}
                   </Badge>
                 </div>
@@ -237,6 +280,12 @@ const SuperAdminPaymentGateway = () => {
                         {!(hasDokuClient && hasDokuSecret) && <span className="text-[9px] text-amber-600">(belum lengkap)</span>}
                       </div>
                     </SelectItem>
+                    <SelectItem value="ipaymu">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">iPaymu</span>
+                        {!(hasIpaymuVa && hasIpaymuApiKey) && <span className="text-[9px] text-amber-600">(belum lengkap)</span>}
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -252,7 +301,7 @@ const SuperAdminPaymentGateway = () => {
             <div>
               <p className="text-xs font-semibold text-foreground">Custom Fee Admin per Channel</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">
-                Biaya tambahan yang ditagihkan ke wali murid saat membayar SPP & tagihan lainnya. Berlaku untuk Mayar maupun Doku.
+                Biaya tambahan yang ditagihkan ke wali murid saat membayar SPP & tagihan lainnya. Berlaku untuk semua gateway.
                 <br />
                 <span className="text-[10px]">QRIS = persen dari tagihan (minimum Rp 3.000). VA & Retail = nominal tetap (Rp).</span>
               </p>
@@ -282,10 +331,8 @@ const SuperAdminPaymentGateway = () => {
               </Button>
             </div>
           </div>
-
         </CardContent>
       </Card>
-
 
       {/* MAYAR CONFIG */}
       <Card className="border-0 shadow-card">
@@ -349,10 +396,10 @@ const SuperAdminPaymentGateway = () => {
               <Label className="text-xs">Environment</Label>
               <RadioGroup value={dokuEnv} onValueChange={(v) => setDokuEnv(v as any)} className="flex gap-3">
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <RadioGroupItem value="production" id="env-prod" /> Production
+                  <RadioGroupItem value="production" id="env-doku-prod" /> Production
                 </label>
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <RadioGroupItem value="sandbox" id="env-sb" /> Sandbox
+                  <RadioGroupItem value="sandbox" id="env-doku-sb" /> Sandbox
                 </label>
               </RadioGroup>
             </div>
@@ -395,8 +442,6 @@ const SuperAdminPaymentGateway = () => {
             </div>
           </div>
 
-
-
           <div className="rounded-lg bg-secondary/40 p-3">
             <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"><Webhook className="h-3 w-3" /> Webhook URL Doku (WAJIB didaftarkan)</p>
             <div className="flex items-center gap-2 mt-1.5">
@@ -406,7 +451,7 @@ const SuperAdminPaymentGateway = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Pasang di Doku Dashboard → Configurations → Notification URL. Untuk debug awal, set toggle di bawah ke "Nonaktif" agar signature tidak divalidasi.
+              Pasang di Doku Dashboard → Configurations → Notification URL.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <Label className="text-[10px]">Verifikasi signature webhook:</Label>
@@ -420,7 +465,6 @@ const SuperAdminPaymentGateway = () => {
             </div>
           </div>
 
-
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={fetchAll} disabled={saving}>
               <RefreshCw className="h-3.5 w-3.5 mr-1" /> Reload
@@ -428,6 +472,102 @@ const SuperAdminPaymentGateway = () => {
             <Button onClick={handleSaveDoku} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
               Simpan Doku
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* IPAYMU CONFIG */}
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-violet-500/10 flex items-center justify-center">
+              <CreditCard className="h-5 w-5 text-violet-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground">Konfigurasi iPaymu</h3>
+              <p className="text-xs text-muted-foreground">Kredensial dari dashboard iPaymu → Integrations → API Key</p>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => handleTest("ipaymu")} disabled={testing === "ipaymu"}>
+              {testing === "ipaymu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+              <span className="ml-1">Test</span>
+            </Button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label className="text-xs">Environment</Label>
+              <RadioGroup value={ipaymuEnv} onValueChange={(v) => setIpaymuEnv(v as any)} className="flex gap-3">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <RadioGroupItem value="production" id="env-ipaymu-prod" /> Production
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <RadioGroupItem value="sandbox" id="env-ipaymu-sb" /> Sandbox
+                </label>
+              </RadioGroup>
+              <p className="text-[10px] text-muted-foreground">
+                Sandbox: <code>sandbox.ipaymu.com</code> · Production: <code>my.ipaymu.com</code>
+              </p>
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs">Status</Label>
+              <div className="flex gap-2 flex-wrap">
+                <Badge className={hasIpaymuVa ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"}>
+                  VA {hasIpaymuVa ? "✓" : "kosong"}
+                </Badge>
+                <Badge className={hasIpaymuApiKey ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-800"}>
+                  API Key {hasIpaymuApiKey ? "✓" : "kosong"}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Nomor VA {hasIpaymuVa && <span className="text-muted-foreground">(saat ini: {ipaymuVaMasked})</span>}</Label>
+            <Input
+              value={ipaymuVa}
+              onChange={(e) => setIpaymuVa(e.target.value)}
+              placeholder={hasIpaymuVa ? "Kosongkan bila tidak diubah" : "0000001234567890"}
+              className="font-mono text-xs"
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label className="text-xs">API Key {hasIpaymuApiKey && <span className="text-muted-foreground">(saat ini: {ipaymuApiKeyMasked})</span>}</Label>
+            <div className="flex gap-2">
+              <Input
+                type={showIpaymuKey ? "text" : "password"}
+                value={ipaymuApiKey}
+                onChange={(e) => setIpaymuApiKey(e.target.value)}
+                placeholder={hasIpaymuApiKey ? "Kosongkan bila tidak diubah" : "SANDBOXXXXXXXXXXXXXXXXX"}
+                className="font-mono text-xs"
+              />
+              <Button variant="outline" size="icon" onClick={() => setShowIpaymuKey((v) => !v)}>
+                {showIpaymuKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+
+          <div className="rounded-lg bg-secondary/40 p-3">
+            <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"><Webhook className="h-3 w-3" /> Notify URL iPaymu (WAJIB didaftarkan)</p>
+            <div className="flex items-center gap-2 mt-1.5">
+              <code className="text-[11px] bg-background px-2 py-1 rounded border truncate flex-1">{ipaymuNotifyUrl}</code>
+              <Button size="sm" variant="outline" className="h-7" onClick={() => copyUrl(ipaymuNotifyUrl, "ipaymu")}>
+                {copied === "ipaymu" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-2">
+              Pasang di iPaymu Dashboard → Integrations → URL Notify. iPaymu akan POST notifikasi ke URL ini setiap pembayaran berhasil.
+            </p>
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" size="sm" onClick={fetchAll} disabled={saving}>
+              <RefreshCw className="h-3.5 w-3.5 mr-1" /> Reload
+            </Button>
+            <Button onClick={handleSaveIpaymu} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
+              Simpan iPaymu
             </Button>
           </div>
         </CardContent>
