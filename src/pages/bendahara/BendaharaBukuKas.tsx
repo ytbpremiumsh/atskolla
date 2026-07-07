@@ -427,17 +427,9 @@ export default function BendaharaBukuKas() {
 
 
 
-      {/* Filter */}
+      {/* Filter — Arah & Kategori diprioritaskan; filter tanggal opsional (pilihan kedua) */}
       <Card className="border-0 shadow-sm">
-        <CardContent className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-          <div>
-            <Label className="text-[10px] text-muted-foreground">Dari Tanggal</Label>
-            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9" />
-          </div>
-          <div>
-            <Label className="text-[10px] text-muted-foreground">Sampai Tanggal</Label>
-            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9" />
-          </div>
+        <CardContent className="p-3 grid grid-cols-2 md:grid-cols-4 gap-2 items-end">
           <div>
             <Label className="text-[10px] text-muted-foreground">Arah</Label>
             <Select value={fDir} onValueChange={setFDir}>
@@ -459,8 +451,25 @@ export default function BendaharaBukuKas() {
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Dari Tanggal (opsional)</Label>
+            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="h-9" placeholder="Semua" />
+          </div>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">Sampai Tanggal (opsional)</Label>
+            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9" placeholder="Semua" />
+          </div>
+          {(dateFrom || dateTo) && (
+            <div className="col-span-2 md:col-span-4 flex items-center justify-between text-[11px] text-muted-foreground -mt-1">
+              <span>Filter tanggal aktif — tampilkan sebagian data saja.</span>
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-[11px]" onClick={() => { setDateFrom(""); setDateTo(""); }}>
+                Tampilkan Semua Tanggal
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
+
 
       {/* Table */}
       <Card className="border-0 shadow-sm overflow-hidden">
