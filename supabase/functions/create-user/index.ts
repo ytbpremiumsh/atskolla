@@ -300,7 +300,8 @@ serve(async (req) => {
           .select('key, value')
           .in('key', [
             'wa_registration_enabled', 'wa_api_url', 'wa_api_key', 'wa_registration_message',
-            'mpwa_platform_api_key', 'mpwa_platform_sender', 'mpwa_platform_connected'
+            'mpwa_platform_api_key', 'mpwa_platform_sender', 'mpwa_platform_connected',
+            'base_domain'
           ]);
 
         const ps: Record<string, string> = {};
@@ -318,7 +319,21 @@ serve(async (req) => {
             const { data: sd } = await supabaseAdmin.from('schools').select('slug').eq('id', resolvedSchoolId).maybeSingle();
             slug = sd?.slug || null;
           }
-          const siteUrl = slug ? `https://${slug}.absenpintar.online` : 'https://absenpintar.online';
+          // Determine base domain: platform_settings.base_domain > request Origin header > fallback
+          let baseDomain = (ps.base_domain || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
+          if (!baseDomain) {
+            try {
+              const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+              const host = origin ? new URL(origin).hostname : '';
+              // Strip subdomain: keep last 2 parts (e.g. smk.atskolla.com -> atskolla.com)
+              if (host && !host.includes('localhost') && !host.endsWith('.lovable.app') && !host.endsWith('.lovableproject.com')) {
+                const parts = host.split('.');
+                baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
+              }
+            } catch (_) { /* ignore */ }
+          }
+          if (!baseDomain) baseDomain = 'absenpintar.online';
+          const siteUrl = slug ? `https://${slug}.${baseDomain}` : `https://${baseDomain}`;
           const adminUrl = `${siteUrl}/admin`;
           const parentUrl = `${siteUrl}/login`;
 
