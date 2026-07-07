@@ -172,6 +172,7 @@ const ManageStaff = () => {
     if (formRoles.staff) selectedRoles.push("staff");
     if (formRoles.teacher) selectedRoles.push("teacher");
     if (formRoles.bendahara) selectedRoles.push("bendahara");
+    if (formRoles.principal) selectedRoles.push("principal");
     if (selectedRoles.length === 0) { toast.error("Pilih minimal satu role"); return; }
 
     setCreating(true);
