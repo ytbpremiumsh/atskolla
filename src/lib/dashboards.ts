@@ -1,4 +1,4 @@
-import { Wallet, GraduationCap, Shield, LayoutDashboard, Crown } from "lucide-react";
+import { Wallet, GraduationCap, Shield, LayoutDashboard, Crown, School } from "lucide-react";
 
 export interface DashboardOption {
   key: string;
