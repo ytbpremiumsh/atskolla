@@ -5105,8 +5105,11 @@ export function BendaharaLaporan() {
           )}
         </TabsContent>
         {/* TAB 5 — EXPORT DATA */}
-        <TabsContent value="export" className="mt-4">
+        <TabsContent value="export" className="mt-4 space-y-3">
+          {/* Laporan Cepat (PDF & Excel) — kompak di atas export lengkap */}
+          <PresetLaporan items={items} students={students} school={school} year={year} />
           <Card className="border-0 shadow-sm">
+
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Download className="h-4 w-4 text-[#5B6CF9]" /> Export Data SPP
