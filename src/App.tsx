@@ -3,12 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { TenantProvider, useTenant, getRootDomain, getTenantBasename } from "@/lib/tenant";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { handleError, normalizeError } from "@/lib/errorHandler";
 
 // Layouts kept eager (small + shared by many routes)
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -146,9 +148,36 @@ const queryClient = new QueryClient({
       gcTime: 5 * 60_000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        const norm = normalizeError(error);
+        // Do not retry auth/permission/not-found errors
+        if (norm.code === "PGRST116" || norm.code === "42501") return false;
+        if (/JWT|Auth session|permission/i.test(norm.message)) return false;
+        return failureCount < 1;
+      },
+    },
+    mutations: {
+      retry: 0,
     },
   },
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      // Only toast on background refetches to avoid double-toast when component also catches.
+      if (query.state.data !== undefined) {
+        handleError(error, `query:${String(query.queryKey?.[0] ?? "unknown")}`);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error("[query error]", query.queryKey, error);
+      }
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) => {
+      // Skip toast if the mutation defines its own onError handler
+      if (mutation.options.onError) return;
+      handleError(error, "mutation");
+    },
+  }),
 });
 
 function PageFallback() {
@@ -360,24 +389,28 @@ function AppRoutes() {
 const tenantBasename = typeof window !== "undefined" ? getTenantBasename() : "";
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <DynamicFavicon />
-        <BrowserRouter basename={tenantBasename || undefined}>
-          <TenantProvider>
-            <AuthProvider>
-              <GoogleAnalytics />
-              <MetaPixel />
-              <AppRoutes />
-            </AuthProvider>
-          </TenantProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <DynamicFavicon />
+          <BrowserRouter basename={tenantBasename || undefined}>
+            <TenantProvider>
+              <AuthProvider>
+                <GoogleAnalytics />
+                <MetaPixel />
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </AuthProvider>
+            </TenantProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
