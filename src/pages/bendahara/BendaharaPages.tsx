@@ -4585,7 +4585,7 @@ export function BendaharaPencairan() {
                       const withdrawFee = s.withdraw_fee ?? 3000;
                       const finalPayoutGross = Math.max(0, (s.total_gross || 0) - withdrawFee);
                       return (
-                        <TableRow key={s.id} className="[&_td]:whitespace-nowrap">
+                        <TableRow key={s.id} onClick={() => openSettlementDetail(s)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
                           <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
                           <TableCell className="text-xs">{new Date(s.requested_at).toLocaleDateString("id-ID")}</TableCell>
                           <TableCell>{s.total_transactions}</TableCell>
