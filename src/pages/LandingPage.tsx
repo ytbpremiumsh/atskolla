@@ -970,7 +970,10 @@ function Footer() {
           <div className="font-display font-semibold text-[#0b1020] text-sm mb-4">Perusahaan</div>
           <ul className="space-y-2 text-sm">
             <li><a href="/panduan" className="hover:text-[#5B6CF9]">Panduan</a></li>
-            <li><a href="#faq" className="hover:text-[#5B6CF9]">FAQ</a></li>
+            <li><a href="/faq" className="hover:text-[#5B6CF9]">FAQ</a></li>
+            <li><a href="/syarat-ketentuan" className="hover:text-[#5B6CF9]">Syarat & Ketentuan</a></li>
+            <li><a href="/kebijakan-refund" className="hover:text-[#5B6CF9]">Kebijakan Refund</a></li>
+            <li><a href="/kontak" className="hover:text-[#5B6CF9]">Kontak</a></li>
             <li><a href="/login" className="hover:text-[#5B6CF9]">Masuk</a></li>
             <li><a href="/register" className="hover:text-[#5B6CF9]">Daftar Gratis</a></li>
           </ul>
