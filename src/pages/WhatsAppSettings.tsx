@@ -172,9 +172,44 @@ const WhatsAppSettings = () => {
   const [mpwaSenderNumber, setMpwaSenderNumber] = useState("");
   const [onesenderEnabled, setOnesenderEnabled] = useState(true);
   const [teachingReminderEnabled, setTeachingReminderEnabled] = useState(false);
-  const [teachingReminderTemplate, setTeachingReminderTemplate] = useState('📋 *Pengingat Jadwal Mengajar*\n\nBapak/Ibu *{teacher_name}*,\n\nMata pelajaran *{subject_name}* untuk kelas *{class_name}* akan dimulai dalam 15 menit.\n\nWaktu: {start_time} - {end_time}\nRuangan: {room}\n\n_Pesan otomatis dari ATSkolla_');
+  const [teachingReminderTemplate, setTeachingReminderTemplate] = useState(`*Pengingat Jadwal Mengajar*\n\nYth. Bapak/Ibu *{teacher_name}*,\n\nDengan hormat kami ingatkan bahwa jadwal mengajar Anda akan dimulai dalam 15 menit.\n\nDetail Jadwal:\n• Mata Pelajaran : {subject_name}\n• Kelas                : {class_name}\n• Waktu               : {start_time} - {end_time}\n• Ruangan          : {room}\n\nMohon persiapkan diri dan hadir tepat waktu.\n\n${FOOTER}`);
   const [testReminderPhone, setTestReminderPhone] = useState("089501123808");
   const [testingReminder, setTestingReminder] = useState(false);
+  const [testTemplatePhone, setTestTemplatePhone] = useState("089501123808");
+  const [testingTemplate, setTestingTemplate] = useState<string | null>(null);
+
+  const handleTestTemplate = async (title: string, template: string) => {
+    if (!testTemplatePhone.trim()) { toast.error("Masukkan nomor WhatsApp"); return; }
+    if (!schoolId) { toast.error("School ID tidak ditemukan"); return; }
+    setTestingTemplate(title);
+    try {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+      const isArrive = /Datang/i.test(title);
+      const message = template
+        .replace(/\{student_name\}/g, "Ahmad Fauzan")
+        .replace(/\{class\}/g, "VII-A")
+        .replace(/\{time\}/g, `${hh}:${mm}`)
+        .replace(/\{day\}/g, days[now.getDay()])
+        .replace(/\{student_id\}/g, "2024001")
+        .replace(/\{method\}/g, "Manual (Test)")
+        .replace(/\{parent_name\}/g, "Wali Murid")
+        .replace(/\{school_name\}/g, "Sekolah Uji Coba")
+        .replace(/\{type\}/g, isArrive ? "Datang" : "Pulang");
+      const { data, error } = await supabase.functions.invoke("send-whatsapp", {
+        body: { school_id: schoolId, phone: testTemplatePhone, message, message_type: "test_template" },
+      });
+      if (error) throw error;
+      if ((data as any)?.success === false) throw new Error((data as any).error || "Gagal kirim");
+      toast.success(`Test "${title}" terkirim ke ${testTemplatePhone}`);
+    } catch (e: any) {
+      toast.error("Gagal: " + (e.message || e));
+    } finally {
+      setTestingTemplate(null);
+    }
+  };
 
   const handleTestReminder = async () => {
     if (!testReminderPhone.trim()) { toast.error("Masukkan nomor WhatsApp"); return; }
