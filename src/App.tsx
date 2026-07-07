@@ -223,6 +223,7 @@ function AppRoutes() {
           <Route path="/bendahara/jenis-pembayaran" element={<BendaharaJenisPembayaran />} />
           <Route path="/bendahara/buku-kas" element={<BendaharaBukuKas />} />
           <Route path="/bendahara/tunggakan" element={<BendaharaTunggakan />} />
+          <Route path="/bendahara/laporan-spp" element={<BendaharaLaporanSPP />} />
           <Route path="/bendahara/gateway" element={<Navigate to="/bendahara" replace />} />
         </Route>
         <Route element={<SuperAdminLayout />}>
