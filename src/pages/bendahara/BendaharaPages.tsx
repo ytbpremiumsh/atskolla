@@ -5279,28 +5279,28 @@ export function BendaharaLaporan() {
 
       {/* KPI Ringkasan tahun — prioritas utama di atas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm bg-indigo-50 dark:bg-indigo-950/20">
+        <Card className="border-0 shadow-sm bg-slate-100 dark:bg-slate-800/40">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Total Tagihan {year}</p>
             <p className="text-base font-bold mt-1">{fmtIDR(yearTotals.tagihan)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-sky-50 dark:bg-sky-950/20">
+        <Card className="border-0 shadow-sm bg-slate-100 dark:bg-slate-800/40">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Sudah Lunas</p>
-            <p className="text-base font-bold mt-1 text-sky-600">{fmtIDR(yearTotals.bayar)}</p>
+            <p className="text-base font-bold mt-1">{fmtIDR(yearTotals.bayar)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-0 shadow-sm bg-slate-100 dark:bg-slate-800/40">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Belum Lunas</p>
-            <p className="text-base font-bold mt-1 text-amber-600">{fmtIDR(yearTotals.tagihan - yearTotals.bayar)}</p>
+            <p className="text-base font-bold mt-1">{fmtIDR(yearTotals.tagihan - yearTotals.bayar)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-violet-50 dark:bg-violet-950/20">
+        <Card className="border-0 shadow-sm bg-slate-100 dark:bg-slate-800/40">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Tingkat Pelunasan</p>
-            <p className="text-base font-bold mt-1 text-violet-600">{collectionRate}%</p>
+            <p className="text-base font-bold mt-1">{collectionRate}%</p>
           </CardContent>
         </Card>
       </div>
@@ -5357,7 +5357,7 @@ export function BendaharaLaporan() {
                     className="text-left rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                   >
                     {/* Header gradient seperti card SPP */}
-                    <div className="relative overflow-hidden bg-sky-500 text-white">
+                    <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100">
                       <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
                       <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/10 blur-xl" />
                       <div className="relative z-10 flex items-center gap-3 px-4 py-3">
