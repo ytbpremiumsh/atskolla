@@ -389,24 +389,28 @@ function AppRoutes() {
 const tenantBasename = typeof window !== "undefined" ? getTenantBasename() : "";
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <DynamicFavicon />
-        <BrowserRouter basename={tenantBasename || undefined}>
-          <TenantProvider>
-            <AuthProvider>
-              <GoogleAnalytics />
-              <MetaPixel />
-              <AppRoutes />
-            </AuthProvider>
-          </TenantProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <DynamicFavicon />
+          <BrowserRouter basename={tenantBasename || undefined}>
+            <TenantProvider>
+              <AuthProvider>
+                <GoogleAnalytics />
+                <MetaPixel />
+                <ErrorBoundary>
+                  <AppRoutes />
+                </ErrorBoundary>
+              </AuthProvider>
+            </TenantProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
