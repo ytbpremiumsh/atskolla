@@ -144,7 +144,11 @@ export function ReportTable({
                 </TableCell>
               </TableRow>
             ) : visible.map((row, i) => (
-              <TableRow key={i} className="hover:bg-muted/40">
+              <TableRow
+                key={i}
+                className={`hover:bg-muted/40 ${onRowClick ? "cursor-pointer" : ""}`}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 {headers.map((h) => {
                   const v = row[h.key];
                   const isMoney = h.type === "money";
