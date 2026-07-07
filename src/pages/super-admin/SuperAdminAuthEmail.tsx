@@ -42,6 +42,9 @@ export default function SuperAdminAuthEmail() {
   const [saving, setSaving] = useState(false);
   const [rows, setRows] = useState<Record<string, Tpl>>({});
   const [active, setActive] = useState<string>("signup");
+  const [testEmail, setTestEmail] = useState<string>("");
+  const [sending, setSending] = useState(false);
+
 
   useEffect(() => {
     (async () => {
