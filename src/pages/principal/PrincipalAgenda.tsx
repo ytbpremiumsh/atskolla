@@ -113,6 +113,43 @@ export default function PrincipalAgenda() {
         <MiniStat icon={UserCheck} label="Aktivitas Hari Ini" value={timelineToday} tone="amber" />
       </div>
 
+      {/* Approval Izin Siswa */}
+      <Card className="rounded-2xl border-0 shadow-sm">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ClipboardList className="h-4 w-4 text-primary" /> Approval Izin Siswa
+              </CardTitle>
+              <CardDescription>Setujui atau tolak pengajuan izin dari orang tua</CardDescription>
+            </div>
+            <Badge variant="secondary" className="text-[10px]">{leaves.length} menunggu</Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {leaves.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              <CheckCircle2 className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              Tidak ada pengajuan izin siswa
+            </div>
+          ) : (
+            leaves.map((l: any) => (
+              <div key={l.id} className="flex items-center justify-between p-3 rounded-xl border border-border/60 gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold truncate">{l.students?.name || "Siswa"} • {l.students?.class || "-"}</div>
+                  <div className="text-xs text-muted-foreground truncate">{l.type} • {l.date} • {l.reason}</div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <Button size="sm" variant="outline" onClick={() => approveLeave(l.id, "rejected")}><XCircle className="h-3.5 w-3.5 mr-1" />Tolak</Button>
+                  <Button size="sm" onClick={() => approveLeave(l.id, "approved")}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />Setujui</Button>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
+
+
       {/* Filter bar */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 items-end">
