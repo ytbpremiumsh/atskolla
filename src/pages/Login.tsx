@@ -588,6 +588,7 @@ const Login = ({ forcedMode }: LoginProps) => {
         <p className="text-center text-[#0b1020]/40 text-xs mt-8 w-full max-w-6xl">© 2026 ATSkolla — Platform Digital Sekolah</p>
       </div>
     </div>
+    </MotionConfig>
   );
 };
 
