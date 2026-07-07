@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { BookOpen, Plus, TrendingUp, TrendingDown, Wallet, Loader2, Download, Trash2, Zap, Receipt, Landmark, ArrowRight } from "lucide-react";
-import * as XLSX from "xlsx";
+import XLSXStyle from "xlsx-js-style";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 import { Link } from "react-router-dom";
 
