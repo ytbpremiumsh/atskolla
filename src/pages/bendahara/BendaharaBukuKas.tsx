@@ -186,20 +186,23 @@ export default function BendaharaBukuKas() {
       "No": withBalance.length - i,
       "Tanggal": new Date(e.entry_date).toLocaleDateString("id-ID"),
       "Kategori": e.category,
+      "No. Referensi/Invoice": e.reference || "",
+      "Metode Pembayaran": e.method || (e.source === "manual" ? "Tunai/Manual" : "-"),
+      "Status": e.status || (e.source === "manual" ? "Tercatat" : "-"),
       "Keterangan": e.description || "",
-      "Referensi": e.reference || "",
       "Sumber": e.source === "auto" ? "Otomatis" : "Manual",
-      "Kas Masuk": e.direction === "in" ? e.amount : 0,
+      "Kas Masuk (Bruto)": e.direction === "in" ? e.amount : 0,
       "Kas Keluar": e.direction === "out" ? e.amount : 0,
-      "Saldo": e.balance,
+      "Saldo Berjalan": e.balance,
     }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [{ wch: 5 }, { wch: 12 }, { wch: 16 }, { wch: 40 }, { wch: 26 }, { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+    ws["!cols"] = [{ wch: 5 }, { wch: 12 }, { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 12 }, { wch: 40 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 16 }];
     XLSX.utils.book_append_sheet(wb, ws, "Buku Kas");
     XLSX.writeFile(wb, `Buku_Kas_${dateFrom}_sd_${dateTo}.xlsx`);
     toast.success("Export selesai");
   };
+
 
   const currentCatOptions = form.direction === "out" ? OUT_CATEGORIES : IN_CATEGORIES;
 
