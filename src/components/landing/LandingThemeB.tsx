@@ -646,12 +646,7 @@ const LandingThemeB = () => {
               {/* Brand */}
               <div className="col-span-2 space-y-4">
                 <div className="flex items-center gap-3">
-                  <img
-                    src="/images/logo-atskolla.png"
-                    alt="ATSkolla"
-                    className="h-10 w-10 rounded-xl object-contain bg-white"
-                  />
-                  <p className="font-extrabold text-slate-900 dark:text-white text-lg">{get("footer_brand_name", "ATSkolla")}</p>
+                  <p className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">{get("footer_brand_name", "atskolla")}</p>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
                   {get("footer_description", "Solusi digital terpadu untuk sekolah modern Indonesia — absensi, jadwal mengajar, SPP, dan portal wali murid dalam satu platform.")}
