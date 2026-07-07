@@ -4208,6 +4208,23 @@ export function BendaharaPencairan() {
   const [history, setHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailSettlement, setDetailSettlement] = useState<any>(null);
+  const [detailItems, setDetailItems] = useState<any[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const openSettlementDetail = async (s: any) => {
+    setDetailSettlement(s);
+    setDetailItems([]);
+    setDetailOpen(true);
+    setDetailLoading(true);
+    const { data } = await supabase.from("spp_invoices")
+      .select("id, invoice_number, student_name, class_name, period_label, total_amount, gateway_fee, net_amount, payment_method, paid_at")
+      .eq("settlement_id", s.id)
+      .order("paid_at", { ascending: true });
+    setDetailItems((data as any[]) || []);
+    setDetailLoading(false);
+  };
   const syncingRef = useRef(false);
   // OTP state
   const [otpStep, setOtpStep] = useState(false);
@@ -4568,7 +4585,7 @@ export function BendaharaPencairan() {
                       const withdrawFee = s.withdraw_fee ?? 3000;
                       const finalPayoutGross = Math.max(0, (s.total_gross || 0) - withdrawFee);
                       return (
-                        <TableRow key={s.id} className="[&_td]:whitespace-nowrap">
+                        <TableRow key={s.id} onClick={() => openSettlementDetail(s)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
                           <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
                           <TableCell className="text-xs">{new Date(s.requested_at).toLocaleDateString("id-ID")}</TableCell>
                           <TableCell>{s.total_transactions}</TableCell>
@@ -4786,7 +4803,56 @@ export function BendaharaPencairan() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Detail Settlement */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Detail Pencairan {detailSettlement?.settlement_code}</DialogTitle>
+            {detailSettlement && (
+              <p className="text-xs text-muted-foreground">
+                {new Date(detailSettlement.requested_at).toLocaleString("id-ID")} • {detailSettlement.total_transactions} transaksi • Final {fmtIDR(Math.max(0, (detailSettlement.total_gross || 0) - (detailSettlement.withdraw_fee ?? 3000)))}
+              </p>
+            )}
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto">
+            {detailLoading ? (
+              <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div>
+            ) : detailItems.length === 0 ? (
+              <div className="p-8 text-center text-sm text-muted-foreground">Tidak ada data invoice terkait settlement ini.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="[&_th]:whitespace-nowrap">
+                    <TableHead className="w-8">#</TableHead>
+                    <TableHead>Siswa</TableHead>
+                    <TableHead>Kelas</TableHead>
+                    <TableHead>Periode</TableHead>
+                    <TableHead>Metode</TableHead>
+                    <TableHead>Dibayar</TableHead>
+                    <TableHead className="text-right">Nominal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {detailItems.map((it, idx) => (
+                    <TableRow key={it.id} className="[&_td]:whitespace-nowrap">
+                      <TableCell className="text-xs text-muted-foreground">{idx + 1}</TableCell>
+                      <TableCell className="text-xs font-medium">{it.student_name}</TableCell>
+                      <TableCell className="text-xs">{it.class_name}</TableCell>
+                      <TableCell className="text-xs">{it.period_label}</TableCell>
+                      <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method)}</TableCell>
+                      <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
+                      <TableCell className="text-xs text-right font-semibold">{fmtIDR(it.total_amount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
+
   );
 }
 
