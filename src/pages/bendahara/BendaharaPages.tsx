@@ -5296,30 +5296,10 @@ export function BendaharaLaporan() {
 
       {/* KPI Ringkasan tahun — prioritas utama di atas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm bg-indigo-50 dark:bg-indigo-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Total Tagihan {year}</p>
-            <p className="text-base font-bold mt-1 text-indigo-700 dark:text-indigo-300">{fmtIDR(yearTotals.tagihan)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-sky-50 dark:bg-sky-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Sudah Lunas</p>
-            <p className="text-base font-bold mt-1 text-sky-700 dark:text-sky-300">{fmtIDR(yearTotals.bayar)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-amber-50 dark:bg-amber-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Belum Lunas</p>
-            <p className="text-base font-bold mt-1 text-amber-700 dark:text-amber-300">{fmtIDR(yearTotals.tagihan - yearTotals.bayar)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-violet-50 dark:bg-violet-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Tingkat Pelunasan</p>
-            <p className="text-base font-bold mt-1 text-violet-700 dark:text-violet-300">{collectionRate}%</p>
-          </CardContent>
-        </Card>
+        <StatCard label={`Total Tagihan ${year}`} value={fmtIDR(yearTotals.tagihan)} icon={FileText} gradient="from-indigo-500 to-indigo-600" />
+        <StatCard label="Sudah Lunas" value={fmtIDR(yearTotals.bayar)} icon={CheckCircle2} gradient="from-sky-500 to-sky-600" />
+        <StatCard label="Belum Lunas" value={fmtIDR(yearTotals.tagihan - yearTotals.bayar)} icon={AlertCircle} gradient="from-amber-500 to-amber-600" />
+        <StatCard label="Tingkat Pelunasan" value={`${collectionRate}%`} icon={Percent} gradient="from-violet-500 to-violet-600" />
       </div>
 
       <Tabs defaultValue="ringkasan" className="w-full">
