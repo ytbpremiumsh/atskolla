@@ -56,7 +56,7 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
 
   useEffect(() => {
     const load = async () => {
-      if (!profile?.school_id) { setLoading(false); return; }
+      if (!schoolId) { setLoading(false); return; }
       setLoading(true);
       try {
         const year = currentMonth.getFullYear();
@@ -64,11 +64,11 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
         const start = new Date(year, month, 1).toISOString().slice(0, 10);
         const end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-        const { data: school } = await supabase.from("schools").select("name, city").eq("id", profile.school_id).maybeSingle();
+        const { data: school } = await supabase.from("schools").select("name, city").eq("id", schoolId).maybeSingle();
         if (school) { setSchoolName(school.name || ""); setSchoolCity(school.city || ""); }
 
         const { data: profs } = await supabase.from("profiles")
-          .select("user_id, full_name, photo_url").eq("school_id", profile.school_id);
+          .select("user_id, full_name, photo_url").eq("school_id", schoolId);
         const ids = (profs || []).map((p) => p.user_id);
         if (ids.length === 0) { setTeachers([]); setLogs([]); return; }
 
@@ -93,11 +93,12 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
 
         const { data: lgs } = await supabase.from("teacher_attendance_logs" as any)
           .select("user_id, date, status, attendance_type")
-          .eq("school_id", profile.school_id).gte("date", start).lte("date", end);
+          .eq("school_id", schoolId).gte("date", start).lte("date", end);
         setLogs(lgs || []);
       } finally { setLoading(false); }
     };
     load();
+
   }, [profile?.school_id, currentMonth]);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
