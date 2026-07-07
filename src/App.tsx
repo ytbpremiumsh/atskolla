@@ -148,9 +148,36 @@ const queryClient = new QueryClient({
       gcTime: 5 * 60_000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        const norm = normalizeError(error);
+        // Do not retry auth/permission/not-found errors
+        if (norm.code === "PGRST116" || norm.code === "42501") return false;
+        if (/JWT|Auth session|permission/i.test(norm.message)) return false;
+        return failureCount < 1;
+      },
+    },
+    mutations: {
+      retry: 0,
     },
   },
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      // Only toast on background refetches to avoid double-toast when component also catches.
+      if (query.state.data !== undefined) {
+        handleError(error, `query:${String(query.queryKey?.[0] ?? "unknown")}`);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error("[query error]", query.queryKey, error);
+      }
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) => {
+      // Skip toast if the mutation defines its own onError handler
+      if (mutation.options.onError) return;
+      handleError(error, "mutation");
+    },
+  }),
 });
 
 function PageFallback() {
