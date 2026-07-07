@@ -45,11 +45,14 @@ const akademik: Report[] = [
   { label: "Jurnal Mengajar", desc: "Sesi mengajar guru & kehadiran per sesi", icon: ClipboardList, path: "/kepsek/laporan/jurnal", tone: "indigo" },
 ];
 
-const keuangan: Report[] = [
-  { label: "Pembayaran SPP", desc: "Semua invoice, kanal bayar, biaya gateway", icon: Receipt, path: "/kepsek/laporan/spp", tone: "emerald" },
-  { label: "Tunggakan", desc: "Siswa menunggak + hari menunggak & kontak", icon: Wallet, path: "/kepsek/laporan/tunggakan", tone: "rose" },
-  { label: "Buku Kas", desc: "Saldo awal, mutasi, saldo berjalan, grafik", icon: BookOpen, path: "/kepsek/laporan/buku-kas", tone: "sky" },
-  { label: "Settlement", desc: "Riwayat pencairan dana SPP", icon: Landmark, path: "/kepsek/laporan/settlement", tone: "amber" },
+const keuanganSiswa: Report[] = [
+  { label: "Pembayaran SPP", desc: "Semua invoice SPP siswa, kanal bayar, biaya gateway", icon: Receipt, path: "/kepsek/laporan/spp", tone: "emerald" },
+  { label: "Tunggakan SPP", desc: "Siswa menunggak + hari menunggak & kontak wali", icon: Wallet, path: "/kepsek/laporan/tunggakan", tone: "rose" },
+];
+
+const kasSekolah: Report[] = [
+  { label: "Buku Kas Sekolah", desc: "Kas umum sekolah: saldo awal, mutasi, saldo berjalan", icon: BookOpen, path: "/kepsek/laporan/buku-kas", tone: "sky" },
+  { label: "Settlement Dana", desc: "Riwayat pencairan dana SPP ke rekening sekolah", icon: Landmark, path: "/kepsek/laporan/settlement", tone: "amber" },
 ];
 
 const tones: Record<string, string> = {
