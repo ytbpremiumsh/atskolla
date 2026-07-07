@@ -14,6 +14,7 @@ import { TenantProvider, useTenant, getRootDomain, getTenantBasename } from "@/l
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SuperAdminLayout } from "@/components/layout/SuperAdminLayout";
 import { BendaharaLayout } from "./components/layout/BendaharaLayout";
+import { PrincipalLayout } from "@/components/layout/PrincipalLayout";
 
 // Auth/landing kept eager for fast first paint
 import LandingPage from "./pages/LandingPage";
@@ -82,7 +83,13 @@ const ParentLogin = lazy(() => import("./pages/parent/ParentLogin"));
 const ParentDashboard = lazy(() => import("./pages/parent/ParentDashboard"));
 const ManageBendahara = lazy(() => import("./pages/ManageBendahara"));
 const SelectRole = lazy(() => import("./pages/SelectRole"));
-const PrincipalDashboard = lazy(() => import("./pages/PrincipalDashboard"));
+const PrincipalOverview = lazy(() => import("./pages/principal/PrincipalOverview"));
+const PrincipalKehadiran = lazy(() => import("./pages/principal/PrincipalKehadiran"));
+const PrincipalPembelajaran = lazy(() => import("./pages/principal/PrincipalPembelajaran"));
+const PrincipalKeuangan = lazy(() => import("./pages/principal/PrincipalKeuangan"));
+const PrincipalPersetujuan = lazy(() => import("./pages/principal/PrincipalPersetujuan"));
+const PrincipalAgenda = lazy(() => import("./pages/principal/PrincipalAgenda"));
+const PrincipalLaporan = lazy(() => import("./pages/principal/PrincipalLaporan"));
 const BendaharaWithdraw = lazy(() => import("./pages/bendahara/BendaharaWithdraw"));
 const BendaharaKeuanganSekolah = lazy(() => import("./pages/bendahara/BendaharaKeuanganSekolah"));
 const LaporanAbsensi = lazy(() => import("./pages/LaporanAbsensi"));
@@ -244,9 +251,18 @@ function AppRoutes() {
         </Route>
 
         <Route path="/s/:code" element={<ShortlinkRedirect />} />
+        {/* Kepala Sekolah */}
+        <Route element={<PrincipalLayout />}>
+          <Route path="/kepsek" element={<PrincipalOverview />} />
+          <Route path="/kepsek/kehadiran" element={<PrincipalKehadiran />} />
+          <Route path="/kepsek/pembelajaran" element={<PrincipalPembelajaran />} />
+          <Route path="/kepsek/keuangan" element={<PrincipalKeuangan />} />
+          <Route path="/kepsek/persetujuan" element={<PrincipalPersetujuan />} />
+          <Route path="/kepsek/agenda" element={<PrincipalAgenda />} />
+          <Route path="/kepsek/laporan" element={<PrincipalLaporan />} />
+        </Route>
         {/* School Admin / Staff */}
         <Route element={<AppLayout />}>
-          <Route path="/kepsek" element={<PrincipalDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/scan" element={<ScanQR />} />
