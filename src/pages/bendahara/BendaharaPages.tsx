@@ -4357,7 +4357,7 @@ export function BendaharaPencairan() {
     return () => { supabase.removeChannel(channel); };
   }, [profile?.school_id]);
 
-  const finalPayout = Math.max(0, available.net - 3000);
+  const finalPayout = Math.max(0, available.gross - 3000);
 
   const handleSelectAccount = (id: string) => {
     setSelectedAccountId(id);
