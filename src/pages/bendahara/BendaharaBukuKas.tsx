@@ -330,7 +330,8 @@ export default function BendaharaBukuKas() {
 
     const wb = XLSXStyle.utils.book_new();
     XLSXStyle.utils.book_append_sheet(wb, ws, "Buku Kas");
-    XLSXStyle.writeFile(wb, `Buku_Kas_${dateFrom}_sd_${dateTo}.xlsx`);
+    const fileTag = (dateFrom || dateTo) ? `${dateFrom || "awal"}_sd_${dateTo || "sekarang"}` : "semua";
+    XLSXStyle.writeFile(wb, `Buku_Kas_${fileTag}.xlsx`);
     toast.success("Export selesai");
   };
 
