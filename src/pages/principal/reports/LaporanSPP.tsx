@@ -382,7 +382,7 @@ export default function LaporanSPP() {
       subtitle="Ringkasan tagihan, pembayaran & tunggakan SPP — data langsung dari modul Pembayaran SPP"
       icon={Receipt}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
-      datesOptional
+      hideDates
       onDownload={exportCSV}
       headerActions={
         <DropdownMenu>
