@@ -47,9 +47,9 @@ export default function BendaharaBukuKas() {
   const [deleting, setDeleting] = useState<Entry | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
-  const firstOfMonth = `${today.slice(0, 7)}-01`;
-  const [dateFrom, setDateFrom] = useState<string>(firstOfMonth);
-  const [dateTo, setDateTo] = useState<string>(today);
+  // Default: tampilkan SEMUA data (tanpa filter tanggal). Filter tanggal adalah opsi kedua.
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [fDir, setFDir] = useState<string>("all");
   const [fCat, setFCat] = useState<string>("all");
 
