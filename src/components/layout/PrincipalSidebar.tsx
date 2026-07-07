@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, UserCheck, BookOpen, Wallet, ClipboardList,
+  LayoutDashboard, Activity, Briefcase,
   CalendarDays, FileSpreadsheet, LogOut, ChevronRight, Crown,
-  Users, GraduationCap, Receipt, Landmark,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -19,36 +18,17 @@ const groups: { label: string; items: { title: string; url: string; icon: any; e
     items: [{ title: "Dashboard", url: "/kepsek", icon: LayoutDashboard, end: true }],
   },
   {
-    label: "Monitoring",
+    label: "Operasional",
     items: [
-      { title: "Kehadiran", url: "/kepsek/kehadiran", icon: UserCheck },
-      { title: "Pembelajaran", url: "/kepsek/pembelajaran", icon: BookOpen },
-    ],
-  },
-  {
-    label: "Keuangan & Persetujuan",
-    items: [
-      { title: "Keuangan Sekolah", url: "/kepsek/keuangan", icon: Wallet },
-      { title: "Persetujuan", url: "/kepsek/persetujuan", icon: ClipboardList },
-    ],
-  },
-  {
-    label: "Informasi",
-    items: [
+      { title: "Monitoring", url: "/kepsek/monitoring", icon: Activity },
+      { title: "Manajemen", url: "/kepsek/manajemen", icon: Briefcase },
       { title: "Kalender & Aktivitas", url: "/kepsek/agenda", icon: CalendarDays },
     ],
   },
   {
     label: "Laporan",
     items: [
-      { title: "Ringkasan Laporan", url: "/kepsek/laporan", icon: FileSpreadsheet, end: true },
-      { title: "Absensi Siswa", url: "/kepsek/laporan/absensi-siswa", icon: Users },
-      { title: "Absensi Guru", url: "/kepsek/laporan/absensi-guru", icon: GraduationCap },
-      { title: "SPP", url: "/kepsek/laporan/spp", icon: Receipt },
-      { title: "Tunggakan", url: "/kepsek/laporan/tunggakan", icon: Wallet },
-      { title: "Buku Kas", url: "/kepsek/laporan/buku-kas", icon: BookOpen },
-      { title: "Settlement", url: "/kepsek/laporan/settlement", icon: Landmark },
-      { title: "Jurnal Mengajar", url: "/kepsek/laporan/jurnal", icon: ClipboardList },
+      { title: "Laporan Sekolah", url: "/kepsek/laporan", icon: FileSpreadsheet },
     ],
   },
 ];
