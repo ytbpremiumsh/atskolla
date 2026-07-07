@@ -19,7 +19,7 @@ import {
   TrendingUp, Wallet, AlertCircle, CheckCircle2, Loader2, Plus, Search, Link as LinkIcon,
   Receipt, ArrowDownToLine, Banknote, RefreshCw, FileText, MessageCircle, Mail, Copy,
   Download, Upload, ArrowLeft, User, Users, ChevronRight, ChevronDown, Eye, GraduationCap, Send, BarChart3, Landmark,
-  Home, LayoutGrid, Grid3x3, CreditCard, ArrowUpRight, X, Pencil, Trash2,
+  Home, LayoutGrid, Grid3x3, CreditCard, ArrowUpRight, X, Pencil, Trash2, Percent,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -291,18 +291,35 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 function StatCard({ label, value, icon: Icon, gradient = "from-emerald-500 to-teal-600", sub }: any) {
+  // Unified card style matching Buku Kas: pastel icon square + colored value
+  const toneMap: Record<string, { bg: string; text: string }> = {
+    emerald: { bg: "bg-emerald-500/15", text: "text-emerald-600" },
+    teal:    { bg: "bg-teal-500/15",    text: "text-teal-600" },
+    sky:     { bg: "bg-sky-500/15",     text: "text-sky-600" },
+    indigo:  { bg: "bg-indigo-500/15",  text: "text-indigo-600" },
+    violet:  { bg: "bg-violet-500/15",  text: "text-violet-600" },
+    amber:   { bg: "bg-amber-500/15",   text: "text-amber-600" },
+    orange:  { bg: "bg-orange-500/15",  text: "text-orange-600" },
+    rose:    { bg: "bg-rose-500/15",    text: "text-rose-600" },
+    red:     { bg: "bg-red-500/15",     text: "text-red-600" },
+    slate:   { bg: "bg-slate-500/15",   text: "text-slate-600" },
+    blue:    { bg: "bg-blue-500/15",    text: "text-blue-600" },
+    cyan:    { bg: "bg-cyan-500/15",    text: "text-cyan-600" },
+  };
+  const m = (gradient || "").match(/from-([a-z]+)-/);
+  const tone = toneMap[m?.[1] ?? "emerald"] || toneMap.emerald;
   return (
     <Card className="border-0 shadow-sm overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-            <p className="text-xl font-extrabold mt-1 truncate">{value}</p>
-            {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
+      <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
+        <div className="flex items-center gap-2">
+          <div className={`h-9 w-9 shrink-0 rounded-xl ${tone.bg} flex items-center justify-center`}>
+            <Icon className={`h-4 w-4 ${tone.text}`} />
           </div>
-          <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shrink-0`}>
-            <Icon className="h-5 w-5 text-white" />
-          </div>
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">{label}</p>
+        </div>
+        <div className="min-w-0">
+          <p className={`text-base sm:text-lg font-extrabold break-words leading-tight ${tone.text}`}>{value}</p>
+          {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
         </div>
       </CardContent>
     </Card>
@@ -5279,30 +5296,10 @@ export function BendaharaLaporan() {
 
       {/* KPI Ringkasan tahun — prioritas utama di atas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm bg-indigo-50 dark:bg-indigo-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Total Tagihan {year}</p>
-            <p className="text-base font-bold mt-1 text-indigo-700 dark:text-indigo-300">{fmtIDR(yearTotals.tagihan)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-sky-50 dark:bg-sky-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Sudah Lunas</p>
-            <p className="text-base font-bold mt-1 text-sky-700 dark:text-sky-300">{fmtIDR(yearTotals.bayar)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-amber-50 dark:bg-amber-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Belum Lunas</p>
-            <p className="text-base font-bold mt-1 text-amber-700 dark:text-amber-300">{fmtIDR(yearTotals.tagihan - yearTotals.bayar)}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-violet-50 dark:bg-violet-950/30">
-          <CardContent className="p-4">
-            <p className="text-[11px] text-muted-foreground">Tingkat Pelunasan</p>
-            <p className="text-base font-bold mt-1 text-violet-700 dark:text-violet-300">{collectionRate}%</p>
-          </CardContent>
-        </Card>
+        <StatCard label={`Total Tagihan ${year}`} value={fmtIDR(yearTotals.tagihan)} icon={FileText} gradient="from-indigo-500 to-indigo-600" />
+        <StatCard label="Sudah Lunas" value={fmtIDR(yearTotals.bayar)} icon={CheckCircle2} gradient="from-sky-500 to-sky-600" />
+        <StatCard label="Belum Lunas" value={fmtIDR(yearTotals.tagihan - yearTotals.bayar)} icon={AlertCircle} gradient="from-amber-500 to-amber-600" />
+        <StatCard label="Tingkat Pelunasan" value={`${collectionRate}%`} icon={Percent} gradient="from-violet-500 to-violet-600" />
       </div>
 
       <Tabs defaultValue="ringkasan" className="w-full">
