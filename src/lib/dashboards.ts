@@ -35,6 +35,7 @@ export function getAvailableDashboards(roles: string[]): DashboardOption[] {
       icon: School,
       gradient: "from-indigo-500 to-blue-600",
     });
+  }
   if (roles.includes("school_admin")) {
     out.push({
       key: "school_admin",
