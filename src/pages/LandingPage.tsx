@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-const ATSKOLLA_LOGO_URL = "https://absenpintar.online/images/logo-atskolla.png";
+const ATSKOLLA_LOGO_URL = atskollaLogo;
 import { useLandingTheme, LANDING_THEME_CSS } from "@/hooks/useLandingTheme";
 import ThemeToggle from "@/components/landing/ThemeToggle";
 import {
+import atskollaLogo from "@/assets/atskolla-logo.png";
   ArrowRight, CheckCircle2, ShieldCheck, Zap, MapPin, Menu, X,
   QrCode, ScanFace, CreditCard, Wallet, Receipt, Banknote,
   Users, GraduationCap, Building2, HeartHandshake, BookOpen,
