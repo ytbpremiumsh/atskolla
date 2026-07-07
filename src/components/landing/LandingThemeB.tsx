@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { isRootHost } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import TypingEffect from "@/components/TypingEffect";
 import {
   ArrowRight, CheckCircle2, Mail, Phone, MapPin,
