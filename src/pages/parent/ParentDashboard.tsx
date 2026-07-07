@@ -1076,7 +1076,7 @@ export default function ParentDashboard() {
 
         {/* SPP */}
         {tab === "spp" && (
-          <>
+          <Card className="p-4 md:p-5 border-0 shadow-card rounded-2xl space-y-3">
             <SectionTitle icon={Wallet} title="Pembayaran SPP" />
 
             {/* Ringkasan Tunggakan */}
