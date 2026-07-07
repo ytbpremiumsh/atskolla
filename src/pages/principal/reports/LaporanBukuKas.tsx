@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, TrendingUp, TrendingDown, Wallet } from "lucide-react";
+import { BookOpen, TrendingUp, TrendingDown, Wallet, Receipt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ReportShell, ReportTable, StatsRow, downloadCSV, useMonthRange, type Header, type Row } from "./_common";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer, Legend } from "recharts";
 import { fmtIDR } from "../_shared";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 
