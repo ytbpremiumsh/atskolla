@@ -166,21 +166,7 @@ export default function LaporanAbsensiGuru() {
           </Select>
         </>
       }
-      summary={
-        <StatsRow items={[
-          { label: "Total Personil", value: summary.total, tone: "primary", icon: GraduationCap },
-          { label: "Hadir", value: summary.totalH, tone: "emerald", icon: UserCheck, sub: `Rate ${summary.rate}%` },
-          { label: "Sakit", value: summary.totalS, tone: "violet" },
-          { label: "Izin", value: summary.totalI, tone: "amber" },
-          { label: "Alfa", value: summary.totalA, tone: "rose", icon: UserX },
-        ]} />
-      }
     >
-      <AttendanceHighlights
-        title="Analitik Kehadiran Guru & Staff"
-        loading={loading}
-        rows={filtered.map((r) => ({ id: r._id, name: r.Nama, hadir: r.Hadir || 0, sakit: r.Sakit || 0, izin: r.Izin || 0, alfa: r.Alfa || 0 }))}
-      />
       <AttendanceRecapGrid schoolId={schoolId} kind="teacher" />
       
       <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="teacher" targetId={detailId} />
