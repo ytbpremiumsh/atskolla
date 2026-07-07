@@ -139,11 +139,6 @@ serve(async (req) => {
         const { data } = await supabaseAdmin.from('spp_invoices').select('*').eq('payment_url', paymentUrl).neq('status','paid').maybeSingle();
         sppInv = data;
       }
-      if (!sppInv && data?.amount) {
-        const { data: found } = await supabaseAdmin.from('spp_invoices').select('*').eq('total_amount', data.amount).neq('status','paid').order('created_at',{ascending:false}).limit(1).maybeSingle();
-        sppInv = found;
-      }
-
       if (sppInv && sppInv.status !== 'paid') {
         const feeCfg = await getGatewayFeeConfig(supabaseAdmin);
         const gatewayFee = calcGatewayFee(sppInv.total_amount, feeCfg);
@@ -264,6 +259,13 @@ serve(async (req) => {
         });
       }
       return new Response(JSON.stringify({ message: 'Already processed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (payment.status && payment.status !== 'pending') {
+      console.log('Payment ignored because it is no longer pending:', payment.id, payment.status);
+      return new Response(JSON.stringify({ message: 'Payment ignored', status: payment.status }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -594,7 +596,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Webhook error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

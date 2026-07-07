@@ -661,15 +661,12 @@ Deno.serve(async (req) => {
         .from("spp_invoices")
         .select("id, student_id, school_id, parent_phone, status")
         .eq("id", invoiceId)
+        .eq("student_id", studentId)
+        .eq("school_id", schoolId)
         .maybeSingle();
       if (!inv) return json({ error: "Tagihan tidak ditemukan" });
       if (inv.status === "paid") return json({ error: "Tagihan sudah lunas" });
 
-      // Ownership check dilonggarkan: cukup pastikan invoice ada & belum lunas.
-      // Verifikasi kepemilikan yang ketat (nomor WA vs student) sudah dilakukan
-      // oleh edge function gateway (spp-mayar/spp-doku) pada action
-      // "parent_create_payment". Cek phone di sini menyebabkan false-negative
-      // pada invoice lampau yang parent_phone-nya berbeda format/kosong.
       console.log("[spp_pay]", {
         invoice_id: invoiceId,
         session_phone: session.phone,
