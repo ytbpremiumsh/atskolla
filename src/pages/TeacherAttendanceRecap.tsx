@@ -64,7 +64,7 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
         const start = new Date(year, month, 1).toISOString().slice(0, 10);
         const end = new Date(year, month + 1, 0).toISOString().slice(0, 10);
 
-        const { data: school } = await supabase.from("schools").select("name, city").eq("id", schoolId).maybeSingle();
+        const { data: school } = await supabase.from("schools").select("name, city, principal_name").eq("id", schoolId).maybeSingle();
         if (school) { setSchoolName(school.name || ""); setSchoolCity(school.city || ""); }
 
         const { data: profs } = await supabase.from("profiles")
