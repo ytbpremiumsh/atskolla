@@ -797,7 +797,7 @@ export default function ParentDashboard() {
 
         {/* ATTENDANCE */}
         {tab === "attendance" && (
-          <>
+          <Card className="p-4 md:p-5 border-0 shadow-card rounded-2xl space-y-3">
             <SectionTitle icon={ClipboardList} title="Riwayat Absensi 30 Hari" />
             <div className="flex gap-2 mb-3">
               <button
@@ -815,7 +815,7 @@ export default function ParentDashboard() {
               return (
                 <div className="space-y-2">
                   {filtered.map((a) => (
-                    <Card key={a.id} className="p-3 border-0 shadow-card rounded-2xl flex items-center justify-between">
+                    <Card key={a.id} className="p-3 border shadow-none rounded-2xl flex items-center justify-between bg-muted/30">
                       <div>
                         <p className="text-sm font-semibold">{new Date(a.date).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "short" })}</p>
                         <p className="text-xs text-muted-foreground">{a.attendance_type === "pulang" ? "Pulang" : "Datang"} • {a.time?.slice(0, 5) || "-"} • {a.method}</p>
@@ -826,7 +826,7 @@ export default function ParentDashboard() {
                 </div>
               );
             })()}
-          </>
+          </Card>
         )}
 
         {/* SCHEDULE */}
