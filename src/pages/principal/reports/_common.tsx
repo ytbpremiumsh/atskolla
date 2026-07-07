@@ -78,13 +78,15 @@ export function ReportShell({
         actions={
           <div className="flex gap-2">
             {headerActions}
-            <Button
-              size="sm"
-              onClick={onDownload}
-              className="bg-white/20 hover:bg-white/30 text-white border border-white/20"
-            >
-              <Download className="h-4 w-4 mr-1.5" /> Export
-            </Button>
+            {!hideExport && (
+              <Button
+                size="sm"
+                onClick={onDownload}
+                className="bg-white/20 hover:bg-white/30 text-white border border-white/20"
+              >
+                <Download className="h-4 w-4 mr-1.5" /> Export
+              </Button>
+            )}
           </div>
         }
       />
