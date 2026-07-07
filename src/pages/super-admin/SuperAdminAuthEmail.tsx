@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Mail, Save, Eye } from "lucide-react";
+import { Loader2, Mail, Save, Eye, Send } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 type Tpl = {
