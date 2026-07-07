@@ -363,11 +363,11 @@ const Login = ({ forcedMode }: LoginProps) => {
             </div>
 
             <div className="text-center mb-5">
-              {mode === "parent" && (
+              {mode === "parent" && tenantLogo && (
                 <div className="flex justify-center mb-4">
                   <img
-                    src={tenantLogo || loginLogo}
-                    alt={tenantName || "ATSkolla"}
+                    src={tenantLogo}
+                    alt={tenantName || "Sekolah"}
                     className="h-16 w-16 rounded-2xl shadow-lg object-contain bg-white border border-slate-200 p-2"
                   />
                 </div>
