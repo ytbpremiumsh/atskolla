@@ -252,7 +252,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
             </a>
           ))}
           <div className="pt-3 border-t border-slate-100 flex gap-2">
-            <button onClick={() => nav("/login")} className="flex-1 text-sm font-semibold text-[#0b1020] border border-slate-200 rounded-lg py-2.5">
+            <button onClick={() => nav(loginPath)} className="flex-1 text-sm font-semibold text-[#0b1020] border border-slate-200 rounded-lg py-2.5">
               Masuk
             </button>
             <button onClick={() => nav("/register")} className="flex-1 text-sm font-semibold bg-[#5B6CF9] text-white rounded-lg py-2.5">
