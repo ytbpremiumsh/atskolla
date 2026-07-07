@@ -892,7 +892,7 @@ export default function ParentDashboard() {
                       </Card>
                     );
                   })() : next ? (
-                    <Card className="p-3.5 border-0 shadow-card rounded-2xl border-l-4 border-l-[#5B6CF9]">
+                    <Card className="p-3.5 border shadow-none rounded-2xl border-l-4 border-l-[#5B6CF9] bg-muted/30">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Berikutnya</p>
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
@@ -915,7 +915,7 @@ export default function ParentDashboard() {
                         // Seragamkan warna header semua hari menggunakan brand gradient
                         const dayGradient = "from-[#5B6CF9] to-[#4c5ded]";
                         return (
-                          <Card key={d} className="border-0 shadow-card rounded-2xl overflow-hidden">
+                          <Card key={d} className="border shadow-none rounded-2xl overflow-hidden bg-muted/30">
                             {/* Day Header */}
                             <div className={cn("relative px-4 py-2.5 bg-gradient-to-r text-white flex items-center justify-between", dayGradient)}>
                               <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
@@ -939,7 +939,7 @@ export default function ParentDashboard() {
                                 const isOn = isToday && (s.start_time||"").slice(0,5) <= nowHHMM && nowHHMM < (s.end_time||"").slice(0,5);
                                 const subjColor = s.subjects?.color || "#5B6CF9";
                                 return (
-                                  <div key={s.id} className={cn("relative rounded-xl bg-card border border-border/50 p-2.5 pl-3 flex items-center gap-3 hover:shadow-md transition-all", isOn && "ring-2 ring-emerald-500/60 shadow-md")}>
+                                  <div key={s.id} className={cn("relative rounded-xl bg-background/70 border border-border/50 p-2.5 pl-3 flex items-center gap-3 hover:shadow-md transition-all", isOn && "ring-2 ring-emerald-500/60 shadow-md")}>
                                     <div className="absolute left-0 top-2 bottom-2 w-1 rounded-full" style={{ backgroundColor: subjColor }} />
                                     <div className="flex flex-col items-center justify-center min-w-[52px] py-1 px-2 rounded-lg" style={{ backgroundColor: `${subjColor}15`, color: subjColor }}>
                                       <span className="text-[10px] font-bold leading-none">{s.start_time?.slice(0,5)}</span>
@@ -1095,7 +1095,7 @@ export default function ParentDashboard() {
                 {sppData.aktif.map((inv) => {
                   const isExpired = inv.status === "expired";
                   return (
-                    <Card key={inv.id} className="p-3.5 border-0 shadow-card rounded-2xl">
+                    <Card key={inv.id} className="p-3.5 border shadow-none rounded-2xl bg-muted/30">
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="min-w-0">
                           <p className="text-sm font-bold truncate">{inv.period_label}</p>
@@ -1128,7 +1128,7 @@ export default function ParentDashboard() {
             {sppData.lunas.length === 0 ? <EmptyMini text="Belum ada pembayaran." /> : (
               <div className="space-y-2">
                 {sppData.lunas.map((inv) => (
-                  <Card key={inv.id} className="p-3.5 border-0 shadow-card rounded-2xl">
+                  <Card key={inv.id} className="p-3.5 border shadow-none rounded-2xl bg-muted/30">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
