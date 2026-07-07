@@ -1128,7 +1128,7 @@ export default function ParentDashboard() {
             {sppData.lunas.length === 0 ? <EmptyMini text="Belum ada pembayaran." /> : (
               <div className="space-y-2">
                 {sppData.lunas.map((inv) => (
-                  <Card key={inv.id} className="p-3.5 border-0 shadow-card rounded-2xl">
+                  <Card key={inv.id} className="p-3.5 border shadow-none rounded-2xl bg-muted/30">
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-0.5">
