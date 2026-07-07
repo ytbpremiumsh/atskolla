@@ -4357,7 +4357,7 @@ export function BendaharaPencairan() {
     return () => { supabase.removeChannel(channel); };
   }, [profile?.school_id]);
 
-  const finalPayout = Math.max(0, available.net - 3000);
+  const finalPayout = Math.max(0, available.gross - 3000);
 
   const handleSelectAccount = (id: string) => {
     setSelectedAccountId(id);
@@ -4480,11 +4480,10 @@ export function BendaharaPencairan() {
       />
 
       {/* KPI ringkas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatCard label="Transaksi Siap Cair" value={String(available.count)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
         <StatCard label="Total Bruto" value={fmtIDR(available.gross)} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
-        <StatCard label="Total Net" value={fmtIDR(available.net)} icon={Wallet} gradient="from-emerald-500 to-teal-600" />
-         <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub="setelah fee Rp 3.000" gradient="from-amber-500 to-orange-600" />
+        <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub="setelah biaya pencairan Rp 3.000" gradient="from-amber-500 to-orange-600" />
       </div>
 
 
@@ -4511,10 +4510,8 @@ export function BendaharaPencairan() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div><p className="text-xs text-muted-foreground">Total Transaksi</p><p className="font-bold">{available.count}</p></div>
                 <div><p className="text-xs text-muted-foreground">Total Bruto</p><p className="font-bold">{fmtIDR(available.gross)}</p></div>
-                <div><p className="text-xs text-muted-foreground">Biaya Layanan</p><p className="font-bold">{fmtIDR(available.fee)}</p></div>
-                <div><p className="text-xs text-muted-foreground">Total Net</p><p className="font-bold">{fmtIDR(available.net)}</p></div>
                 <div><p className="text-xs text-muted-foreground">Biaya Pencairan</p><p className="font-bold">- {fmtIDR(3000)}</p></div>
-                <div className="border-t md:border-t-0 md:border-l pt-2 md:pt-0 md:pl-3">
+                <div className="col-span-2 md:col-span-3 border-t pt-2">
                   <p className="text-xs text-muted-foreground">Final Payout</p>
                   <p className="text-xl font-extrabold text-emerald-600">{fmtIDR(finalPayout)}</p>
                 </div>
@@ -4564,21 +4561,24 @@ export function BendaharaPencairan() {
               {loadingHistory ? <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div> : (
                 <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Gross</TableHead><TableHead>Biaya Layanan</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Bruto</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {history.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
-                    {history.map(s => (
-                      <TableRow key={s.id} className="[&_td]:whitespace-nowrap">
-                        <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
-                        <TableCell className="text-xs">{new Date(s.requested_at).toLocaleDateString("id-ID")}</TableCell>
-                        <TableCell>{s.total_transactions}</TableCell>
-                        <TableCell className="text-xs">{fmtIDR(s.total_gross)}</TableCell>
-                        <TableCell className="text-xs">{fmtIDR(s.total_gateway_fee)}</TableCell>
-                        <TableCell className="text-xs">{fmtIDR(s.withdraw_fee)}</TableCell>
-                        <TableCell className="font-semibold text-emerald-600">{fmtIDR(s.final_payout)}</TableCell>
-                        <TableCell>{badge(s.status)}</TableCell>
-                      </TableRow>
-                    ))}
+                    {history.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
+                    {history.map(s => {
+                      const withdrawFee = s.withdraw_fee ?? 3000;
+                      const finalPayoutGross = Math.max(0, (s.total_gross || 0) - withdrawFee);
+                      return (
+                        <TableRow key={s.id} className="[&_td]:whitespace-nowrap">
+                          <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
+                          <TableCell className="text-xs">{new Date(s.requested_at).toLocaleDateString("id-ID")}</TableCell>
+                          <TableCell>{s.total_transactions}</TableCell>
+                          <TableCell className="text-xs">{fmtIDR(s.total_gross)}</TableCell>
+                          <TableCell className="text-xs">{fmtIDR(withdrawFee)}</TableCell>
+                          <TableCell className="font-semibold text-emerald-600">{fmtIDR(finalPayoutGross)}</TableCell>
+                          <TableCell>{badge(s.status)}</TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
                 </div>
@@ -4616,8 +4616,6 @@ export function BendaharaPencairan() {
                 <p className="text-[11px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Rincian Perhitungan</p>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total Tagihan Lunas</span><span className="font-semibold">{available.count} transaksi</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total Bruto (dari siswa)</span><span className="font-bold">{fmtIDR(available.gross)}</span></div>
-                <div className="flex justify-between text-sm text-rose-600 dark:text-rose-400"><span>(−) Biaya Layanan Gateway</span><span className="font-semibold">−{fmtIDR(available.fee)}</span></div>
-                <div className="border-t border-emerald-300 dark:border-emerald-700 pt-2 flex justify-between text-sm"><span className="text-muted-foreground">Subtotal Bersih</span><span className="font-bold">{fmtIDR(available.net)}</span></div>
                 <div className="flex justify-between text-sm text-rose-600 dark:text-rose-400"><span>(−) Biaya Pencairan</span><span className="font-semibold">−{fmtIDR(3000)}</span></div>
                 <div className="border-t-2 border-emerald-400 dark:border-emerald-600 pt-2 flex justify-between items-center"><span className="text-sm font-semibold">Diterima di Rekening</span><span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{fmtIDR(finalPayout)}</span></div>
               </div>
