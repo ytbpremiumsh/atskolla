@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,6 +101,21 @@ export default function BendaharaBukuKas() {
 
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  // Sekali di awal: kalau ada transaksi historis lebih lama dari default filter (awal bulan),
+  // mundurkan otomatis "Dari Tanggal" ke transaksi paling lama supaya seluruh data lampau ikut terlihat.
+  const autoExpandedRef = useRef(false);
+  useEffect(() => {
+    if (autoExpandedRef.current) return;
+    if (loading) return;
+    const all = [...manual, ...autoEntries];
+    if (all.length === 0) return;
+    const earliest = all.reduce((min, e) => (e.entry_date < min ? e.entry_date : min), all[0].entry_date);
+    if (earliest && earliest < dateFrom) {
+      setDateFrom(earliest);
+    }
+    autoExpandedRef.current = true;
+  }, [loading, manual, autoEntries, dateFrom]);
 
   // Realtime updates when new paid invoices come in
   useEffect(() => {
