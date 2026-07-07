@@ -77,14 +77,16 @@ export default function LaporanSPP() {
   }), [rows, status, channel]);
 
   const paidOnline = filtered.filter((r) => r.Status === "paid" && r._method !== "offline_cash" && r._method !== "offline_transfer");
+  const paidAll = filtered.filter((r) => r.Status === "paid");
   const summary = useMemo(() => ({
     total: filtered.length,
     lunas: filtered.filter((r) => r.Status === "paid").length,
     belum: filtered.filter((r) => r.Status !== "paid").length,
-    pemasukan: paidOnline.reduce((s, r) => s + (r["Diterima"] || 0), 0),
-    dicairkan: paidOnline.filter((r) => r._settlement_id).reduce((s, r) => s + (r["Diterima"] || 0), 0),
-    saldoAktif: paidOnline.filter((r) => !r._settlement_id).reduce((s, r) => s + (r["Diterima"] || 0), 0),
-  }), [filtered, paidOnline]);
+    // Samakan dengan Dashboard Bendahara: BRUTO (total_amount), bukan net.
+    pemasukan: paidAll.reduce((s, r) => s + (r.Total || 0), 0),
+    dicairkan: paidOnline.filter((r) => r._settlement_id).reduce((s, r) => s + (r.Total || 0), 0),
+    saldoAktif: paidOnline.filter((r) => !r._settlement_id).reduce((s, r) => s + (r.Total || 0), 0),
+  }), [filtered, paidOnline, paidAll]);
 
   const headers: Header[] = [
     { key: "No Invoice", label: "No Invoice" }, { key: "Siswa", label: "Siswa" }, { key: "Kelas", label: "Kelas" },
