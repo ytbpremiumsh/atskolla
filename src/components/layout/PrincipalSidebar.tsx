@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Activity, Briefcase,
+  LayoutDashboard, Activity,
   CalendarDays, FileSpreadsheet, LogOut, ChevronRight, Crown,
   Users, GraduationCap, ClipboardList, Receipt, Wallet, BookOpen, Landmark,
 } from "lucide-react";
