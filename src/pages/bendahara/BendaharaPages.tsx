@@ -5231,6 +5231,9 @@ export function BendaharaLaporan() {
               </div>
             </CardContent>
           </Card>
+          {/* Laporan Cepat (PDF & Excel) — pintasan cepat di bawah export utama */}
+          <PresetLaporan items={items} students={students} school={school} year={year} />
+
         </TabsContent>
       </Tabs>
 
