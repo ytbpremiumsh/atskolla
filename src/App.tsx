@@ -266,8 +266,6 @@ function AppRoutes() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/scan" element={<ScanQR />} />
-          <Route path="/monitoring" element={<Monitoring />} />
-          <Route path="/scan" element={<ScanQR />} />
           <Route path="/classes" element={<Classes />} />
           <Route path="/students" element={<Students />} />
           <Route path="/students/:id" element={<StudentDetail />} />
