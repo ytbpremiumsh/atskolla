@@ -183,6 +183,17 @@ function paymentMethodsFor(
   }
 }
 
+function phoneVariants(raw: string): string[] {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const v = new Set<string>();
+  if (!digits) return [];
+  v.add(digits);
+  if (digits.startsWith("62")) { v.add("0" + digits.slice(2)); v.add(digits.slice(2)); }
+  if (digits.startsWith("0")) { v.add("62" + digits.slice(1)); v.add(digits.slice(1)); }
+  if (digits.startsWith("8")) { v.add("62" + digits); v.add("0" + digits); }
+  return Array.from(v);
+}
+
 async function createDokuPayment(
   cfg: { clientId: string; secretKey: string; baseUrl: string; vaMethods: string; qrisMethods: string; retailMethods: string },
   inv: any,
@@ -418,6 +429,18 @@ serve(async (req) => {
       const { data: inv } = await supabaseAdmin.from("spp_invoices").select("*").eq("id", invoiceId).maybeSingle();
       if (!inv) return err("Invoice tidak ditemukan");
       if (inv.status === "paid") return err("Invoice sudah lunas");
+      const { data: studentRow } = await supabaseAdmin
+        .from("students")
+        .select("parent_phone")
+        .eq("id", inv.student_id)
+        .maybeSingle();
+      const sesVariants = phoneVariants(ses.phone || "");
+      const studentVariants = phoneVariants(studentRow?.parent_phone || "");
+      const invVariants = phoneVariants(inv.parent_phone || "");
+      const owned =
+        sesVariants.some((p) => studentVariants.includes(p)) ||
+        sesVariants.some((p) => invVariants.includes(p));
+      if (!owned) return err("Akses ditolak");
       const result = await ensureFreshLink(supabaseAdmin, inv, false, normalizeChannel(body.channel));
       if (!result.success) return err(result.error || "Gagal");
       return ok({

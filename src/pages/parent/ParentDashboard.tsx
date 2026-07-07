@@ -226,7 +226,7 @@ export default function ParentDashboard() {
     if (d?.error) { toast.error(d.error); return; }
     if (d?.payment_url) {
       setPickerOpen(false);
-      setPayingInvoiceId(pickerInvoice.id);
+      setPayingInvoiceId(d.invoice_id || pickerInvoice.id);
       setPaymentIframe(d.payment_url);
       toast.success("Membuka halaman pembayaran...");
     }
@@ -1311,7 +1311,7 @@ export default function ParentDashboard() {
       <PaymentIframeDialog
         open={!!paymentIframe}
         paymentUrl={paymentIframe}
-        title="Pembayaran SPP — QRIS / Transfer Bank"
+        title="Pembayaran Tagihan — QRIS / Transfer Bank"
         pollIntervalMs={4000}
         checkPaid={async () => {
           if (!payingInvoiceId || !selectedStudent) return false;

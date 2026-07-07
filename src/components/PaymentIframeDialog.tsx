@@ -20,6 +20,16 @@ interface PaymentIframeDialogProps {
   onPaid?: () => void;
 }
 
+const mustOpenOutsideIframe = (url?: string | null) => {
+  if (!url) return false;
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === "payment.ipaymu.com" || host.endsWith(".ipaymu.com");
+  } catch {
+    return /ipaymu\.com/i.test(url);
+  }
+};
+
 /**
  * Modal pembayaran in-dashboard.
  * Memuat halaman gateway (QRIS / Transfer Bank) di dalam iframe sehingga
@@ -38,11 +48,13 @@ export const PaymentIframeDialog = ({
 }: PaymentIframeDialogProps) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const closedRef = useRef(false);
+  const externalOpenedRef = useRef<string | null>(null);
+  const openOutside = mustOpenOutsideIframe(paymentUrl);
 
   const handlePaid = () => {
     if (closedRef.current) return;
     closedRef.current = true;
-    try { onPaid?.(); } catch {}
+    try { onPaid?.(); } catch { /* ignore optional callback errors */ }
     toast.success("Pembayaran berhasil. Terima kasih!");
     onClose();
   };
@@ -52,14 +64,21 @@ export const PaymentIframeDialog = ({
     if (open) closedRef.current = false;
   }, [open, paymentUrl]);
 
+  useEffect(() => {
+    if (!open || !paymentUrl || !openOutside) return;
+    if (externalOpenedRef.current === paymentUrl) return;
+    externalOpenedRef.current = paymentUrl;
+    window.open(paymentUrl, "_blank", "noopener,noreferrer");
+  }, [open, paymentUrl, openOutside]);
+
   // 1) Listener postMessage dari gateway (jika gateway mengirim event)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MessageEvent) => {
-      const data: any = e.data;
+      const data: unknown = e.data;
       if (!data) return;
       const str = typeof data === "string" ? data.toLowerCase() : "";
-      const obj = typeof data === "object" ? data : {};
+      const obj = typeof data === "object" ? data as Record<string, unknown> : {};
       const status = String(obj.status || obj.event || obj.type || "").toLowerCase();
       if (
         status.includes("paid") ||
@@ -152,17 +171,35 @@ export const PaymentIframeDialog = ({
           </div>
         </div>
 
-        {/* Iframe */}
-        <div className="min-h-0 flex-1 bg-muted/30">
-          <iframe
-            ref={iframeRef}
-            src={paymentUrl}
-            title="Halaman Pembayaran"
-            className="w-full h-full border-0"
-            allow="payment *; clipboard-write"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
+        {openOutside ? (
+          <div className="min-h-0 flex-1 bg-muted/30 flex items-center justify-center p-6">
+            <div className="max-w-sm text-center space-y-4">
+              <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                <ExternalLink className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-foreground">Halaman pembayaran dibuka di tab baru</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Gateway ini tidak mengizinkan tampil di dalam modal. Selesaikan pembayaran pada tab baru, lalu kembali ke halaman ini.
+                </p>
+              </div>
+              <Button className="w-full" onClick={() => window.open(paymentUrl, "_blank", "noopener,noreferrer")}>
+                <ExternalLink className="h-4 w-4 mr-2" /> Buka Pembayaran
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="min-h-0 flex-1 bg-muted/30">
+            <iframe
+              ref={iframeRef}
+              src={paymentUrl}
+              title="Halaman Pembayaran"
+              className="w-full h-full border-0"
+              allow="payment *; clipboard-write"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

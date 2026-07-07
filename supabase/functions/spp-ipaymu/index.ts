@@ -83,7 +83,7 @@ function ipaymuTimestamp() {
 }
 
 function buildIpaymuSignature(opts: { method: string; va: string; apiKey: string; body: string }) {
-  const bodyHash = createHash("sha256").update(opts.body, "utf8").digest("hex").toLowerCase();
+  const bodyHash = String(createHash("sha256").update(opts.body, "utf8").digest("hex")).toLowerCase();
   const stringToSign = `${opts.method.toUpperCase()}:${opts.va}:${bodyHash}:${opts.apiKey}`;
   return createHmac("sha256", opts.apiKey).update(stringToSign, "utf8").digest("hex");
 }
@@ -121,6 +121,17 @@ function channelToIpaymu(ch: string | null): { paymentMethod?: string; paymentCh
   }
 }
 
+function phoneVariants(raw: string): string[] {
+  const digits = String(raw || "").replace(/\D/g, "");
+  const v = new Set<string>();
+  if (!digits) return [];
+  v.add(digits);
+  if (digits.startsWith("62")) { v.add("0" + digits.slice(2)); v.add(digits.slice(2)); }
+  if (digits.startsWith("0")) { v.add("62" + digits.slice(1)); v.add(digits.slice(1)); }
+  if (digits.startsWith("8")) { v.add("62" + digits); v.add("0" + digits); }
+  return Array.from(v);
+}
+
 async function createIpaymuPayment(
   cfg: { va: string; apiKey: string; baseUrl: string },
   inv: any,
@@ -136,7 +147,8 @@ async function createIpaymuPayment(
   const buyerName = (inv.student_name || inv.parent_name || "Siswa").slice(0, 100);
   const buyerPhone = String(inv.parent_phone || "081234567890").replace(/\D/g, "").slice(0, 15) || "081234567890";
   const buyerEmail = `spp-${(inv.id || "x").slice(0, 8)}@atskolla.com`;
-  const productName = `SPP ${inv.period_label || ""} - ${inv.student_name || ""}`.trim();
+  const isCustom = (inv.bill_type || "spp") === "custom";
+  const productName = `${isCustom ? (inv.bill_category || "Tagihan") : "SPP"} ${inv.period_label || ""} - ${inv.student_name || ""}`.trim();
 
   const chMap = channelToIpaymu(channel);
   const body: any = {
@@ -312,6 +324,18 @@ serve(async (req) => {
       const { data: inv } = await admin.from("spp_invoices").select("*").eq("id", invoiceId).maybeSingle();
       if (!inv) return err("Invoice tidak ditemukan");
       if (inv.status === "paid") return err("Invoice sudah lunas");
+      const { data: studentRow } = await admin
+        .from("students")
+        .select("parent_phone")
+        .eq("id", inv.student_id)
+        .maybeSingle();
+      const sesVariants = phoneVariants(ses.phone || "");
+      const studentVariants = phoneVariants(studentRow?.parent_phone || "");
+      const invVariants = phoneVariants(inv.parent_phone || "");
+      const owned =
+        sesVariants.some((p) => studentVariants.includes(p)) ||
+        sesVariants.some((p) => invVariants.includes(p));
+      if (!owned) return err("Akses ditolak");
       const result = await ensureFreshLink(admin, inv, false, normalizeChannel(body.channel));
       if (!result.success) return err(result.error || "Gagal");
       return ok({
