@@ -1,8 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { handlePreflight } from "../_shared/cors.ts";
+import { handlePreflight, corsHeaders } from "../_shared/cors.ts";
 import { getAdminClient } from "../_shared/supabaseAdmin.ts";
 import { verifyCaller } from "../_shared/auth.ts";
-import { ok, fail } from "../_shared/respond.ts";
+
+const jsonHeaders = { ...corsHeaders, "Content-Type": "application/json" };
+const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: jsonHeaders });
 
 serve(async (req) => {
   const pre = handlePreflight(req);
