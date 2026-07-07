@@ -813,9 +813,9 @@ const ManageStaff = () => {
                     <Label className="text-xs font-semibold">Role / Hak Akses (bisa pilih lebih dari 1)</Label>
                     <div className="flex flex-col gap-2 rounded-xl border border-border bg-muted/30 p-3">
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox checked={editRoles.staff} onCheckedChange={(v) => setEditRoles({ ...editRoles, staff: !!v })} />
-                        <Shield className="h-4 w-4 text-[#5B6CF9]" />
-                        <span className="text-sm">Staff / Operator</span>
+                        <Checkbox checked={editRoles.principal} onCheckedChange={(v) => setEditRoles({ ...editRoles, principal: !!v })} />
+                        <Shield className="h-4 w-4 text-indigo-500" />
+                        <span className="text-sm">Kepala Sekolah</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox checked={editRoles.teacher} onCheckedChange={(v) => setEditRoles({ ...editRoles, teacher: !!v })} />
@@ -825,12 +825,12 @@ const ManageStaff = () => {
                       <label className="flex items-center gap-2 cursor-pointer">
                         <Checkbox checked={editRoles.bendahara} onCheckedChange={(v) => setEditRoles({ ...editRoles, bendahara: !!v })} />
                         <Wallet className="h-4 w-4 text-amber-500" />
-                        <span className="text-sm">Bendahara (SPP)</span>
+                        <span className="text-sm">Bendahara</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox checked={editRoles.principal} onCheckedChange={(v) => setEditRoles({ ...editRoles, principal: !!v })} />
-                        <Shield className="h-4 w-4 text-indigo-500" />
-                        <span className="text-sm">Kepala Sekolah</span>
+                        <Checkbox checked={editRoles.staff} onCheckedChange={(v) => setEditRoles({ ...editRoles, staff: !!v })} />
+                        <Shield className="h-4 w-4 text-[#5B6CF9]" />
+                        <span className="text-sm">Staff / Operator</span>
                       </label>
                     </div>
                   </div>
