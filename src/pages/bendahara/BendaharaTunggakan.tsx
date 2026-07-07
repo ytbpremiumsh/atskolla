@@ -100,7 +100,8 @@ export default function BendaharaTunggakan() {
   }, [filtered]);
 
   const sendReminder = async (student: { student_id: string; name: string; class: string; phone: string | null; count: number; total: number }) => {
-    if (!waFlag) { toast.error("Pengiriman WA dinonaktifkan Super Admin"); return; }
+    // WA reminder tunggakan selalu aktif meski WA sekolah dinonaktifkan Super Admin
+
     if (!student.phone) { toast.error("Nomor WA wali tidak tersedia"); return; }
     setSending(student.student_id);
     const msg = `*${school?.name || "Sekolah"} — Pengingat Pembayaran*\n\nYth. Wali dari *${student.name}* (Kelas ${student.class}),\n\nSaat ini terdapat ${student.count} tagihan yang belum dilunasi dengan total *${fmtIDR(student.total)}*.\n\nMohon segera melakukan pembayaran melalui aplikasi wali murid ATSkolla atau hubungi bendahara sekolah.\n\nTerima kasih.`;
