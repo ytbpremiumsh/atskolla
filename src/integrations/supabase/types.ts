@@ -246,6 +246,36 @@ export type Database = {
           },
         ]
       }
+      auth_email_templates: {
+        Row: {
+          html: string
+          id: string
+          sender_name: string
+          subject: string
+          type: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          html: string
+          id?: string
+          sender_name?: string
+          subject: string
+          type: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          html?: string
+          id?: string
+          sender_name?: string
+          subject?: string
+          type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bendahara_bank_accounts: {
         Row: {
           account_holder: string
