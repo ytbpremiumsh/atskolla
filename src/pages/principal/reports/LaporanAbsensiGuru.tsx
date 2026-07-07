@@ -44,7 +44,7 @@ export default function LaporanAbsensiGuru() {
         if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, []);
         roleMap.get(r.user_id)!.push(r.role);
       });
-      const allowedRoles = new Set(["teacher", "school_admin", "staff", "bendahara", "principal"]);
+      const allowedRoles = new Set(["teacher", "staff", "bendahara", "principal"]);
       const staff = (profQ.data || []).filter((p: any) => (roleMap.get(p.user_id) || []).some((r) => allowedRoles.has(r)));
 
       // Aggregate presence (attendance_type = 'datang')
