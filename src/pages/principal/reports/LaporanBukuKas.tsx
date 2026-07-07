@@ -153,27 +153,16 @@ export default function LaporanBukuKas() {
   const filtered = useMemo(() => filteredRows.map((r) => r.entry), [filteredRows]);
   const totalMasuk = filtered.filter((e) => e.direction === "in").reduce((s, e) => s + e.amount, 0);
   const totalKeluar = filtered.filter((e) => e.direction === "out").reduce((s, e) => s + e.amount, 0);
-  // Saldo Akhir = opening + seluruh mutasi periode (independen dari filter arah/kategori/sumber)
-  const saldoAkhir = opening + all.reduce((s, e) => s + (e.direction === "in" ? e.amount : -e.amount), 0);
-
-  const byCat = useMemo(() => {
-    const m: Record<string, { masuk: number; keluar: number }> = {};
-    filtered.forEach((e) => {
-      if (!m[e.category]) m[e.category] = { masuk: 0, keluar: 0 };
-      if (e.direction === "in") m[e.category].masuk += e.amount;
-      else m[e.category].keluar += e.amount;
-    });
-    return Object.entries(m).map(([k, v]) => ({ name: k, Masuk: v.masuk, Keluar: v.keluar }));
-  }, [filtered]);
+  const inCount = filtered.filter((e) => e.direction === "in").length;
+  const outCount = filtered.filter((e) => e.direction === "out").length;
 
   const headers: Header[] = [
     { key: "Tanggal", label: "Tanggal" },
-    { key: "Sumber", label: "Sumber" },
     { key: "Kategori", label: "Kategori" },
-    { key: "Keterangan", label: "Keterangan" },
-    { key: "Referensi", label: "Referensi" },
+    { key: "Referensi", label: "Referensi / Invoice" },
     { key: "Metode", label: "Metode" },
     { key: "Status", label: "Status", type: "status" },
+    { key: "Keterangan", label: "Keterangan" },
     { key: "Masuk", label: "Masuk", type: "money" },
     { key: "Keluar", label: "Keluar", type: "money" },
     { key: "Saldo", label: "Saldo Berjalan", type: "money" },
@@ -182,7 +171,7 @@ export default function LaporanBukuKas() {
   return (
     <ReportShell
       title="Buku Kas Sekolah"
-      subtitle="Manual + SPP Online + Biaya Pencairan (sinkron Bendahara)"
+      subtitle="Kas masuk & keluar sekolah — sinkron dengan Buku Kas Bendahara"
       icon={BookOpen}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
       onDownload={() => downloadCSV(`Buku_Kas_${from}_${to}`, withBalance, headers)}
@@ -192,8 +181,8 @@ export default function LaporanBukuKas() {
             <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Arah</SelectItem>
-              <SelectItem value="in">Masuk</SelectItem>
-              <SelectItem value="out">Keluar</SelectItem>
+              <SelectItem value="in">Kas Masuk</SelectItem>
+              <SelectItem value="out">Kas Keluar</SelectItem>
             </SelectContent>
           </Select>
           <Select value={cat} onValueChange={setCat}>
@@ -203,48 +192,17 @@ export default function LaporanBukuKas() {
               {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Select value={src} onValueChange={setSrc}>
-            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Sumber</SelectItem>
-              <SelectItem value="manual">Manual</SelectItem>
-              <SelectItem value="auto">Otomatis</SelectItem>
-            </SelectContent>
-          </Select>
         </>
       }
       summary={
         <StatsRow items={[
-          { label: "Saldo Awal", value: fmtIDR(opening), tone: "slate", icon: Wallet },
-          { label: "Total Pemasukan", value: fmtIDR(totalMasuk), tone: "emerald", icon: TrendingUp },
-          { label: "Total Pengeluaran", value: fmtIDR(totalKeluar), tone: "rose", icon: TrendingDown },
-          { label: "Selisih", value: fmtIDR(totalMasuk - totalKeluar), tone: totalMasuk >= totalKeluar ? "emerald" : "rose" },
-          { label: "Saldo Akhir", value: fmtIDR(saldoAkhir), tone: "primary", icon: Wallet },
-          { label: "Transaksi", value: filtered.length, tone: "indigo" },
+          { label: "Kas Masuk", value: fmtIDR(totalMasuk), tone: "emerald", icon: TrendingUp, sub: `${inCount} transaksi` },
+          { label: "Kas Keluar", value: fmtIDR(totalKeluar), tone: "rose", icon: TrendingDown, sub: `${outCount} transaksi` },
+          { label: "Saldo Buku Kas", value: fmtIDR(totalMasuk - totalKeluar), tone: "primary", icon: Wallet, sub: "pada rentang filter" },
+          { label: "Jumlah Transaksi", value: filtered.length, tone: "amber", icon: Receipt, sub: "total entri buku kas" },
         ]} />
       }
     >
-      {byCat.length > 0 && (
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-base">Rekap per Kategori</CardTitle>
-            <CardDescription>Pemasukan & pengeluaran berdasarkan kategori</CardDescription>
-          </CardHeader>
-          <CardContent style={{ height: 260 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byCat}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="name" fontSize={10} />
-                <YAxis fontSize={10} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <RTooltip formatter={(v: any) => fmtIDR(v)} />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="Masuk" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Keluar" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
       <ReportTable loading={loading} rows={withBalance} headers={headers} />
     </ReportShell>
   );
