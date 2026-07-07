@@ -692,8 +692,9 @@ Deno.serve(async (req) => {
         .in("key", [channelKey, "active_payment_gateway"]);
       const gwMap: Record<string, string> = {};
       (gwRows || []).forEach((r: any) => { gwMap[r.key] = (r.value || "").toLowerCase(); });
-      const gateway = (gwMap[channelKey] || gwMap.active_payment_gateway || "mayar") === "doku" ? "doku" : "mayar";
-      const fnName = gateway === "doku" ? "spp-doku" : "spp-mayar";
+      const rawGw = gwMap[channelKey] || gwMap.active_payment_gateway || "mayar";
+      const gateway = ["mayar", "doku", "ipaymu"].includes(rawGw) ? rawGw : "mayar";
+      const fnName = gateway === "doku" ? "spp-doku" : gateway === "ipaymu" ? "spp-ipaymu" : "spp-mayar";
 
       const sppRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/${fnName}`, {
         method: "POST",

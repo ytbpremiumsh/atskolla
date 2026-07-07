@@ -12,10 +12,16 @@ const KEYS = [
   "gateway_va",
   "gateway_qris",
   "gateway_retail",
+  // Doku
   "doku_client_id",
   "doku_secret_key",
   "doku_env",
   "doku_webhook_verify",
+  // iPaymu
+  "ipaymu_va",
+  "ipaymu_api_key",
+  "ipaymu_env",
+  // Fees
   "fee_va",
   "fee_qris",
   "fee_qris_percent",
@@ -51,11 +57,13 @@ serve(async (req) => {
       const { data } = await admin.from("platform_settings").select("key,value").in("key", KEYS);
       const map: Record<string, string> = {};
       (data || []).forEach((r: any) => { map[r.key] = r.value || ""; });
+      const norm = (v: string) => (["mayar", "doku", "ipaymu"].includes(v) ? v : "mayar");
       return ok({
-        active_payment_gateway: map.active_payment_gateway || "mayar",
-        gateway_va: map.gateway_va || map.active_payment_gateway || "mayar",
-        gateway_qris: map.gateway_qris || map.active_payment_gateway || "mayar",
-        gateway_retail: map.gateway_retail || map.active_payment_gateway || "mayar",
+        active_payment_gateway: norm(map.active_payment_gateway || "mayar"),
+        gateway_va: norm(map.gateway_va || map.active_payment_gateway || "mayar"),
+        gateway_qris: norm(map.gateway_qris || map.active_payment_gateway || "mayar"),
+        gateway_retail: norm(map.gateway_retail || map.active_payment_gateway || "mayar"),
+        // Doku
         doku_env: map.doku_env || "production",
         doku_client_id: map.doku_client_id || "",
         doku_client_id_masked: mask(map.doku_client_id || ""),
@@ -63,6 +71,13 @@ serve(async (req) => {
         has_doku_client_id: !!map.doku_client_id,
         has_doku_secret_key: !!map.doku_secret_key,
         doku_webhook_verify: map.doku_webhook_verify || "true",
+        // iPaymu
+        ipaymu_env: map.ipaymu_env || "production",
+        ipaymu_va_masked: mask(map.ipaymu_va || ""),
+        ipaymu_api_key_masked: mask(map.ipaymu_api_key || ""),
+        has_ipaymu_va: !!map.ipaymu_va,
+        has_ipaymu_api_key: !!map.ipaymu_api_key,
+        // Fees
         fee_va: map.fee_va || "5000",
         fee_qris: map.fee_qris || "5000",
         fee_qris_percent: map.fee_qris_percent || "1",
