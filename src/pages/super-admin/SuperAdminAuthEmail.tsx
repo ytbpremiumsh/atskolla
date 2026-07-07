@@ -187,6 +187,35 @@ export default function SuperAdminAuthEmail() {
 
                 <Card>
                   <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Send className="h-4 w-4" /> Kirim Email Uji</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Kirim template ini ke alamat email untuk pengujian. Subjek akan diawali "[TEST]".
+                      Variabel diisi data contoh (tautan verifikasi tidak akan berfungsi).
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        type="email"
+                        placeholder="tujuan@contoh.com"
+                        value={testEmail}
+                        onChange={(e) => setTestEmail(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button onClick={sendTest} disabled={sending || !testEmail}>
+                        {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                        Kirim Uji
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      Catatan: pengiriman memerlukan domain email (notify.atskolla.com) sudah terverifikasi DNS.
+                    </p>
+                  </CardContent>
+                </Card>
+
+
+                <Card>
+                  <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2"><Eye className="h-4 w-4" /> Preview</CardTitle>
                     <p className="text-xs text-muted-foreground">Variabel diganti dengan contoh data.</p>
                   </CardHeader>
