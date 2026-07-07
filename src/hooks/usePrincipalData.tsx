@@ -194,12 +194,27 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       });
 
       const invoices = invoicesQ.data || [];
+      const nowDate = new Date();
+      const isOfflineMethod = (m: any) => {
+        const v = (m || "").toString().toLowerCase();
+        return v === "offline_cash" || v === "offline_transfer";
+      };
       const totalTagihan = invoices.reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
       const totalPembayaran = invoices.filter((i: any) => i.status === "paid").reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
-      const tunggakan = invoices.filter((i: any) => i.status !== "paid").reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
+      // Tunggakan = pending yang sudah lewat jatuh tempo (sinkron dg Bendahara)
+      const tunggakan = invoices
+        .filter((i: any) => i.status === "pending" && i.due_date && new Date(i.due_date) < nowDate)
+        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
       const cashEntries = cashQ.data || [];
-      const saldoKas = cashEntries.reduce((s: number, e: any) => s + (e.direction === "in" ? (e.amount || 0) : -(e.amount || 0)), 0);
-      const danaPending = (setlPendingQ.data || []).reduce((s: number, e: any) => s + (e.final_payout || 0), 0);
+      const cashIn = cashEntries.filter((e: any) => e.direction === "in").reduce((s: number, e: any) => s + (e.amount || 0), 0);
+      const cashOut = cashEntries.filter((e: any) => e.direction === "out").reduce((s: number, e: any) => s + (e.amount || 0), 0);
+      // Saldo online siap dicairkan (paid online, belum di-settle) — bruto
+      const readyOnline = invoices
+        .filter((i: any) => i.status === "paid" && !i.settlement_id && !isOfflineMethod(i.payment_method))
+        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
+      const saldoKas = (cashIn - cashOut) + readyOnline;
+      // Menunggu Pencairan = saldo online siap dicairkan (sama definisi dg availableBalance Bendahara)
+      const danaPending = readyOnline;
       setFinance({ totalTagihan, totalPembayaran, tunggakan, saldoKas, danaPending });
       setSettlements(setlAllQ.data || []);
 
