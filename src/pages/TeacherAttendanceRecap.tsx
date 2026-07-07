@@ -99,7 +99,7 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
     };
     load();
 
-  }, [profile?.school_id, currentMonth]);
+  }, [schoolId, currentMonth]);
 
   const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
   const dayArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -114,6 +114,8 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
     teachers.filter((t) => roleFilter === "all" ? true : t.roles.includes(roleFilter)),
   [teachers, roleFilter]);
 
+  const isPulangMode = rekapTab === "pulang";
+
   const rows: TeacherRow[] = useMemo(() => {
     return filteredTeachers.map((t) => {
       const days: Record<number, string> = {};
@@ -121,28 +123,33 @@ const TeacherAttendanceRecap = ({ schoolId: schoolIdProp, hideHeader }: Props = 
       const myLogs = logs.filter((l) => l.user_id === t.user_id);
       for (const d of dayArray) {
         const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-        // Use 'datang' record (or any if no datang) to determine status
-        const log = myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") === "datang")
-          || myLogs.find((l) => l.date === dateStr);
-        // Check if this day has passed (today or before)
         const checkDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d);
         const isPast = checkDate <= today;
-        const dow = checkDate.getDay(); // 0 Sun, 6 Sat
+        const dow = checkDate.getDay();
         const isWeekend = dow === 0 || dow === 6;
 
-        if (log) {
-          const code = STATUS_TO_CODE[log.status] || "H";
-          days[d] = code;
-          totals[code as "H"|"S"|"I"|"A"]++;
-        } else if (isPast && !isWeekend && isCurrentOrPastMonth) {
-          days[d] = "A";
-          totals.A++;
+        if (isPulangMode) {
+          const pulangLog = myLogs.find((l) => l.date === dateStr && l.attendance_type === "pulang");
+          if (pulangLog) { days[d] = "H"; totals.H++; }
+          else { days[d] = ""; }
         } else {
-          days[d] = "";
+          const log = myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") === "datang")
+            || myLogs.find((l) => l.date === dateStr && (l.attendance_type || "datang") !== "pulang");
+          if (log) {
+            const code = STATUS_TO_CODE[log.status] || "H";
+            days[d] = code;
+            totals[code as "H"|"S"|"I"|"A"]++;
+          } else if (isPast && !isWeekend && isCurrentOrPastMonth) {
+            days[d] = "A";
+            totals.A++;
+          } else {
+            days[d] = "";
+          }
         }
       }
       return { user_id: t.user_id, full_name: t.full_name, photo_url: t.photo_url, roles: t.roles, days, totals };
     });
+
   }, [filteredTeachers, logs, dayArray, currentMonth, daysInMonth]);
 
   const exportExcel = () => {
