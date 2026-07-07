@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Users, GraduationCap, UserCheck, School as SchoolIcon, Percent, Bell,
+  Users, GraduationCap, UserCheck, School as SchoolIcon, Percent,
   Clock, ArrowRight, ClipboardList, Wallet, Activity, CalendarDays, BookOpen, FileSpreadsheet,
 } from "lucide-react";
 import { format } from "date-fns";
