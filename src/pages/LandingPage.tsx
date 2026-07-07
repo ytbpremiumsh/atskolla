@@ -703,7 +703,7 @@ function PaymentSystem() {
               {[
                 { name: "Ahmad Fadli — VI-A", status: "Lunas via QRIS", color: "emerald" },
                 { name: "Sari Mulyani — V-B", status: "Reminder terkirim", color: "amber" },
-                { name: "Rendi Pratama — IV-C", status: "Lunas via VA BCA", color: "emerald" },
+                { name: "Rendi Pratama — IV-C", status: "Lunas via VA BRI", color: "emerald" },
                 { name: "Dina Kartika — III-A", status: "Lunas via QRIS", color: "emerald" },
                 { name: "Bagas Wicaksono — II-B", status: "Reminder terkirim", color: "amber" },
                 { name: "Nadia Salsabila — VI-B", status: "Lunas via VA Mandiri", color: "emerald" },
