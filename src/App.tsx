@@ -264,7 +264,7 @@ function AppRoutes() {
         <Route element={<PrincipalLayout />}>
           <Route path="/kepsek" element={<PrincipalOverview />} />
           <Route path="/kepsek/monitoring" element={<PrincipalMonitoring />} />
-          <Route path="/kepsek/manajemen" element={<PrincipalManajemen />} />
+          
           <Route path="/kepsek/agenda" element={<PrincipalAgenda />} />
           <Route path="/kepsek/laporan" element={<PrincipalLaporan />} />
           {/* Laporan — masing-masing punya menu sidebar tersendiri, dikelompokkan per kategori */}
