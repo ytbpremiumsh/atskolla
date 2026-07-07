@@ -83,7 +83,7 @@ const ManageStaff = () => {
   const [editNip, setEditNip] = useState("");
   const [editPosition, setEditPosition] = useState("");
   const [editPassword, setEditPassword] = useState("");
-  const [editRoles, setEditRoles] = useState<{ staff: boolean; teacher: boolean; bendahara: boolean }>({ staff: false, teacher: false, bendahara: false });
+  const [editRoles, setEditRoles] = useState<{ staff: boolean; teacher: boolean; bendahara: boolean; principal: boolean }>({ staff: false, teacher: false, bendahara: false, principal: false });
   const [savingEdit, setSavingEdit] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
