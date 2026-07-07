@@ -13,9 +13,10 @@ import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { BookOpen, Plus, TrendingUp, TrendingDown, Wallet, Loader2, Download, Trash2, Zap } from "lucide-react";
+import { BookOpen, Plus, TrendingUp, TrendingDown, Wallet, Loader2, Download, Trash2, Zap, Receipt, Landmark, ArrowRight } from "lucide-react";
 import * as XLSX from "xlsx";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
+import { Link } from "react-router-dom";
 
 const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const OUT_CATEGORIES = ["Operasional", "Gaji", "Perlengkapan", "Perawatan", "Utilitas", "Kegiatan", "Lainnya"];
@@ -26,11 +27,14 @@ type Entry = {
   entry_date: string;
   direction: "in" | "out";
   category: string;
-  amount: number;
+  amount: number; // Gross amount — nilai pembayaran asli sesuai tagihan
   description: string | null;
-  reference: string | null;
+  reference: string | null;   // No. Invoice / No. Bukti
+  method: string | null;      // Metode pembayaran (QRIS, VA, Transfer, Tunai, dll)
+  status: string | null;      // Status pembayaran (Lunas, Manual, dll)
   source: "manual" | "auto";
 };
+
 
 export default function BendaharaBukuKas() {
   const { profile, user } = useAuth();
@@ -62,7 +66,7 @@ export default function BendaharaBukuKas() {
     setLoading(true);
     const [m, inv] = await Promise.all([
       supabase.from("cash_book_entries").select("*").eq("school_id", profile.school_id).order("entry_date", { ascending: false }).order("created_at", { ascending: false }),
-      supabase.from("spp_invoices").select("id, invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method").eq("school_id", profile.school_id).eq("status", "paid").not("paid_at", "is", null).order("paid_at", { ascending: false }),
+      supabase.from("spp_invoices").select("id, invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method, status").eq("school_id", profile.school_id).eq("status", "paid").not("paid_at", "is", null).order("paid_at", { ascending: false }),
     ]);
     const manualRows: Entry[] = ((m.data as any[]) || []).map((r) => ({
       id: r.id,
@@ -72,6 +76,8 @@ export default function BendaharaBukuKas() {
       amount: r.amount,
       description: r.description,
       reference: r.reference,
+      method: null,
+      status: null,
       source: "manual",
     }));
     const autoRows: Entry[] = ((inv.data as any[]) || []).map((i) => ({
@@ -79,15 +85,20 @@ export default function BendaharaBukuKas() {
       entry_date: (i.paid_at || "").slice(0, 10),
       direction: "in",
       category: "SPP Online",
-      amount: i.net_amount ?? i.total_amount ?? 0,
+      // GROSS: nilai pembayaran asli sesuai tagihan siswa (bukan net_amount setelah MDR).
+      // Selisih MDR/biaya gateway dikelola di modul Monitoring Pencairan (Settlement).
+      amount: i.total_amount ?? i.net_amount ?? 0,
       description: `SPP ${i.student_name} • ${i.class_name} • ${i.period_label}`,
-      reference: `${i.invoice_number} — ${formatPaymentMethodLabel(i.payment_method)}`,
+      reference: i.invoice_number || null,
+      method: formatPaymentMethodLabel(i.payment_method),
+      status: "Lunas",
       source: "auto",
     }));
     setManual(manualRows);
     setAutoEntries(autoRows);
     setLoading(false);
   }, [profile?.school_id]);
+
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -114,10 +125,13 @@ export default function BendaharaBukuKas() {
   }, [combined, dateFrom, dateTo, fDir, fCat]);
 
   const totals = useMemo(() => {
-    const kasMasuk = filtered.filter((e) => e.direction === "in").reduce((s, e) => s + (e.amount || 0), 0);
-    const kasKeluar = filtered.filter((e) => e.direction === "out").reduce((s, e) => s + (e.amount || 0), 0);
-    return { kasMasuk, kasKeluar, saldo: kasMasuk - kasKeluar };
+    const inList = filtered.filter((e) => e.direction === "in");
+    const outList = filtered.filter((e) => e.direction === "out");
+    const kasMasuk = inList.reduce((s, e) => s + (e.amount || 0), 0);
+    const kasKeluar = outList.reduce((s, e) => s + (e.amount || 0), 0);
+    return { kasMasuk, kasKeluar, saldo: kasMasuk - kasKeluar, count: filtered.length, inCount: inList.length, outCount: outList.length };
   }, [filtered]);
+
 
   // Running balance oldest → newest for table display
   const withBalance = useMemo(() => {
@@ -172,20 +186,23 @@ export default function BendaharaBukuKas() {
       "No": withBalance.length - i,
       "Tanggal": new Date(e.entry_date).toLocaleDateString("id-ID"),
       "Kategori": e.category,
+      "No. Referensi/Invoice": e.reference || "",
+      "Metode Pembayaran": e.method || (e.source === "manual" ? "Tunai/Manual" : "-"),
+      "Status": e.status || (e.source === "manual" ? "Tercatat" : "-"),
       "Keterangan": e.description || "",
-      "Referensi": e.reference || "",
       "Sumber": e.source === "auto" ? "Otomatis" : "Manual",
-      "Kas Masuk": e.direction === "in" ? e.amount : 0,
+      "Kas Masuk (Bruto)": e.direction === "in" ? e.amount : 0,
       "Kas Keluar": e.direction === "out" ? e.amount : 0,
-      "Saldo": e.balance,
+      "Saldo Berjalan": e.balance,
     }));
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws["!cols"] = [{ wch: 5 }, { wch: 12 }, { wch: 16 }, { wch: 40 }, { wch: 26 }, { wch: 10 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+    ws["!cols"] = [{ wch: 5 }, { wch: 12 }, { wch: 14 }, { wch: 22 }, { wch: 16 }, { wch: 12 }, { wch: 40 }, { wch: 10 }, { wch: 16 }, { wch: 14 }, { wch: 16 }];
     XLSX.utils.book_append_sheet(wb, ws, "Buku Kas");
     XLSX.writeFile(wb, `Buku_Kas_${dateFrom}_sd_${dateTo}.xlsx`);
     toast.success("Export selesai");
   };
+
 
   const currentCatOptions = form.direction === "out" ? OUT_CATEGORIES : IN_CATEGORIES;
 
@@ -209,15 +226,16 @@ export default function BendaharaBukuKas() {
       />
 
       {/* Ringkasan */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="border-0 shadow-sm overflow-hidden">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-11 w-11 rounded-xl bg-emerald-500/15 flex items-center justify-center">
               <TrendingUp className="h-5 w-5 text-emerald-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Masuk</p>
-              <p className="text-lg font-extrabold text-emerald-600">{fmtIDR(totals.kasMasuk)}</p>
+              <p className="text-lg font-extrabold text-emerald-600 truncate">{fmtIDR(totals.kasMasuk)}</p>
+              <p className="text-[10px] text-muted-foreground">{totals.inCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
@@ -226,9 +244,10 @@ export default function BendaharaBukuKas() {
             <div className="h-11 w-11 rounded-xl bg-rose-500/15 flex items-center justify-center">
               <TrendingDown className="h-5 w-5 text-rose-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Keluar</p>
-              <p className="text-lg font-extrabold text-rose-600">{fmtIDR(totals.kasKeluar)}</p>
+              <p className="text-lg font-extrabold text-rose-600 truncate">{fmtIDR(totals.kasKeluar)}</p>
+              <p className="text-[10px] text-muted-foreground">{totals.outCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
@@ -237,13 +256,40 @@ export default function BendaharaBukuKas() {
             <div className="h-11 w-11 rounded-xl bg-[#5B6CF9]/15 flex items-center justify-center">
               <Wallet className="h-5 w-5 text-[#5B6CF9]" />
             </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo Kas (Filter)</p>
-              <p className="text-lg font-extrabold text-[#5B6CF9]">{fmtIDR(totals.saldo)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo Buku Kas</p>
+              <p className="text-lg font-extrabold text-[#5B6CF9] truncate">{fmtIDR(totals.saldo)}</p>
+              <p className="text-[10px] text-muted-foreground">pada rentang filter</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-amber-500/15 flex items-center justify-center">
+              <Receipt className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Jumlah Transaksi</p>
+              <p className="text-lg font-extrabold text-amber-600 truncate">{totals.count}</p>
+              <p className="text-[10px] text-muted-foreground">total entri buku kas</p>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Info: pemisahan Buku Kas vs Settlement */}
+      <div className="rounded-xl border border-[#5B6CF9]/20 bg-[#5B6CF9]/5 px-3 py-2.5 flex items-start gap-2.5">
+        <Landmark className="h-4 w-4 text-[#5B6CF9] mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-foreground">Pembukuan menggunakan nilai bruto (gross)</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Pembayaran SPP online dicatat sesuai nominal tagihan siswa. Biaya gateway/MDR & proses pencairan dana dikelola terpisah pada modul{" "}
+            <Link to="/bendahara/withdraw?tab=pencairan" className="text-[#5B6CF9] font-semibold hover:underline inline-flex items-center gap-0.5">Monitoring Pencairan <ArrowRight className="h-3 w-3" /></Link>.
+          </p>
+        </div>
+      </div>
+
+
 
       {/* Filter */}
       <Card className="border-0 shadow-sm">
@@ -288,30 +334,47 @@ export default function BendaharaBukuKas() {
               <TableRow>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Kategori</TableHead>
+                <TableHead>Referensi / Invoice</TableHead>
+                <TableHead>Metode</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Keterangan</TableHead>
                 <TableHead className="text-right">Masuk</TableHead>
                 <TableHead className="text-right">Keluar</TableHead>
-                <TableHead className="text-right">Saldo</TableHead>
+                <TableHead className="text-right">Saldo Berjalan</TableHead>
                 <TableHead className="w-[60px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-8"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
               ) : withBalance.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-sm text-muted-foreground">Belum ada entri kas dalam rentang ini</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-8 text-sm text-muted-foreground">Belum ada entri kas dalam rentang ini</TableCell></TableRow>
               ) : withBalance.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell className="text-xs whitespace-nowrap">{new Date(e.entry_date).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <Badge variant="secondary" className="text-[10px]">{e.category}</Badge>
                       {e.source === "auto" && <Badge className="text-[9px] bg-blue-500/15 text-blue-700 hover:bg-blue-500/15 border-0"><Zap className="h-2.5 w-2.5 mr-0.5" />Auto</Badge>}
                     </div>
                   </TableCell>
-                  <TableCell className="max-w-[280px]">
-                    <div className="text-sm truncate">{e.description}</div>
-                    {e.reference && <div className="text-[11px] text-muted-foreground truncate">{e.reference}</div>}
+                  <TableCell className="text-xs font-mono max-w-[180px] truncate">
+                    {e.reference || <span className="text-muted-foreground italic font-sans">—</span>}
+                  </TableCell>
+                  <TableCell>
+                    {e.method
+                      ? <Badge variant="outline" className="text-[10px] font-normal">{e.method}</Badge>
+                      : <span className="text-[11px] text-muted-foreground italic">{e.source === "manual" ? "Tunai/Manual" : "—"}</span>}
+                  </TableCell>
+                  <TableCell>
+                    {e.status === "Lunas"
+                      ? <Badge className="text-[10px] bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/15 border-0">Lunas</Badge>
+                      : e.status
+                        ? <Badge variant="secondary" className="text-[10px]">{e.status}</Badge>
+                        : <Badge variant="outline" className="text-[10px] font-normal text-muted-foreground">Tercatat</Badge>}
+                  </TableCell>
+                  <TableCell className="max-w-[260px]">
+                    <div className="text-sm truncate">{e.description || <span className="text-muted-foreground italic">—</span>}</div>
                   </TableCell>
                   <TableCell className="text-right font-mono text-sm text-emerald-600">{e.direction === "in" ? fmtIDR(e.amount) : "-"}</TableCell>
                   <TableCell className="text-right font-mono text-sm text-rose-600">{e.direction === "out" ? fmtIDR(e.amount) : "-"}</TableCell>
@@ -325,6 +388,7 @@ export default function BendaharaBukuKas() {
                   </TableCell>
                 </TableRow>
               ))}
+
             </TableBody>
           </Table>
         </div>
