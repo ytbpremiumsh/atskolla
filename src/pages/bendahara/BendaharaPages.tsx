@@ -542,7 +542,7 @@ export function BendaharaDashboard() {
         const v = (i.payment_method || "").toString().toLowerCase();
         return v !== "offline_cash" && v !== "offline_transfer";
       })
-      .reduce((s: number, i: any) => s + (i.net_amount || 0), 0);
+      .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
     const saldoKas = (cashIn - cashOut) + readyOnline;
     return {
       incomeToday, incomeMonth, incomeYear,
