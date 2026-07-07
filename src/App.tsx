@@ -253,6 +253,7 @@ function AppRoutes() {
           <Route path="/super-admin/announcements" element={<SuperAdminAnnouncements />} />
           <Route path="/super-admin/tickets" element={<SuperAdminTickets />} />
           <Route path="/super-admin/email" element={<SuperAdminEmail />} />
+          <Route path="/super-admin/auth-email" element={<SuperAdminAuthEmail />} />
           <Route path="/super-admin/cms" element={<SuperAdminCMS />} />
           <Route path="/super-admin/landing" element={<Navigate to="/super-admin/cms?tab=landing" replace />} />
           <Route path="/super-admin/fitur" element={<Navigate to="/super-admin/cms?tab=fitur" replace />} />
