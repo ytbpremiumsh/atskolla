@@ -30,6 +30,14 @@ export default function SelectRole() {
   const { roles, profile, user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
+  const [school, setSchool] = useState<{ name: string; logo: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    supabase.from("schools").select("name, logo").eq("id", profile.school_id).single().then(({ data }) => {
+      if (data) setSchool({ name: data.name, logo: data.logo });
+    });
+  }, [profile?.school_id]);
 
   const dashboards = useMemo(() => getAvailableDashboards(roles), [roles]);
 
