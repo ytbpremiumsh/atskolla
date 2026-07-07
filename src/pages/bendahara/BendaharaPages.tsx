@@ -5357,24 +5357,24 @@ export function BendaharaLaporan() {
                     className="text-left rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                   >
                     {/* Header gradient seperti card SPP */}
-                    <div className="relative overflow-hidden bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-b border-slate-300 dark:border-slate-700">
+                    <div className="relative overflow-hidden bg-indigo-50 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-100 border-b border-indigo-100 dark:border-indigo-900">
                       <div className="relative z-10 flex items-center gap-3 px-4 py-3">
-                        <div className="h-10 w-10 rounded-xl bg-slate-700 dark:bg-slate-600 flex items-center justify-center shrink-0 shadow-sm">
+                        <div className="h-10 w-10 rounded-xl bg-[#5B6CF9] flex items-center justify-center shrink-0 shadow-sm">
                           <Users className="h-5 w-5 text-white" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[15px] text-slate-900 dark:text-slate-100 truncate">Kelas {r.cls}</span>
-                            <span className="text-[10px] font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600">{r.totalCount} tagihan</span>
+                            <span className="font-bold text-[15px] text-indigo-950 dark:text-indigo-100 truncate">Kelas {r.cls}</span>
+                            <span className="text-[10px] font-semibold bg-white/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{r.totalCount} tagihan</span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                            <span className="text-[10px] font-semibold bg-slate-700 dark:bg-slate-600 text-white px-2 py-0.5 rounded-full">{r.paidCount} Lunas</span>
-                            <span className="text-[10px] font-semibold bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-600">{belum} Belum</span>
+                            <span className="text-[10px] font-semibold bg-[#5B6CF9] text-white px-2 py-0.5 rounded-full">{r.paidCount} Lunas</span>
+                            <span className="text-[10px] font-semibold bg-white/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{belum} Belum</span>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="text-[10px] uppercase tracking-wide text-slate-600 dark:text-slate-400">Pelunasan</div>
-                          <div className="text-xl font-extrabold leading-none text-slate-900 dark:text-slate-100">{pct}%</div>
+                          <div className="text-[10px] uppercase tracking-wide text-indigo-700/80 dark:text-indigo-300">Pelunasan</div>
+                          <div className="text-xl font-extrabold leading-none text-indigo-950 dark:text-indigo-100">{pct}%</div>
                         </div>
                       </div>
                     </div>
