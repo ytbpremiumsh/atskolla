@@ -42,11 +42,13 @@ export function AttendanceRecapGrid({ schoolId, kind }: Props) {
   const [year, setYear] = useState(now.getFullYear());
   const [filter, setFilter] = useState("all");
   const [rekapTab, setRekapTab] = useState<"datang" | "pulang">("datang");
+  const [mainTab, setMainTab] = useState<"rekap" | "analitik">("rekap");
   const [people, setPeople] = useState<{ id: string; name: string; sub: string; photo_url: string | null; cls?: string; role?: string }[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [holidays, setHolidays] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [filterOptions, setFilterOptions] = useState<{ value: string; label: string }[]>([]);
+
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const years = Array.from({ length: 5 }, (_, i) => now.getFullYear() - 2 + i);
