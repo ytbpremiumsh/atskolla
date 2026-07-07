@@ -32,6 +32,7 @@ export default function LaporanAbsensiSiswa() {
       const per: Record<string, any> = {};
       students.forEach((s: any) => {
         per[s.id] = {
+          _id: s.id,
           NIS: s.student_id, Nama: s.name, Kelas: s.class, JK: s.gender === "L" ? "L" : "P",
           "Wali/Ortu": s.parent_name, "No HP": s.parent_phone,
           Hadir: 0, Izin: 0, Sakit: 0, Alfa: 0, Terlambat: 0,
