@@ -677,8 +677,9 @@ const LandingThemeB = () => {
                   <li><button onClick={() => navigate("/admin")} className="hover:text-indigo-600 transition-colors">Login</button></li>
                   <li><button onClick={() => navigate("/register")} className="hover:text-indigo-600 transition-colors">Daftar Gratis</button></li>
                   <li><button onClick={() => navigate("/parent-login")} className="hover:text-indigo-600 transition-colors">Portal Wali Murid</button></li>
-                  
                   <li><button onClick={() => navigate("/panduan")} className="hover:text-indigo-600 transition-colors">Panduan</button></li>
+                  <li><button onClick={() => navigate("/faq")} className="hover:text-indigo-600 transition-colors">FAQ</button></li>
+                  <li><button onClick={() => navigate("/kontak")} className="hover:text-indigo-600 transition-colors">Kontak</button></li>
                 </ul>
               </div>
 
@@ -710,10 +711,11 @@ const LandingThemeB = () => {
 
             <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-xs text-slate-400">© {new Date().getFullYear()} {get("footer_brand_name", "ATSkolla")}. All rights reserved.</p>
-              <div className="flex items-center gap-5 text-xs text-slate-400">
-                {get("footer_link_privacy") && <a href={get("footer_link_privacy")} target="_blank" rel="noreferrer" className="hover:text-indigo-600 transition-colors">Kebijakan Privasi</a>}
-                <button onClick={() => navigate("/panduan")} className="hover:text-indigo-600 transition-colors">Panduan</button>
-                <a href="#features" className="hover:text-indigo-600 transition-colors">Fitur</a>
+              <div className="flex items-center gap-5 text-xs text-slate-400 flex-wrap justify-center">
+                <button onClick={() => navigate("/syarat-ketentuan")} className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</button>
+                <button onClick={() => navigate("/kebijakan-refund")} className="hover:text-indigo-600 transition-colors">Refund</button>
+                <button onClick={() => navigate("/faq")} className="hover:text-indigo-600 transition-colors">FAQ</button>
+                <button onClick={() => navigate("/kontak")} className="hover:text-indigo-600 transition-colors">Kontak</button>
               </div>
             </div>
           </div>
