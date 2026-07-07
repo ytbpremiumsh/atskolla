@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Mail, Save, Eye } from "lucide-react";
+import { Loader2, Mail, Save, Eye, Send } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
 type Tpl = {
@@ -42,6 +42,9 @@ export default function SuperAdminAuthEmail() {
   const [saving, setSaving] = useState(false);
   const [rows, setRows] = useState<Record<string, Tpl>>({});
   const [active, setActive] = useState<string>("signup");
+  const [testEmail, setTestEmail] = useState<string>("");
+  const [sending, setSending] = useState(false);
+
 
   useEffect(() => {
     (async () => {
@@ -78,6 +81,23 @@ export default function SuperAdminAuthEmail() {
     if (error) return toast.error("Gagal menyimpan: " + error.message);
     toast.success("Template tersimpan");
   };
+
+  const sendTest = async () => {
+    if (!current) return;
+    const to = testEmail.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) {
+      return toast.error("Masukkan alamat email tujuan yang valid");
+    }
+    setSending(true);
+    const { data, error } = await supabase.functions.invoke("send-auth-email-test", {
+      body: { type: current.type, to },
+    });
+    setSending(false);
+    if (error) return toast.error("Gagal mengirim: " + error.message);
+    if ((data as any)?.error) return toast.error("Gagal mengirim: " + (data as any).error);
+    toast.success(`Email uji terkirim ke ${to}`);
+  };
+
 
   const previewSrc = useMemo(() => {
     if (!current) return "";
@@ -164,6 +184,35 @@ export default function SuperAdminAuthEmail() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2"><Send className="h-4 w-4" /> Kirim Email Uji</CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      Kirim template ini ke alamat email untuk pengujian. Subjek akan diawali "[TEST]".
+                      Variabel diisi data contoh (tautan verifikasi tidak akan berfungsi).
+                    </p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Input
+                        type="email"
+                        placeholder="tujuan@contoh.com"
+                        value={testEmail}
+                        onChange={(e) => setTestEmail(e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button onClick={sendTest} disabled={sending || !testEmail}>
+                        {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                        Kirim Uji
+                      </Button>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-2">
+                      Catatan: pengiriman memerlukan domain email (notify.atskolla.com) sudah terverifikasi DNS.
+                    </p>
+                  </CardContent>
+                </Card>
+
 
                 <Card>
                   <CardHeader>
