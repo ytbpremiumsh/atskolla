@@ -892,7 +892,7 @@ export default function ParentDashboard() {
                       </Card>
                     );
                   })() : next ? (
-                    <Card className="p-3.5 border-0 shadow-card rounded-2xl border-l-4 border-l-[#5B6CF9]">
+                    <Card className="p-3.5 border shadow-none rounded-2xl border-l-4 border-l-[#5B6CF9] bg-muted/30">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">Berikutnya</p>
                       <div className="flex items-center justify-between gap-2">
                         <div className="min-w-0">
