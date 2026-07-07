@@ -6,9 +6,9 @@ import { ReportShell, ReportTable, StatsRow, downloadCSV, useMonthRange, type He
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { PrincipalAttendanceDetailDialog } from "./PrincipalAttendanceDetailDialog";
 
+// Administrator (school_admin/super_admin) TIDAK dimasukkan ke rekap absensi kepsek.
 const ROLE_LABEL: Record<string, string> = {
   teacher: "Guru",
-  school_admin: "Admin Sekolah",
   staff: "Staff",
   bendahara: "Bendahara",
   principal: "Kepala Sekolah",
@@ -44,7 +44,7 @@ export default function LaporanAbsensiGuru() {
         if (!roleMap.has(r.user_id)) roleMap.set(r.user_id, []);
         roleMap.get(r.user_id)!.push(r.role);
       });
-      const allowedRoles = new Set(["teacher", "school_admin", "staff", "bendahara", "principal"]);
+      const allowedRoles = new Set(["teacher", "staff", "bendahara", "principal"]);
       const staff = (profQ.data || []).filter((p: any) => (roleMap.get(p.user_id) || []).some((r) => allowedRoles.has(r)));
 
       // Aggregate presence (attendance_type = 'datang')
@@ -108,14 +108,13 @@ export default function LaporanAbsensiGuru() {
 
   const summary = useMemo(() => {
     const total = filtered.length;
-    const hadir = filtered.filter((r) => r["Status Hari Ini"] === "hadir").length;
-    const izin = filtered.filter((r) => r["Status Hari Ini"] === "izin").length;
-    const sakit = filtered.filter((r) => r["Status Hari Ini"] === "sakit").length;
-    const alfa = filtered.filter((r) => r["Status Hari Ini"] === "alfa").length;
-    const belum = filtered.filter((r) => r["Status Hari Ini"] === "belum").length;
-    const terlambat = filtered.reduce((s, r) => s + r.Terlambat, 0);
-    const rata = total > 0 ? Math.round(filtered.reduce((s, r) => s + r["% Hadir"], 0) / total) : 0;
-    return { total, hadir, izin, sakit, alfa, belum, terlambat, rata };
+    const totalH = filtered.reduce((s, r) => s + (r.Hadir || 0), 0);
+    const totalS = filtered.reduce((s, r) => s + (r.Sakit || 0), 0);
+    const totalI = filtered.reduce((s, r) => s + (r.Izin || 0), 0);
+    const totalA = filtered.reduce((s, r) => s + (r.Alfa || 0), 0);
+    const totalDays = filtered.reduce((s, r) => s + (r["Total Hari"] || 0), 0);
+    const rate = totalDays > 0 ? Math.round((totalH / totalDays) * 100) : 0;
+    return { total, totalH, totalS, totalI, totalA, rate };
   }, [filtered]);
 
   const headers: Header[] = [
@@ -165,14 +164,11 @@ export default function LaporanAbsensiGuru() {
       }
       summary={
         <StatsRow items={[
-          { label: "Total Guru/Staff", value: summary.total, tone: "primary", icon: GraduationCap },
-          { label: "Hadir Hari Ini", value: summary.hadir, tone: "emerald", icon: UserCheck },
-          { label: "Izin", value: summary.izin, tone: "sky" },
-          { label: "Sakit", value: summary.sakit, tone: "amber" },
-          { label: "Alfa", value: summary.alfa, tone: "rose" },
-          { label: "Belum Absen", value: summary.belum, tone: "slate", icon: UserX },
-          { label: "Terlambat (periode)", value: summary.terlambat, tone: "amber" },
-          { label: "Rata-rata %", value: `${summary.rata}%`, tone: "indigo" },
+          { label: "Total Personil", value: summary.total, tone: "primary", icon: GraduationCap },
+          { label: "Hadir", value: summary.totalH, tone: "emerald", icon: UserCheck, sub: `Rate ${summary.rate}%` },
+          { label: "Sakit", value: summary.totalS, tone: "violet" },
+          { label: "Izin", value: summary.totalI, tone: "amber" },
+          { label: "Alfa", value: summary.totalA, tone: "rose", icon: UserX },
         ]} />
       }
     >
