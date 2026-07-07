@@ -290,7 +290,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   return <Badge className={`${v.c} text-white whitespace-nowrap`}>{v.t}</Badge>;
 };
 
-function StatCard({ label, value, icon: Icon, gradient = "from-emerald-500 to-teal-600", sub }: any) {
+export function StatCard({ label, value, icon: Icon, gradient = "from-emerald-500 to-teal-600", sub }: any) {
   // Unified card style matching Buku Kas: pastel icon square + colored value
   const toneMap: Record<string, { bg: string; text: string }> = {
     emerald: { bg: "bg-emerald-500/15", text: "text-emerald-600" },
