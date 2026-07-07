@@ -977,7 +977,7 @@ function Footer() {
         <div>
           <div className="font-display font-semibold text-[#0b1020] text-sm mb-4">Kontak</div>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#5B6CF9]" /> +62 851 5512 4304</li>
+            <li className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#5B6CF9]" /> +62 888 6117 537</li>
             <li className="flex items-center gap-2"><Mail className="h-4 w-4 text-[#5B6CF9]" /> halo@atskolla.com</li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4 text-[#5B6CF9]" /> Indonesia</li>
           </ul>
