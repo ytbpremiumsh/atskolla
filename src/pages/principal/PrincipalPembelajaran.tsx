@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BookOpen, CheckCircle2, XCircle, Clock, PlayCircle, CalendarClock, Users } from "lucide-react";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
 import { ClassAttendanceDetailDialog } from "@/components/principal/ClassAttendanceDetailDialog";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 type ClassItem = {
   id: string;
