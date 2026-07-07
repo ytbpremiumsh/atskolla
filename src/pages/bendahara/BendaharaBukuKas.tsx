@@ -346,54 +346,63 @@ export default function BendaharaBukuKas() {
       {/* Ringkasan */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="border-0 shadow-sm overflow-hidden">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-              <TrendingUp className="h-5 w-5 text-emerald-600" />
+          <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/15 flex items-center justify-center">
+                <TrendingUp className="h-4.5 w-4.5 text-emerald-600" />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Kas Masuk</p>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Masuk</p>
-              <p className="text-lg font-extrabold text-emerald-600 truncate">{fmtIDR(totals.kasMasuk)}</p>
-              <p className="text-[10px] text-muted-foreground">{totals.inCount} transaksi</p>
+              <p className="text-base sm:text-lg font-extrabold text-emerald-600 break-words leading-tight">{fmtIDR(totals.kasMasuk)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{totals.inCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm overflow-hidden">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-rose-500/15 flex items-center justify-center">
-              <TrendingDown className="h-5 w-5 text-rose-600" />
+          <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-rose-500/15 flex items-center justify-center">
+                <TrendingDown className="h-4.5 w-4.5 text-rose-600" />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Kas Keluar</p>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Keluar</p>
-              <p className="text-lg font-extrabold text-rose-600 truncate">{fmtIDR(totals.kasKeluar)}</p>
-              <p className="text-[10px] text-muted-foreground">{totals.outCount} transaksi</p>
+              <p className="text-base sm:text-lg font-extrabold text-rose-600 break-words leading-tight">{fmtIDR(totals.kasKeluar)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">{totals.outCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm overflow-hidden bg-gradient-to-br from-[#5B6CF9]/10 to-transparent">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-[#5B6CF9]/15 flex items-center justify-center">
-              <Wallet className="h-5 w-5 text-[#5B6CF9]" />
+          <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-[#5B6CF9]/15 flex items-center justify-center">
+                <Wallet className="h-4.5 w-4.5 text-[#5B6CF9]" />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Saldo Buku Kas</p>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo Buku Kas</p>
-              <p className="text-lg font-extrabold text-[#5B6CF9] truncate">{fmtIDR(totals.saldo)}</p>
-              <p className="text-[10px] text-muted-foreground">pada rentang filter</p>
+              <p className="text-base sm:text-lg font-extrabold text-[#5B6CF9] break-words leading-tight">{fmtIDR(totals.saldo)}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">pada rentang filter</p>
             </div>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm overflow-hidden">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="h-11 w-11 rounded-xl bg-amber-500/15 flex items-center justify-center">
-              <Receipt className="h-5 w-5 text-amber-600" />
+          <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
+            <div className="flex items-center gap-2">
+              <div className="h-9 w-9 shrink-0 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                <Receipt className="h-4.5 w-4.5 text-amber-600" />
+              </div>
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Jumlah Transaksi</p>
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Jumlah Transaksi</p>
-              <p className="text-lg font-extrabold text-amber-600 truncate">{totals.count}</p>
-              <p className="text-[10px] text-muted-foreground">total entri buku kas</p>
+              <p className="text-base sm:text-lg font-extrabold text-amber-600 break-words leading-tight">{totals.count}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">total entri buku kas</p>
             </div>
           </CardContent>
         </Card>
       </div>
+
 
 
 
