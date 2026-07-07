@@ -19,7 +19,7 @@ import {
   TrendingUp, Wallet, AlertCircle, CheckCircle2, Loader2, Plus, Search, Link as LinkIcon,
   Receipt, ArrowDownToLine, Banknote, RefreshCw, FileText, MessageCircle, Mail, Copy,
   Download, Upload, ArrowLeft, User, Users, ChevronRight, ChevronDown, Eye, GraduationCap, Send, BarChart3, Landmark,
-  Home, LayoutGrid, Grid3x3, CreditCard, ArrowUpRight, X, Pencil, Trash2,
+  Home, LayoutGrid, Grid3x3, CreditCard, ArrowUpRight, X, Pencil, Trash2, Percent,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
