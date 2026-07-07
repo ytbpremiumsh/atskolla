@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ReportShell, ReportTable, StatsRow, downloadCSV, useMonthRange, type Header, type Row } from "./_common";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { PrincipalAttendanceDetailDialog } from "./PrincipalAttendanceDetailDialog";
 
 export default function LaporanAbsensiSiswa() {
   const { profile } = useAuth();
@@ -15,6 +16,7 @@ export default function LaporanAbsensiSiswa() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
   const [classes, setClasses] = useState<string[]>([]);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!schoolId) return;
@@ -30,6 +32,7 @@ export default function LaporanAbsensiSiswa() {
       const per: Record<string, any> = {};
       students.forEach((s: any) => {
         per[s.id] = {
+          _id: s.id,
           NIS: s.student_id, Nama: s.name, Kelas: s.class, JK: s.gender === "L" ? "L" : "P",
           "Wali/Ortu": s.parent_name, "No HP": s.parent_phone,
           Hadir: 0, Izin: 0, Sakit: 0, Alfa: 0, Terlambat: 0,
@@ -78,7 +81,7 @@ export default function LaporanAbsensiSiswa() {
       subtitle="Rekapitulasi kehadiran siswa lengkap per periode"
       icon={Users}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
-      onDownload={() => downloadCSV(`Absensi_Siswa_${from}_${to}`, filtered, headers)}
+      onDownload={() => downloadCSV(`Absensi_Siswa_${from}_${to}`, filtered.map(({ _id, ...r }) => r), headers)}
       extraFilters={
         <Select value={cls} onValueChange={setCls}>
           <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Kelas" /></SelectTrigger>
@@ -99,7 +102,8 @@ export default function LaporanAbsensiSiswa() {
         ]} />
       }
     >
-      <ReportTable loading={loading} rows={filtered} headers={headers} />
+      <ReportTable loading={loading} rows={filtered} headers={headers} onRowClick={(r) => setDetailId(r._id)} />
+      <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="student" targetId={detailId} />
     </ReportShell>
   );
 }

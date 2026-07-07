@@ -98,9 +98,10 @@ export function ReportShell({
  * money mono kanan, hover, empty state, pagination client-side.
  */
 export function ReportTable({
-  loading, rows, headers, empty = "Belum ada data pada periode ini", pageSize: initialPageSize = 25,
+  loading, rows, headers, empty = "Belum ada data pada periode ini", pageSize: initialPageSize = 25, onRowClick,
 }: {
   loading: boolean; rows: Row[]; headers: Header[]; empty?: string; pageSize?: number;
+  onRowClick?: (row: Row) => void;
 }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -143,7 +144,11 @@ export function ReportTable({
                 </TableCell>
               </TableRow>
             ) : visible.map((row, i) => (
-              <TableRow key={i} className="hover:bg-muted/40">
+              <TableRow
+                key={i}
+                className={`hover:bg-muted/40 ${onRowClick ? "cursor-pointer" : ""}`}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+              >
                 {headers.map((h) => {
                   const v = row[h.key];
                   const isMoney = h.type === "money";

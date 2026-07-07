@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ReportShell, ReportTable, StatsRow, downloadCSV, useMonthRange, type Header, type Row } from "./_common";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { PrincipalAttendanceDetailDialog } from "./PrincipalAttendanceDetailDialog";
 
 const ROLE_LABEL: Record<string, string> = {
   teacher: "Guru",
@@ -23,6 +24,7 @@ export default function LaporanAbsensiGuru() {
   const [statusF, setStatusF] = useState("all");
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!schoolId) return;
@@ -52,6 +54,7 @@ export default function LaporanAbsensiGuru() {
         // Prefer teacher as primary label if present, else first meaningful role
         const primary = roles.includes("teacher") ? "teacher" : roles.find((r) => r !== "principal") || roles[0] || "staff";
         per[t.user_id] = {
+          _id: t.user_id,
           Nama: t.full_name || "-",
           Peran: ROLE_LABEL[primary] || primary,
           "No HP": t.phone || "-",
@@ -137,7 +140,7 @@ export default function LaporanAbsensiGuru() {
       subtitle="Rekapitulasi kehadiran guru & staff — jam datang, pulang, dan status hari ini"
       icon={GraduationCap}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
-      onDownload={() => downloadCSV(`Absensi_Guru_${from}_${to}`, filtered.map(({ _role, ...r }) => r), headers)}
+      onDownload={() => downloadCSV(`Absensi_Guru_${from}_${to}`, filtered.map(({ _role, _id, ...r }) => r), headers)}
       extraFilters={
         <>
           <Select value={roleF} onValueChange={setRoleF}>
@@ -173,7 +176,8 @@ export default function LaporanAbsensiGuru() {
         ]} />
       }
     >
-      <ReportTable loading={loading} rows={filtered} headers={headers} />
+      <ReportTable loading={loading} rows={filtered} headers={headers} onRowClick={(r) => setDetailId(r._id)} />
+      <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="teacher" targetId={detailId} />
     </ReportShell>
   );
 }
