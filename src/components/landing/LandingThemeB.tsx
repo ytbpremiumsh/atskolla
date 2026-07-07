@@ -207,7 +207,7 @@ const LandingThemeB = () => {
       <nav className="fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl bg-white dark:bg-slate-900 shadow-lg border border-slate-200/80 dark:border-slate-700/50">
         <div className="relative px-4 sm:px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2.5 z-10">
-            <img src={headerLogo} alt="ATSkolla" className="h-8 sm:h-9 object-contain" />
+            <span className="font-extrabold text-slate-900 dark:text-white text-xl tracking-tight">atskolla</span>
           </div>
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {[
