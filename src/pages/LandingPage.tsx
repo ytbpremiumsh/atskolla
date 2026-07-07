@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 const ATSKOLLA_LOGO_URL = "https://absenpintar.online/images/logo-atskolla.png";
 import { useLandingTheme, LANDING_THEME_CSS } from "@/hooks/useLandingTheme";
