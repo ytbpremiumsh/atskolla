@@ -30,14 +30,14 @@ export async function fetchClassesBySchool(schoolId: string) {
 
 export async function fetchStudentsBySchool(
   schoolId: string,
-  opts?: { classId?: string | null; limit?: number },
+  opts?: { className?: string | null; limit?: number },
 ) {
   let q = supabase
     .from("students")
-    .select("id, name, nis, class_id, gender, photo_url, card_number, school_id")
+    .select("id, name, class, gender, photo_url, card_number, school_id")
     .eq("school_id", schoolId)
     .order("name");
-  if (opts?.classId) q = q.eq("class_id", opts.classId);
+  if (opts?.className) q = q.eq("class", opts.className);
   if (opts?.limit) q = q.limit(opts.limit);
   const { data, error } = await q;
   if (error) throw error;
