@@ -269,8 +269,11 @@
   scroll-behavior: auto !important;
 }
 .no-motion .animate-pulse,
-.no-motion .animate-spin,
 .no-motion .animate-bounce,
 .no-motion .animate-ping {
   animation: none !important;
+}
+/* Keep spinners visible for loading state */
+.no-motion .animate-spin {
+  animation-duration: 1s !important;
 }
