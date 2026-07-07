@@ -267,18 +267,19 @@ function AppRoutes() {
           <Route path="/kepsek/manajemen" element={<PrincipalManajemen />} />
           <Route path="/kepsek/agenda" element={<PrincipalAgenda />} />
           <Route path="/kepsek/laporan" element={<PrincipalLaporan />} />
-          {/* Legacy redirects → consolidated tabbed pages */}
+          {/* Laporan — masing-masing punya menu sidebar tersendiri, dikelompokkan per kategori */}
+          <Route path="/kepsek/laporan/absensi-siswa" element={<LaporanAbsensiSiswa />} />
+          <Route path="/kepsek/laporan/absensi-guru" element={<LaporanAbsensiGuru />} />
+          <Route path="/kepsek/laporan/jurnal" element={<LaporanJurnal />} />
+          <Route path="/kepsek/laporan/spp" element={<LaporanSPP />} />
+          <Route path="/kepsek/laporan/tunggakan" element={<LaporanTunggakan />} />
+          <Route path="/kepsek/laporan/buku-kas" element={<LaporanBukuKas />} />
+          <Route path="/kepsek/laporan/settlement" element={<LaporanSettlement />} />
+          {/* Legacy redirects untuk halaman lama yang sudah digabung */}
           <Route path="/kepsek/kehadiran" element={<Navigate to="/kepsek/monitoring?tab=kehadiran" replace />} />
           <Route path="/kepsek/pembelajaran" element={<Navigate to="/kepsek/monitoring?tab=pembelajaran" replace />} />
           <Route path="/kepsek/keuangan" element={<Navigate to="/kepsek/manajemen?tab=keuangan" replace />} />
           <Route path="/kepsek/persetujuan" element={<Navigate to="/kepsek/manajemen?tab=persetujuan" replace />} />
-          <Route path="/kepsek/laporan/absensi-siswa" element={<Navigate to="/kepsek/laporan?tab=absensi-siswa" replace />} />
-          <Route path="/kepsek/laporan/absensi-guru" element={<Navigate to="/kepsek/laporan?tab=absensi-guru" replace />} />
-          <Route path="/kepsek/laporan/spp" element={<Navigate to="/kepsek/laporan?tab=spp" replace />} />
-          <Route path="/kepsek/laporan/tunggakan" element={<Navigate to="/kepsek/laporan?tab=tunggakan" replace />} />
-          <Route path="/kepsek/laporan/buku-kas" element={<Navigate to="/kepsek/laporan?tab=buku-kas" replace />} />
-          <Route path="/kepsek/laporan/settlement" element={<Navigate to="/kepsek/laporan?tab=settlement" replace />} />
-          <Route path="/kepsek/laporan/jurnal" element={<Navigate to="/kepsek/laporan?tab=jurnal" replace />} />
         </Route>
         {/* School Admin / Staff */}
         <Route element={<AppLayout />}>
