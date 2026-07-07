@@ -349,7 +349,7 @@ export default function BendaharaBukuKas() {
           <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                <TrendingUp className="h-4.5 w-4.5 text-emerald-600" />
+                <TrendingUp className="h-4 w-4 text-emerald-600" />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Kas Masuk</p>
             </div>
@@ -363,7 +363,7 @@ export default function BendaharaBukuKas() {
           <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 shrink-0 rounded-xl bg-rose-500/15 flex items-center justify-center">
-                <TrendingDown className="h-4.5 w-4.5 text-rose-600" />
+                <TrendingDown className="h-4 w-4 text-rose-600" />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Kas Keluar</p>
             </div>
@@ -377,7 +377,7 @@ export default function BendaharaBukuKas() {
           <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 shrink-0 rounded-xl bg-[#5B6CF9]/15 flex items-center justify-center">
-                <Wallet className="h-4.5 w-4.5 text-[#5B6CF9]" />
+                <Wallet className="h-4 w-4 text-[#5B6CF9]" />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Saldo Buku Kas</p>
             </div>
@@ -391,7 +391,7 @@ export default function BendaharaBukuKas() {
           <CardContent className="p-3 sm:p-4 flex flex-col gap-2 h-full">
             <div className="flex items-center gap-2">
               <div className="h-9 w-9 shrink-0 rounded-xl bg-amber-500/15 flex items-center justify-center">
-                <Receipt className="h-4.5 w-4.5 text-amber-600" />
+                <Receipt className="h-4 w-4 text-amber-600" />
               </div>
               <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">Jumlah Transaksi</p>
             </div>
