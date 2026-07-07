@@ -696,6 +696,11 @@ const ManageStaff = () => {
                   <Wallet className="h-4 w-4 text-amber-500" />
                   <span className="text-sm">Bendahara (SPP)</span>
                 </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox checked={(formRoles as any).principal || false} onCheckedChange={(v) => setFormRoles({ ...formRoles, principal: !!v } as any)} />
+                  <Shield className="h-4 w-4 text-indigo-500" />
+                  <span className="text-sm">Kepala Sekolah</span>
+                </label>
               </div>
             </div>
             <div className="space-y-2">
