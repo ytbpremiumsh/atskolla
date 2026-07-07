@@ -226,15 +226,16 @@ export default function BendaharaBukuKas() {
       />
 
       {/* Ringkasan */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="border-0 shadow-sm overflow-hidden">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-11 w-11 rounded-xl bg-emerald-500/15 flex items-center justify-center">
               <TrendingUp className="h-5 w-5 text-emerald-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Masuk</p>
-              <p className="text-lg font-extrabold text-emerald-600">{fmtIDR(totals.kasMasuk)}</p>
+              <p className="text-lg font-extrabold text-emerald-600 truncate">{fmtIDR(totals.kasMasuk)}</p>
+              <p className="text-[10px] text-muted-foreground">{totals.inCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
@@ -243,9 +244,10 @@ export default function BendaharaBukuKas() {
             <div className="h-11 w-11 rounded-xl bg-rose-500/15 flex items-center justify-center">
               <TrendingDown className="h-5 w-5 text-rose-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Kas Keluar</p>
-              <p className="text-lg font-extrabold text-rose-600">{fmtIDR(totals.kasKeluar)}</p>
+              <p className="text-lg font-extrabold text-rose-600 truncate">{fmtIDR(totals.kasKeluar)}</p>
+              <p className="text-[10px] text-muted-foreground">{totals.outCount} transaksi</p>
             </div>
           </CardContent>
         </Card>
@@ -254,12 +256,39 @@ export default function BendaharaBukuKas() {
             <div className="h-11 w-11 rounded-xl bg-[#5B6CF9]/15 flex items-center justify-center">
               <Wallet className="h-5 w-5 text-[#5B6CF9]" />
             </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo Kas (Filter)</p>
-              <p className="text-lg font-extrabold text-[#5B6CF9]">{fmtIDR(totals.saldo)}</p>
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Saldo Buku Kas</p>
+              <p className="text-lg font-extrabold text-[#5B6CF9] truncate">{fmtIDR(totals.saldo)}</p>
+              <p className="text-[10px] text-muted-foreground">pada rentang filter</p>
             </div>
           </CardContent>
         </Card>
+        <Card className="border-0 shadow-sm overflow-hidden">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-11 w-11 rounded-xl bg-amber-500/15 flex items-center justify-center">
+              <Receipt className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Jumlah Transaksi</p>
+              <p className="text-lg font-extrabold text-amber-600 truncate">{totals.count}</p>
+              <p className="text-[10px] text-muted-foreground">total entri buku kas</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Info: pemisahan Buku Kas vs Settlement */}
+      <div className="rounded-xl border border-[#5B6CF9]/20 bg-[#5B6CF9]/5 px-3 py-2.5 flex items-start gap-2.5">
+        <Landmark className="h-4 w-4 text-[#5B6CF9] mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-foreground">Pembukuan menggunakan nilai bruto (gross)</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Pembayaran SPP online dicatat sesuai nominal tagihan siswa. Biaya gateway/MDR & proses pencairan dana dikelola terpisah pada modul{" "}
+            <Link to="/bendahara/withdraw?tab=pencairan" className="text-[#5B6CF9] font-semibold hover:underline inline-flex items-center gap-0.5">Monitoring Pencairan <ArrowRight className="h-3 w-3" /></Link>.
+          </p>
+        </div>
+      </div>
+
       </div>
 
       {/* Filter */}
