@@ -84,6 +84,7 @@ export default function LaporanJurnal() {
       icon={ClipboardList}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
       onDownload={() => downloadCSV(`Jurnal_Mengajar_${from}_${to}`, rows, headers)}
+      datesOptional
       summary={
         <StatsRow items={[
           { label: "Sesi Mengajar", value: summary.sesi, tone: "primary" },
