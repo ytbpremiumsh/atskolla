@@ -190,8 +190,16 @@ const ManageWaliKelas = () => {
     const { error } = await supabase.from("class_teachers").insert({
       user_id: selectedTeacher.user_id, class_name: editClass, school_id: schoolId,
     });
-    if (error) { toast.error("Gagal: " + error.message); }
+    if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if ((error as any).code === "23505" || msg.includes("duplicate") || msg.includes("class_teachers_school_class_unique")) {
+        toast.error(`Kelas ${editClass} sudah memiliki wali kelas lain.`);
+      } else {
+        toast.error("Gagal: " + error.message);
+      }
+    }
     else { toast.success(`Kelas ${editClass} ditambahkan`); setEditClass(""); }
+
     setSavingEdit(false);
     fetchData();
     const { data: newAssignments } = await supabase.from("class_teachers").select("*").eq("user_id", selectedTeacher.user_id).eq("school_id", schoolId);
