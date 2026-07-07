@@ -81,7 +81,7 @@ export default function LaporanAbsensiSiswa() {
       subtitle="Rekapitulasi kehadiran siswa lengkap per periode"
       icon={Users}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
-      onDownload={() => downloadCSV(`Absensi_Siswa_${from}_${to}`, filtered, headers)}
+      onDownload={() => downloadCSV(`Absensi_Siswa_${from}_${to}`, filtered.map(({ _id, ...r }) => r), headers)}
       extraFilters={
         <Select value={cls} onValueChange={setCls}>
           <SelectTrigger className="h-9 w-[140px]"><SelectValue placeholder="Kelas" /></SelectTrigger>
@@ -102,7 +102,8 @@ export default function LaporanAbsensiSiswa() {
         ]} />
       }
     >
-      <ReportTable loading={loading} rows={filtered} headers={headers} />
+      <ReportTable loading={loading} rows={filtered} headers={headers} onRowClick={(r) => setDetailId(r._id)} />
+      <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="student" targetId={detailId} />
     </ReportShell>
   );
 }
