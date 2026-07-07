@@ -75,7 +75,7 @@ export function PrincipalLayout() {
               </div>
               <HeaderInner />
               <ThemeToggle />
-              <NotificationBell />
+              <PrincipalNotificationBell />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
