@@ -238,11 +238,29 @@
 
 /* Tone down heavy blur globally (backdrop & filter blur) on low-end devices */
 @media (max-width: 640px) {
+  .backdrop-blur-sm,
+  .backdrop-blur,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
   .backdrop-blur-xl,
   .backdrop-blur-2xl,
-  .backdrop-blur-3xl { backdrop-filter: blur(6px) !important; -webkit-backdrop-filter: blur(6px) !important; }
-  .blur-2xl, .blur-3xl { filter: blur(20px) !important; }
+  .backdrop-blur-3xl { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .blur-md, .blur-lg, .blur-xl, .blur-2xl, .blur-3xl { filter: none !important; }
 }
+
+/* Inside a .no-motion page on mobile, remove all backdrop-blur & decorative blur
+   entirely — biggest cause of janky scroll on parent/landing dashboards. */
+@media (max-width: 767px) {
+  .no-motion [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .no-motion [class*="blur-"] { filter: none !important; }
+  /* Ensure sticky translucent bars stay readable when we drop the blur */
+  .no-motion .sticky.bg-background\/85,
+  .no-motion .sticky[class*="bg-background/"] { background-color: hsl(var(--background)) !important; }
+}
+
 
 /* Softer status pills (reduce infinite pulse cost) */
 .status-pill-paid,
