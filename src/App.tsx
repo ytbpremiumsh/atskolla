@@ -246,6 +246,7 @@ function AppRoutes() {
         <Route path="/s/:code" element={<ShortlinkRedirect />} />
         {/* School Admin / Staff */}
         <Route element={<AppLayout />}>
+          <Route path="/kepsek" element={<PrincipalDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/scan" element={<ScanQR />} />
