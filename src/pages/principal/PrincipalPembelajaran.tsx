@@ -166,7 +166,7 @@ function Section({
         {items.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">{emptyText}</div>
         ) : (
-          <Carousel opts={{ align: "start", loop: false }} className="w-full">
+          <Carousel opts={{ align: "start", loop: true }} plugins={items.length > 2 ? [autoplay.current] : []} className="w-full">
             <CarouselContent className="-ml-3">
               {items.map((c) => (
                 <CarouselItem key={c.id} className="pl-3 basis-full sm:basis-1/2">
