@@ -182,7 +182,8 @@ export default function LaporanBukuKas() {
       subtitle="Kas masuk & keluar sekolah — sinkron dengan Buku Kas Bendahara"
       icon={BookOpen}
       from={from} to={to} onFromChange={setFrom} onToChange={setTo}
-      onDownload={() => downloadCSV(`Buku_Kas_${from}_${to}`, csvRows, csvHeaders)}
+      datesOptional
+      onDownload={() => downloadCSV(`Buku_Kas_${(from || to) ? `${from || "awal"}_${to || "sekarang"}` : "semua"}`, csvRows, csvHeaders)}
       extraFilters={
         <>
           <Select value={dir} onValueChange={setDir}>
