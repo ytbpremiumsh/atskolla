@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
-  Users, GraduationCap, UserCheck, School as SchoolIcon, Percent, Bell,
+  Users, GraduationCap, UserCheck, School as SchoolIcon, Percent,
   Clock, ArrowRight, ClipboardList, Wallet, Activity, CalendarDays, BookOpen, FileSpreadsheet,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function PrincipalOverview() {
   const {
-    loading, schoolName, now, stats, liveClasses, notifs,
+    loading, schoolName, now, stats, liveClasses,
     leaves, pendingSettlements, withdrawals, announcements,
     finance, timeline,
   } = usePrincipalData();
@@ -55,22 +55,6 @@ export default function PrincipalOverview() {
         <StatCard icon={Percent} label="% Kehadiran" value={`${stats.attendanceRate}%`} tone="rose" />
       </div>
 
-      {(notifs.length > 0 || totalApprovals > 0) && (
-        <Card className="border-amber-200/50 bg-amber-50/50 dark:bg-amber-950/10 rounded-2xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2"><Bell className="h-4 w-4" /> Notifikasi Penting</CardTitle>
-          </CardHeader>
-          <CardContent className="grid sm:grid-cols-2 gap-2">
-            {notifs.map((n) => (
-              <div key={n.key} className="flex items-center gap-2.5 text-sm p-2.5 rounded-xl bg-background/60 border border-border/50">
-                <span className={`h-2 w-2 rounded-full ${n.tone === "success" ? "bg-emerald-500" : n.tone === "warning" ? "bg-amber-500" : "bg-sky-500"}`} />
-                <span className="text-foreground">{n.title}</span>
-              </div>
-            ))}
-            {notifs.length === 0 && <div className="text-sm text-muted-foreground">Tidak ada notifikasi mendesak</div>}
-          </CardContent>
-        </Card>
-      )}
 
       {profile?.school_id && <LiveScheduleWidget schoolId={profile.school_id} />}
 
