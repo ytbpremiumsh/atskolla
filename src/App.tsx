@@ -220,7 +220,7 @@ function AppRoutes() {
           <Route path="/bendahara/pencairan" element={<Navigate to="/bendahara/withdraw?tab=pencairan" replace />} />
           <Route path="/bendahara/laporan" element={<Navigate to="/bendahara/keuangan-sekolah" replace />} />
           <Route path="/bendahara/settlement" element={<BendaharaSettlement />} />
-          <Route path="/bendahara/jenis-pembayaran" element={<BendaharaJenisPembayaran />} />
+          
           <Route path="/bendahara/buku-kas" element={<BendaharaBukuKas />} />
           <Route path="/bendahara/tunggakan" element={<BendaharaTunggakan />} />
           <Route path="/bendahara/laporan-spp" element={<BendaharaLaporanSPP />} />
