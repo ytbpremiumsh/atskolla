@@ -5285,7 +5285,7 @@ export function BendaharaLaporan() {
             <p className="text-base font-bold mt-1">{fmtIDR(yearTotals.tagihan)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-sky-500/10 to-transparent">
+        <Card className="border-0 shadow-sm bg-sky-50 dark:bg-sky-950/20">
           <CardContent className="p-4">
             <p className="text-[11px] text-muted-foreground">Sudah Lunas</p>
             <p className="text-base font-bold mt-1 text-sky-600">{fmtIDR(yearTotals.bayar)}</p>
@@ -5357,7 +5357,7 @@ export function BendaharaLaporan() {
                     className="text-left rounded-2xl border border-border/60 bg-card overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                   >
                     {/* Header gradient seperti card SPP */}
-                    <div className="relative overflow-hidden bg-gradient-to-r from-sky-500 via-cyan-500 to-indigo-500 text-white">
+                    <div className="relative overflow-hidden bg-sky-500 text-white">
                       <div className="absolute -top-8 -right-8 h-32 w-32 rounded-full bg-white/15 blur-2xl" />
                       <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/10 blur-xl" />
                       <div className="relative z-10 flex items-center gap-3 px-4 py-3">
@@ -5397,7 +5397,7 @@ export function BendaharaLaporan() {
                       <div className="space-y-1">
                         <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all"
+                            className="h-full rounded-full bg-sky-500 transition-all"
                             style={{ width: `${Math.min(pct, 100)}%` }}
                           />
                         </div>
