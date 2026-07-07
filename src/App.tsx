@@ -14,6 +14,7 @@ import { TenantProvider, useTenant, getRootDomain, getTenantBasename } from "@/l
 import { AppLayout } from "@/components/layout/AppLayout";
 import { SuperAdminLayout } from "@/components/layout/SuperAdminLayout";
 import { BendaharaLayout } from "./components/layout/BendaharaLayout";
+import { PrincipalLayout } from "@/components/layout/PrincipalLayout";
 
 // Auth/landing kept eager for fast first paint
 import LandingPage from "./pages/LandingPage";
