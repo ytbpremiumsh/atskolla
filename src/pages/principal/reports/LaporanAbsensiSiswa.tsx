@@ -6,6 +6,7 @@ import { ReportShell, ReportTable, StatsRow, downloadCSV, useMonthRange, type He
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { PrincipalAttendanceDetailDialog } from "./PrincipalAttendanceDetailDialog";
 import { AttendanceHighlights } from "./AttendanceHighlights";
+import { AttendanceRecapGrid } from "./AttendanceRecapGrid";
 
 export default function LaporanAbsensiSiswa() {
   const { profile } = useAuth();
