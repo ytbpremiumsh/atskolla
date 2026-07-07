@@ -95,23 +95,9 @@ export default function LaporanAbsensiSiswa() {
           </SelectContent>
         </Select>
       }
-      summary={
-        <StatsRow items={[
-          { label: "Siswa", value: summary.total, tone: "primary" },
-          { label: "Total Hadir", value: summary.hadir, tone: "emerald" },
-          { label: "Total Izin", value: summary.izin, tone: "sky" },
-          { label: "Total Sakit", value: summary.sakit, tone: "amber" },
-          { label: "Total Alfa", value: summary.alfa, tone: "rose" },
-          { label: "Rata-rata %", value: `${summary.rata}%`, tone: "indigo" },
-        ]} />
-      }
     >
-      <AttendanceHighlights
-        title="Analitik Kehadiran Siswa"
-        loading={loading}
-        rows={filtered.map((r) => ({ id: r._id, name: r.Nama, hadir: r.Hadir || 0, sakit: r.Sakit || 0, izin: r.Izin || 0, alfa: r.Alfa || 0 }))}
-      />
       <AttendanceRecapGrid schoolId={schoolId} kind="student" />
+
       
       <PrincipalAttendanceDetailDialog open={!!detailId} onClose={() => setDetailId(null)} kind="student" targetId={detailId} />
     </ReportShell>
