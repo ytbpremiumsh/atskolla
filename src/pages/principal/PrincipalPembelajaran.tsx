@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Autoplay from "embla-carousel-autoplay";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -142,6 +143,7 @@ function Section({
   onSelect?: (c: ClassItem) => void;
 }) {
   const t = TONE_MAP[tone];
+  const autoplay = useRef(Autoplay({ delay: 3500, stopOnInteraction: false, stopOnMouseEnter: true }));
   return (
     <Card className="rounded-2xl border-0 shadow-sm overflow-hidden">
       <div className={`px-5 py-3 flex items-center justify-between bg-gradient-to-r ${t.soft} border-b border-border/40`}>
@@ -164,7 +166,7 @@ function Section({
         {items.length === 0 ? (
           <div className="text-sm text-muted-foreground py-8 text-center">{emptyText}</div>
         ) : (
-          <Carousel opts={{ align: "start", loop: false }} className="w-full">
+          <Carousel opts={{ align: "start", loop: true }} plugins={items.length > 2 ? [autoplay.current] : []} className="w-full">
             <CarouselContent className="-ml-3">
               {items.map((c) => (
                 <CarouselItem key={c.id} className="pl-3 basis-full sm:basis-1/2">
