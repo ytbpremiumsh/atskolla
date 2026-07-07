@@ -139,19 +139,6 @@ export default function LaporanSPP() {
             </CardContent>
           </Card>
 
-          {showInfo && (
-            <div className="rounded-lg border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/30 p-3 flex gap-2 items-start">
-              <AlertCircle className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
-              <div className="text-xs text-blue-900 dark:text-blue-100 leading-relaxed flex-1">
-                <b>Saldo Aktif</b> hanya berisi pembayaran <b>online (QRIS / Transfer Bank)</b> yang belum diajukan pencairan.
-                Pembayaran <b>offline</b> (tunai / transfer manual ke rekening sekolah) <b>tidak masuk</b> ke saldo pencairan
-                karena uangnya sudah diterima sekolah secara langsung.
-              </div>
-              <button onClick={dismissInfo} className="shrink-0 text-blue-600 hover:text-blue-800 p-0.5 rounded" aria-label="Tutup info">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <StatCard label="Total Bruto SPP" value={fmtIDR(totals.gross)} sub={`${items.length} transaksi`} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
