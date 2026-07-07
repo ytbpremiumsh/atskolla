@@ -122,9 +122,8 @@ export default function BendaharaBukuKas() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // (Default sekarang menampilkan semua entri tanpa filter tanggal — tidak perlu auto-expand.)
-  const autoExpandedRef = useRef(false);
-  void autoExpandedRef;
+  // (Default sekarang menampilkan semua entri tanpa filter tanggal.)
+
 
 
   // Realtime updates when new paid invoices come in
