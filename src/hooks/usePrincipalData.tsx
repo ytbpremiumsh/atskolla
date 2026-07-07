@@ -94,8 +94,8 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
         supabase.from("attendance_logs").select("student_id, status, attendance_type, created_at").eq("school_id", schoolId).eq("date", today),
         supabase.from("teaching_schedules").select("id, teacher_id, class_id, subject_id, start_time, end_time, day_of_week, is_active").eq("school_id", schoolId).eq("day_of_week", dow).eq("is_active", true),
         supabase.from("subject_attendance").select("teaching_schedule_id, status").eq("school_id", schoolId).eq("date", today),
-        supabase.from("spp_invoices").select("total_amount, status, paid_at, created_at").eq("school_id", schoolId),
-        supabase.from("cash_book_entries").select("direction, amount, entry_date, category, description, created_at").eq("school_id", schoolId).order("entry_date", { ascending: false }).limit(500),
+        supabase.from("spp_invoices").select("total_amount, status, paid_at, created_at, due_date, settlement_id, payment_method").eq("school_id", schoolId),
+        supabase.from("cash_book_entries").select("direction, amount, entry_date, category, description, created_at").eq("school_id", schoolId).order("entry_date", { ascending: false }).limit(2000),
         supabase.from("spp_settlements").select("*").eq("school_id", schoolId).order("requested_at", { ascending: false }).limit(10),
         supabase.from("parent_leave_requests").select("*, students(name, class)").eq("school_id", schoolId).eq("status", "pending").order("created_at", { ascending: false }).limit(20),
         supabase.from("school_announcements").select("*").eq("school_id", schoolId).order("created_at", { ascending: false }).limit(20),
@@ -194,12 +194,27 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       });
 
       const invoices = invoicesQ.data || [];
+      const nowDate = new Date();
+      const isOfflineMethod = (m: any) => {
+        const v = (m || "").toString().toLowerCase();
+        return v === "offline_cash" || v === "offline_transfer";
+      };
       const totalTagihan = invoices.reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
       const totalPembayaran = invoices.filter((i: any) => i.status === "paid").reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
-      const tunggakan = invoices.filter((i: any) => i.status !== "paid").reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
+      // Tunggakan = pending yang sudah lewat jatuh tempo (sinkron dg Bendahara)
+      const tunggakan = invoices
+        .filter((i: any) => i.status === "pending" && i.due_date && new Date(i.due_date) < nowDate)
+        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
       const cashEntries = cashQ.data || [];
-      const saldoKas = cashEntries.reduce((s: number, e: any) => s + (e.direction === "in" ? (e.amount || 0) : -(e.amount || 0)), 0);
-      const danaPending = (setlPendingQ.data || []).reduce((s: number, e: any) => s + (e.final_payout || 0), 0);
+      const cashIn = cashEntries.filter((e: any) => e.direction === "in").reduce((s: number, e: any) => s + (e.amount || 0), 0);
+      const cashOut = cashEntries.filter((e: any) => e.direction === "out").reduce((s: number, e: any) => s + (e.amount || 0), 0);
+      // Saldo online siap dicairkan (paid online, belum di-settle) — bruto
+      const readyOnline = invoices
+        .filter((i: any) => i.status === "paid" && !i.settlement_id && !isOfflineMethod(i.payment_method))
+        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
+      const saldoKas = (cashIn - cashOut) + readyOnline;
+      // Menunggu Pencairan = saldo online siap dicairkan (sama definisi dg availableBalance Bendahara)
+      const danaPending = readyOnline;
       setFinance({ totalTagihan, totalPembayaran, tunggakan, saldoKas, danaPending });
       setSettlements(setlAllQ.data || []);
 
