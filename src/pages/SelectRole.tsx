@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   LogOut,
@@ -11,6 +12,7 @@ import {
   Shield,
   GraduationCap,
   Wallet,
+  School as SchoolIcon,
 } from "lucide-react";
 import { getAvailableDashboards } from "@/lib/dashboards";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
@@ -28,6 +30,14 @@ export default function SelectRole() {
   const { roles, profile, user, signOut, loading } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
+  const [school, setSchool] = useState<{ name: string; logo: string | null } | null>(null);
+
+  useEffect(() => {
+    if (!profile?.school_id) return;
+    supabase.from("schools").select("name, logo").eq("id", profile.school_id).single().then(({ data }) => {
+      if (data) setSchool({ name: data.name, logo: data.logo });
+    });
+  }, [profile?.school_id]);
 
   const dashboards = useMemo(() => getAvailableDashboards(roles), [roles]);
 
@@ -60,8 +70,12 @@ export default function SelectRole() {
         <div className="px-6 sm:px-12 py-10 sm:py-14">
           {/* Header / Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#5B6CF9] to-violet-600 flex items-center justify-center shadow-md mb-3">
-              <img src={atskollaLogo} alt="ATSkolla" className="h-7 w-7 object-contain" />
+            <div className="h-14 w-14 flex items-center justify-center mb-3">
+              {school?.logo ? (
+                <img src={school.logo} alt={school.name} className="h-14 w-14 object-contain" />
+              ) : (
+                <SchoolIcon className="h-10 w-10 text-[#5B6CF9]" strokeWidth={1.5} />
+              )}
             </div>
             <h1 className="text-xl sm:text-2xl font-semibold tracking-wide text-[#5B6CF9]">
               Pilih Dashboard
