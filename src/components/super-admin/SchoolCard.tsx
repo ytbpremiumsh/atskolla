@@ -15,6 +15,8 @@ export interface SchoolData {
   timezone: string | null;
   logo: string | null;
   created_at: string;
+  is_suspended?: boolean;
+  suspended_reason?: string | null;
   studentCount?: number;
   classCount?: number;
   adminEmail?: string | null;
@@ -35,10 +37,12 @@ interface SchoolCardProps {
   onDetail: (s: SchoolData) => void;
   onSubscription: (s: SchoolData) => void;
   onEdit: (s: SchoolData) => void;
+  onSuspend: (s: SchoolData) => void;
+  onDelete: (s: SchoolData) => void;
   getStatusBadge: (status: string) => React.ReactNode;
 }
 
-const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatusBadge }: SchoolCardProps) => {
+const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, onSuspend, onDelete, getStatusBadge }: SchoolCardProps) => {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }}>
       <Card className="border-0 shadow-card">
