@@ -2562,6 +2562,11 @@ function ActiveCustomInvoicesList({ invoices, onChanged }: { invoices: any[]; on
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-sm truncate">{g.name}</p>
                       <Badge variant="outline" className="text-[10px]">{g.category}</Badge>
+                      {g.rows.some((r: any) => r.allow_installment) && (
+                        <Badge className="text-[10px] bg-[#5B6CF9]/10 text-[#5B6CF9] border border-[#5B6CF9]/30 hover:bg-[#5B6CF9]/15 gap-1 px-1.5 py-0">
+                          <Wallet className="h-2.5 w-2.5" /> Cicilan
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5 flex-wrap">
                       <span>{total} siswa</span>
