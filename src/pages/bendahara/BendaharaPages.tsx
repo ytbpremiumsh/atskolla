@@ -2145,6 +2145,7 @@ function BendaharaGenerateCustom() {
     return d.toISOString().slice(0, 10);
   });
   const [autoSendWa, setAutoSendWa] = useState(true);
+  const [allowInstallment, setAllowInstallment] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -2225,6 +2226,7 @@ function BendaharaGenerateCustom() {
         due_date: due.toISOString().slice(0, 10),
         bill_type: "custom" as const,
         bill_category: effectiveCategory,
+        allow_installment: allowInstallment && flags.installment,
       }));
 
       // Server-side dedup by (student, period_label, bill_type='custom')
@@ -2402,6 +2404,15 @@ function BendaharaGenerateCustom() {
                 <p className="text-xs text-emerald-700/80 dark:text-emerald-300/80">Setelah generate, sistem otomatis membuat link pembayaran & mengirim ke WA wali murid</p>
               </div>
               <Switch checked={autoSendWa} onCheckedChange={setAutoSendWa} />
+            </div>
+          )}
+          {flags.installment && (
+            <div className="flex items-center justify-between rounded-lg border p-3 bg-violet-50 border-violet-200 dark:bg-violet-950/20 dark:border-violet-900">
+              <div>
+                <p className="text-sm font-medium flex items-center gap-1.5 text-violet-800 dark:text-violet-200"><Wallet className="h-3.5 w-3.5" /> Izinkan Cicilan</p>
+                <p className="text-xs text-violet-700/80 dark:text-violet-300/80">Wali murid dapat membayar tagihan ini secara bertahap (tidak berlaku untuk SPP)</p>
+              </div>
+              <Switch checked={allowInstallment} onCheckedChange={setAllowInstallment} />
             </div>
           )}
           {preview.skipped > 0 && (
