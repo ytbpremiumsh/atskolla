@@ -58,25 +58,36 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, onSuspend
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-foreground truncate">{school.name}</h3>
               {school.address && <p className="text-xs text-muted-foreground truncate">{school.address}</p>}
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge variant="secondary" className="text-[10px]">
-                  <Users className="h-3 w-3 mr-0.5" />{school.studentCount} siswa
-                </Badge>
-                <Badge variant="outline" className="text-[10px]">
-                  {school.classCount} kelas
-                </Badge>
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                {/* Usage stats grouped in a single pill with divider */}
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-2.5 py-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    <Users className="h-3 w-3" />
+                    {school.studentCount ?? 0} siswa
+                  </span>
+                  <span className="h-3 w-px bg-border" />
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {school.classCount ?? 0} kelas
+                  </span>
+                </div>
+
                 {school.subscription ? (
                   <>
-                    <Badge className="bg-success/10 text-success border-success/20 text-[10px]">{school.subscription.plan_name}</Badge>
+                    <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                      {school.subscription.plan_name}
+                    </span>
                     {getStatusBadge(school.subscription.status)}
                   </>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">Belum berlangganan</Badge>
+                  <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Belum berlangganan
+                  </span>
                 )}
+
                 {school.is_suspended && (
-                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">
-                    <Ban className="h-3 w-3 mr-0.5" /> Ditangguhkan
-                  </Badge>
+                  <span className="inline-flex items-center gap-1 rounded-full border border-destructive/20 bg-destructive/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive">
+                    <Ban className="h-3 w-3" /> Ditangguhkan
+                  </span>
                 )}
               </div>
               {/* Admin Contact Info */}
