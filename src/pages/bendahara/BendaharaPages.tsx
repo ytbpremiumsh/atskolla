@@ -4271,10 +4271,8 @@ export function BendaharaSaldo() {
   const activeItems = items.filter((i) => !i.settlement_id);
   const activeTotals = activeItems.reduce((acc, i) => ({
     gross: acc.gross + (i.total_amount || 0),
-    fee: acc.fee + (i.gateway_fee || 0),
-    net: acc.net + (i.net_amount || 0),
-  }), { gross: 0, fee: 0, net: 0 });
-  const lockedNet = Math.max(0, totals.net - activeTotals.net);
+    net: acc.net + (i.net_amount || i.total_amount || 0),
+  }), { gross: 0, net: 0 });
 
   // Saldo — sumber kebenaran: spp_invoices (sinkron dengan halaman Pencairan)
   // "Sudah Dicairkan" = invoice online lunas yang sudah terikat settlement
