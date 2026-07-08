@@ -1670,13 +1670,19 @@ export function BendaharaGenerate() {
       supabase.from("spp_tariffs").select("*").eq("school_id", profile.school_id).eq("is_active", true),
       supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone").eq("school_id", profile.school_id),
       supabase.from("spp_invoices").select("student_id, period_month, period_year").eq("school_id", profile.school_id),
-    ]).then(([c, t, s, inv]) => {
+      supabase.from("spp_tariff_discounts").select("tariff_id, student_id, category, amount").eq("school_id", profile.school_id),
+    ]).then(([c, t, s, inv, d]) => {
       const cls = (c.data || []).map((x: any) => x.name);
       setClasses(cls);
       setSelectedClasses(cls);
       setTariffs(t.data || []);
       setStudents(s.data || []);
       setExistingInvs(inv.data || []);
+      setDiscountMap(() => {
+        const m = new Map<string, { category: string; amount: number }>();
+        (d.data || []).forEach((x: any) => m.set(`${x.tariff_id}|${x.student_id}`, { category: x.category, amount: x.amount }));
+        return m;
+      });
     });
   }, [profile?.school_id]);
 
