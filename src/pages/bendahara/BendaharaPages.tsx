@@ -1301,6 +1301,7 @@ export function BendaharaTarif() {
   const { profile } = useAuth();
   const [tariffs, setTariffs] = useState<any[]>([]);
   const [classes, setClasses] = useState<string[]>([]);
+  const [allStudents, setAllStudents] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [bulkOpen, setBulkOpen] = useState(false);
@@ -1311,14 +1312,21 @@ export function BendaharaTarif() {
   const [form, setForm] = useState({ id: "" as string | "", school_year: currentAY, class_name: "", amount: 0, due_date_day: 10, denda: 0, is_active: true });
   const [loading, setLoading] = useState(true);
 
+  // Per-student discounts
+  const [discounts, setDiscounts] = useState<any[]>([]);
+  const [discountForm, setDiscountForm] = useState({ student_id: "", category: "Beasiswa", amount: 0 });
+  const [discountsLoading, setDiscountsLoading] = useState(false);
+
   const load = () => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
       supabase.from("spp_tariffs").select("*").eq("school_id", profile.school_id).order("class_name"),
       supabase.from("classes").select("name").eq("school_id", profile.school_id).order("name"),
-    ]).then(([t, c]) => {
+      supabase.from("students").select("id, name, student_id, class").eq("school_id", profile.school_id).order("name"),
+    ]).then(([t, c, s]) => {
       setTariffs(t.data || []);
       setClasses((c.data || []).map((x: any) => x.name));
+      setAllStudents(s.data || []);
       setLoading(false);
     });
   };
@@ -1331,15 +1339,60 @@ export function BendaharaTarif() {
     return Array.from(set).sort();
   }, [tariffs]);
 
+  const loadDiscounts = async (tariffId: string) => {
+    setDiscountsLoading(true);
+    const { data } = await supabase.from("spp_tariff_discounts").select("*").eq("tariff_id", tariffId).order("created_at", { ascending: false });
+    setDiscounts(data || []);
+    setDiscountsLoading(false);
+  };
+
   const openAdd = () => {
     setEditing(null);
+    setDiscounts([]);
     setForm({ id: "", school_year: filterAY, class_name: "", amount: 0, due_date_day: 10, denda: 0, is_active: true });
     setOpen(true);
   };
   const openEdit = (t: any) => {
     setEditing(t);
     setForm({ id: t.id, school_year: t.school_year, class_name: t.class_name, amount: t.amount, due_date_day: t.due_date_day, denda: t.denda, is_active: t.is_active });
+    setDiscounts([]);
+    setDiscountForm({ student_id: "", category: "Beasiswa", amount: 0 });
+    loadDiscounts(t.id);
     setOpen(true);
+  };
+
+  const classStudents = useMemo(
+    () => allStudents.filter(s => s.class === form.class_name),
+    [allStudents, form.class_name]
+  );
+  const availableStudents = useMemo(() => {
+    const used = new Set(discounts.map(d => d.student_id));
+    return classStudents.filter(s => !used.has(s.id));
+  }, [classStudents, discounts]);
+
+  const addDiscount = async () => {
+    if (!editing || !discountForm.student_id || discountForm.amount <= 0) { toast.error("Lengkapi siswa & nominal potongan"); return; }
+    const { error } = await supabase.from("spp_tariff_discounts").insert({
+      school_id: profile!.school_id,
+      tariff_id: editing.id,
+      student_id: discountForm.student_id,
+      category: discountForm.category || "Potongan",
+      amount: discountForm.amount,
+    });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Potongan ditambahkan");
+    setDiscountForm({ student_id: "", category: discountForm.category, amount: 0 });
+    loadDiscounts(editing.id);
+  };
+  const removeDiscount = async (id: string) => {
+    const { error } = await supabase.from("spp_tariff_discounts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    loadDiscounts(editing.id);
+  };
+  const updateDiscount = async (id: string, patch: { category?: string; amount?: number }) => {
+    const { error } = await supabase.from("spp_tariff_discounts").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+    else loadDiscounts(editing.id);
   };
 
   const save = async () => {
