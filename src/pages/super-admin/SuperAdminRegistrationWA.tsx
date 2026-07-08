@@ -360,42 +360,53 @@ const SuperAdminRegistrationWA = () => {
   };
 
   const handleTestAdminEmail = async () => {
-    if (!settings.admin_notify_email.trim()) {
+    const raw = settings.admin_notify_email.trim();
+    if (!raw) {
       toast.error("Isi dulu Email Admin tujuan");
+      return;
+    }
+    const recipients = raw.split(/[,;]/).map((s) => s.trim()).filter((s) => /.+@.+\..+/.test(s));
+    if (recipients.length === 0) {
+      toast.error("Format email tidak valid");
       return;
     }
     setEmailTesting(true);
     try {
-      const subjTpl = settings.admin_notify_email_ticket_subject || "Tiket Bantuan Baru — {school}";
-      const htmlTpl = settings.admin_notify_email_ticket_html || "<p>Test</p>";
-      const vars: Record<string, string> = {
-        school: "SDN 1 Jakarta",
+      const templateData = {
+        school: "SDN 1 Jakarta (TES)",
         user: "Budi Santoso",
         priority: "high",
-        subject: "Tidak bisa scan QR",
-        message: "Ini hanya email tes notifikasi tiket bantuan dari ATSkolla.",
+        subject: "Tes notifikasi tiket bantuan",
+        message: "Ini hanya email tes dari ATSkolla — server email Lovable aktif dan berjalan normal.",
         time: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
       };
-      const apply = (t: string) => t.replace(/\{(\w+)\}/g, (_: string, k: string) => vars[k] ?? "");
-      const { data, error } = await supabase.functions.invoke("send-email", {
-        body: {
-          event_type: "broadcast",
-          to: settings.admin_notify_email,
-          subject_override: "[TES] " + apply(subjTpl),
-          html_override: apply(htmlTpl),
-        },
-      });
-      if (error) throw error;
-      if ((data as any)?.success || (data as any)?.sent > 0) {
-        toast.success(`Email tes terkirim ke ${settings.admin_notify_email}`);
+      let sent = 0;
+      const errs: string[] = [];
+      for (const to of recipients) {
+        const { data, error } = await supabase.functions.invoke("send-transactional-email", {
+          body: { templateName: "admin-support-ticket", recipientEmail: to, templateData },
+        });
+        if (error) {
+          errs.push(`${to}: ${error.message}`);
+        } else if ((data as any)?.error) {
+          errs.push(`${to}: ${(data as any).error}`);
+        } else {
+          sent++;
+        }
+      }
+      if (sent > 0 && errs.length === 0) {
+        toast.success(`Email tes terkirim ke ${recipients.join(", ")}`);
+      } else if (sent > 0) {
+        toast.warning(`Sebagian terkirim (${sent}/${recipients.length}). ${errs.join("; ")}`);
       } else {
-        toast.error("Gagal: " + ((data as any)?.error || (data as any)?.errors?.join(", ") || "tidak diketahui"));
+        toast.error("Gagal: " + errs.join("; "));
       }
     } catch (err: any) {
       toast.error("Gagal kirim email tes: " + (err.message || err));
     }
     setEmailTesting(false);
   };
+
 
 
   if (loading) {
@@ -767,41 +778,19 @@ const SuperAdminRegistrationWA = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Pastikan SMTP Email sudah aktif di menu <b>Email Server</b>. Bisa isi beberapa email dipisah koma di kolom template subject/HTML.
+              Boleh isi beberapa email, pisahkan dengan koma (mis. <code>admin@atskolla.com, cs@atskolla.com</code>).
             </p>
           </div>
 
-          <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-3.5 w-3.5 text-primary" />
-              <Label className="text-xs font-semibold">Subjek Email</Label>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {["{school}", "{user}", "{priority}", "{subject}", "{message}", "{time}"].map((v) => (
-                <Badge key={v} variant="secondary" className="text-[10px]">{v}</Badge>
-              ))}
-            </div>
-            <Input
-              value={settings.admin_notify_email_ticket_subject}
-              onChange={(e) => setSettings({ ...settings, admin_notify_email_ticket_subject: e.target.value })}
-              placeholder="Tiket Bantuan Baru — {school}"
-              className="text-xs"
-            />
-            <Label className="text-xs font-semibold pt-2 block">Template HTML Email</Label>
-            <Textarea
-              value={settings.admin_notify_email_ticket_html}
-              onChange={(e) => setSettings({ ...settings, admin_notify_email_ticket_html: e.target.value })}
-              rows={8}
-              className="resize-none font-mono text-[11px]"
-              placeholder="<div>Tiket Baru: {subject} dari {school}</div>"
-            />
-            <p className="text-[10px] text-muted-foreground">
-              <Info className="h-3 w-3 inline mr-1" />
-              Boleh kosong — sistem akan pakai template default bawaan yang sudah rapi.
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 flex gap-2 items-start">
+            <Info className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Email dikirim melalui <b>server email bawaan Lovable</b> (domain <code>notify.atskolla.com</code>) — sama seperti email pendaftaran akun. Template sudah bermerek ATSkolla dan otomatis menampilkan sekolah, pengirim, prioritas, subjek, dan isi pesan.
             </p>
           </div>
         </CardContent>
       </Card>
+
 
 
       {/* Message Template */}

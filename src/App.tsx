@@ -70,6 +70,8 @@ const LegalContact = lazy(() => import("./pages/legal/Contact"));
 const Penawaran = lazy(() => import("./pages/Penawaran"));
 const SuperAdminPenawaran = lazy(() => import("./pages/super-admin/SuperAdminPenawaran"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+
 const SuperAdminBackup = lazy(() => import("./pages/super-admin/SuperAdminBackup"));
 const SuperAdminServerInfo = lazy(() => import("./pages/super-admin/SuperAdminServerInfo"));
 const SuperAdminBendahara = lazy(() => import("./pages/super-admin/SuperAdminBendahara"));
@@ -224,6 +226,8 @@ function AppRoutes() {
         <Route path="/login" element={<Login forcedMode="parent" />} />
         <Route path="/admin" element={<Login forcedMode="school" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
+
         <Route path="/register" element={<Register />} />
         <Route path="/select-role" element={<SelectRole />} />
         <Route path="/live/:schoolId" element={<PublicMonitoring />} />
