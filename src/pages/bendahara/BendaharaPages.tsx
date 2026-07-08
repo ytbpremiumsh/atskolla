@@ -1709,7 +1709,7 @@ export function BendaharaGenerate() {
       supabase.from("spp_tariffs").select("*").eq("school_id", profile.school_id).eq("is_active", true),
       supabase.from("students").select("id, name, student_id, class, parent_name, parent_phone").eq("school_id", profile.school_id),
       supabase.from("spp_invoices").select("student_id, period_month, period_year").eq("school_id", profile.school_id),
-      supabase.from("spp_tariff_discounts").select("tariff_id, student_id, category, amount").eq("school_id", profile.school_id),
+      (supabase.from("spp_tariff_discounts") as any).select("tariff_id, student_id, category, amount, discount_type, percent").eq("school_id", profile.school_id),
     ]).then(([c, t, s, inv, d]) => {
       const cls = (c.data || []).map((x: any) => x.name);
       setClasses(cls);
