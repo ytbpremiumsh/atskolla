@@ -2145,6 +2145,7 @@ function BendaharaGenerateCustom() {
     return d.toISOString().slice(0, 10);
   });
   const [autoSendWa, setAutoSendWa] = useState(true);
+  const [allowInstallment, setAllowInstallment] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
