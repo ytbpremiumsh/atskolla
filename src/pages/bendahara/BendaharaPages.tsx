@@ -1713,15 +1713,17 @@ export function BendaharaGenerate() {
     for (const s of targetStudents) {
       const tariff = tariffByClass.get(s.class);
       if (!tariff) { noTariff++; continue; }
+      const disc = discountMap.get(`${tariff.id}|${s.id}`);
+      const netAmount = Math.max(0, (tariff.amount || 0) - (disc?.amount || 0));
       for (const p of periods) {
         const exists = existingInvs.some(i => i.student_id === s.id && i.period_month === p.month && i.period_year === p.year);
         if (exists && skipExisting) { skipped++; continue; }
-        list.push({ student: s, tariff, period: p, exists });
+        list.push({ student: s, tariff, period: p, exists, discount: disc, netAmount });
       }
     }
-    const total = list.reduce((a, x) => a + (x.tariff.amount || 0), 0);
+    const total = list.reduce((a, x) => a + (x.netAmount || 0), 0);
     return { list, skipped, noTariff, total };
-  }, [targetStudents, tariffByClass, periods, existingInvs, skipExisting]);
+  }, [targetStudents, tariffByClass, periods, existingInvs, skipExisting, discountMap]);
 
   const toggleClass = (c: string) => {
     setSelectedClasses(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
