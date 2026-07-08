@@ -181,6 +181,20 @@ serve(async (req) => {
           message: payload?.message || '-',
           time: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
         };
+        // Optional custom subject / HTML body from platform_settings
+        const substitute = (t: string) => t
+          .replace(/\{school\}/g, String(templateData.school))
+          .replace(/\{user\}/g, String(templateData.user))
+          .replace(/\{priority\}/g, String(templateData.priority))
+          .replace(/\{subject\}/g, String(templateData.subject))
+          .replace(/\{message\}/g, String(templateData.message))
+          .replace(/\{time\}/g, String(templateData.time));
+        const subjectOverride = ps.admin_notify_email_ticket_subject
+          ? substitute(ps.admin_notify_email_ticket_subject)
+          : undefined;
+        const htmlOverride = ps.admin_notify_email_ticket_html
+          ? substitute(ps.admin_notify_email_ticket_html)
+          : undefined;
         const results: any[] = [];
         for (const to of recipients) {
           const r = await admin.functions.invoke('send-transactional-email', {
@@ -189,6 +203,8 @@ serve(async (req) => {
               recipientEmail: to,
               templateData,
               fromName: 'ATSkolla - Tiket Bantuan Baru',
+              subjectOverride,
+              htmlOverride,
             },
           });
           results.push({ to, data: r?.data, error: r?.error?.message || null });
