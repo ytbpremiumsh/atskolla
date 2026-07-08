@@ -1734,8 +1734,9 @@ export function BendaharaGenerate() {
     if (preview.list.length === 0) { toast.error("Tidak ada tagihan untuk dibuat"); return; }
     setLoading(true);
     try {
-      const rows = preview.list.map(({ student, tariff, period }) => {
+      const rows = preview.list.map(({ student, tariff, period, discount, netAmount }) => {
         const due = new Date(period.year, period.month - 1, tariff.due_date_day);
+        const descBase = `${student.name} - ${student.class} - ${period.label}`;
         return {
           school_id: profile.school_id,
           student_id: student.id,
@@ -1745,8 +1746,10 @@ export function BendaharaGenerate() {
           parent_name: student.parent_name,
           parent_phone: student.parent_phone,
           period_month: period.month, period_year: period.year, period_label: period.label,
-          description: `${student.name} - ${student.class} - ${period.label}`,
-          amount: tariff.amount, denda: 0, total_amount: tariff.amount,
+          description: discount && discount.amount > 0
+            ? `${descBase} (Potongan ${discount.category}: -${fmtIDR(discount.amount)})`
+            : descBase,
+          amount: netAmount, denda: 0, total_amount: netAmount,
           due_date: due.toISOString().slice(0, 10),
         };
       });
