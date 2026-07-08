@@ -359,6 +359,45 @@ const SuperAdminRegistrationWA = () => {
     setAdminTesting(null);
   };
 
+  const handleTestAdminEmail = async () => {
+    if (!settings.admin_notify_email.trim()) {
+      toast.error("Isi dulu Email Admin tujuan");
+      return;
+    }
+    setEmailTesting(true);
+    try {
+      const subjTpl = settings.admin_notify_email_ticket_subject || "Tiket Bantuan Baru — {school}";
+      const htmlTpl = settings.admin_notify_email_ticket_html || "<p>Test</p>";
+      const vars: Record<string, string> = {
+        school: "SDN 1 Jakarta",
+        user: "Budi Santoso",
+        priority: "high",
+        subject: "Tidak bisa scan QR",
+        message: "Ini hanya email tes notifikasi tiket bantuan dari ATSkolla.",
+        time: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
+      };
+      const apply = (t: string) => t.replace(/\{(\w+)\}/g, (_: string, k: string) => vars[k] ?? "");
+      const { data, error } = await supabase.functions.invoke("send-email", {
+        body: {
+          event_type: "broadcast",
+          to: settings.admin_notify_email,
+          subject_override: "[TES] " + apply(subjTpl),
+          html_override: apply(htmlTpl),
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.success || (data as any)?.sent > 0) {
+        toast.success(`Email tes terkirim ke ${settings.admin_notify_email}`);
+      } else {
+        toast.error("Gagal: " + ((data as any)?.error || (data as any)?.errors?.join(", ") || "tidak diketahui"));
+      }
+    } catch (err: any) {
+      toast.error("Gagal kirim email tes: " + (err.message || err));
+    }
+    setEmailTesting(false);
+  };
+
+
   if (loading) {
     return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>;
   }
