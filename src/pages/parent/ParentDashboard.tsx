@@ -28,6 +28,7 @@ import { isWorkingDay } from "@/lib/holidays";
 import { StudentIdCard } from "@/components/StudentIdCard";
 import { PaymentMethodPicker } from "@/components/PaymentMethodPicker";
 import type { PaymentChannelId } from "@/lib/paymentChannels";
+import { InstallmentChoiceDialog } from "@/components/parent/InstallmentChoiceDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
@@ -125,6 +126,12 @@ export default function ParentDashboard() {
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
   const [channelFees, setChannelFees] = useState<Partial<Record<PaymentChannelId, number>>>({});
   const [qrisPercent, setQrisPercent] = useState<number>(0.01);
+  const [installmentOpen, setInstallmentOpen] = useState(false);
+  const [installmentInvoice, setInstallmentInvoice] = useState<any>(null);
+  const [installmentSummary, setInstallmentSummary] = useState<any>(null);
+  const [installmentLoading, setInstallmentLoading] = useState(false);
+  const [installmentMode, setInstallmentMode] = useState<"full" | "installment" | null>(null);
+  const [installmentAmount, setInstallmentAmount] = useState<number>(0);
 
   useEffect(() => {
     supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
@@ -205,14 +212,44 @@ export default function ParentDashboard() {
   }, [tab, selectedStudent, invoke]);
 
   // Membuka picker channel pembayaran (sebelum benar-benar membuat link Mayar).
-  const paySpp = (invoiceOrId: any) => {
+  const paySpp = async (invoiceOrId: any) => {
     // Cari objek invoice lengkap supaya bisa tampilkan info di picker.
     const list = [...(sppData.tunggakan || []), ...(sppData.aktif || [])];
     const inv = typeof invoiceOrId === "string"
       ? list.find((x: any) => x.id === invoiceOrId)
       : invoiceOrId;
     if (!inv) { toast.error("Tagihan tidak ditemukan"); return; }
+
+    // Jika tagihan mengizinkan cicilan (non-SPP), buka dialog pilihan cicil / lunas dulu.
+    if (inv.allow_installment && (inv.bill_type || "spp") !== "spp") {
+      setInstallmentInvoice(inv);
+      setInstallmentSummary(null);
+      setInstallmentMode(null);
+      setInstallmentAmount(0);
+      setInstallmentOpen(true);
+      setInstallmentLoading(true);
+      const d = await invoke("installment_list", { student_id: selectedStudent, invoice_id: inv.id });
+      setInstallmentLoading(false);
+      if (d?.error) { toast.error(d.error); return; }
+      setInstallmentSummary({
+        invoice: d.invoice,
+        installments: d.installments || [],
+        locked_amount: d.locked_amount || 0,
+        remaining: d.remaining ?? inv.total_amount,
+      });
+      return;
+    }
+
     setPickerInvoice(inv);
+    setPickerOpen(true);
+  };
+
+  const onInstallmentContinue = (mode: "full" | "installment", amount: number) => {
+    if (!installmentInvoice) return;
+    setInstallmentMode(mode);
+    setInstallmentAmount(amount);
+    setInstallmentOpen(false);
+    setPickerInvoice(installmentInvoice);
     setPickerOpen(true);
   };
 
@@ -220,7 +257,11 @@ export default function ParentDashboard() {
     if (!pickerInvoice) return;
     setPickerLoading(true);
     setSppBusy(pickerInvoice.id);
-    const d = await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel });
+    // Jika sedang dalam alur cicilan (mode=installment) → panggil endpoint installment
+    const useInstallment = installmentMode === "installment" && installmentAmount > 0;
+    const d = useInstallment
+      ? await invoke("spp_pay_installment", { student_id: selectedStudent, invoice_id: pickerInvoice.id, amount: installmentAmount, channel })
+      : await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel });
     setSppBusy(null);
     setPickerLoading(false);
     if (d?.error) { toast.error(d.error); return; }
@@ -228,7 +269,10 @@ export default function ParentDashboard() {
       setPickerOpen(false);
       setPayingInvoiceId(d.invoice_id || pickerInvoice.id);
       setPaymentIframe(d.payment_url);
-      toast.success("Membuka halaman pembayaran...");
+      toast.success(useInstallment ? "Membuka pembayaran cicilan..." : "Membuka halaman pembayaran...");
+      // Reset mode setelah dipakai
+      setInstallmentMode(null);
+      setInstallmentAmount(0);
     }
   };
 
@@ -1107,6 +1151,29 @@ export default function ParentDashboard() {
                       </div>
                       <p className="text-lg font-extrabold text-[#5B6CF9]">Rp {(inv.total_amount || 0).toLocaleString("id-ID")}</p>
                       <p className="text-[11px] text-muted-foreground mb-2.5">Jatuh tempo: {inv.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}</p>
+                      {inv.allow_installment && (inv.installment_paid_amount || 0) > 0 && (() => {
+                        const total = inv.total_amount || 0;
+                        const paid = inv.installment_paid_amount || 0;
+                        const sisa = Math.max(0, total - paid);
+                        const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+                        return (
+                          <div className="mb-2.5 rounded-lg border border-[#5B6CF9]/20 bg-[#5B6CF9]/5 p-2">
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-muted-foreground">Cicilan dibayar</span>
+                              <span className="font-bold">Rp {paid.toLocaleString("id-ID")} ({pct}%)</span>
+                            </div>
+                            <div className="h-1.5 bg-[#5B6CF9]/15 rounded-full overflow-hidden">
+                              <div className="h-full bg-[#5B6CF9]" style={{ width: `${pct}%` }} />
+                            </div>
+                            <p className="text-[10px] text-amber-600 font-semibold mt-1">Sisa: Rp {sisa.toLocaleString("id-ID")}</p>
+                          </div>
+                        );
+                      })()}
+                      {inv.allow_installment && (inv.bill_type || "spp") !== "spp" && (
+                        <p className="text-[10px] text-[#5B6CF9] font-semibold mb-2 flex items-center gap-1">
+                          <Wallet className="h-2.5 w-2.5" /> Tagihan ini bisa dibayar Cicil / Lunas
+                        </p>
+                      )}
                       <Button
                         size="sm"
                         className={cn("w-full text-white", isExpired ? "bg-orange-600 hover:bg-orange-700" : "bg-[#5B6CF9] hover:bg-[#4c5ded]")}
@@ -1327,15 +1394,29 @@ export default function ParentDashboard() {
 
       <PaymentMethodPicker
         open={pickerOpen}
-        onOpenChange={(o) => { if (!pickerLoading) { setPickerOpen(o); if (!o) setPickerInvoice(null); } }}
-        billAmount={pickerInvoice?.total_amount || 0}
-        title="Pilih Metode Pembayaran"
-        subtitle={pickerInvoice ? `Tagihan SPP ${pickerInvoice.period_label || ""}` : undefined}
+        onOpenChange={(o) => { if (!pickerLoading) { setPickerOpen(o); if (!o) { setPickerInvoice(null); setInstallmentMode(null); setInstallmentAmount(0); } } }}
+        billAmount={installmentMode === "installment" && installmentAmount > 0 ? installmentAmount : (pickerInvoice?.total_amount || 0)}
+        title={installmentMode === "installment" ? "Pilih Metode Pembayaran (Cicilan)" : "Pilih Metode Pembayaran"}
+        subtitle={pickerInvoice ? (
+          installmentMode === "installment"
+            ? `Cicilan ${pickerInvoice.period_label || ""} • Rp ${installmentAmount.toLocaleString("id-ID")}`
+            : `Tagihan ${pickerInvoice.period_label || ""}`
+        ) : undefined}
         loading={pickerLoading}
         feeOverrides={channelFees}
         qrisPercent={qrisPercent}
         onConfirm={confirmPaySpp}
       />
+
+      <InstallmentChoiceDialog
+        open={installmentOpen}
+        onClose={() => { setInstallmentOpen(false); setInstallmentInvoice(null); }}
+        invoice={installmentInvoice}
+        loading={installmentLoading}
+        summary={installmentSummary}
+        onContinue={onInstallmentContinue}
+      />
+
     </div>
   );
 }
