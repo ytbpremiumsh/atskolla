@@ -125,6 +125,12 @@ export default function ParentDashboard() {
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
   const [channelFees, setChannelFees] = useState<Partial<Record<PaymentChannelId, number>>>({});
   const [qrisPercent, setQrisPercent] = useState<number>(0.01);
+  const [installmentOpen, setInstallmentOpen] = useState(false);
+  const [installmentInvoice, setInstallmentInvoice] = useState<any>(null);
+  const [installmentSummary, setInstallmentSummary] = useState<any>(null);
+  const [installmentLoading, setInstallmentLoading] = useState(false);
+  const [installmentMode, setInstallmentMode] = useState<"full" | "installment" | null>(null);
+  const [installmentAmount, setInstallmentAmount] = useState<number>(0);
 
   useEffect(() => {
     supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
