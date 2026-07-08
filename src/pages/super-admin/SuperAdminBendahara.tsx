@@ -116,33 +116,33 @@ export default function SuperAdminBendahara() {
     return m;
   }, [schools]);
 
-  // Compute saldo per school: sum(net_amount) of paid invoices not yet linked to a paid settlement
+  // Compute saldo per school: sum(total_amount) of paid invoices not yet linked to a paid settlement
+  // NOTE: fee gateway lama sudah dihilangkan — sumber saldo = total_amount penuh (samakan dgn Dashboard Bendahara).
   const balances = useMemo(() => {
     const map: Record<string, {
       school_id: string; total_paid_invoices: number; total_gross: number;
-      total_net: number; total_gateway_fee: number; saldo_pending: number;
-      total_disbursed: number; pending_settlement: number;
+      saldo_pending: number; total_disbursed: number; pending_settlement: number;
     }> = {};
     for (const s of schools) {
       map[s.id] = {
-        school_id: s.id, total_paid_invoices: 0, total_gross: 0, total_net: 0,
-        total_gateway_fee: 0, saldo_pending: 0, total_disbursed: 0, pending_settlement: 0,
+        school_id: s.id, total_paid_invoices: 0, total_gross: 0,
+        saldo_pending: 0, total_disbursed: 0, pending_settlement: 0,
       };
     }
     for (const inv of invoices) {
       if (inv.status !== "paid") continue;
       const m = map[inv.school_id]; if (!m) continue;
+      const amt = inv.total_amount || inv.net_amount || 0;
       m.total_paid_invoices += 1;
-      m.total_gross += inv.total_amount || 0;
-      m.total_net += inv.net_amount || 0;
-      m.total_gateway_fee += inv.gateway_fee || 0;
-      if (!inv.settlement_id) m.saldo_pending += inv.net_amount || 0;
+      m.total_gross += amt;
+      if (!inv.settlement_id) m.saldo_pending += amt;
     }
     for (const st of settlements) {
       const m = map[st.school_id]; if (!m) continue;
-      if (st.status === "paid") m.total_disbursed += st.final_payout || 0;
+      const payout = st.final_payout || st.total_gross || st.total_net || 0;
+      if (st.status === "paid") m.total_disbursed += payout;
       else if (["requested", "approved", "processing"].includes(st.status))
-        m.pending_settlement += st.final_payout || 0;
+        m.pending_settlement += payout;
     }
     return Object.values(map);
   }, [schools, invoices, settlements]);
