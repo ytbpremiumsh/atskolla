@@ -138,7 +138,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
-        .from("schools")
+        .from("schools_public")
         .select("id, name, slug, logo")
         .eq("slug", state.slug!)
         .maybeSingle();
