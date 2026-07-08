@@ -32,8 +32,14 @@ const SuperAdminRegistrationWA = () => {
     admin_notify_ticket_template: "",
     admin_notify_withdrawal_template: "",
     admin_notify_bendahara_template: "",
+    admin_notify_email: "",
+    admin_notify_email_enabled: "true",
+    admin_notify_email_ticket_subject: "",
+    admin_notify_email_ticket_html: "",
   });
   const [adminTesting, setAdminTesting] = useState<"ticket" | "withdrawal" | "bendahara" | null>(null);
+  const [emailTesting, setEmailTesting] = useState(false);
+
 
   // QR state
   const [mpwaNumber, setMpwaNumber] = useState("");
