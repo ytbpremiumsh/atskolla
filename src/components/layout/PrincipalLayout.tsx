@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { PrincipalDataProvider, usePrincipalData } from "@/hooks/usePrincipalData";
 import { Button } from "@/components/ui/button";
+import { SchoolAccessGate } from "@/components/SchoolAccessGate";
 
 function HeaderInner() {
   const { schoolName, refresh, loading } = usePrincipalData();
