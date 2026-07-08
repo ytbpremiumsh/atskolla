@@ -2317,6 +2317,7 @@ export type Database = {
           holiday_mode: boolean
           holiday_mode_label: string | null
           id: string
+          is_suspended: boolean
           logo: string | null
           name: string
           npsn: string | null
@@ -2325,6 +2326,8 @@ export type Database = {
           rfid_mode: string
           slug: string
           slug_updated_at: string | null
+          suspended_at: string | null
+          suspended_reason: string | null
           timezone: string | null
           whatsapp: string | null
         }
@@ -2340,6 +2343,7 @@ export type Database = {
           holiday_mode?: boolean
           holiday_mode_label?: string | null
           id?: string
+          is_suspended?: boolean
           logo?: string | null
           name: string
           npsn?: string | null
@@ -2348,6 +2352,8 @@ export type Database = {
           rfid_mode?: string
           slug: string
           slug_updated_at?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           timezone?: string | null
           whatsapp?: string | null
         }
@@ -2363,6 +2369,7 @@ export type Database = {
           holiday_mode?: boolean
           holiday_mode_label?: string | null
           id?: string
+          is_suspended?: boolean
           logo?: string | null
           name?: string
           npsn?: string | null
@@ -2371,6 +2378,8 @@ export type Database = {
           rfid_mode?: string
           slug?: string
           slug_updated_at?: string | null
+          suspended_at?: string | null
+          suspended_reason?: string | null
           timezone?: string | null
           whatsapp?: string | null
         }
