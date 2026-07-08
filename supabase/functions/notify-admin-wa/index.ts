@@ -45,7 +45,12 @@ serve(async (req) => {
         'mpwa_platform_connected',
         'wa_api_url',
         'wa_api_key',
+        'admin_notify_email',
+        'admin_notify_email_enabled',
+        'admin_notify_email_ticket_subject',
+        'admin_notify_email_ticket_html',
       ]);
+
 
     const ps: Record<string, string> = {};
     (settingsRows || []).forEach((r: any) => { ps[r.key] = r.value; });
