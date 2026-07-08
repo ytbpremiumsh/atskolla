@@ -1718,8 +1718,8 @@ export function BendaharaGenerate() {
       setStudents(s.data || []);
       setExistingInvs(inv.data || []);
       setDiscountMap(() => {
-        const m = new Map<string, { category: string; amount: number }>();
-        (d.data || []).forEach((x: any) => m.set(`${x.tariff_id}|${x.student_id}`, { category: x.category, amount: x.amount }));
+        const m = new Map<string, { category: string; amount: number; discount_type?: string; percent?: number }>();
+        (d.data || []).forEach((x: any) => m.set(`${x.tariff_id}|${x.student_id}`, { category: x.category, amount: x.amount, discount_type: x.discount_type, percent: x.percent }));
         return m;
       });
     });
