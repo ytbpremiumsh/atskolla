@@ -778,41 +778,19 @@ const SuperAdminRegistrationWA = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Pastikan SMTP Email sudah aktif di menu <b>Email Server</b>. Bisa isi beberapa email dipisah koma di kolom template subject/HTML.
+              Boleh isi beberapa email, pisahkan dengan koma (mis. <code>admin@atskolla.com, cs@atskolla.com</code>).
             </p>
           </div>
 
-          <div className="space-y-2 p-3 rounded-lg border border-border bg-muted/30">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-3.5 w-3.5 text-primary" />
-              <Label className="text-xs font-semibold">Subjek Email</Label>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {["{school}", "{user}", "{priority}", "{subject}", "{message}", "{time}"].map((v) => (
-                <Badge key={v} variant="secondary" className="text-[10px]">{v}</Badge>
-              ))}
-            </div>
-            <Input
-              value={settings.admin_notify_email_ticket_subject}
-              onChange={(e) => setSettings({ ...settings, admin_notify_email_ticket_subject: e.target.value })}
-              placeholder="Tiket Bantuan Baru — {school}"
-              className="text-xs"
-            />
-            <Label className="text-xs font-semibold pt-2 block">Template HTML Email</Label>
-            <Textarea
-              value={settings.admin_notify_email_ticket_html}
-              onChange={(e) => setSettings({ ...settings, admin_notify_email_ticket_html: e.target.value })}
-              rows={8}
-              className="resize-none font-mono text-[11px]"
-              placeholder="<div>Tiket Baru: {subject} dari {school}</div>"
-            />
-            <p className="text-[10px] text-muted-foreground">
-              <Info className="h-3 w-3 inline mr-1" />
-              Boleh kosong — sistem akan pakai template default bawaan yang sudah rapi.
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 flex gap-2 items-start">
+            <Info className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Email dikirim melalui <b>server email bawaan Lovable</b> (domain <code>notify.atskolla.com</code>) — sama seperti email pendaftaran akun. Template sudah bermerek ATSkolla dan otomatis menampilkan sekolah, pengirim, prioritas, subjek, dan isi pesan.
             </p>
           </div>
         </CardContent>
       </Card>
+
 
 
       {/* Message Template */}
