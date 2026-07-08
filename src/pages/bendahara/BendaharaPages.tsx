@@ -1314,7 +1314,7 @@ export function BendaharaTarif() {
 
   // Per-student discounts
   const [discounts, setDiscounts] = useState<any[]>([]);
-  const [discountForm, setDiscountForm] = useState({ student_id: "", category: "Beasiswa", amount: 0 });
+  const [discountForm, setDiscountForm] = useState<{ student_id: string; category: string; discount_type: "nominal" | "percent"; amount: number; percent: number }>({ student_id: "", category: "Beasiswa", discount_type: "nominal", amount: 0, percent: 0 });
   const [discountsLoading, setDiscountsLoading] = useState(false);
 
   const load = () => {
