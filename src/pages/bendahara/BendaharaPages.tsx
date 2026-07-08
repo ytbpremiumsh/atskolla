@@ -3038,7 +3038,7 @@ function ClassGroupedList({ students, filterAY, filterMonth, navigate, invoices,
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="py-2.5 hidden md:table-cell text-xs font-mono text-muted-foreground">{s.student_id || "-"}</TableCell>
+                          <TableCell className="py-2.5 hidden md:table-cell text-xs font-mono text-muted-foreground">{s.card_number || "-"}</TableCell>
                           <TableCell className="py-2.5 text-center">
                             <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md border ${pal.chip}`}>
                               <CheckCircle2 className="h-3 w-3" />
