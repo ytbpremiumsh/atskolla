@@ -3073,6 +3073,7 @@ export function BendaharaSPPDetail() {
   const [busy, setBusy] = useState<string | null>(null);
   const [paymentIframe, setPaymentIframe] = useState<string | null>(null);
   const [offlineDialog, setOfflineDialog] = useState<{ inv: any | null; method: "offline_cash" | "offline_transfer"; paidDate: string; note: string }>({ inv: null, method: "offline_cash", paidDate: new Date().toISOString().slice(0, 10), note: "" });
+  const [installmentInv, setInstallmentInv] = useState<any | null>(null);
 
   const load = () => {
     if (!profile?.school_id || !studentId) { setLoading(false); return; }
