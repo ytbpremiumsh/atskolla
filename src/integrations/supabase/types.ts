@@ -2317,6 +2317,7 @@ export type Database = {
           holiday_mode: boolean
           holiday_mode_label: string | null
           id: string
+          installment_enabled: boolean
           is_suspended: boolean
           logo: string | null
           name: string
@@ -2343,6 +2344,7 @@ export type Database = {
           holiday_mode?: boolean
           holiday_mode_label?: string | null
           id?: string
+          installment_enabled?: boolean
           is_suspended?: boolean
           logo?: string | null
           name: string
@@ -2369,6 +2371,7 @@ export type Database = {
           holiday_mode?: boolean
           holiday_mode_label?: string | null
           id?: string
+          installment_enabled?: boolean
           is_suspended?: boolean
           logo?: string | null
           name?: string
@@ -2470,8 +2473,71 @@ export type Database = {
         }
         Relationships: []
       }
+      spp_installments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_id: string
+          mayar_payment_url: string | null
+          mayar_transaction_id: string | null
+          notes: string | null
+          paid_at: string | null
+          payment_channel: string | null
+          payment_method: string
+          school_id: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id: string
+          mayar_payment_url?: string | null
+          mayar_transaction_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_channel?: string | null
+          payment_method?: string
+          school_id: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_id?: string
+          mayar_payment_url?: string | null
+          mayar_transaction_id?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          payment_channel?: string | null
+          payment_method?: string
+          school_id?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "spp_installments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "spp_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spp_invoices: {
         Row: {
+          allow_installment: boolean
           amount: number
           bill_category: string | null
           bill_type: string
@@ -2483,6 +2549,7 @@ export type Database = {
           expired_at: string | null
           gateway_fee: number
           id: string
+          installment_paid_amount: number
           invoice_number: string
           mayar_invoice_id: string | null
           net_amount: number
@@ -2508,6 +2575,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_installment?: boolean
           amount?: number
           bill_category?: string | null
           bill_type?: string
@@ -2519,6 +2587,7 @@ export type Database = {
           expired_at?: string | null
           gateway_fee?: number
           id?: string
+          installment_paid_amount?: number
           invoice_number: string
           mayar_invoice_id?: string | null
           net_amount?: number
@@ -2544,6 +2613,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_installment?: boolean
           amount?: number
           bill_category?: string | null
           bill_type?: string
@@ -2555,6 +2625,7 @@ export type Database = {
           expired_at?: string | null
           gateway_fee?: number
           id?: string
+          installment_paid_amount?: number
           invoice_number?: string
           mayar_invoice_id?: string | null
           net_amount?: number

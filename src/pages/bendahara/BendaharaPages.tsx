@@ -34,6 +34,7 @@ import { PaymentMethodPicker } from "@/components/PaymentMethodPicker";
 import type { PaymentChannelId } from "@/lib/paymentChannels";
 import { brandPaymentUrl } from "@/lib/utils";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
+import { InstallmentDialog } from "@/components/bendahara/InstallmentDialog";
 
 const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -327,23 +328,24 @@ export function StatCard({ label, value, icon: Icon, gradient = "from-emerald-50
 }
 
 // ============ Feature Flags (per-sekolah, dikontrol Super Admin) ============
-const bendaharaFlagsCache: Record<string, { wa: boolean; offline: boolean }> = {};
-async function fetchBendaharaFlags(schoolId: string): Promise<{ wa: boolean; offline: boolean }> {
+const bendaharaFlagsCache: Record<string, { wa: boolean; offline: boolean; installment: boolean }> = {};
+async function fetchBendaharaFlags(schoolId: string): Promise<{ wa: boolean; offline: boolean; installment: boolean }> {
   if (bendaharaFlagsCache[schoolId]) return bendaharaFlagsCache[schoolId];
   const { data } = await supabase
     .from("schools")
-    .select("bendahara_wa_enabled, bendahara_offline_enabled")
+    .select("bendahara_wa_enabled, bendahara_offline_enabled, installment_enabled")
     .eq("id", schoolId)
     .maybeSingle();
   const flags = {
     wa: (data as any)?.bendahara_wa_enabled !== false,
     offline: (data as any)?.bendahara_offline_enabled !== false,
+    installment: (data as any)?.installment_enabled !== false,
   };
   bendaharaFlagsCache[schoolId] = flags;
   return flags;
 }
 function useBendaharaFlags(schoolId?: string | null) {
-  const [flags, setFlags] = useState<{ wa: boolean; offline: boolean }>({ wa: true, offline: true });
+  const [flags, setFlags] = useState<{ wa: boolean; offline: boolean; installment: boolean }>({ wa: true, offline: true, installment: true });
   useEffect(() => {
     if (!schoolId) return;
     let alive = true;
@@ -3072,6 +3074,7 @@ export function BendaharaSPPDetail() {
   const [busy, setBusy] = useState<string | null>(null);
   const [paymentIframe, setPaymentIframe] = useState<string | null>(null);
   const [offlineDialog, setOfflineDialog] = useState<{ inv: any | null; method: "offline_cash" | "offline_transfer"; paidDate: string; note: string }>({ inv: null, method: "offline_cash", paidDate: new Date().toISOString().slice(0, 10), note: "" });
+  const [installmentInv, setInstallmentInv] = useState<any | null>(null);
 
   const load = () => {
     if (!profile?.school_id || !studentId) { setLoading(false); return; }
@@ -3733,6 +3736,11 @@ export function BendaharaSPPDetail() {
                                   <Banknote className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Bayar Offline</span>
                                 </Button>
                               )}
+                              {flags.installment && (
+                                <Button size="sm" variant="outline" className="h-8 px-2.5 border-[#5B6CF9]/40 text-[#5B6CF9] hover:bg-[#5B6CF9]/10" onClick={() => setInstallmentInv(inv)} title="Kelola cicilan tagihan ini">
+                                  <Wallet className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">{inv.allow_installment ? "Cicilan" : "Aktifkan Cicilan"}</span>
+                                </Button>
+                              )}
                               <Button size="sm" variant="outline" className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50" disabled={busy === `del-${inv.id}`} onClick={() => deleteInvoice(inv)} title="Hapus tagihan">
                                 {busy === `del-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                               </Button>
@@ -3882,6 +3890,14 @@ export function BendaharaSPPDetail() {
         subtitle={linkPicker?.inv ? `Tagihan SPP ${linkPicker.inv.period_label || ""}` : undefined}
         loading={linkPickerLoading}
         onConfirm={confirmCreatePaymentLink}
+      />
+
+      <InstallmentDialog
+        open={!!installmentInv}
+        invoice={installmentInv}
+        schoolInstallmentEnabled={flags.installment}
+        onClose={() => setInstallmentInv(null)}
+        onChanged={load}
       />
     </div>
   );
