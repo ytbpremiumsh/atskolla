@@ -2044,7 +2044,15 @@ export function BendaharaGenerate() {
                     <TableCell className="text-sm">{x.student.name}</TableCell>
                     <TableCell className="text-sm"><Badge variant="secondary">{x.student.class}</Badge></TableCell>
                     <TableCell className="text-sm">{x.period.label}</TableCell>
-                    <TableCell className="text-sm font-semibold text-right">{fmtIDR(x.tariff.amount)}</TableCell>
+                    <TableCell className="text-sm font-semibold text-right">
+                      {x.discount && x.discount.amount > 0 ? (
+                        <div className="flex flex-col items-end">
+                          <span className="line-through text-muted-foreground text-[10px]">{fmtIDR(x.tariff.amount)}</span>
+                          <span className="text-[#5B6CF9]">{fmtIDR(x.netAmount)}</span>
+                          <span className="text-[9px] text-emerald-600">−{fmtIDR(x.discount.amount)} {x.discount.category}</span>
+                        </div>
+                      ) : fmtIDR(x.netAmount ?? x.tariff.amount)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
