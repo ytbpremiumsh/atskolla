@@ -1151,6 +1151,29 @@ export default function ParentDashboard() {
                       </div>
                       <p className="text-lg font-extrabold text-[#5B6CF9]">Rp {(inv.total_amount || 0).toLocaleString("id-ID")}</p>
                       <p className="text-[11px] text-muted-foreground mb-2.5">Jatuh tempo: {inv.due_date ? new Date(inv.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"}</p>
+                      {inv.allow_installment && (inv.installment_paid_amount || 0) > 0 && (() => {
+                        const total = inv.total_amount || 0;
+                        const paid = inv.installment_paid_amount || 0;
+                        const sisa = Math.max(0, total - paid);
+                        const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+                        return (
+                          <div className="mb-2.5 rounded-lg border border-[#5B6CF9]/20 bg-[#5B6CF9]/5 p-2">
+                            <div className="flex justify-between text-[10px] mb-1">
+                              <span className="text-muted-foreground">Cicilan dibayar</span>
+                              <span className="font-bold">Rp {paid.toLocaleString("id-ID")} ({pct}%)</span>
+                            </div>
+                            <div className="h-1.5 bg-[#5B6CF9]/15 rounded-full overflow-hidden">
+                              <div className="h-full bg-[#5B6CF9]" style={{ width: `${pct}%` }} />
+                            </div>
+                            <p className="text-[10px] text-amber-600 font-semibold mt-1">Sisa: Rp {sisa.toLocaleString("id-ID")}</p>
+                          </div>
+                        );
+                      })()}
+                      {inv.allow_installment && (inv.bill_type || "spp") !== "spp" && (
+                        <p className="text-[10px] text-[#5B6CF9] font-semibold mb-2 flex items-center gap-1">
+                          <Wallet className="h-2.5 w-2.5" /> Tagihan ini bisa dibayar Cicil / Lunas
+                        </p>
+                      )}
                       <Button
                         size="sm"
                         className={cn("w-full text-white", isExpired ? "bg-orange-600 hover:bg-orange-700" : "bg-[#5B6CF9] hover:bg-[#4c5ded]")}
