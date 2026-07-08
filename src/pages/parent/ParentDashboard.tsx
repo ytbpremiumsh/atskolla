@@ -28,6 +28,7 @@ import { isWorkingDay } from "@/lib/holidays";
 import { StudentIdCard } from "@/components/StudentIdCard";
 import { PaymentMethodPicker } from "@/components/PaymentMethodPicker";
 import type { PaymentChannelId } from "@/lib/paymentChannels";
+import { InstallmentChoiceDialog } from "@/components/parent/InstallmentChoiceDialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
