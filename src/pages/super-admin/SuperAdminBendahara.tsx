@@ -213,7 +213,7 @@ export default function SuperAdminBendahara() {
   };
 
 
-  const toggleSchoolFlag = async (schoolId: string, field: "bendahara_wa_enabled" | "bendahara_offline_enabled", next: boolean) => {
+  const toggleSchoolFlag = async (schoolId: string, field: "bendahara_wa_enabled" | "bendahara_offline_enabled" | "installment_enabled", next: boolean) => {
     // Optimistic UI
     setSchools((prev) => prev.map((s) => (s.id === schoolId ? { ...s, [field]: next } : s)));
     const patch: any = { [field]: next };
