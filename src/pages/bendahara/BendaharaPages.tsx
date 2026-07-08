@@ -34,6 +34,7 @@ import { PaymentMethodPicker } from "@/components/PaymentMethodPicker";
 import type { PaymentChannelId } from "@/lib/paymentChannels";
 import { brandPaymentUrl } from "@/lib/utils";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
+import { InstallmentDialog } from "@/components/bendahara/InstallmentDialog";
 
 const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
