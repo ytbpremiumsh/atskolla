@@ -402,7 +402,7 @@ export default function SuperAdminBendahara() {
                       <TableCell className="font-mono text-[11px]">{s.settlement_code}</TableCell>
                       <TableCell className="text-sm font-medium">{schoolMap[s.school_id]?.name || "—"}</TableCell>
                       <TableCell className="text-center text-sm">{s.total_transactions}</TableCell>
-                      <TableCell className="text-right text-sm">{fmtIDR(s.total_net)}</TableCell>
+                      <TableCell className="text-right text-sm">{fmtIDR(s.total_gross || s.total_net)}</TableCell>
                       <TableCell className="text-right text-sm font-semibold text-emerald-600">{fmtIDR(s.final_payout)}</TableCell>
                       <TableCell className="text-xs">
                         <p className="font-semibold">{s.bank_name || "—"}</p>
