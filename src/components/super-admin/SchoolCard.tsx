@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { School, Users, Eye, CreditCard, Pencil, Mail, Phone } from "lucide-react";
+import { School, Users, Eye, CreditCard, Pencil, Mail, Phone, Ban, PlayCircle, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export interface SchoolData {
@@ -15,6 +15,8 @@ export interface SchoolData {
   timezone: string | null;
   logo: string | null;
   created_at: string;
+  is_suspended?: boolean;
+  suspended_reason?: string | null;
   studentCount?: number;
   classCount?: number;
   adminEmail?: string | null;
@@ -35,10 +37,12 @@ interface SchoolCardProps {
   onDetail: (s: SchoolData) => void;
   onSubscription: (s: SchoolData) => void;
   onEdit: (s: SchoolData) => void;
+  onSuspend: (s: SchoolData) => void;
+  onDelete: (s: SchoolData) => void;
   getStatusBadge: (status: string) => React.ReactNode;
 }
 
-const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatusBadge }: SchoolCardProps) => {
+const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, onSuspend, onDelete, getStatusBadge }: SchoolCardProps) => {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.03 }}>
       <Card className="border-0 shadow-card">
@@ -69,6 +73,11 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatus
                 ) : (
                   <Badge variant="outline" className="text-[10px] text-muted-foreground">Belum berlangganan</Badge>
                 )}
+                {school.is_suspended && (
+                  <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-[10px]">
+                    <Ban className="h-3 w-3 mr-0.5" /> Ditangguhkan
+                  </Badge>
+                )}
               </div>
               {/* Admin Contact Info */}
               {(school.adminEmail || school.adminPhone) && (
@@ -86,7 +95,7 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatus
                 </div>
               )}
             </div>
-            <div className="flex gap-1 shrink-0">
+            <div className="flex gap-1 shrink-0 flex-wrap justify-end">
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Detail" onClick={() => onDetail(school)}>
                 <Eye className="h-3.5 w-3.5" />
               </Button>
@@ -95,6 +104,24 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, getStatus
               </Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" title="Edit" onClick={() => onEdit(school)}>
                 <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`h-8 w-8 ${school.is_suspended ? "text-success hover:text-success" : "text-amber-600 hover:text-amber-700"}`}
+                title={school.is_suspended ? "Aktifkan kembali" : "Tangguhkan akses"}
+                onClick={() => onSuspend(school)}
+              >
+                {school.is_suspended ? <PlayCircle className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                title="Hapus sekolah"
+                onClick={() => onDelete(school)}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>

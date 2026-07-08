@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { PrincipalDataProvider, usePrincipalData } from "@/hooks/usePrincipalData";
 import { Button } from "@/components/ui/button";
+import { SchoolAccessGate } from "@/components/SchoolAccessGate";
 
 function HeaderInner() {
   const { schoolName, refresh, loading } = usePrincipalData();
@@ -116,7 +117,9 @@ export function PrincipalLayout() {
             </header>
             <main className="no-motion flex-1 p-4 md:p-6 w-full pb-10">
               <Suspense fallback={<div className="h-32" />}>
-                <Outlet />
+                <SchoolAccessGate>
+                  <Outlet />
+                </SchoolAccessGate>
               </Suspense>
             </main>
           </div>
