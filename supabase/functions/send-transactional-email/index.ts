@@ -56,6 +56,8 @@ Deno.serve(async (req) => {
   let messageId: string
   let templateData: Record<string, any> = {}
   let fromNameOverride: string | undefined
+  let htmlOverride: string | undefined
+  let subjectOverride: string | undefined
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
@@ -69,6 +71,16 @@ Deno.serve(async (req) => {
       fromNameOverride = body.fromName.trim()
     } else if (typeof body.from_name === 'string' && body.from_name.trim()) {
       fromNameOverride = body.from_name.trim()
+    }
+    if (typeof body.htmlOverride === 'string' && body.htmlOverride.trim()) {
+      htmlOverride = body.htmlOverride
+    } else if (typeof body.html_override === 'string' && body.html_override.trim()) {
+      htmlOverride = body.html_override
+    }
+    if (typeof body.subjectOverride === 'string' && body.subjectOverride.trim()) {
+      subjectOverride = body.subjectOverride.trim()
+    } else if (typeof body.subject_override === 'string' && body.subject_override.trim()) {
+      subjectOverride = body.subject_override.trim()
     }
   } catch {
     return new Response(
@@ -283,20 +295,23 @@ Deno.serve(async (req) => {
     )
   }
 
-  // 4. Render React Email template to HTML and plain text
-  const html = await renderAsync(
+  // 4. Render React Email template to HTML and plain text (unless overridden)
+  const html = htmlOverride ?? await renderAsync(
     React.createElement(template.component, templateData)
   )
-  const plainText = await renderAsync(
-    React.createElement(template.component, templateData),
-    { plainText: true }
-  )
+  const plainText = htmlOverride
+    ? htmlOverride.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+    : await renderAsync(
+        React.createElement(template.component, templateData),
+        { plainText: true }
+      )
 
-  // Resolve subject — supports static string or dynamic function
-  const resolvedSubject =
+  // Resolve subject — override wins, then template (static or dynamic)
+  const resolvedSubject = subjectOverride ?? (
     typeof template.subject === 'function'
       ? template.subject(templateData)
       : template.subject
+  )
 
   // 5. Enqueue the pre-rendered email for async processing by the dispatcher.
   // The dispatcher (process-email-queue) handles sending, retries, and rate-limit backoff.

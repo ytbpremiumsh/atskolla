@@ -736,60 +736,9 @@ const SuperAdminRegistrationWA = () => {
         </CardContent>
       </Card>
 
-      {/* ═══ Notifikasi Email Super Admin (Tiket Bantuan) ═══ */}
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-4 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Mail className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-bold text-foreground text-sm">Notifikasi Email Super Admin</h3>
-                <p className="text-xs text-muted-foreground">
-                  Kirim email otomatis ke Super Admin setiap ada Tiket Bantuan baru dari sekolah
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={settings.admin_notify_email_enabled === "true"}
-              onCheckedChange={(v) => setSettings({ ...settings, admin_notify_email_enabled: v ? "true" : "false" })}
-            />
-          </div>
+      {/* Notifikasi Email Super Admin dipindah ke: Super Admin → Email → Notifikasi Admin */}
 
-          <div className="space-y-1">
-            <Label className="text-xs">Email Super Admin Tujuan</Label>
-            <div className="flex gap-2">
-              <Input
-                type="email"
-                value={settings.admin_notify_email}
-                onChange={(e) => setSettings({ ...settings, admin_notify_email: e.target.value })}
-                placeholder="admin@atskolla.com"
-                className="flex-1"
-              />
-              <Button
-                variant="outline"
-                onClick={handleTestAdminEmail}
-                disabled={emailTesting || !settings.admin_notify_email}
-                className="shrink-0"
-              >
-                {emailTesting ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Send className="h-4 w-4 mr-1" />}
-                Tes Email
-              </Button>
-            </div>
-            <p className="text-[10px] text-muted-foreground">
-              Boleh isi beberapa email, pisahkan dengan koma (mis. <code>admin@atskolla.com, cs@atskolla.com</code>).
-            </p>
-          </div>
 
-          <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 flex gap-2 items-start">
-            <Info className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Email dikirim melalui <b>server email bawaan Lovable</b> (domain <code>notify.atskolla.com</code>) — sama seperti email pendaftaran akun. Template sudah bermerek ATSkolla dan otomatis menampilkan sekolah, pengirim, prioritas, subjek, dan isi pesan.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
 
 
 
