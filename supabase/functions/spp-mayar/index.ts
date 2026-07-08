@@ -322,6 +322,121 @@ serve(async (req) => {
       });
     }
 
+    // ====== PARENT INSTALLMENT (partial payment) ======
+    if (action === "parent_create_installment_payment") {
+      const parentToken = req.headers.get("x-parent-token") || body.parent_token;
+      if (!parentToken) return err("Unauthorized");
+      const { data: ses } = await supabaseAdmin.from("parent_sessions").select("phone, expires_at").eq("token", parentToken).maybeSingle();
+      if (!ses || new Date(ses.expires_at).getTime() < Date.now()) return err("Sesi tidak valid");
+
+      const invoiceId = body.invoice_id as string;
+      const amount = Math.round(Number(body.amount) || 0);
+      const channel = normalizeChannel(body.channel);
+      if (!invoiceId) return err("invoice_id wajib");
+      if (!amount || amount < 10000) return err("Nominal cicilan minimum Rp 10.000");
+
+      const { data: inv } = await supabaseAdmin.from("spp_invoices").select("*").eq("id", invoiceId).maybeSingle();
+      if (!inv) return err("Invoice tidak ditemukan");
+      if (inv.status === "paid") return err("Invoice sudah lunas");
+      if ((inv.bill_type || "spp") === "spp") return err("Tagihan SPP wajib dibayar penuh, tidak dapat dicicil");
+      if (!inv.allow_installment) return err("Cicilan belum diaktifkan bendahara untuk tagihan ini");
+
+      const { data: schoolRow } = await supabaseAdmin.from("schools").select("installment_enabled").eq("id", inv.school_id).maybeSingle();
+      if ((schoolRow as any)?.installment_enabled === false) return err("Fitur cicilan dinonaktifkan sekolah");
+
+      // Verifikasi kepemilikan wali sama seperti parent_create_payment
+      const { data: studentRow } = await supabaseAdmin.from("students").select("parent_phone").eq("id", inv.student_id).maybeSingle();
+      const phoneVariants = (raw: string): string[] => {
+        const digits = (raw || "").replace(/\D/g, "");
+        const v = new Set<string>();
+        if (!digits) return [];
+        v.add(digits);
+        if (digits.startsWith("62")) { v.add("0" + digits.slice(2)); v.add(digits.slice(2)); }
+        if (digits.startsWith("0")) { v.add("62" + digits.slice(1)); v.add(digits.slice(1)); }
+        if (digits.startsWith("8")) { v.add("62" + digits); v.add("0" + digits); }
+        return Array.from(v);
+      };
+      const sesV = phoneVariants(ses.phone || "");
+      const owned =
+        sesV.some((p) => phoneVariants(studentRow?.parent_phone || "").includes(p)) ||
+        sesV.some((p) => phoneVariants(inv.parent_phone || "").includes(p));
+      if (!owned) return err("Akses ditolak");
+
+      // Hitung sisa berdasarkan cicilan paid + pending yang masih fresh (belum expired)
+      const { data: existing } = await supabaseAdmin
+        .from("spp_installments")
+        .select("amount,status,expired_at")
+        .eq("invoice_id", inv.id);
+      const nowMs = Date.now();
+      const lockedAmount = (existing || []).reduce((s: number, r: any) => {
+        if (r.status === "paid") return s + (r.amount || 0);
+        if (r.status === "pending" && (!r.expired_at || new Date(r.expired_at).getTime() > nowMs)) return s + (r.amount || 0);
+        return s;
+      }, 0);
+      const remaining = Math.max(0, (inv.total_amount || 0) - lockedAmount);
+      if (amount > remaining) return err(`Nominal melebihi sisa tagihan (${remaining})`);
+
+      const apiKey = await getMayarApiKey(supabaseAdmin);
+      if (!apiKey) return err("MAYAR_API_KEY belum dikonfigurasi");
+
+      const serviceFee = await serviceFeeFor(supabaseAdmin, channel, amount);
+      const totalCharged = amount + serviceFee;
+      const cicilanInv = {
+        ...inv,
+        _amount_override: totalCharged,
+        period_label: `Cicilan ${inv.period_label}`,
+        invoice_number: `${inv.invoice_number}-CIC${Date.now().toString().slice(-6)}`,
+      };
+      const linkRes = await createMayarLink(apiKey, cicilanInv);
+      if (!linkRes.ok) {
+        const msg = linkRes.json?.message || linkRes.json?.messages || "Gagal buat link Mayar";
+        return err(String(msg));
+      }
+      const link = linkRes.json.data;
+      const mayarId = link.id || link.paymentLinkId || null;
+      const mayarTransactionId = link.transactionId || link.transaction_id || mayarId || null;
+      const paymentUrl = link.link || null;
+
+      const { data: instRow, error: insErr } = await supabaseAdmin.from("spp_installments").insert({
+        invoice_id: inv.id,
+        school_id: inv.school_id,
+        student_id: inv.student_id,
+        amount,
+        payment_method: "online_mayar",
+        payment_channel: channel,
+        gateway: "mayar",
+        mayar_invoice_id: mayarId,
+        mayar_transaction_id: mayarTransactionId,
+        mayar_payment_url: paymentUrl,
+        expired_at: linkRes.expiry.toISOString(),
+        status: "pending",
+        notes: `Cicilan online oleh wali murid — ${channel || "va"}`,
+      }).select("id").single();
+      if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
+
+      // Bridge ke payment_transactions agar webhook Mayar tetap dapat menandai lunas
+      const { data: anyPlan } = await supabaseAdmin.from("subscription_plans").select("id").limit(1).maybeSingle();
+      await supabaseAdmin.from("payment_transactions").insert({
+        school_id: inv.school_id,
+        plan_id: anyPlan?.id || inv.school_id,
+        amount: totalCharged,
+        status: "pending",
+        mayar_transaction_id: mayarId || mayarTransactionId,
+        mayar_payment_url: paymentUrl,
+        payment_method: "spp_installment",
+        service_fee: serviceFee,
+        payment_channel: channel,
+      });
+
+      return ok({
+        payment_url: brandPaymentUrl(paymentUrl),
+        installment_id: instRow?.id,
+        invoice_id: inv.id,
+        service_fee: serviceFee,
+        total_charged: totalCharged,
+      });
+    }
+
     // ====== SCHOOL ACTIONS (require school admin/bendahara JWT) ======
     const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
     const token = authHeader?.replace(/^Bearer\s+/i, "").trim();
