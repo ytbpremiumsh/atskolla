@@ -83,11 +83,14 @@ export const PaymentIframeDialog = ({
   checkPaid,
   pollIntervalMs = 4000,
   onPaid,
+  method,
 }: PaymentIframeDialogProps) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const closedRef = useRef(false);
   const externalOpenedRef = useRef<string | null>(null);
   const openOutside = mustOpenOutsideIframe(paymentUrl);
+  const methodKey = (String(method || "").toLowerCase() as "va" | "qris" | "retail");
+  const stepInfo = METHOD_STEPS[methodKey] || DEFAULT_STEPS;
 
   const handlePaid = () => {
     if (closedRef.current) return;
