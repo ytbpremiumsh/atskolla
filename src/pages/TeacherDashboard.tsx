@@ -644,7 +644,7 @@ const TeacherDashboard = () => {
                 <Label htmlFor="session-note" className="text-xs font-semibold flex items-center gap-1">
                   <BookOpen className="h-3.5 w-3.5 text-primary" />
                   Catatan Jurnal Mengajar
-                  <span className="text-[10px] font-normal text-muted-foreground">(tersinkron ke Kepsek)</span>
+                  <span className="text-[10px] font-normal text-muted-foreground"></span>
                 </Label>
                 <Textarea
                   id="session-note"
