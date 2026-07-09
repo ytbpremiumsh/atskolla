@@ -639,6 +639,24 @@ const TeacherDashboard = () => {
                 })}
               </div>
 
+              {/* Catatan Jurnal — tersinkron ke laporan kepala sekolah */}
+              <div className="mt-3 space-y-1.5">
+                <Label htmlFor="session-note" className="text-xs font-semibold flex items-center gap-1">
+                  <BookOpen className="h-3.5 w-3.5 text-primary" />
+                  Catatan Jurnal Mengajar
+                  <span className="text-[10px] font-normal text-muted-foreground">(tersinkron ke Kepsek)</span>
+                </Label>
+                <Textarea
+                  id="session-note"
+                  value={sessionNote}
+                  onChange={(e) => setSessionNote(e.target.value)}
+                  placeholder="Materi yang diajarkan, kendala, atau catatan lain..."
+                  className="rounded-xl text-sm min-h-[80px] resize-none"
+                  rows={3}
+                />
+              </div>
+
+
               <Button
                 onClick={handleSaveAttendance}
                 disabled={savingAttendance}
