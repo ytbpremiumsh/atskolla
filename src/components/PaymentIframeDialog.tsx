@@ -9,16 +9,54 @@ interface PaymentIframeDialogProps {
   paymentUrl: string | null;
   title?: string;
   onClose: () => void;
-  /**
-   * Async checker yang dipanggil periodik untuk cek status pembayaran.
-   * Return `true` jika pembayaran sudah berhasil → dialog akan auto-close.
-   */
   checkPaid?: () => Promise<boolean>;
-  /** Interval polling dalam ms. Default 4000. */
   pollIntervalMs?: number;
-  /** Dipanggil saat terdeteksi pembayaran berhasil (sebelum onClose). */
   onPaid?: () => void;
+  /** Metode pembayaran yang dipilih user — untuk menampilkan tata cara sesuai metode pada gateway external (iPaymu). */
+  method?: "va" | "qris" | "retail" | string | null;
 }
+
+type StepList = { title: string; steps: string[] };
+
+const METHOD_STEPS: Record<"va" | "qris" | "retail", StepList> = {
+  qris: {
+    title: "Tata Cara Pembayaran QRIS",
+    steps: [
+      "Klik tombol <b>Buka Halaman Pembayaran</b> di bawah, halaman QRIS akan terbuka di tab baru.",
+      "Buka aplikasi mobile banking atau e-wallet (GoPay, OVO, DANA, ShopeePay, LinkAja, dll) yang mendukung QRIS.",
+      "Pilih menu <b>Scan / Bayar QRIS</b>, arahkan kamera ke kode QR yang tampil, lalu pastikan nominal sesuai.",
+      "Konfirmasi pembayaran pada aplikasi. Setelah berhasil, <b>jangan tutup jendela ini</b> — tagihan akan otomatis tervalidasi.",
+    ],
+  },
+  va: {
+    title: "Tata Cara Pembayaran Virtual Account",
+    steps: [
+      "Klik tombol <b>Buka Halaman Pembayaran</b> di bawah untuk melihat nomor Virtual Account (VA).",
+      "Catat atau salin <b>Nomor VA</b> dan <b>Nominal transfer</b> yang tertera pada halaman pembayaran.",
+      "Buka aplikasi m-Banking / i-Banking / ATM Anda, pilih menu <b>Transfer</b> → <b>Virtual Account</b>, masukkan nomor VA tersebut.",
+      "Pastikan nominal sesuai lalu selesaikan transfer. <b>Jangan tutup jendela ini</b> — status akan otomatis terverifikasi.",
+    ],
+  },
+  retail: {
+    title: "Tata Cara Pembayaran Retail (Alfamart / Indomaret)",
+    steps: [
+      "Klik tombol <b>Buka Halaman Pembayaran</b> di bawah untuk melihat kode pembayaran retail.",
+      "Catat atau salin <b>Kode Pembayaran</b> dan <b>Nominal</b> yang tertera pada halaman.",
+      "Datang ke kasir <b>Alfamart</b> / <b>Indomaret</b> terdekat sebelum kode kadaluarsa, sebutkan bayar tagihan dan berikan kode pembayaran.",
+      "Bayar sesuai nominal ke kasir dan simpan struk. <b>Jangan tutup jendela ini</b> — pembayaran akan otomatis tervalidasi.",
+    ],
+  },
+};
+
+const DEFAULT_STEPS: StepList = {
+  title: "Tata Cara Pembayaran",
+  steps: [
+    "Klik tombol <b>Buka Halaman Pembayaran</b> di bawah.",
+    "Pilih metode pembayaran (QRIS, Virtual Account, atau Retail) sesuai yang tersedia.",
+    "Selesaikan pembayaran sesuai instruksi (scan QRIS / transfer sesuai nominal ke Virtual Account).",
+    "<b>Jangan menutup jendela ini.</b> Setelah pembayaran berhasil, tagihan akan otomatis tervalidasi dan jendela ini akan tertutup sendiri.",
+  ],
+};
 
 const mustOpenOutsideIframe = (url?: string | null) => {
   if (!url) return false;
@@ -45,11 +83,14 @@ export const PaymentIframeDialog = ({
   checkPaid,
   pollIntervalMs = 4000,
   onPaid,
+  method,
 }: PaymentIframeDialogProps) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const closedRef = useRef(false);
   const externalOpenedRef = useRef<string | null>(null);
   const openOutside = mustOpenOutsideIframe(paymentUrl);
+  const methodKey = (String(method || "").toLowerCase() as "va" | "qris" | "retail");
+  const stepInfo = METHOD_STEPS[methodKey] || DEFAULT_STEPS;
 
   const handlePaid = () => {
     if (closedRef.current) return;
@@ -188,24 +229,14 @@ export const PaymentIframeDialog = ({
                 </div>
 
                 <div className="rounded-xl bg-muted/60 p-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">Tata Cara Pembayaran</p>
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">{stepInfo.title}</p>
                   <ol className="space-y-2 text-xs text-foreground/90">
-                    <li className="flex gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">1</span>
-                      <span>Klik tombol <b>Buka Halaman Pembayaran</b> di bawah.</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">2</span>
-                      <span>Pilih metode pembayaran (QRIS, Virtual Account, atau Retail) sesuai yang tersedia.</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">3</span>
-                      <span>Selesaikan pembayaran sesuai instruksi (scan QRIS / transfer sesuai nominal ke Virtual Account).</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">4</span>
-                      <span><b>Jangan menutup jendela ini.</b> Setelah pembayaran berhasil, tagihan akan otomatis tervalidasi dan jendela ini akan tertutup sendiri.</span>
-                    </li>
+                    {stepInfo.steps.map((s, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">{i + 1}</span>
+                        <span dangerouslySetInnerHTML={{ __html: s }} />
+                      </li>
+                    ))}
                   </ol>
                 </div>
 

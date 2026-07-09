@@ -119,6 +119,7 @@ export default function ParentDashboard() {
   const [sppData, setSppData] = useState<{ aktif: any[]; tunggakan: any[]; lunas: any[]; total_tunggakan: number }>({ aktif: [], tunggakan: [], lunas: [], total_tunggakan: 0 });
   const [sppBusy, setSppBusy] = useState<string | null>(null);
   const [paymentIframe, setPaymentIframe] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerInvoice, setPickerInvoice] = useState<any>(null);
@@ -268,6 +269,7 @@ export default function ParentDashboard() {
     if (d?.payment_url) {
       setPickerOpen(false);
       setPayingInvoiceId(d.invoice_id || pickerInvoice.id);
+      setPaymentMethod(channel);
       setPaymentIframe(d.payment_url);
       toast.success(useInstallment ? "Membuka pembayaran cicilan..." : "Membuka halaman pembayaran...");
       // Reset mode setelah dipakai
@@ -1396,6 +1398,7 @@ export default function ParentDashboard() {
         open={!!paymentIframe}
         paymentUrl={paymentIframe}
         title="Pembayaran Tagihan — QRIS / Transfer Bank"
+        method={paymentMethod}
         pollIntervalMs={4000}
         checkPaid={async () => {
           if (!payingInvoiceId || !selectedStudent) return false;
@@ -1406,7 +1409,7 @@ export default function ParentDashboard() {
           } catch { return false; }
         }}
         onPaid={() => { /* refresh dilakukan saat onClose */ }}
-        onClose={() => { setPaymentIframe(null); setPayingInvoiceId(null); loadTab(); }}
+        onClose={() => { setPaymentIframe(null); setPayingInvoiceId(null); setPaymentMethod(null); loadTab(); }}
       />
 
       <PaymentMethodPicker
