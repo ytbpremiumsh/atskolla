@@ -269,15 +269,14 @@ const KalenderAkademik = () => {
           <div className="grid md:grid-cols-2 gap-4">
             <div className="rounded-xl border border-border p-2 flex justify-center">
               <Calendar
-                mode="range"
-                selected={undefined}
-                onSelect={() => { /* view only */ }}
+                mode="default"
+                onDayClick={() => { /* view only — tambah lewat tombol Tambah Kalender */ }}
                 modifiers={{ holiday: modifiers.holiday, withEvent: modifiers.withEvent }}
                 modifiersClassNames={{
                   holiday: "bg-red-500 text-white hover:bg-red-600",
                   withEvent: "ring-2 ring-inset ring-primary/60",
                 }}
-                className="p-0 pointer-events-none opacity-95"
+                className="p-0"
               />
             </div>
 
