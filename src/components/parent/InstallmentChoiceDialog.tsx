@@ -25,6 +25,7 @@ interface Props {
   loading: boolean;
   summary: InstallmentSummary | null;
   onContinue: (mode: "full" | "installment", amount: number) => void;
+  onResumePending?: (installment: any) => void;
 }
 
 export function InstallmentChoiceDialog({ open, onClose, invoice, loading, summary, onContinue }: Props) {
