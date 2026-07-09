@@ -108,6 +108,32 @@ const KalenderAkademik = () => {
     return { holiday, exam, event, meeting, announcement, other };
   }, [eventsByDate]);
 
+  // Group consecutive dates with identical (event_type, is_holiday, label, description) into one range
+  const groupedEvents = useMemo(() => {
+    const sorted = [...events].sort((a, b) => a.date.localeCompare(b.date));
+    const groups: { key: string; items: CalendarEvent[]; startDate: string; endDate: string }[] = [];
+    for (const e of sorted) {
+      const last = groups[groups.length - 1];
+      const sameMeta = last
+        && last.items[0].event_type === e.event_type
+        && last.items[0].is_holiday === e.is_holiday
+        && (last.items[0].label || "") === (e.label || "")
+        && (last.items[0].description || "") === (e.description || "");
+      const prevDate = last ? new Date(last.endDate + "T00:00:00") : null;
+      const curDate = new Date(e.date + "T00:00:00");
+      const consecutive = prevDate && (curDate.getTime() - prevDate.getTime()) === 86400000;
+      if (sameMeta && consecutive) {
+        last!.items.push(e);
+        last!.endDate = e.date;
+      } else {
+        groups.push({ key: e.id, items: [e], startDate: e.date, endDate: e.date });
+      }
+    }
+    return groups;
+  }, [events]);
+
+
+
 
   const openCreateDialog = (range: DateRange | Date) => {
     if (!canEdit) return;
