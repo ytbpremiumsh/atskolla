@@ -96,6 +96,32 @@ serve(async (req) => {
     if (!invoiceNumber) return ok({ ignored: "no invoice_number" });
     if (!isPaidStatus(status)) return ok({ ignored: `status=${status}` });
 
+    // ==== INSTALLMENT MATCH (cicilan online oleh wali murid via Doku) ====
+    try {
+      const { data: inst } = await supabaseAdmin
+        .from("spp_installments")
+        .select("id, invoice_id, school_id, status")
+        .eq("mayar_invoice_id", invoiceNumber)
+        .maybeSingle();
+      if (inst && inst.status !== "paid") {
+        const paidAtInst = new Date().toISOString();
+        await supabaseAdmin.from("spp_installments").update({
+          status: "paid", paid_at: paidAtInst,
+        }).eq("id", inst.id);
+        await supabaseAdmin.from("payment_transactions").update({
+          status: "paid", paid_at: paidAtInst,
+        }).eq("mayar_transaction_id", invoiceNumber).eq("payment_method", "spp_installment");
+        await supabaseAdmin.from("spp_logs").insert({
+          school_id: inst.school_id, invoice_id: inst.invoice_id,
+          event_type: "doku_webhook_installment_paid",
+          status: "paid", payload, message: "Cicilan paid (Doku webhook)",
+        });
+        return ok({ marked_paid: true, installment_id: inst.id });
+      }
+    } catch (e) {
+      console.error("doku installment webhook check failed", e);
+    }
+
     // Locate invoice by stored id (schema-compat: uses mayar_invoice_id column)
     const { data: inv } = await supabaseAdmin
       .from("spp_invoices")
