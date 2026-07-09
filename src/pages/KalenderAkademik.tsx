@@ -17,6 +17,7 @@ import {
 import {
   CalendarOff, CalendarDays, Trash2, Info, Plus, Pencil, Eye,
   BookOpen, PartyPopper, Users, Megaphone, Sparkles, GraduationCap,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { DateRange } from "react-day-picker";
