@@ -79,6 +79,7 @@ const TeacherDashboard = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceMap, setAttendanceMap] = useState<Record<string, string>>({});
   const [existingAttendance, setExistingAttendance] = useState<Record<string, string>>({});
+  const [sessionNote, setSessionNote] = useState<string>("");
   const [savingAttendance, setSavingAttendance] = useState(false);
   const [loadingStudents, setLoadingStudents] = useState(false);
 
