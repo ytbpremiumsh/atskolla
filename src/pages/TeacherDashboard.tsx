@@ -320,11 +320,19 @@ const TeacherDashboard = () => {
       {/* HERO REMINDER: Absensi MAPEL — only 15 min before start or during active teaching schedule */}
       {(() => {
         const currentMin = now.getHours() * 60 + now.getMinutes();
-        const relevant = todaySchedules.find(s => {
+        // Prioritas: aktif > akan datang (≤15 mnt) > terakhir yang sudah selesai (agar tetap bisa absen susulan)
+        const active = todaySchedules.find(s => {
           const start = timeToMinutes(s.start_time);
           const end = timeToMinutes(s.end_time);
-          return (currentMin >= start && currentMin < end) || (start - currentMin > 0 && start - currentMin <= 15);
+          return currentMin >= start && currentMin < end;
         });
+        const upcoming = todaySchedules.find(s => {
+          const start = timeToMinutes(s.start_time);
+          return start - currentMin > 0 && start - currentMin <= 15;
+        });
+        const doneArr = todaySchedules.filter(s => currentMin >= timeToMinutes(s.end_time));
+        const lastDone = doneArr.length ? doneArr[doneArr.length - 1] : null;
+        const relevant = active || upcoming || lastDone;
         if (!relevant) return null;
         const relevantStatus = getStatus(relevant.start_time, relevant.end_time, now);
         const minutesToStart = timeToMinutes(relevant.start_time) - currentMin;
