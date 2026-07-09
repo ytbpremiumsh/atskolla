@@ -284,10 +284,10 @@ function AppRoutes() {
           <Route path="/super-admin/schools" element={<Navigate to="/super-admin/sekolah?tab=schools" replace />} />
           <Route path="/super-admin/branches" element={<Navigate to="/super-admin/sekolah?tab=schools" replace />} />
           <Route path="/super-admin/login-logs" element={<Navigate to="/super-admin/sekolah?tab=logs" replace />} />
-          <Route path="/super-admin/langganan" element={<SuperAdminSubscriptionsHub />} />
-          <Route path="/super-admin/plans" element={<Navigate to="/super-admin/langganan?tab=plans" replace />} />
+          <Route path="/super-admin/langganan" element={<Navigate to="/super-admin/paket-sekolah" replace />} />
+          <Route path="/super-admin/plans" element={<Navigate to="/super-admin/paket-sekolah" replace />} />
           <Route path="/super-admin/subscriptions" element={<Navigate to="/super-admin/paket-sekolah" replace />} />
-          <Route path="/super-admin/addons" element={<Navigate to="/super-admin/langganan?tab=addons" replace />} />
+          <Route path="/super-admin/addons" element={<SuperAdminAddons />} />
 
           {/* OPERASIONAL — Keuangan */}
           <Route path="/super-admin/keuangan" element={<SuperAdminKeuanganHub />} />
