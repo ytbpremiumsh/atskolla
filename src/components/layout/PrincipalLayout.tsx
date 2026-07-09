@@ -24,13 +24,15 @@ function HeaderInner() {
   const { schoolName, refresh, loading } = usePrincipalData();
   return (
     <div className="flex items-center gap-2 min-w-0 flex-1">
-      <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[160px] sm:max-w-[280px]">
-        {schoolName || "ATSkolla"}
-      </span>
-      <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium truncate hidden sm:inline">
-        · Kepala Sekolah
-      </span>
-      <Button size="icon" variant="ghost" className="h-7 w-7 ml-1" onClick={refresh} disabled={loading} title="Segarkan data">
+      <div className="flex flex-col leading-tight min-w-0">
+        <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[160px] sm:max-w-[260px]">
+          {schoolName || "ATSkolla"}
+        </span>
+        <span className="text-[9px] sm:text-[10px] text-muted-foreground -mt-0.5 font-medium truncate">
+          Kepala Sekolah<span className="hidden sm:inline"> · Ringkasan Sekolah</span>
+        </span>
+      </div>
+      <Button size="icon" variant="ghost" className="h-7 w-7 ml-1 shrink-0" onClick={refresh} disabled={loading} title="Segarkan data">
         <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
       </Button>
     </div>
@@ -71,7 +73,7 @@ export function PrincipalLayout() {
           <div className="flex-1 flex flex-col min-w-0">
             <header className="h-14 flex items-center border-b border-border/40 bg-background/80 backdrop-blur sticky top-0 z-30 px-3 gap-2">
               <SidebarTrigger />
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-[#5B6CF9] flex items-center justify-center shadow-sm shrink-0">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-sm shrink-0">
                 <img src={headerLogo || atskollaLogo} alt="Logo" className="h-5 w-5 object-contain" />
               </div>
               <HeaderInner />
