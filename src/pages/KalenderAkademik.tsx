@@ -94,14 +94,20 @@ const KalenderAkademik = () => {
 
   const modifiers = useMemo(() => {
     const holiday: Date[] = [];
-    const withEvent: Date[] = [];
+    const exam: Date[] = [];
+    const event: Date[] = [];
+    const meeting: Date[] = [];
+    const announcement: Date[] = [];
+    const other: Date[] = [];
     for (const [date, list] of Object.entries(eventsByDate)) {
       const d = new Date(date + "T00:00:00");
-      if (list.some((e) => e.is_holiday)) holiday.push(d);
-      else withEvent.push(d);
+      if (list.some((e) => e.is_holiday)) { holiday.push(d); continue; }
+      const primary = list[0]?.event_type ?? "other";
+      ({ exam, event, meeting, announcement, other } as any)[primary]?.push(d);
     }
-    return { holiday, withEvent };
+    return { holiday, exam, event, meeting, announcement, other };
   }, [eventsByDate]);
+
 
   const openCreateDialog = (range: DateRange | Date) => {
     if (!canEdit) return;
