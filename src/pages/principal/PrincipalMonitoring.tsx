@@ -3,10 +3,11 @@ import { PageHeader } from "@/components/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Activity, UserCheck, BookOpen, GraduationCap, Users, Clock, UserX,
+  Activity, UserCheck, BookOpen, GraduationCap, Users, Clock, UserX, CalendarDays,
 } from "lucide-react";
 import PrincipalKehadiran from "./PrincipalKehadiran";
 import PrincipalPembelajaran from "./PrincipalPembelajaran";
+import PrincipalJadwal from "@/components/principal/PrincipalJadwal";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
 
 function OverviewStat({ icon: Icon, label, value, sub, tone }: {
@@ -69,6 +70,9 @@ export default function PrincipalMonitoring() {
           <TabsTrigger value="pembelajaran" className="gap-1.5 rounded-xl px-4 py-2 text-foreground/70 hover:text-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-[#5B6CF9] data-[state=active]:text-white data-[state=active]:shadow-md">
             <BookOpen className="h-4 w-4" /> Pembelajaran
           </TabsTrigger>
+          <TabsTrigger value="jadwal" className="gap-1.5 rounded-xl px-4 py-2 text-foreground/70 hover:text-foreground data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-[#5B6CF9] data-[state=active]:text-white data-[state=active]:shadow-md">
+            <CalendarDays className="h-4 w-4" /> Jadwal Lengkap
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="kehadiran" className="mt-4">
@@ -76,6 +80,9 @@ export default function PrincipalMonitoring() {
         </TabsContent>
         <TabsContent value="pembelajaran" className="mt-4">
           {active === "pembelajaran" && <PrincipalPembelajaran />}
+        </TabsContent>
+        <TabsContent value="jadwal" className="mt-4">
+          {active === "jadwal" && <PrincipalJadwal />}
         </TabsContent>
       </Tabs>
     </div>
