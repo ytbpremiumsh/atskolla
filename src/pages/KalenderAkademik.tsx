@@ -278,12 +278,12 @@ const KalenderAkademik = () => {
                 onDayClick={() => { /* view only — tambah lewat tombol Tambah Kalender */ }}
                 modifiers={modifiers}
                 modifiersClassNames={{
-                  holiday:      "!bg-gradient-to-br !from-red-500 !to-rose-600 !text-white font-bold shadow-md shadow-red-500/30 hover:!from-red-600 hover:!to-rose-700",
-                  exam:         "!bg-gradient-to-br !from-amber-400 !to-orange-500 !text-white font-bold shadow-md shadow-amber-500/30",
-                  event:        "!bg-gradient-to-br !from-emerald-400 !to-teal-500 !text-white font-bold shadow-md shadow-emerald-500/30",
-                  meeting:      "!bg-gradient-to-br !from-sky-400 !to-blue-500 !text-white font-bold shadow-md shadow-sky-500/30",
-                  announcement: "!bg-gradient-to-br !from-violet-400 !to-fuchsia-500 !text-white font-bold shadow-md shadow-violet-500/30",
-                  other:        "!bg-gradient-to-br !from-slate-400 !to-zinc-500 !text-white font-bold shadow-md shadow-slate-500/30",
+                  holiday:      "!bg-red-100 !text-red-700 font-semibold hover:!bg-red-200 dark:!bg-red-950/40 dark:!text-red-300",
+                  exam:         "!bg-amber-100 !text-amber-800 font-semibold hover:!bg-amber-200 dark:!bg-amber-950/40 dark:!text-amber-300",
+                  event:        "!bg-emerald-100 !text-emerald-800 font-semibold hover:!bg-emerald-200 dark:!bg-emerald-950/40 dark:!text-emerald-300",
+                  meeting:      "!bg-sky-100 !text-sky-800 font-semibold hover:!bg-sky-200 dark:!bg-sky-950/40 dark:!text-sky-300",
+                  announcement: "!bg-violet-100 !text-violet-800 font-semibold hover:!bg-violet-200 dark:!bg-violet-950/40 dark:!text-violet-300",
+                  other:        "!bg-slate-100 !text-slate-700 font-semibold hover:!bg-slate-200 dark:!bg-slate-800/60 dark:!text-slate-300",
                 }}
                 className="p-0"
               />
