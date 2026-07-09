@@ -19,6 +19,7 @@ import {
   BookOpen, PartyPopper, Users, Megaphone, Sparkles, GraduationCap,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
