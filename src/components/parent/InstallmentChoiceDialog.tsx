@@ -38,7 +38,8 @@ export function InstallmentChoiceDialog({ open, onClose, invoice, loading, summa
   if (!invoice) return null;
   const total = invoice.total_amount || 0;
   const remaining = summary?.remaining ?? total;
-  const paid = total - remaining;
+  const paid = summary?.paid_amount ?? Math.max(0, total - remaining);
+  const pendingAmt = summary?.pending_amount ?? 0;
   const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
   const nominal = mode === "full" ? remaining : (Number(amount.replace(/\D/g, "")) || 0);
   const canContinue = nominal >= 10000 && nominal <= remaining && remaining > 0;
