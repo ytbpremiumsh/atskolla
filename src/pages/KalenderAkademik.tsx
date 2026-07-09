@@ -243,7 +243,7 @@ const KalenderAkademik = () => {
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
               {canEdit
-                ? "Klik tanggal untuk menambahkan acara — libur, ujian, kegiatan, rapat, atau pengumuman."
+                ? "Lihat semua acara akademik. Untuk menambahkan, gunakan tombol Tambah Kalender."
                 : "Kalender lengkap semua acara akademik sekolah."}
             </p>
           </div>
@@ -270,17 +270,14 @@ const KalenderAkademik = () => {
             <div className="rounded-xl border border-border p-2 flex justify-center">
               <Calendar
                 mode="range"
-                selected={selectedRange}
-                onSelect={(r) => {
-                  setSelectedRange(r);
-                  if (r?.from) openCreateDialog(r);
-                }}
+                selected={undefined}
+                onSelect={() => { /* view only */ }}
                 modifiers={{ holiday: modifiers.holiday, withEvent: modifiers.withEvent }}
                 modifiersClassNames={{
                   holiday: "bg-red-500 text-white hover:bg-red-600",
                   withEvent: "ring-2 ring-inset ring-primary/60",
                 }}
-                className="p-0"
+                className="p-0 pointer-events-none opacity-95"
               />
             </div>
 
@@ -296,7 +293,7 @@ const KalenderAkademik = () => {
                     className="h-7 text-[11px] gap-1"
                     onClick={() => openCreateDialog(new Date())}
                   >
-                    <Plus className="h-3 w-3" /> Tambah Hari Ini
+                    <Plus className="h-3 w-3" /> Tambah Kalender
                   </Button>
                 )}
               </div>
