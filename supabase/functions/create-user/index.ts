@@ -236,7 +236,7 @@ serve(async (req) => {
       }
 
 
-      // Auto-create WhatsApp Gateway (OneSender) integration for trial schools
+      // Auto-create WhatsApp Gateway (OneSender) integration for new schools
       const { data: existingIntegration } = await supabaseAdmin
         .from('school_integrations')
         .select('id')
