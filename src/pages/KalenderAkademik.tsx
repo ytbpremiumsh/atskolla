@@ -34,13 +34,13 @@ interface CalendarEvent {
   is_holiday: boolean;
 }
 
-const EVENT_META: Record<EventType, { label: string; icon: any; badge: string; dot: string }> = {
-  holiday:      { label: "Libur / Tanggal Merah", icon: CalendarOff,   badge: "bg-red-500/10 text-red-600 border-red-500/20 dark:text-red-400",             dot: "bg-red-500" },
-  exam:         { label: "Ujian",                  icon: GraduationCap, badge: "bg-amber-500/10 text-amber-700 border-amber-500/20 dark:text-amber-400",   dot: "bg-amber-500" },
-  event:        { label: "Kegiatan / Acara",       icon: PartyPopper,   badge: "bg-emerald-500/10 text-emerald-700 border-emerald-500/20 dark:text-emerald-400", dot: "bg-emerald-500" },
-  meeting:      { label: "Rapat",                  icon: Users,         badge: "bg-sky-500/10 text-sky-700 border-sky-500/20 dark:text-sky-400",           dot: "bg-sky-500" },
-  announcement: { label: "Pengumuman",             icon: Megaphone,     badge: "bg-violet-500/10 text-violet-700 border-violet-500/20 dark:text-violet-400", dot: "bg-violet-500" },
-  other:        { label: "Lainnya",                icon: Sparkles,      badge: "bg-slate-500/10 text-slate-700 border-slate-500/20 dark:text-slate-300",   dot: "bg-slate-500" },
+const EVENT_META: Record<EventType, { label: string; icon: any; badge: string; solid: string; ring: string; dot: string; tile: string }> = {
+  holiday:      { label: "Libur / Tanggal Merah", icon: CalendarOff,   badge: "bg-gradient-to-r from-red-50 to-rose-50 text-red-700 border-red-200 dark:from-red-950/40 dark:to-rose-950/40 dark:text-red-300 dark:border-red-900",                   solid: "bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-md shadow-red-500/30",       ring: "ring-red-400/70",     dot: "bg-red-500",     tile: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-900/60" },
+  exam:         { label: "Ujian",                  icon: GraduationCap, badge: "bg-gradient-to-r from-amber-50 to-yellow-50 text-amber-800 border-amber-200 dark:from-amber-950/40 dark:to-yellow-950/40 dark:text-amber-300 dark:border-amber-900",   solid: "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/30", ring: "ring-amber-400/70",   dot: "bg-amber-500",   tile: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/60" },
+  event:        { label: "Kegiatan / Acara",       icon: PartyPopper,   badge: "bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 border-emerald-200 dark:from-emerald-950/40 dark:to-teal-950/40 dark:text-emerald-300 dark:border-emerald-900", solid: "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30", ring: "ring-emerald-400/70", dot: "bg-emerald-500", tile: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-900/60" },
+  meeting:      { label: "Rapat",                  icon: Users,         badge: "bg-gradient-to-r from-sky-50 to-blue-50 text-sky-800 border-sky-200 dark:from-sky-950/40 dark:to-blue-950/40 dark:text-sky-300 dark:border-sky-900",                     solid: "bg-gradient-to-br from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/30",       ring: "ring-sky-400/70",     dot: "bg-sky-500",     tile: "bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/30 dark:text-sky-300 dark:border-sky-900/60" },
+  announcement: { label: "Pengumuman",             icon: Megaphone,     badge: "bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-800 border-violet-200 dark:from-violet-950/40 dark:to-fuchsia-950/40 dark:text-violet-300 dark:border-violet-900", solid: "bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white shadow-md shadow-violet-500/30", ring: "ring-violet-400/70",  dot: "bg-violet-500",  tile: "bg-violet-50 text-violet-800 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-900/60" },
+  other:        { label: "Lainnya",                icon: Sparkles,      badge: "bg-gradient-to-r from-slate-50 to-zinc-50 text-slate-700 border-slate-200 dark:from-slate-900/60 dark:to-zinc-900/60 dark:text-slate-300 dark:border-slate-800",         solid: "bg-gradient-to-br from-slate-500 to-zinc-600 text-white shadow-md shadow-slate-500/30",  ring: "ring-slate-400/70",   dot: "bg-slate-500",   tile: "bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-900/40 dark:text-slate-300 dark:border-slate-800" },
 };
 
 const EVENT_TYPES: EventType[] = ["holiday", "exam", "event", "meeting", "announcement", "other"];
@@ -94,14 +94,20 @@ const KalenderAkademik = () => {
 
   const modifiers = useMemo(() => {
     const holiday: Date[] = [];
-    const withEvent: Date[] = [];
+    const exam: Date[] = [];
+    const event: Date[] = [];
+    const meeting: Date[] = [];
+    const announcement: Date[] = [];
+    const other: Date[] = [];
     for (const [date, list] of Object.entries(eventsByDate)) {
       const d = new Date(date + "T00:00:00");
-      if (list.some((e) => e.is_holiday)) holiday.push(d);
-      else withEvent.push(d);
+      if (list.some((e) => e.is_holiday)) { holiday.push(d); continue; }
+      const primary = list[0]?.event_type ?? "other";
+      ({ exam, event, meeting, announcement, other } as any)[primary]?.push(d);
     }
-    return { holiday, withEvent };
+    return { holiday, exam, event, meeting, announcement, other };
   }, [eventsByDate]);
+
 
   const openCreateDialog = (range: DateRange | Date) => {
     if (!canEdit) return;
@@ -234,32 +240,36 @@ const KalenderAkademik = () => {
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-card">
-        <CardHeader className="flex flex-row items-start justify-between gap-3">
-          <div>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-primary" />
-              Kalender
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              {canEdit
-                ? "Lihat semua acara akademik. Untuk menambahkan, gunakan tombol Tambah Kalender."
-                : "Kalender lengkap semua acara akademik sekolah."}
-            </p>
+      <Card className="border-0 shadow-card overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] px-5 py-4 text-white">
+          <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "18px 18px" }} />
+          <div className="relative flex flex-row items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center shadow-lg">
+                <CalendarDays className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold tracking-tight">Kalender Akademik</h2>
+                <p className="text-[11px] text-white/70 mt-0.5">
+                  {canEdit ? "Kelola agenda sekolah dari tombol Tambah Kalender." : "Agenda akademik sekolah — hanya untuk dilihat."}
+                </p>
+              </div>
+            </div>
+            {canEdit && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/15 border border-white/25 text-white px-2 py-0.5 text-[10px] font-medium backdrop-blur">
+                <Pencil className="h-3 w-3" /> Mode Admin
+              </span>
+            )}
           </div>
-          {canEdit && (
-            <Badge variant="secondary" className="text-[10px] gap-1">
-              <Pencil className="h-3 w-3" /> Mode Admin
-            </Badge>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
+        </div>
+        <CardContent className="space-y-4 pt-5">
+          <div className="flex flex-wrap gap-1.5">
             {EVENT_TYPES.map((t) => {
               const meta = EVENT_META[t];
               const Icon = meta.icon;
               return (
-                <span key={t} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium ${meta.badge}`}>
+                <span key={t} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold shadow-sm ${meta.badge}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${meta.dot}`} />
                   <Icon className="h-3 w-3" /> {meta.label}
                 </span>
               );
@@ -267,18 +277,23 @@ const KalenderAkademik = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border p-2 flex justify-center">
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-background via-background to-[#5B6CF9]/[0.04] p-3 shadow-inner flex justify-center">
               <Calendar
                 mode="default"
                 onDayClick={() => { /* view only — tambah lewat tombol Tambah Kalender */ }}
-                modifiers={{ holiday: modifiers.holiday, withEvent: modifiers.withEvent }}
+                modifiers={modifiers}
                 modifiersClassNames={{
-                  holiday: "bg-red-500 text-white hover:bg-red-600",
-                  withEvent: "ring-2 ring-inset ring-primary/60",
+                  holiday:      "!bg-gradient-to-br !from-red-500 !to-rose-600 !text-white font-bold shadow-md shadow-red-500/30 hover:!from-red-600 hover:!to-rose-700",
+                  exam:         "!bg-gradient-to-br !from-amber-400 !to-orange-500 !text-white font-bold shadow-md shadow-amber-500/30",
+                  event:        "!bg-gradient-to-br !from-emerald-400 !to-teal-500 !text-white font-bold shadow-md shadow-emerald-500/30",
+                  meeting:      "!bg-gradient-to-br !from-sky-400 !to-blue-500 !text-white font-bold shadow-md shadow-sky-500/30",
+                  announcement: "!bg-gradient-to-br !from-violet-400 !to-fuchsia-500 !text-white font-bold shadow-md shadow-violet-500/30",
+                  other:        "!bg-gradient-to-br !from-slate-400 !to-zinc-500 !text-white font-bold shadow-md shadow-slate-500/30",
                 }}
                 className="p-0"
               />
             </div>
+
 
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -288,11 +303,10 @@ const KalenderAkademik = () => {
                 {canEdit && (
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] gap-1"
+                    className="h-8 text-[11px] gap-1 bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] hover:from-[#4c5ded] hover:to-[#3f50d8] text-white shadow-md shadow-[#5B6CF9]/30 border-0"
                     onClick={() => openCreateDialog(new Date())}
                   >
-                    <Plus className="h-3 w-3" /> Tambah Kalender
+                    <Plus className="h-3.5 w-3.5" /> Tambah Kalender
                   </Button>
                 )}
               </div>
@@ -300,39 +314,54 @@ const KalenderAkademik = () => {
               {loading ? (
                 <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">Memuat...</div>
               ) : events.length === 0 ? (
-                <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  Belum ada acara di kalender.<br />
-                  {canEdit ? "Klik tanggal di kalender untuk menambahkan." : "Menunggu admin sekolah menambahkan acara."}
+                <div className="rounded-2xl border border-dashed border-border p-8 text-center bg-gradient-to-br from-secondary/30 to-transparent">
+                  <div className="mx-auto h-12 w-12 rounded-2xl bg-[#5B6CF9]/10 flex items-center justify-center mb-2">
+                    <CalendarDays className="h-6 w-6 text-[#5B6CF9]" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Belum ada acara akademik</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {canEdit ? "Klik tombol Tambah Kalender untuk memulai." : "Menunggu admin sekolah menambahkan acara."}
+                  </p>
                 </div>
               ) : (
-                <div className="max-h-[420px] overflow-y-auto space-y-1.5 pr-1">
+                <div className="max-h-[420px] overflow-y-auto space-y-2 pr-1">
                   {events.map((e) => {
                     const meta = EVENT_META[e.event_type];
                     const Icon = meta.icon;
+                    const dateObj = new Date(e.date + "T00:00:00");
                     return (
-                      <div key={e.id} className="flex items-start justify-between gap-2 rounded-lg bg-secondary/40 px-3 py-2 border border-border/50">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-medium ${meta.badge}`}>
+                      <div key={e.id} className="group relative flex items-stretch gap-3 rounded-xl bg-card px-3 py-2.5 border border-border/60 shadow-sm hover:shadow-md hover:border-[#5B6CF9]/30 transition-all overflow-hidden">
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${meta.dot}`} />
+                        <div className={`shrink-0 h-12 w-12 rounded-xl flex flex-col items-center justify-center ${meta.solid}`}>
+                          <span className="text-[9px] font-semibold uppercase leading-none opacity-90">
+                            {dateObj.toLocaleDateString("id-ID", { month: "short" })}
+                          </span>
+                          <span className="text-lg font-bold leading-none mt-0.5">
+                            {dateObj.getDate()}
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1 pl-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold ${meta.badge}`}>
                               <Icon className="h-2.5 w-2.5" /> {meta.label}
                             </span>
                             {e.is_holiday && (
-                              <Badge className="bg-red-500 text-white border-0 text-[9px] h-4 px-1.5">Libur</Badge>
+                              <Badge className="bg-gradient-to-r from-red-500 to-rose-600 text-white border-0 text-[9px] h-4 px-1.5 shadow-sm">Libur</Badge>
                             )}
                           </div>
-                          <p className="text-xs font-semibold mt-1">
-                            {new Date(e.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                          <p className="text-[11px] font-medium text-muted-foreground mt-1">
+                            {dateObj.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                           </p>
-                          {e.label && <p className="text-[11px] text-foreground mt-0.5">{e.label}</p>}
+                          {e.label && <p className="text-xs font-semibold text-foreground mt-0.5 truncate">{e.label}</p>}
                           {e.description && <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{e.description}</p>}
                         </div>
                         {canEdit && (
-                          <div className="flex flex-col gap-1 shrink-0">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditDialog(e)}>
-                              <Pencil className="h-3 w-3" />
+                          <div className="flex flex-col gap-1 shrink-0 self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(e)}>
+                              <Pencil className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemove(e.id)}>
-                              <Trash2 className="h-3 w-3 text-destructive" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleRemove(e.id)}>
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
                             </Button>
                           </div>
                         )}
