@@ -28,7 +28,7 @@ interface Props {
   onResumePending?: (installment: any) => void;
 }
 
-export function InstallmentChoiceDialog({ open, onClose, invoice, loading, summary, onContinue }: Props) {
+export function InstallmentChoiceDialog({ open, onClose, invoice, loading, summary, onContinue, onResumePending }: Props) {
   const [mode, setMode] = useState<"full" | "installment">("installment");
   const [amount, setAmount] = useState("");
 
