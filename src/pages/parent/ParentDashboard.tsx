@@ -269,6 +269,7 @@ export default function ParentDashboard() {
     if (d?.payment_url) {
       setPickerOpen(false);
       setPayingInvoiceId(d.invoice_id || pickerInvoice.id);
+      setPaymentMethod(channel);
       setPaymentIframe(d.payment_url);
       toast.success(useInstallment ? "Membuka pembayaran cicilan..." : "Membuka halaman pembayaran...");
       // Reset mode setelah dipakai
