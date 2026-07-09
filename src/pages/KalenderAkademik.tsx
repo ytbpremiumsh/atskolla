@@ -67,6 +67,7 @@ const KalenderAkademik = () => {
     is_holiday: true,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
 
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
