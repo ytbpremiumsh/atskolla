@@ -255,11 +255,6 @@ const KalenderAkademik = () => {
                 </p>
               </div>
             </div>
-            {canEdit && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/15 border border-white/25 text-white px-2 py-0.5 text-[10px] font-medium backdrop-blur">
-                <Pencil className="h-3 w-3" /> Mode Admin
-              </span>
-            )}
           </div>
         </div>
         <CardContent className="space-y-4 pt-5">
