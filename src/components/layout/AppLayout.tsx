@@ -199,6 +199,7 @@ function AppContent() {
             </DropdownMenu>
           </div>
         </header>
+        <PackageStatusBanner />
         <main className={cn("no-motion flex-1 overflow-auto p-3 sm:p-5 md:p-6", isMobileDevice && "pb-24")}>
           <Suspense fallback={<div className="h-32" />}>
             <SchoolAccessGate>
