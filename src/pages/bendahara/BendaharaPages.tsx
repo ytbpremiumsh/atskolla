@@ -4350,7 +4350,8 @@ export function BendaharaSaldo() {
   const settledGross = settledItems.reduce((s, x) => s + (x.total_amount || 0), 0);
   const settledCount = settledItems.length;
   const settledFeePencairan = settlements.filter(s => s.status === "paid").reduce((s, x) => s + (x.withdraw_fee || 0), 0);
-  const pendingPayout = settlements.filter(s => ["pending", "approved"].includes(s.status)).reduce((s, x) => s + (x.total_amount || x.total_net || 0), 0);
+  // Menunggu Pencairan = paid online yang belum di-settle (selaras dengan dashboard Kepsek)
+  const pendingPayout = activeTotals.gross;
   const activeBalance = Math.max(0, activeTotals.gross);
   const lockedGross = Math.max(0, totals.gross - activeTotals.gross);
 
