@@ -83,9 +83,9 @@ const SuperAdminSchools = () => {
         ...s,
         studentCount: schoolStudents.length,
         classCount: uniqueClasses.size,
-        adminName: adminProfile?.full_name || null,
-        adminPhone: adminProfile?.phone || null,
-        adminEmail: adminProfile ? (emailMap[adminProfile.user_id] || null) : null,
+        adminName: adminProfile?.full_name || s.principal_name || null,
+        adminPhone: adminProfile?.phone || s.whatsapp || null,
+        adminEmail: (adminProfile ? emailMap[adminProfile.user_id] : null) || s.email || null,
         subscription: activeSub
           ? { id: activeSub.id, plan_id: activeSub.plan_id, plan_name: (activeSub as any).subscription_plans?.name || "—", status: activeSub.status, expires_at: activeSub.expires_at }
           : null,
