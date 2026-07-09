@@ -125,7 +125,7 @@ const AllFeatures = lazy(() => import("./pages/AllFeatures"));
 const WaliKelasLaporan = lazy(() => import("./pages/WaliKelasLaporan"));
 const MapelLaporan = lazy(() => import("./pages/MapelLaporan"));
 const TeacherWaliDashboard = lazy(() => import("./pages/TeacherWaliDashboard"));
-const SuperAdminSubscriptionsHub = lazy(() => import("./pages/super-admin/SuperAdminSubscriptionsHub"));
+const SuperAdminAddons = lazy(() => import("./pages/super-admin/SuperAdminAddons"));
 const SuperAdminWhatsAppHub = lazy(() => import("./pages/super-admin/SuperAdminWhatsAppHub"));
 const SuperAdminCMS = lazy(() => import("./pages/super-admin/SuperAdminCMS"));
 const SuperAdminSekolahHub = lazy(() => import("./pages/super-admin/SuperAdminSekolahHub"));
