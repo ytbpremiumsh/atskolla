@@ -360,11 +360,12 @@ const TeacherDashboard = () => {
                           </span>
                         </div>
                         <h3 className="text-lg sm:text-xl font-bold leading-tight">
-                          {isComplete ? `Absensi ${relevant.subject_name} Selesai` : relevantStatus === "active" ? `Waktunya Absensi: ${relevant.subject_name}` : `Sebentar Lagi: ${relevant.subject_name}`}
+                          {isComplete ? `Absensi ${relevant.subject_name} Selesai` : relevantStatus === "active" ? `Waktunya Absensi: ${relevant.subject_name}` : relevantStatus === "done" ? `Absen Susulan: ${relevant.subject_name}` : `Sebentar Lagi: ${relevant.subject_name}`}
                         </h3>
                         <p className="text-xs sm:text-sm text-white/80 mt-0.5">
                           Kelas {relevant.class_name} • {relevant.start_time.slice(0,5)}–{relevant.end_time.slice(0,5)}
                           {relevantStatus === "upcoming" && minutesToStart > 0 ? ` • mulai dalam ${minutesToStart} mnt` : ""}
+                          {relevantStatus === "done" ? " • sesi sudah selesai, masih bisa diabsen" : ""}
                           {total > 0 ? ` • ${done}/${total} siswa tercatat` : ""}
                         </p>
                         {total > 0 && (
