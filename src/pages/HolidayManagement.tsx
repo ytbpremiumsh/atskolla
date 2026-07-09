@@ -63,6 +63,8 @@ const HolidayManagement = () => {
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogDate, setDialogDate] = useState<string | null>(null);
+  const [dialogEndDate, setDialogEndDate] = useState<string | null>(null);
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [form, setForm] = useState<{ label: string; description: string; event_type: EventType; is_holiday: boolean }>({
     label: "",
