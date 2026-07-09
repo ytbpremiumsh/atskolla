@@ -13,6 +13,8 @@ export type InstallmentSummary = {
   invoice: any;
   installments: any[];
   locked_amount: number;
+  paid_amount?: number;
+  pending_amount?: number;
   remaining: number;
 };
 
