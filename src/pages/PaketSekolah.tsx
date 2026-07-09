@@ -59,7 +59,7 @@ export default function PaketSekolah() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Paket Sekolah" description="Pilih model layanan ATSkolla yang sesuai untuk sekolah Anda." icon={Package} />
+      <PageHeader title="Paket Sekolah" subtitle="Pilih model layanan ATSkolla yang sesuai untuk sekolah Anda." icon={Package} />
 
       <Card className="p-5 rounded-2xl border-border/60">
         <div className="flex items-center justify-between flex-wrap gap-3">
