@@ -252,31 +252,34 @@ const KalenderAkademik = () => {
           : "Lihat jadwal libur & kegiatan akademik sekolah"}
       />
 
-      <Card className="border border-amber-200/60 dark:border-amber-900/40 shadow-none bg-[#fdfbf5] dark:bg-amber-950/10 border-l-4 border-l-amber-500/80 rounded-lg">
-        <CardContent className="p-4 flex gap-3">
-          <div className="h-9 w-9 rounded-lg bg-amber-100/70 dark:bg-amber-900/30 border border-amber-200/60 dark:border-amber-900/40 flex items-center justify-center shrink-0">
-            {canEdit ? <BookOpen className="h-4 w-4 text-amber-700 dark:text-amber-300" /> : <Eye className="h-4 w-4 text-amber-700 dark:text-amber-300" />}
+      <div className="relative overflow-hidden rounded-2xl border border-[#5B6CF9]/15 bg-gradient-to-r from-[#5B6CF9]/[0.06] via-white to-white dark:from-[#5B6CF9]/10 dark:via-slate-900/40 dark:to-slate-900/40 p-4 flex items-start gap-3">
+        <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-[#5B6CF9] to-[#8B98FB]" />
+        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#5B6CF9] to-[#7683FA] shadow-md shadow-[#5B6CF9]/20 flex items-center justify-center shrink-0">
+          {canEdit ? <BookOpen className="h-4 w-4 text-white" /> : <Eye className="h-4 w-4 text-white" />}
+        </div>
+        <div className="min-w-0 pt-0.5">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#5B6CF9]/10 text-[#5B6CF9] px-2 py-0.5 text-[10px] font-semibold tracking-wide">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#5B6CF9]" />
+              PANDUAN
+            </span>
+            <span className="text-[11px] font-semibold text-foreground/80">Kalender Akademik</span>
           </div>
-          <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.14em] font-semibold text-amber-700/80 dark:text-amber-300/80 mb-1">
-              Catatan Akademik
-            </p>
-            <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 font-serif">
-              {canEdit ? (
-                <>
-                  Klik tanggal (atau tarik rentang) di kalender untuk menambah acara. Pilih jenis acara (libur, ujian, kegiatan, rapat, pengumuman)
-                  dan aktifkan <span className="font-semibold text-foreground">"Tandai sebagai Hari Libur"</span> bila acara tersebut menangguhkan absensi.
-                </>
-              ) : (
-                <>
-                  Halaman ini hanya untuk dilihat. Penambahan atau perubahan kalender akademik hanya bisa dilakukan oleh <span className="font-semibold text-foreground">Admin Sekolah</span>.
-                </>
-              )}
-            </div>
-          </div>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {canEdit ? (
+              <>
+                Klik tanggal (atau tarik rentang) di kalender untuk menambah acara. Pilih jenis acara (libur, ujian, kegiatan, rapat, pengumuman)
+                dan aktifkan <span className="font-semibold text-foreground">"Tandai sebagai Hari Libur"</span> bila acara tersebut menangguhkan absensi.
+              </>
+            ) : (
+              <>
+                Halaman ini hanya untuk dilihat. Penambahan atau perubahan kalender akademik hanya bisa dilakukan oleh <span className="font-semibold text-foreground">Admin Sekolah</span>.
+              </>
+            )}
+          </p>
+        </div>
+      </div>
 
-        </CardContent>
-      </Card>
 
       <Card className="border-0 shadow-card overflow-hidden">
         <div className="relative bg-gradient-to-br from-[#8B98FB] via-[#7683FA] to-[#5B6CF9] px-5 py-4 text-white">
