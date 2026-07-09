@@ -382,17 +382,54 @@ const KalenderAkademik = () => {
                         else if (primary && meta) cellClass = `${meta.badge} font-semibold`;
                         else if (isSunday) cellClass = "text-red-500 font-semibold";
 
-                        const title = dayEvents.map((e) => e.label || EVENT_META[e.event_type].label).join(" · ");
+                        const dateLabel = new Date(year, m, day).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
-                        return (
+                        const button = (
                           <button
                             key={idx}
-                            title={title || undefined}
                             onClick={() => primary && canEdit && openEditDialog(primary)}
-                            className={`aspect-square rounded-lg text-[11px] flex items-center justify-center transition ${cellClass} ${primary && canEdit ? "cursor-pointer hover:ring-2 hover:ring-[#5B6CF9]/40" : primary ? "cursor-help" : ""}`}
+                            className={`aspect-square w-full rounded-lg text-[11px] flex items-center justify-center transition ${cellClass} ${primary && canEdit ? "cursor-pointer hover:ring-2 hover:ring-[#5B6CF9]/40" : primary ? "cursor-help" : ""}`}
                           >
                             {day}
                           </button>
+                        );
+
+                        if (dayEvents.length === 0) return <div key={idx}>{button}</div>;
+
+                        return (
+                          <HoverCard key={idx} openDelay={80} closeDelay={60}>
+                            <HoverCardTrigger asChild>{button}</HoverCardTrigger>
+                            <HoverCardContent side="top" align="center" className="w-64 p-3">
+                              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                                {dateLabel}
+                              </div>
+                              <div className="space-y-2">
+                                {dayEvents.map((e) => {
+                                  const em = EVENT_META[e.event_type];
+                                  const EIcon = em.icon;
+                                  return (
+                                    <div key={e.id} className="flex items-start gap-2">
+                                      <span className={`shrink-0 h-6 w-6 rounded-md flex items-center justify-center ${em.badge}`}>
+                                        <EIcon className="h-3 w-3" />
+                                      </span>
+                                      <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-semibold leading-snug">
+                                          {e.label || em.label}
+                                          {e.is_holiday && (
+                                            <span className="ml-1.5 inline-block text-[9px] font-bold text-red-500 align-middle">• LIBUR</span>
+                                          )}
+                                        </div>
+                                        <div className="text-[10px] text-muted-foreground mt-0.5">{em.label}</div>
+                                        {e.description && (
+                                          <div className="text-[11px] text-muted-foreground mt-1 leading-snug">{e.description}</div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
                         );
                       })}
                     </div>
