@@ -415,6 +415,107 @@ serve(async (req) => {
     const body = await req.json();
     const action = body.action as string;
 
+    if (action === "parent_create_installment_payment") {
+      const parentToken = req.headers.get("x-parent-token") || body.parent_token;
+      if (!parentToken) return err("Unauthorized");
+      const { data: ses } = await supabaseAdmin.from("parent_sessions").select("phone, expires_at").eq("token", parentToken).maybeSingle();
+      if (!ses || new Date(ses.expires_at).getTime() < Date.now()) return err("Sesi tidak valid");
+
+      const invoiceId = body.invoice_id as string;
+      const amount = Math.round(Number(body.amount) || 0);
+      const channel = normalizeChannel(body.channel);
+      if (!invoiceId) return err("invoice_id wajib");
+      if (!amount || amount < 10000) return err("Nominal cicilan minimum Rp 10.000");
+
+      const { data: inv } = await supabaseAdmin.from("spp_invoices").select("*").eq("id", invoiceId).maybeSingle();
+      if (!inv) return err("Invoice tidak ditemukan");
+      if (inv.status === "paid") return err("Invoice sudah lunas");
+      if ((inv.bill_type || "spp") === "spp") return err("Tagihan SPP wajib dibayar penuh, tidak dapat dicicil");
+      if (!inv.allow_installment) return err("Cicilan belum diaktifkan bendahara untuk tagihan ini");
+
+      const { data: schoolRow } = await supabaseAdmin.from("schools").select("installment_enabled").eq("id", inv.school_id).maybeSingle();
+      if ((schoolRow as any)?.installment_enabled === false) return err("Fitur cicilan dinonaktifkan sekolah");
+
+      const { data: studentRow } = await supabaseAdmin.from("students").select("parent_phone").eq("id", inv.student_id).maybeSingle();
+      const sesV = phoneVariants(ses.phone || "");
+      const owned =
+        sesV.some((p) => phoneVariants(studentRow?.parent_phone || "").includes(p)) ||
+        sesV.some((p) => phoneVariants(inv.parent_phone || "").includes(p));
+      if (!owned) return err("Akses ditolak");
+
+      const { data: existing } = await supabaseAdmin
+        .from("spp_installments").select("amount,status,expired_at").eq("invoice_id", inv.id);
+      const nowMs = Date.now();
+      const locked = (existing || []).reduce((s: number, r: any) => {
+        if (r.status === "paid") return s + (r.amount || 0);
+        if (r.status === "pending" && (!r.expired_at || new Date(r.expired_at).getTime() > nowMs)) return s + (r.amount || 0);
+        return s;
+      }, 0);
+      const remaining = Math.max(0, (inv.total_amount || 0) - locked);
+      if (amount > remaining) return err(`Nominal melebihi sisa tagihan (${remaining})`);
+
+      const cfg = await getDokuConfig(supabaseAdmin);
+      if (!cfg.clientId || !cfg.secretKey) return err("Doku belum dikonfigurasi");
+
+      const serviceFee = await serviceFeeFor(supabaseAdmin, channel, amount);
+      const totalCharged = amount + serviceFee;
+      const cicilanInv = {
+        ...inv,
+        _amount_override: totalCharged,
+        period_label: `Cicilan ${inv.period_label || ""}`.trim(),
+        invoice_number: `${inv.invoice_number || "SPP"}-CIC${Date.now().toString().slice(-6)}`,
+      };
+      const created = await createDokuPayment(cfg, cicilanInv, channel);
+      await supabaseAdmin.from("spp_logs").insert({
+        school_id: inv.school_id, invoice_id: inv.id,
+        event_type: "create_installment_doku",
+        status: created.ok ? "ok" : "error",
+        payload: created.raw, message: created.raw?.message || null,
+      });
+      if (!created.ok || !created.url) {
+        const msg = created.raw?.message || created.raw?.error?.message || "Gagal buat pembayaran Doku";
+        return err(String(msg));
+      }
+
+      const { data: instRow, error: insErr } = await supabaseAdmin.from("spp_installments").insert({
+        invoice_id: inv.id,
+        school_id: inv.school_id,
+        student_id: inv.student_id,
+        amount,
+        payment_method: "online_doku",
+        payment_channel: channel,
+        gateway: "doku",
+        mayar_invoice_id: created.dokuInvoiceId,
+        mayar_transaction_id: created.dokuInvoiceId,
+        mayar_payment_url: created.url,
+        expired_at: created.expiry.toISOString(),
+        status: "pending",
+        notes: `Cicilan online oleh wali murid — ${channel || "va"}`,
+      }).select("id").single();
+      if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
+
+      const { data: anyPlan } = await supabaseAdmin.from("subscription_plans").select("id").limit(1).maybeSingle();
+      await supabaseAdmin.from("payment_transactions").insert({
+        school_id: inv.school_id,
+        plan_id: anyPlan?.id || inv.school_id,
+        amount: totalCharged,
+        status: "pending",
+        mayar_transaction_id: created.dokuInvoiceId,
+        mayar_payment_url: created.url,
+        payment_method: "spp_installment",
+        service_fee: serviceFee,
+        payment_channel: channel,
+      });
+
+      return ok({
+        payment_url: brandPaymentUrl(created.url),
+        installment_id: instRow?.id,
+        invoice_id: inv.id,
+        service_fee: serviceFee,
+        total_charged: totalCharged,
+      });
+    }
+
     if (action === "parent_create_payment") {
       const parentToken = req.headers.get("x-parent-token") || body.parent_token;
       if (!parentToken) return err("Unauthorized");
