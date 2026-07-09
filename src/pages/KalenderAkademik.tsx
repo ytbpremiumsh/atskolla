@@ -14,6 +14,7 @@ import {
 import {
   Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
 } from "@/components/ui/select";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import {
   CalendarOff, CalendarDays, Trash2, Info, Plus, Pencil, Eye,
   BookOpen, PartyPopper, Users, Megaphone, Sparkles, GraduationCap,
