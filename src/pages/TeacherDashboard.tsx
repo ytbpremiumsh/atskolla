@@ -521,7 +521,7 @@ const TeacherDashboard = () => {
                           onClick={() => openAttendance(s)}
                           className={cn(
                             "w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all hover:bg-muted/50 group",
-                            status === "done" && "opacity-60",
+                            status === "done" && "opacity-80",
                           )}
                         >
                           <div className="flex flex-col items-center justify-center w-14 shrink-0 py-1 rounded-lg bg-muted/50 font-mono">
@@ -533,15 +533,12 @@ const TeacherDashboard = () => {
                             <p className="font-semibold text-sm truncate">{s.subject_name}</p>
                             <p className="text-[11px] text-muted-foreground truncate">
                               Kelas {s.class_name}{s.room ? ` • ${s.room}` : ""}
+                              {status === "done" ? " • selesai" : ""}
                             </p>
                           </div>
-                          {status === "done" ? (
-                            <Badge variant="secondary" className="text-[9px] shrink-0">Selesai</Badge>
-                          ) : (
-                            <Button size="sm" variant="ghost" className="h-8 px-2 text-[11px] gap-1 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground">
-                              Absen <ChevronRight className="h-3 w-3" />
-                            </Button>
-                          )}
+                          <Button size="sm" variant="ghost" className="h-8 px-2 text-[11px] gap-1 shrink-0 group-hover:bg-primary group-hover:text-primary-foreground">
+                            {status === "done" ? "Absen Susulan" : "Absen"} <ChevronRight className="h-3 w-3" />
+                          </Button>
                         </button>
                       );
                     })}
