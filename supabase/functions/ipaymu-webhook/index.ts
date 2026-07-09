@@ -70,8 +70,39 @@ serve(async (req) => {
     const paid = isPaidStatus(statusCode) || isPaidStatus(statusText);
     if (!paid) return ok({ ignored: `status=${statusText || statusCode}` });
 
-    // We stored SessionID (or fallback referenceId) as mayar_invoice_id when creating.
     const candidates = [sid, referenceId, trxId].filter(Boolean) as string[];
+
+    // ==== INSTALLMENT MATCH (cicilan online oleh wali murid via iPaymu) ====
+    try {
+      let inst: any = null;
+      for (const c of candidates) {
+        const { data } = await admin
+          .from("spp_installments")
+          .select("id, invoice_id, school_id, status")
+          .eq("mayar_invoice_id", c)
+          .maybeSingle();
+        if (data) { inst = data; break; }
+      }
+      if (inst && inst.status !== "paid") {
+        const paidAtInst = new Date().toISOString();
+        await admin.from("spp_installments").update({
+          status: "paid", paid_at: paidAtInst,
+        }).eq("id", inst.id);
+        await admin.from("payment_transactions").update({
+          status: "paid", paid_at: paidAtInst,
+        }).in("mayar_transaction_id", candidates).eq("payment_method", "spp_installment");
+        await admin.from("spp_logs").insert({
+          school_id: inst.school_id, invoice_id: inst.invoice_id,
+          event_type: "ipaymu_webhook_installment_paid",
+          status: "paid", payload, message: "Cicilan paid (iPaymu webhook)",
+        });
+        return ok({ marked_paid: true, installment_id: inst.id });
+      }
+    } catch (e) {
+      console.error("ipaymu installment webhook check failed", e);
+    }
+
+    // We stored SessionID (or fallback referenceId) as mayar_invoice_id when creating.
     let inv: any = null;
     for (const c of candidates) {
       const { data } = await admin
