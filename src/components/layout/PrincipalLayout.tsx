@@ -24,13 +24,15 @@ function HeaderInner() {
   const { schoolName, refresh, loading } = usePrincipalData();
   return (
     <div className="flex items-center gap-2 min-w-0 flex-1">
-      <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[160px] sm:max-w-[280px]">
-        {schoolName || "ATSkolla"}
-      </span>
-      <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium truncate hidden sm:inline">
-        · Kepala Sekolah
-      </span>
-      <Button size="icon" variant="ghost" className="h-7 w-7 ml-1" onClick={refresh} disabled={loading} title="Segarkan data">
+      <div className="flex flex-col leading-tight min-w-0">
+        <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[160px] sm:max-w-[260px]">
+          {schoolName || "ATSkolla"}
+        </span>
+        <span className="text-[9px] sm:text-[10px] text-muted-foreground -mt-0.5 font-medium truncate">
+          Kepala Sekolah<span className="hidden sm:inline"> · Ringkasan Sekolah</span>
+        </span>
+      </div>
+      <Button size="icon" variant="ghost" className="h-7 w-7 ml-1 shrink-0" onClick={refresh} disabled={loading} title="Segarkan data">
         <RefreshCcw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
       </Button>
     </div>
