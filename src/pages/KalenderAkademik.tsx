@@ -273,7 +273,7 @@ const KalenderAkademik = () => {
       </Card>
 
       <Card className="border-0 shadow-card overflow-hidden">
-        <div className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#334155] px-5 py-4 text-white">
+        <div className="relative bg-gradient-to-br from-[#8B98FB] via-[#7683FA] to-[#5B6CF9] px-5 py-4 text-white">
           <div className="absolute inset-0 opacity-[0.07] pointer-events-none" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "18px 18px" }} />
           <div className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
