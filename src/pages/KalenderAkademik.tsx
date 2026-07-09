@@ -306,7 +306,7 @@ const KalenderAkademik = () => {
               {canEdit && (
                 <Button
                   size="sm"
-                  className="h-9 ml-2 text-[11px] gap-1 bg-white text-[#0f172a] hover:bg-white/90 border-0 shadow-md font-semibold"
+                  className="h-9 ml-2 text-[11px] gap-1 bg-white text-[#5B6CF9] hover:bg-white/90 border-0 shadow-md font-semibold"
                   onClick={() => openCreateDialog(new Date())}
                 >
                   <Plus className="h-3.5 w-3.5" /> Tambah
