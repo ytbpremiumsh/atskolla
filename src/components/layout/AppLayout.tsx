@@ -21,6 +21,7 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
   DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent, DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
+import { PackageStatusBanner } from "@/components/PackageStatusBanner";
 
 const buildFooterItems = (isTeacherOnly: boolean, isWaliKelas: boolean) => [
   { label: "Dashboard", icon: LayoutGrid, path: isTeacherOnly ? "/teacher-dashboard" : "/dashboard" },
