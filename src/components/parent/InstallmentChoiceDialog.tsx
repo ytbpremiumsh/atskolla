@@ -156,22 +156,36 @@ export function InstallmentChoiceDialog({ open, onClose, invoice, loading, summa
                 {summary.installments.map((r) => {
                   const isPaid = r.status === "paid";
                   const isPending = r.status === "pending";
+                  const expiredMs = r.expired_at ? new Date(r.expired_at).getTime() : 0;
+                  const canResume = isPending && r.mayar_payment_url && (!expiredMs || expiredMs > Date.now());
                   return (
-                    <div key={r.id} className="flex items-center justify-between rounded-lg border p-2 text-xs">
-                      <div>
-                        <p className="font-bold">{fmtIDR(r.amount)}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {r.paid_at
-                            ? new Date(r.paid_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
-                            : new Date(r.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
-                        </p>
+                    <div key={r.id} className="rounded-lg border p-2 text-xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold">{fmtIDR(r.amount)}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {r.paid_at
+                              ? new Date(r.paid_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })
+                              : new Date(r.created_at).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}
+                          </p>
+                        </div>
+                        {isPaid ? (
+                          <Badge className="bg-emerald-500 text-white border-0 gap-1"><CheckCircle2 className="h-2.5 w-2.5" /> Lunas</Badge>
+                        ) : isPending ? (
+                          <Badge className="bg-amber-500 text-white border-0 gap-1"><Clock className="h-2.5 w-2.5" /> Menunggu</Badge>
+                        ) : (
+                          <Badge variant="outline">{r.status}</Badge>
+                        )}
                       </div>
-                      {isPaid ? (
-                        <Badge className="bg-emerald-500 text-white border-0 gap-1"><CheckCircle2 className="h-2.5 w-2.5" /> Lunas</Badge>
-                      ) : isPending ? (
-                        <Badge className="bg-amber-500 text-white border-0 gap-1"><Clock className="h-2.5 w-2.5" /> Menunggu</Badge>
-                      ) : (
-                        <Badge variant="outline">{r.status}</Badge>
+                      {canResume && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full h-8 text-[11px] border-[#5B6CF9]/40 text-[#5B6CF9] hover:bg-[#5B6CF9]/10"
+                          onClick={() => onResumePending?.(r)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" /> Lanjutkan Pembayaran
+                        </Button>
                       )}
                     </div>
                   );
