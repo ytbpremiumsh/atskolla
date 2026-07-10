@@ -94,6 +94,7 @@ const PRIMARY_TABS = [
 ];
 
 const MORE_TABS = [
+  { id: "calendar", label: "Kalender Akademik", icon: BookOpen, desc: "Libur, ujian, kegiatan sekolah" },
   { id: "info", label: "Pengumuman", icon: Megaphone, desc: "Info & berita sekolah" },
   { id: "leave", label: "Pengajuan Izin", icon: FileText, desc: "Ajukan izin/sakit" },
   { id: "contact", label: "Kontak Wali Kelas", icon: Phone, desc: "Hubungi guru" },
