@@ -254,6 +254,7 @@ function AppRoutes() {
         <Route path="/faq" element={<LegalFAQ />} />
         <Route path="/kontak" element={<LegalContact />} />
         <Route path="/tentang" element={<TentangKami />} />
+        <Route path="/flow-bisnis" element={<FlowBisnis />} />
         <Route path="/parent/login" element={<ParentLogin />} />
         <Route path="/parent" element={<ParentDashboard />} />
         {/* Bendahara */}
