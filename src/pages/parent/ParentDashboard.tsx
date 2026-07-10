@@ -538,6 +538,7 @@ export default function ParentDashboard() {
             { id: "card", label: "Kartu Pelajar", icon: CreditCard },
             { id: "attendance", label: "Absensi", icon: ClipboardList },
             { id: "schedule", label: "Jadwal", icon: CalendarDays },
+            { id: "calendar", label: "Kalender Akademik", icon: BookOpen },
             { id: "spp", label: "SPP & Tagihan", icon: Wallet },
             { id: "info", label: "Pengumuman", icon: Megaphone },
             { id: "leave", label: "Pengajuan Izin", icon: FileText },
