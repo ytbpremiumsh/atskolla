@@ -75,7 +75,7 @@ export default function FlowBisnis() {
             Flow Bisnis ATSkolla
           </h1>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Alur lengkap proses layanan ATSkolla dari pendaftaran sekolah hingga konfirmasi pembayaran otomatis melalui iPaymu.
+            Alur lengkap proses layanan ATSkolla dari pendaftaran sekolah hingga konfirmasi pembayaran otomatis melalui Payment Gateway.
           </p>
         </div>
 
