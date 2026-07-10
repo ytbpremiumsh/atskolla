@@ -1089,6 +1089,7 @@ export default function LandingPage() {
         <Hardware />
         <DashboardPreview />
         <WhyFree />
+        <About />
         <Faq />
         <FinalCTA />
       </main>
