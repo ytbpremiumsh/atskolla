@@ -101,7 +101,7 @@ const MODULES = [
       { icon: ScanFace, title: "Face Recognition", desc: "Verifikasi wajah realtime" },
       { icon: QrCode, title: "QR Code", desc: "Scan cepat dari HP" },
       { icon: IdCard, title: "Kartu Pelajar", desc: "Cetak resmi terintegrasi" },
-      { icon: Users, title: "Presensi Guru", desc: "Jam masuk & pulang guru" },
+      
     ],
   },
 ];
