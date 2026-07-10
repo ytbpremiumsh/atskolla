@@ -212,8 +212,11 @@ export default function ParentDashboard() {
     } else if (tab === "spp") {
       const d = await invoke("spp_list", body);
       setSppData({ aktif: d.aktif || [], tunggakan: d.tunggakan || [], lunas: d.lunas || [], total_tunggakan: d.total_tunggakan || 0 });
+    } else if (tab === "calendar") {
+      const d = await invoke("calendar", { ...body, year: calendarYear });
+      setCalendarEvents(d.events || []);
     }
-  }, [tab, selectedStudent, invoke]);
+  }, [tab, selectedStudent, invoke, calendarYear]);
 
   // Membuka picker channel pembayaran (sebelum benar-benar membuat link Mayar).
   const paySpp = async (invoiceOrId: any) => {
