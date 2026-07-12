@@ -236,7 +236,21 @@ async function createDokuPayment(
     body.payment.payment_method_types = methods;
   }
 
-  const res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+
+  // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
+  // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
+  // "PAYMENT CHANNEL IS INACTIVE". Coba ulang tanpa filter agar wali murid
+  // tetap bisa lanjut bayar dengan metode lain yang aktif di akun merchant.
+  const errMsgFirst = String(
+    res.json?.error?.message || res.json?.message || res.json?.response?.message || ""
+  ).toUpperCase();
+  if (!res.ok && errMsgFirst.includes("PAYMENT CHANNEL IS INACTIVE") && body.payment.payment_method_types) {
+    console.warn("[spp-doku] channel inactive, retry without payment_method_types filter", { channel, methods });
+    delete body.payment.payment_method_types;
+    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  }
+
   const url =
     res.json?.response?.payment?.url ||
     res.json?.payment?.url ||
@@ -377,8 +391,12 @@ async function ensureFreshLink(
     message: created.raw?.message || null,
   });
   if (!created.ok || !created.url) {
-    const msg = created.raw?.message || created.raw?.error?.message || JSON.stringify(created.raw).slice(0, 300);
-    return { success: false, error: `Gagal buat pembayaran Doku: ${msg}` };
+    const raw = created.raw?.message || created.raw?.error?.message || JSON.stringify(created.raw).slice(0, 300);
+    const upper = String(raw).toUpperCase();
+    const friendly = upper.includes("PAYMENT CHANNEL IS INACTIVE")
+      ? `Channel ${String(channel || "").toUpperCase() || "pembayaran"} belum aktif di akun Doku merchant. Hubungi Super Admin untuk mengaktifkan channel ini di dashboard Doku, atau pilih metode lain.`
+      : raw;
+    return { success: false, error: `Gagal buat pembayaran Doku: ${friendly}` };
   }
   await supabaseAdmin.from("spp_invoices").update({
     mayar_invoice_id: created.dokuInvoiceId,
