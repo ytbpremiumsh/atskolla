@@ -49,6 +49,7 @@ const SuperAdminPaymentGateway = () => {
   const [hasIpaymuVa, setHasIpaymuVa] = useState(false);
   const [hasIpaymuApiKey, setHasIpaymuApiKey] = useState(false);
   const [showIpaymuKey, setShowIpaymuKey] = useState(false);
+  const [appBaseUrl, setAppBaseUrl] = useState("");
 
   // Custom admin fee per channel (charged to wali murid)
   const [feeVa, setFeeVa] = useState("5000");
