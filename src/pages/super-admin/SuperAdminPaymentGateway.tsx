@@ -555,7 +555,6 @@ const SuperAdminPaymentGateway = () => {
             </div>
           </div>
 
-          <div className="rounded-lg bg-secondary/40 p-3">
           <div className="grid gap-1.5">
             <Label className="text-xs">Domain Utama (Return URL)</Label>
             <Input
