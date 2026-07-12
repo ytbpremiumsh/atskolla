@@ -236,7 +236,21 @@ async function createDokuPayment(
     body.payment.payment_method_types = methods;
   }
 
-  const res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+
+  // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
+  // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
+  // "PAYMENT CHANNEL IS INACTIVE". Coba ulang tanpa filter agar wali murid
+  // tetap bisa lanjut bayar dengan metode lain yang aktif di akun merchant.
+  const errMsgFirst = String(
+    res.json?.error?.message || res.json?.message || res.json?.response?.message || ""
+  ).toUpperCase();
+  if (!res.ok && errMsgFirst.includes("PAYMENT CHANNEL IS INACTIVE") && body.payment.payment_method_types) {
+    console.warn("[spp-doku] channel inactive, retry without payment_method_types filter", { channel, methods });
+    delete body.payment.payment_method_types;
+    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  }
+
   const url =
     res.json?.response?.payment?.url ||
     res.json?.payment?.url ||
