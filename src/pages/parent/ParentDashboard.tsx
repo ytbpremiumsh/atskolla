@@ -218,6 +218,22 @@ export default function ParentDashboard() {
     }
   }, [tab, selectedStudent, invoke, calendarYear]);
 
+  // Auto-refresh: saat tab browser kembali aktif & polling 60 detik.
+  // Memastikan tagihan SPP yang dihapus/diubah bendahara langsung tersinkron
+  // di dashboard wali murid tanpa perlu reload manual.
+  useEffect(() => {
+    if (!selectedStudent) return;
+    const onVisible = () => { if (document.visibilityState === "visible") loadTab(); };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", loadTab);
+    const interval = window.setInterval(loadTab, 60_000);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", loadTab);
+      window.clearInterval(interval);
+    };
+  }, [loadTab, selectedStudent]);
+
   // Membuka picker channel pembayaran (sebelum benar-benar membuat link Mayar).
   const paySpp = async (invoiceOrId: any) => {
     // Cari objek invoice lengkap supaya bisa tampilkan info di picker.
