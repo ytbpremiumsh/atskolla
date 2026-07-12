@@ -151,8 +151,10 @@ const DEFAULT_VA_METHODS = [
   "VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",
   "VIRTUAL_ACCOUNT_BANK_DANAMON",
 ];
+// Strictly QRIS only — sesuai permintaan: pilih QRIS = tampil QRIS saja
+// (tanpa e-wallet terpisah). E-wallet tetap bisa scan QRIS di halaman checkout.
 const DEFAULT_QRIS_METHODS = [
-  "QRIS", "EMONEY_SHOPEEPAY", "EMONEY_OVO", "EMONEY_DANA",
+  "QRIS",
 ];
 const DEFAULT_RETAIL_METHODS = [
   "ONLINE_TO_OFFLINE_ALFA", "PERURI_INDOMARET",
