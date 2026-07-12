@@ -49,6 +49,7 @@ const SuperAdminPaymentGateway = () => {
   const [hasIpaymuVa, setHasIpaymuVa] = useState(false);
   const [hasIpaymuApiKey, setHasIpaymuApiKey] = useState(false);
   const [showIpaymuKey, setShowIpaymuKey] = useState(false);
+  const [appBaseUrl, setAppBaseUrl] = useState("");
 
   // Custom admin fee per channel (charged to wali murid)
   const [feeVa, setFeeVa] = useState("5000");
@@ -90,6 +91,7 @@ const SuperAdminPaymentGateway = () => {
       setIpaymuApiKeyMasked(d.ipaymu_api_key_masked || "");
       setHasIpaymuVa(!!d.has_ipaymu_va);
       setHasIpaymuApiKey(!!d.has_ipaymu_api_key);
+      setAppBaseUrl(d.app_base_url || "");
       setFeeVa(d.fee_va || "5000");
       setFeeQris(d.fee_qris || "5000");
       setFeeQrisPercent(d.fee_qris_percent || "1");
@@ -174,7 +176,7 @@ const SuperAdminPaymentGateway = () => {
   const handleSaveIpaymu = async () => {
     setSaving(true);
     try {
-      const updates: any = { ipaymu_env: ipaymuEnv };
+      const updates: any = { ipaymu_env: ipaymuEnv, app_base_url: appBaseUrl.trim() };
       if (ipaymuVa.trim()) updates.ipaymu_va = ipaymuVa.trim();
       if (ipaymuApiKey.trim()) updates.ipaymu_api_key = ipaymuApiKey.trim();
       const { data, error } = await supabase.functions.invoke("manage-payment-gateway", {
@@ -551,6 +553,19 @@ const SuperAdminPaymentGateway = () => {
                 {showIpaymuKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
+          </div>
+
+          <div className="grid gap-1.5">
+            <Label className="text-xs">Domain Utama (Return URL)</Label>
+            <Input
+              value={appBaseUrl}
+              onChange={(e) => setAppBaseUrl(e.target.value)}
+              placeholder="https://domain-vps-anda.com"
+              className="font-mono text-xs"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Domain yang dipakai tombol "Kembali ke Halaman Merchant" di halaman pembayaran iPaymu. Kosongkan untuk memakai <code>https://absenpintar.online</code>.
+            </p>
           </div>
 
           <div className="rounded-lg bg-secondary/40 p-3">

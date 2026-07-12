@@ -71,6 +71,18 @@ async function getIpaymuConfig(admin: any) {
   };
 }
 
+// Base URL untuk halaman parent yang ditampilkan di tombol "Kembali ke Merchant"
+// pada halaman pembayaran iPaymu. Bisa dioverride via platform_settings.app_base_url
+// (mis. domain VPS sendiri). Fallback ke https://absenpintar.online.
+async function getAppBaseUrl(admin: any): Promise<string> {
+  try {
+    const { data } = await admin.from("platform_settings").select("value").eq("key", "app_base_url").maybeSingle();
+    const raw = String(data?.value ?? "").trim().replace(/\/+$/, "");
+    if (raw) return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  } catch (_) {}
+  return "https://absenpintar.online";
+}
+
 function ipaymuTimestamp() {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, "0");
@@ -273,7 +285,7 @@ async function ensureFreshLink(
   const totalCharged = (Number(inv.total_amount) || 0) + serviceFee;
   const supaUrl = Deno.env.get("SUPABASE_URL")!;
   const notifyUrl = `${supaUrl}/functions/v1/ipaymu-webhook`;
-  const returnUrl = "https://absenpintar.online/parent";
+  const returnUrl = `${await getAppBaseUrl(admin)}/parent`;
   const created = await createIpaymuPayment(cfg, { ...inv, _amount_override: totalCharged }, channel, notifyUrl, returnUrl, subChannel);
   await admin.from("spp_logs").insert({
     school_id: inv.school_id, invoice_id: inv.id,
@@ -374,7 +386,7 @@ serve(async (req) => {
       const totalCharged = amount + serviceFee;
       const supaUrl = Deno.env.get("SUPABASE_URL")!;
       const notifyUrl = `${supaUrl}/functions/v1/ipaymu-webhook`;
-      const returnUrl = "https://absenpintar.online/parent";
+      const returnUrl = `${await getAppBaseUrl(admin)}/parent`;
       const cicilanInv = {
         ...inv,
         _amount_override: totalCharged,
@@ -481,9 +493,9 @@ serve(async (req) => {
         qty: [1],
         price: [10000],
         amount: 10000,
-        returnUrl: "https://absenpintar.online/parent",
+        returnUrl: `${await getAppBaseUrl(admin)}/parent`,
         notifyUrl: `${supaUrl}/functions/v1/ipaymu-webhook`,
-        cancelUrl: "https://absenpintar.online/parent",
+        cancelUrl: `${await getAppBaseUrl(admin)}/parent`,
         referenceId: `TEST-${Date.now()}`,
         buyerName: "Test ATSkolla",
         buyerEmail: "test@atskolla.com",

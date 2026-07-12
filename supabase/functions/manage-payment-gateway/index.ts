@@ -17,6 +17,8 @@ const KEYS = [
   "ipaymu_va",
   "ipaymu_api_key",
   "ipaymu_env",
+  // App base URL (return URL untuk halaman pembayaran)
+  "app_base_url",
   // Fees
   "fee_va",
   "fee_qris",
@@ -73,6 +75,8 @@ serve(async (req) => {
         ipaymu_api_key_masked: mask(map.ipaymu_api_key || ""),
         has_ipaymu_va: !!map.ipaymu_va,
         has_ipaymu_api_key: !!map.ipaymu_api_key,
+        // App base URL untuk return URL pembayaran
+        app_base_url: map.app_base_url || "",
         // Fees
         fee_va: map.fee_va || "5000",
         fee_qris: map.fee_qris || "5000",
