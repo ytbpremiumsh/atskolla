@@ -176,7 +176,7 @@ const SuperAdminPaymentGateway = () => {
   const handleSaveIpaymu = async () => {
     setSaving(true);
     try {
-      const updates: any = { ipaymu_env: ipaymuEnv };
+      const updates: any = { ipaymu_env: ipaymuEnv, app_base_url: appBaseUrl.trim() };
       if (ipaymuVa.trim()) updates.ipaymu_va = ipaymuVa.trim();
       if (ipaymuApiKey.trim()) updates.ipaymu_api_key = ipaymuApiKey.trim();
       const { data, error } = await supabase.functions.invoke("manage-payment-gateway", {
