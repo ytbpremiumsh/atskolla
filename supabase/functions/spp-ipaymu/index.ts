@@ -71,6 +71,18 @@ async function getIpaymuConfig(admin: any) {
   };
 }
 
+// Base URL untuk halaman parent yang ditampilkan di tombol "Kembali ke Merchant"
+// pada halaman pembayaran iPaymu. Bisa dioverride via platform_settings.app_base_url
+// (mis. domain VPS sendiri). Fallback ke https://absenpintar.online.
+async function getAppBaseUrl(admin: any): Promise<string> {
+  try {
+    const { data } = await admin.from("platform_settings").select("value").eq("key", "app_base_url").maybeSingle();
+    const raw = String(data?.value ?? "").trim().replace(/\/+$/, "");
+    if (raw) return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  } catch (_) {}
+  return "https://absenpintar.online";
+}
+
 function ipaymuTimestamp() {
   const d = new Date();
   const p = (n: number) => String(n).padStart(2, "0");
