@@ -17,7 +17,7 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { getAdminClient } from "../_shared/supabaseAdmin.ts";
 
-type Action = "create" | "update" | "get";
+type Action = "create" | "update" | "get" | "list_banks";
 
 interface Payload {
   action: Action;
@@ -28,6 +28,41 @@ interface Payload {
   account_holder?: string;
   bank_account_settlement_id?: string;
 }
+
+// Master list of banks supported by DOKU disbursement (kode bank Indonesia)
+const DOKU_BANKS: Array<{ code: string; name: string }> = [
+  { code: "014", name: "BCA" },
+  { code: "008", name: "Mandiri" },
+  { code: "009", name: "BNI" },
+  { code: "002", name: "BRI" },
+  { code: "451", name: "BSI" },
+  { code: "022", name: "CIMB Niaga" },
+  { code: "013", name: "Permata" },
+  { code: "011", name: "Danamon" },
+  { code: "200", name: "BTN" },
+  { code: "028", name: "OCBC NISP" },
+  { code: "016", name: "Maybank" },
+  { code: "019", name: "Panin" },
+  { code: "426", name: "Mega" },
+  { code: "542", name: "Jago" },
+  { code: "535", name: "SeaBank" },
+  { code: "213", name: "Jenius (BTPN)" },
+  { code: "490", name: "Bank Neo Commerce" },
+  { code: "147", name: "Muamalat" },
+  { code: "441", name: "Bukopin" },
+  { code: "153", name: "Sinarmas" },
+  { code: "111", name: "Bank DKI" },
+  { code: "110", name: "Bank BJB" },
+  { code: "112", name: "Bank Jateng" },
+  { code: "114", name: "Bank Jatim" },
+  { code: "212", name: "Bank Woori Saudara" },
+  { code: "484", name: "Bank HSBC" },
+  { code: "023", name: "UOB" },
+  { code: "087", name: "Bank ANZ" },
+  { code: "950", name: "Commonwealth" },
+  { code: "494", name: "Bank BRI Agroniaga" },
+];
+
 
 const enc = new TextEncoder();
 
@@ -137,6 +172,14 @@ Deno.serve(async (req) => {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Public reference: list of banks supported by DOKU disbursement
+    if (payload.action === "list_banks") {
+      return new Response(JSON.stringify({ ok: true, banks: DOKU_BANKS }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
 
     // Load referenced account (source of truth) when account_id present
     let acct: any = null;
