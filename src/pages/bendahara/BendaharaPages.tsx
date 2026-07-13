@@ -4860,8 +4860,9 @@ export function BendaharaPencairan() {
                   <TableBody>
                     {history.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
                     {history.map(s => {
-                      const withdrawFee = s.withdraw_fee ?? 3000;
-                      const finalPayoutGross = Math.max(0, (s.total_gross || 0) - withdrawFee);
+                      const withdrawFee = s.withdraw_fee ?? DEFAULT_WITHDRAW_FEE;
+                      // Angka final_payout sudah direkonsiliasi dari invoice terkait (net − fee)
+                      const rowFinal = s.final_payout ?? 0;
                       return (
                         <TableRow key={s.id} onClick={() => openSettlementDetail(s)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
                           <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
@@ -4869,7 +4870,7 @@ export function BendaharaPencairan() {
                           <TableCell>{s.total_transactions}</TableCell>
                           <TableCell className="text-xs">{fmtIDR(s.total_gross)}</TableCell>
                           <TableCell className="text-xs">{fmtIDR(withdrawFee)}</TableCell>
-                          <TableCell className="font-semibold text-emerald-600">{fmtIDR(finalPayoutGross)}</TableCell>
+                          <TableCell className="font-semibold text-emerald-600">{fmtIDR(rowFinal)}</TableCell>
                           <TableCell>{badge(s.status)}</TableCell>
                         </TableRow>
                       );
