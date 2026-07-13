@@ -112,6 +112,9 @@ export default function BendaharaDisbursement() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<Settlement | null>(null);
 
+  // manage accounts dialog
+  const [manageOpen, setManageOpen] = useState(false);
+
   // add account dialog
   const [addOpen, setAddOpen] = useState(false);
   const [addBank, setAddBank] = useState("");
@@ -374,114 +377,172 @@ export default function BendaharaDisbursement() {
         <StatCard icon={ListChecks}   label="Total Transaksi" value={summary.total.toString()} tint="bg-[#5B6CF9]/10 text-[#5B6CF9]" />
       </div>
 
-      {/* Rekening Pencairan */}
+      {/* Rekening Pencairan (ringkas) */}
       <Card className="rounded-2xl border-border/60">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Landmark className="h-4 w-4 text-[#5B6CF9]" />
-              <h3 className="font-semibold text-sm">Rekening Pencairan</h3>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2 min-w-0">
+              <Landmark className="h-4 w-4 text-[#5B6CF9] shrink-0" />
+              <div className="min-w-0">
+                <div className="text-sm font-semibold">Rekening Pencairan</div>
+                {(() => {
+                  const def = accounts.find((a) => a.is_default) || accounts[0];
+                  if (!def) return <div className="text-xs text-muted-foreground">Belum ada rekening tersimpan.</div>;
+                  const v = def.verification_status || "pending";
+                  return (
+                    <div className="text-xs text-muted-foreground truncate">
+                      {def.bank_name} — {def.account_number} · a.n. {def.account_holder}
+                      {" · "}
+                      {v === "verified" ? <span className="text-emerald-600 font-medium">Terverifikasi</span>
+                        : v === "rejected" ? <span className="text-red-600 font-medium">Ditolak</span>
+                        : <span className="text-slate-500 font-medium">Menunggu Verifikasi</span>}
+                      {accounts.length > 1 && <span> · +{accounts.length - 1} lainnya</span>}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-muted-foreground hidden sm:inline">
-                Hanya rekening <b>terverifikasi</b> yang dapat menerima pencairan.
-              </span>
-              <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 bg-[#5B6CF9] hover:bg-[#4a5ce8]">
-                <Building2 className="h-4 w-4" /> Tambah Rekening
-              </Button>
-            </div>
+            <Button size="sm" onClick={() => setManageOpen(true)} className="gap-1.5 bg-[#5B6CF9] hover:bg-[#4a5ce8]">
+              <Landmark className="h-4 w-4" /> Kelola Rekening
+            </Button>
           </div>
-          {accounts.length === 0 ? (
-            <div className="text-sm text-muted-foreground py-6 text-center">
-              Belum ada rekening. Klik <b>Tambah Rekening</b> di kanan atas.
-            </div>
-          ) : (
-            <div className="grid gap-2">
-              {accounts.map((a) => {
-                const v = a.verification_status || "pending";
-                return (
-                  <div key={a.id} className="flex items-center justify-between rounded-xl border border-border/60 p-3">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{a.bank_name} — {a.account_number}</div>
-                      <div className="text-xs text-muted-foreground truncate">a.n. {a.account_holder}{a.is_default ? " · Utama" : ""}</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
-                        Terakhir diperbarui: {fmtDate(a.updated_at || a.created_at)}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {v === "verified" ? (
-                        <Badge className="bg-emerald-600 hover:bg-emerald-600 gap-1"><ShieldCheck className="h-3 w-3" /> Terverifikasi</Badge>
-                      ) : v === "rejected" ? (
-                        <Badge className="bg-red-600 hover:bg-red-600 gap-1"><ShieldAlert className="h-3 w-3" /> Ditolak</Badge>
-                      ) : (
-                        <Badge className="bg-slate-500 hover:bg-slate-500 gap-1"><Clock className="h-3 w-3" /> Menunggu Verifikasi</Badge>
-                      )}
-                      {v !== "verified" && !a.doku_bank_account_settlement_id && (
-                        <Button size="sm" variant="outline" onClick={async () => {
-                          const { data, error } = await supabase.functions.invoke("doku-bank-account", {
-                            body: { action: "create", account_id: a.id },
-                          });
-                          if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal daftar ke DOKU"); return; }
-                          toast.success("Rekening didaftarkan ke DOKU");
-                          setRefreshKey((k) => k + 1);
-                        }}>Daftar ke DOKU</Button>
-                      )}
-                      {a.doku_bank_account_settlement_id && v !== "verified" && (
-                        <Button size="sm" variant="outline" onClick={async () => {
-                          const { data, error } = await supabase.functions.invoke("doku-bank-account", {
-                            body: { action: "get", account_id: a.id },
-                          });
-                          if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal sync"); return; }
-                          toast.success("Status disinkronkan");
-                          setRefreshKey((k) => k + 1);
-                        }}>Sync Status</Button>
-                      )}
-                      {isSuperAdmin && v !== "verified" && (
-                        <Button size="sm" variant="outline" onClick={async () => {
-                          await supabase.from("bendahara_bank_accounts" as any)
-                            .update({ verification_status: "verified", verified_at: new Date().toISOString(), verified_by: user?.id })
-                            .eq("id", a.id);
-                          toast.success("Rekening diverifikasi manual");
-                          setRefreshKey((k) => k + 1);
-                        }}>Verifikasi Manual</Button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 ml-2">
-                      {!a.is_default && (
-                        <Button size="sm" variant="ghost" title="Jadikan Utama" onClick={async () => {
-                          const { error: e1 } = await supabase.from("bendahara_bank_accounts" as any)
-                            .update({ is_default: false }).eq("school_id", a.school_id);
-                          if (e1) { toast.error(e1.message); return; }
-                          const { error: e2 } = await supabase.from("bendahara_bank_accounts" as any)
-                            .update({ is_default: true }).eq("id", a.id);
-                          if (e2) { toast.error(e2.message); return; }
-                          toast.success("Rekening utama diperbarui");
-                          setRefreshKey((k) => k + 1);
-                        }}>
-                          <Star className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {v !== "verified" && (
-                        <Button size="sm" variant="ghost" title="Hapus rekening" onClick={async () => {
-                          if (!confirm(`Hapus rekening ${a.bank_name} — ${a.account_number}?`)) return;
-                          const { error } = await supabase.from("bendahara_bank_accounts" as any)
-                            .delete().eq("id", a.id);
-                          if (error) { toast.error(error.message); return; }
-                          toast.success("Rekening dihapus");
-                          setRefreshKey((k) => k + 1);
-                        }}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Kelola Rekening Dialog */}
+      <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Landmark className="h-5 w-5 text-[#5B6CF9]" /> Kelola Rekening Pencairan
+            </DialogTitle>
+            <DialogDescription>
+              Hanya rekening <b>terverifikasi</b> di DOKU yang dapat menerima pencairan dana.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex justify-end">
+            <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 bg-[#5B6CF9] hover:bg-[#4a5ce8]">
+              <Building2 className="h-4 w-4" /> Tambah Rekening
+            </Button>
+          </div>
+
+          {accounts.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-10 text-center border rounded-xl">
+              Belum ada rekening. Klik <b>Tambah Rekening</b> untuk mulai.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Terdaftar (verified) */}
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Terdaftar & Terverifikasi</div>
+                <div className="grid gap-2">
+                  {accounts.filter((a) => (a.verification_status || "pending") === "verified").length === 0 ? (
+                    <div className="text-xs text-muted-foreground py-4 text-center border border-dashed rounded-lg">Belum ada rekening terverifikasi.</div>
+                  ) : accounts.filter((a) => (a.verification_status || "pending") === "verified").map((a) => (
+                    <div key={a.id} className="rounded-xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20 p-3">
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold">{a.bank_name} — {a.account_number}</div>
+                          <div className="text-xs text-muted-foreground">a.n. {a.account_holder}{a.is_default ? " · Utama" : ""}</div>
+                          <div className="text-[10px] text-muted-foreground mt-0.5">Diperbarui: {fmtDate(a.updated_at || a.created_at)}</div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className="bg-emerald-600 hover:bg-emerald-600 gap-1"><ShieldCheck className="h-3 w-3" /> Terverifikasi</Badge>
+                          {!a.is_default && (
+                            <Button size="sm" variant="outline" className="gap-1" onClick={async () => {
+                              await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", a.school_id);
+                              const { error } = await supabase.from("bendahara_bank_accounts" as any).update({ is_default: true }).eq("id", a.id);
+                              if (error) { toast.error(error.message); return; }
+                              toast.success("Rekening utama diperbarui");
+                              setRefreshKey((k) => k + 1);
+                            }}><Star className="h-3.5 w-3.5" /> Jadikan Utama</Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Belum terdaftar */}
+              <div>
+                <div className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Belum Terverifikasi</div>
+                <div className="grid gap-2">
+                  {accounts.filter((a) => (a.verification_status || "pending") !== "verified").length === 0 ? (
+                    <div className="text-xs text-muted-foreground py-4 text-center border border-dashed rounded-lg">Semua rekening sudah terverifikasi.</div>
+                  ) : accounts.filter((a) => (a.verification_status || "pending") !== "verified").map((a) => {
+                    const v = a.verification_status || "pending";
+                    return (
+                      <div key={a.id} className="rounded-xl border border-border/60 p-3">
+                        <div className="flex items-start justify-between gap-2 flex-wrap">
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold">{a.bank_name} — {a.account_number}</div>
+                            <div className="text-xs text-muted-foreground">a.n. {a.account_holder}{a.is_default ? " · Utama" : ""}</div>
+                            <div className="text-[10px] text-muted-foreground mt-0.5">Diperbarui: {fmtDate(a.updated_at || a.created_at)}</div>
+                          </div>
+                          {v === "rejected" ? (
+                            <Badge className="bg-red-600 hover:bg-red-600 gap-1"><ShieldAlert className="h-3 w-3" /> Ditolak</Badge>
+                          ) : (
+                            <Badge className="bg-slate-500 hover:bg-slate-500 gap-1"><Clock className="h-3 w-3" /> Menunggu Verifikasi</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap mt-3">
+                          {!a.doku_bank_account_settlement_id && (
+                            <Button size="sm" className="bg-[#5B6CF9] hover:bg-[#4a5ce8] gap-1" onClick={async () => {
+                              const { data, error } = await supabase.functions.invoke("doku-bank-account", { body: { action: "create", account_id: a.id } });
+                              if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal daftar ke DOKU"); return; }
+                              toast.success("Rekening didaftarkan ke DOKU");
+                              setRefreshKey((k) => k + 1);
+                            }}><Send className="h-3.5 w-3.5" /> Daftar ke DOKU</Button>
+                          )}
+                          {a.doku_bank_account_settlement_id && (
+                            <Button size="sm" variant="outline" className="gap-1" onClick={async () => {
+                              const { data, error } = await supabase.functions.invoke("doku-bank-account", { body: { action: "get", account_id: a.id } });
+                              if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal sync"); return; }
+                              toast.success("Status disinkronkan");
+                              setRefreshKey((k) => k + 1);
+                            }}><ShieldCheck className="h-3.5 w-3.5" /> Sync Status</Button>
+                          )}
+                          {isSuperAdmin && (
+                            <Button size="sm" variant="outline" className="gap-1" onClick={async () => {
+                              await supabase.from("bendahara_bank_accounts" as any)
+                                .update({ verification_status: "verified", verified_at: new Date().toISOString(), verified_by: user?.id })
+                                .eq("id", a.id);
+                              toast.success("Rekening diverifikasi manual");
+                              setRefreshKey((k) => k + 1);
+                            }}><ShieldCheck className="h-3.5 w-3.5" /> Verifikasi Manual</Button>
+                          )}
+                          {!a.is_default && (
+                            <Button size="sm" variant="ghost" className="gap-1" onClick={async () => {
+                              await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", a.school_id);
+                              const { error } = await supabase.from("bendahara_bank_accounts" as any).update({ is_default: true }).eq("id", a.id);
+                              if (error) { toast.error(error.message); return; }
+                              toast.success("Rekening utama diperbarui");
+                              setRefreshKey((k) => k + 1);
+                            }}><Star className="h-3.5 w-3.5" /> Utama</Button>
+                          )}
+                          <Button size="sm" variant="ghost" className="gap-1 text-red-600 hover:text-red-700 ml-auto" onClick={async () => {
+                            if (!confirm(`Hapus rekening ${a.bank_name} — ${a.account_number}?`)) return;
+                            const { error } = await supabase.from("bendahara_bank_accounts" as any).delete().eq("id", a.id);
+                            if (error) { toast.error(error.message); return; }
+                            toast.success("Rekening dihapus");
+                            setRefreshKey((k) => k + 1);
+                          }}><Trash2 className="h-3.5 w-3.5" /> Hapus</Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setManageOpen(false)}>Tutup</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters + Export */}
       <Card className="rounded-2xl border-border/60">
