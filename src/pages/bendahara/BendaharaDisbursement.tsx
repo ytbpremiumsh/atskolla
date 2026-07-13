@@ -524,10 +524,17 @@ export default function BendaharaDisbursement() {
                               setVerifyingIds((s) => new Set(s).add(a.id));
                               try {
                                 const { data, error } = await supabase.functions.invoke("doku-bank-account", { body: { action: "create", account_id: a.id } });
-                                if (error || data?.error) { toast.error(data?.error || error?.message || "Gagal memproses verifikasi rekening"); return; }
+                                if (error || data?.error) {
+                                  toast.error(data?.error || error?.message || "Gagal memproses verifikasi rekening");
+                                  setVerifyingIds((s) => { const n = new Set(s); n.delete(a.id); return n; });
+                                  return;
+                                }
                                 toast.success("Rekening berhasil diajukan untuk verifikasi");
                                 setRefreshKey((k) => k + 1);
-                              } finally {
+                                // Sukses: biarkan button tersembunyi (verifyingIds tetap berisi id ini
+                                // hingga data ter-refresh dengan settlement_id / status baru).
+                              } catch (e: any) {
+                                toast.error(e?.message || "Gagal memproses verifikasi rekening");
                                 setVerifyingIds((s) => { const n = new Set(s); n.delete(a.id); return n; });
                               }
                             }}><Send className="h-3.5 w-3.5" /> Verifikasi</Button>
