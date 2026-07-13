@@ -4895,8 +4895,46 @@ export function BendaharaPencairan() {
                 <p className="text-[11px] uppercase tracking-wider font-semibold text-emerald-700 dark:text-emerald-400">Rincian Perhitungan</p>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total Tagihan Lunas</span><span className="font-semibold">{available.count} transaksi</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Total Bruto (dari siswa)</span><span className="font-bold">{fmtIDR(available.gross)}</span></div>
-                <div className="flex justify-between text-sm text-rose-600 dark:text-rose-400"><span>(−) Biaya Pencairan</span><span className="font-semibold">−{fmtIDR(DEFAULT_WITHDRAW_FEE)}</span></div>
+                {available.fee > 0 && (
+                  <div className="flex justify-between text-sm text-muted-foreground"><span>(−) Biaya Gateway</span><span>−{fmtIDR(available.fee)}</span></div>
+                )}
+                <div className="flex justify-between text-sm text-rose-600 dark:text-rose-400"><span>(−) Biaya Pencairan</span><span className="font-semibold">−{fmtIDR(schoolSettings.withdraw_fee)}</span></div>
                 <div className="border-t-2 border-emerald-400 dark:border-emerald-600 pt-2 flex justify-between items-center"><span className="text-sm font-semibold">Diterima di Rekening</span><span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{fmtIDR(finalPayout)}</span></div>
+              </div>
+
+              {/* Preview daftar invoice */}
+              {availableItems.length > 0 && (
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">Rincian Transaksi ({availableItems.length})</p>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto divide-y divide-border/60">
+                    {availableItems.slice(0, 10).map((it: any) => (
+                      <div key={it.id} className="flex items-center justify-between py-1.5 text-xs">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{it.student_name || "—"} <span className="text-muted-foreground">· {it.class_name || "-"}</span></p>
+                          <p className="text-[10px] text-muted-foreground truncate">{it.period_label || it.invoice_number}</p>
+                        </div>
+                        <p className="font-mono font-semibold shrink-0 ml-2">{fmtIDR(it.total_amount || 0)}</p>
+                      </div>
+                    ))}
+                    {availableItems.length > 10 && (
+                      <p className="text-[10px] text-center text-muted-foreground py-2">+{availableItems.length - 10} transaksi lain</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Ketik CAIRKAN untuk konfirmasi */}
+              <div className="rounded-lg border border-rose-200 dark:border-rose-900 bg-rose-50/60 dark:bg-rose-950/20 p-3 space-y-2">
+                <Label className="text-xs font-semibold text-rose-700 dark:text-rose-300">Ketik kata <span className="font-mono bg-rose-200/60 dark:bg-rose-900/60 px-1.5 py-0.5 rounded">CAIRKAN</span> untuk melanjutkan</Label>
+                <Input
+                  value={confirmWord}
+                  onChange={(e) => setConfirmWord(e.target.value.toUpperCase().slice(0, 10))}
+                  placeholder="CAIRKAN"
+                  className="font-mono tracking-widest text-center"
+                  autoComplete="off"
+                />
               </div>
 
               <p className="text-xs text-center text-muted-foreground">Selanjutnya Anda akan diminta memasukkan kode OTP WhatsApp untuk konfirmasi pencairan.</p>
@@ -4904,13 +4942,20 @@ export function BendaharaPencairan() {
                 <Button variant="outline" onClick={() => { setConfirmOpen(false); setBankManageOpen(true); }} disabled={otpSending}>
                   Periksa / Ubah
                 </Button>
-                <Button onClick={sendOtp} disabled={otpSending} className="bg-emerald-600 hover:bg-emerald-700">
+                <Button onClick={sendOtp} disabled={otpSending || confirmWord.trim() !== "CAIRKAN"} className="bg-emerald-600 hover:bg-emerald-700">
                   {otpSending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ya, Cairkan"}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-4 pt-2">
+              {/* Rekening tujuan besar & mencolok di step OTP */}
+              <div className="rounded-lg border-2 border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-3">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400 mb-1">Payout Akan Dikirim Ke</p>
+                <p className="text-lg font-extrabold leading-tight">{fmtIDR(finalPayout)} → {bank.bank_name}</p>
+                <p className="font-mono text-sm">{bank.account_number}</p>
+                <p className="text-xs text-muted-foreground">a.n. {bank.account_holder}</p>
+              </div>
               <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg p-4 text-center space-y-1">
                 <p className="text-xs text-muted-foreground">Kode OTP dikirim ke WhatsApp</p>
                 <p className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{otpPhoneMasked || "—"}</p>
