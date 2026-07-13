@@ -1149,6 +1149,7 @@ export default function LandingPage() {
         <PaymentSystem />
         <Hardware />
         <DashboardPreview />
+        <DevicesShowcase />
         <WhyFree />
         <Faq />
         <FinalCTA />
