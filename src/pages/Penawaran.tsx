@@ -71,13 +71,10 @@ const Penawaran = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from("promo_content").select("key, value").then(({ data }) => {
-      if (data) {
-        setContent(Object.fromEntries(data.map((d) => [d.key, d.value])));
-      }
-      setLoading(false);
-    });
+    setContent({});
+    setLoading(false);
   }, []);
+
 
   const c = (key: string, fallback: string) => content[key] || fallback;
   const showBanner = c("promo_banner_active", "true") === "true";

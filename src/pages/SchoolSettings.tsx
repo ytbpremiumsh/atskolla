@@ -42,24 +42,21 @@ const SchoolSettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [qrInstructions, setQrInstructions] = useState<{ id?: string; text: string }[]>([]);
-  const [savingInstructions, setSavingInstructions] = useState(false);
   const [holidayMode, setHolidayMode] = useState(false);
   const [holidayModeLabel, setHolidayModeLabel] = useState("");
   const [holidayDates, setHolidayDates] = useState<{ id: string; date: string; label: string | null }[]>([]);
   const [savingHolidayMode, setSavingHolidayMode] = useState(false);
   const [newHolidayLabel, setNewHolidayLabel] = useState("");
 
-  const maxInstructions = features.planName === "Free" ? 2 : 999;
+
 
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
     Promise.all([
       supabase.from("schools").select("name, address, logo, npsn, city, province, timezone, holiday_days, holiday_mode, holiday_mode_label, slug, slug_updated_at, whatsapp, email, principal_name").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings").select("school_start_time, school_end_time, attendance_start_time, attendance_end_time, departure_start_time, departure_end_time").eq("school_id", profile.school_id).maybeSingle(),
-      supabase.from("qr_instructions").select("id, instruction_text, sort_order").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("school_holidays").select("id, date, label").eq("school_id", profile.school_id).order("date"),
-    ]).then(([schoolRes, settingsRes, instrRes, holRes]) => {
+    ]).then(([schoolRes, settingsRes, holRes]) => {
       if (schoolRes.data) {
         setName(schoolRes.data.name || "");
         setAddress(schoolRes.data.address || "");
@@ -88,9 +85,6 @@ const SchoolSettings = () => {
         setDepStartTime((settingsRes.data as any).departure_start_time?.slice(0, 5) || "12:00");
         setDepEndTime((settingsRes.data as any).departure_end_time?.slice(0, 5) || "17:00");
       }
-      if (instrRes.data && instrRes.data.length > 0) {
-        setQrInstructions(instrRes.data.map((r: any) => ({ id: r.id, text: r.instruction_text })));
-      }
       setLoading(false);
     });
   }, [profile?.school_id]);
@@ -109,11 +103,10 @@ const SchoolSettings = () => {
       if (uploadErr) { toast.error("Gagal upload logo: " + uploadErr.message); setUploading(false); return; }
       const { data: urlData } = supabase.storage.from("school-logos").getPublicUrl(path);
       const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-      
-      // Save logo URL to database immediately
+
       const { error: saveErr } = await supabase.from("schools").update({ logo: publicUrl }).eq("id", profile.school_id);
       if (saveErr) { toast.error("Logo terupload tapi gagal menyimpan ke database: " + saveErr.message); setUploading(false); return; }
-      
+
       setLogo(publicUrl);
       toast.success("Logo berhasil diupload dan disimpan!");
     } catch (err: any) {
@@ -123,46 +116,7 @@ const SchoolSettings = () => {
     }
   };
 
-  const handleAddInstruction = () => {
-    if (qrInstructions.length >= maxInstructions) {
-      toast.error(`Paket ${features.planName} hanya bisa ${maxInstructions} petunjuk. Upgrade untuk menambah lebih banyak.`);
-      return;
-    }
-    setQrInstructions([...qrInstructions, { text: "" }]);
-  };
 
-  const handleRemoveInstruction = (index: number) => {
-    setQrInstructions(qrInstructions.filter((_, i) => i !== index));
-  };
-
-  const handleUpdateInstruction = (index: number, text: string) => {
-    const updated = [...qrInstructions];
-    updated[index] = { ...updated[index], text };
-    setQrInstructions(updated);
-  };
-
-  const handleSaveInstructions = async () => {
-    if (!profile?.school_id) return;
-    setSavingInstructions(true);
-
-    // Delete existing
-    await supabase.from("qr_instructions").delete().eq("school_id", profile.school_id);
-
-    // Insert new
-    const validInstructions = qrInstructions.filter(i => i.text.trim());
-    if (validInstructions.length > 0) {
-      const rows = validInstructions.map((instr, i) => ({
-        school_id: profile.school_id!,
-        instruction_text: instr.text.trim(),
-        sort_order: i,
-      }));
-      const { error } = await supabase.from("qr_instructions").insert(rows);
-      if (error) { toast.error("Gagal menyimpan: " + error.message); setSavingInstructions(false); return; }
-    }
-
-    setSavingInstructions(false);
-    toast.success("Petunjuk QR Code berhasil disimpan!");
-  };
 
   const handleToggleHolidayMode = async (val: boolean) => {
     if (!profile?.school_id) return;

@@ -25,32 +25,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Server-side subscription gating: only School/Premium plans (or any active trial) may use Face Recognition
-    const { data: sub } = await supabaseAdmin
-      .from("school_subscriptions")
-      .select("status, expires_at, subscription_plans(name)")
-      .eq("school_id", school_id)
-      .in("status", ["active", "trial"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Sistem langganan berpaket dihapus — semua sekolah boleh pakai Face Recognition.
 
-    const planName = (sub as any)?.subscription_plans?.name || "Free";
-    const isTrial = sub?.status === "trial";
-    const notExpired = sub?.expires_at ? new Date(sub.expires_at) > new Date() : false;
-    const allowedPlan = ["School", "Premium"].includes(planName);
-    const allowed = (isTrial && notExpired) || (allowedPlan && notExpired);
 
-    if (!allowed) {
-      return new Response(JSON.stringify({
-        success: false,
-        match: false,
-        error: "Face Recognition hanya tersedia untuk paket School, Premium, atau Trial aktif. Silakan upgrade paket Anda.",
-        code: "PLAN_REQUIRED",
-      }), {
-        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
     const [studentsRes, teachersRes, rolesRes] = await Promise.all([
       supabaseAdmin
