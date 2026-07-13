@@ -4384,8 +4384,7 @@ export function BendaharaSaldo() {
               <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" /> LIVE
             </span>
           </div>
-          <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(activeBalance)}</p>
-          <p className="text-[11px] opacity-80 mt-1">Net Rp {fmtIDR(available.net)} − Biaya admin {fmtIDR(available.count > 0 ? DEFAULT_WITHDRAW_FEE : 0)} • {available.count} transaksi online</p>
+          <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(available.net)}</p>
         </CardContent>
       </Card>
 
