@@ -24,13 +24,13 @@ serve(async (req) => {
     const jakartaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }));
     const today = jakartaTime.getFullYear() + '-' + String(jakartaTime.getMonth() + 1).padStart(2, '0') + '-' + String(jakartaTime.getDate()).padStart(2, '0');
 
-    const [schoolRes, studentsRes, logsRes, settingsRes, subRes] = await Promise.all([
+    const [schoolRes, studentsRes, logsRes, settingsRes] = await Promise.all([
       supabase.from('schools').select('name, logo').eq('id', school_id).single(),
       supabase.from('students').select('id, name, class, student_id, photo_url, parent_name').eq('school_id', school_id).order('class').order('name'),
       supabase.from('attendance_logs').select('id, student_id, time, status, method, created_at, attendance_type').eq('school_id', school_id).eq('date', today).order('created_at', { ascending: false }),
       supabase.from('dismissal_settings').select('attendance_start_time, attendance_end_time, departure_start_time, departure_end_time').eq('school_id', school_id).maybeSingle(),
-      supabase.from('school_subscriptions').select('*, subscription_plans(name)').eq('school_id', school_id).eq('status', 'active').maybeSingle(),
     ]);
+
 
     if (schoolRes.error || !schoolRes.data) {
       return new Response(JSON.stringify({ error: "Sekolah tidak ditemukan" }), {
