@@ -4834,18 +4834,27 @@ export function BendaharaPencairan() {
         </TabsContent>
 
         <TabsContent value="riwayat" className="space-y-4 mt-4">
+          {/* Legend status */}
+          <div className="rounded-lg border bg-muted/20 p-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> <b>Pending</b> — menunggu review Super Admin</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" /> <b>Approved</b> — disetujui, akan segera ditransfer</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" /> <b>Paid</b> — dana sudah masuk rekening</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500" /> <b>Rejected</b> — ditolak (lihat catatan)</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" /> <b>Cancelled</b> — dibatalkan oleh pemohon</span>
+          </div>
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">
               {loadingHistory ? <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div> : (
                 <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Bruto</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl</TableHead><TableHead>Trx</TableHead><TableHead>Bruto</TableHead><TableHead>Biaya Pencairan</TableHead><TableHead>Final</TableHead><TableHead>Status</TableHead><TableHead></TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {history.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
+                    {history.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
                     {history.map(s => {
                       const withdrawFee = s.withdraw_fee ?? DEFAULT_WITHDRAW_FEE;
                       // Angka final_payout sudah direkonsiliasi dari invoice terkait (net − fee)
                       const rowFinal = s.final_payout ?? 0;
+                      const canCancel = s.status === "pending" && s.requested_by === user?.id;
                       return (
                         <TableRow key={s.id} onClick={() => openSettlementDetail(s)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
                           <TableCell className="text-xs font-mono">{s.settlement_code}</TableCell>
@@ -4855,6 +4864,19 @@ export function BendaharaPencairan() {
                           <TableCell className="text-xs">{fmtIDR(withdrawFee)}</TableCell>
                           <TableCell className="font-semibold text-emerald-600">{fmtIDR(rowFinal)}</TableCell>
                           <TableCell>{badge(s.status)}</TableCell>
+                          <TableCell className="text-right">
+                            {canCancel && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                                disabled={cancellingId === s.id}
+                                onClick={(e) => { e.stopPropagation(); cancelSettlement(s.id); }}
+                              >
+                                {cancellingId === s.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Batalkan"}
+                              </Button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -4866,6 +4888,7 @@ export function BendaharaPencairan() {
           </Card>
         </TabsContent>
       </Tabs>
+
 
       {/* Konfirmasi Pencairan */}
       <Dialog open={confirmOpen} onOpenChange={(o) => { setConfirmOpen(o); if (!o) { setOtpStep(false); setOtpCode(""); setOtpPhoneMasked(""); } }}>
