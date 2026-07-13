@@ -112,6 +112,14 @@ export default function BendaharaDisbursement() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<Settlement | null>(null);
 
+  // add account dialog
+  const [addOpen, setAddOpen] = useState(false);
+  const [addBank, setAddBank] = useState("");
+  const [addNumber, setAddNumber] = useState("");
+  const [addHolder, setAddHolder] = useState("");
+  const [addDefault, setAddDefault] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+
   const withdrawFee = 3000;
   const finalPayout = Math.max(0, available.net - withdrawFee);
 
@@ -369,18 +377,23 @@ export default function BendaharaDisbursement() {
       {/* Rekening Pencairan */}
       <Card className="rounded-2xl border-border/60">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4 text-[#5B6CF9]" />
               <h3 className="font-semibold text-sm">Rekening Pencairan</h3>
             </div>
-            <span className="text-[11px] text-muted-foreground">
-              Hanya rekening <b>terverifikasi</b> yang dapat menerima pencairan.
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                Hanya rekening <b>terverifikasi</b> yang dapat menerima pencairan.
+              </span>
+              <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 bg-[#5B6CF9] hover:bg-[#4a5ce8]">
+                <Building2 className="h-4 w-4" /> Tambah Rekening
+              </Button>
+            </div>
           </div>
           {accounts.length === 0 ? (
             <div className="text-sm text-muted-foreground py-6 text-center">
-              Belum ada rekening. Tambahkan di menu <b>Pengaturan Rekening</b>.
+              Belum ada rekening. Klik <b>Tambah Rekening</b> di kanan atas.
             </div>
           ) : (
             <div className="grid gap-2">
@@ -662,6 +675,69 @@ export default function BendaharaDisbursement() {
               </section>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add account dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tambah Rekening Pencairan</DialogTitle>
+            <DialogDescription>Pastikan nama pemilik rekening sama persis dengan buku tabungan.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Nama Bank</Label>
+              <Input value={addBank} onChange={(e) => setAddBank(e.target.value)} placeholder="Mandiri, BCA, BNI, BRI, BSI…" />
+            </div>
+            <div>
+              <Label>Nomor Rekening</Label>
+              <Input value={addNumber} onChange={(e) => setAddNumber(e.target.value.replace(/\D/g, ""))} placeholder="1800011522457" inputMode="numeric" />
+            </div>
+            <div>
+              <Label>Nama Pemilik Rekening</Label>
+              <Input value={addHolder} onChange={(e) => setAddHolder(e.target.value)} placeholder="Sesuai buku tabungan" />
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={addDefault} onChange={(e) => setAddDefault(e.target.checked)} />
+              Jadikan rekening utama
+            </label>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Batal</Button>
+            <Button
+              disabled={addSaving || !addBank || !addNumber || !addHolder}
+              className="bg-[#5B6CF9] hover:bg-[#4a5ce8]"
+              onClick={async () => {
+                if (!profile?.school_id) return;
+                setAddSaving(true);
+                try {
+                  if (addDefault) {
+                    await supabase.from("bendahara_bank_accounts" as any)
+                      .update({ is_default: false }).eq("school_id", profile.school_id);
+                  }
+                  const { error } = await supabase.from("bendahara_bank_accounts" as any).insert({
+                    school_id: profile.school_id,
+                    bank_name: addBank.trim(),
+                    account_number: addNumber.trim(),
+                    account_holder: addHolder.trim(),
+                    is_default: addDefault,
+                    doku_bank_code: resolveBankCode(addBank),
+                    verification_status: "pending",
+                  } as any);
+                  if (error) { toast.error(error.message); return; }
+                  toast.success("Rekening ditambahkan. Klik 'Daftar ke DOKU' untuk verifikasi.");
+                  setAddOpen(false);
+                  setAddBank(""); setAddNumber(""); setAddHolder(""); setAddDefault(false);
+                  setRefreshKey((k) => k + 1);
+                } finally {
+                  setAddSaving(false);
+                }
+              }}
+            >
+              {addSaving ? "Menyimpan…" : "Simpan Rekening"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
