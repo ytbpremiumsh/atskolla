@@ -173,6 +173,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Public reference: list of banks supported by DOKU disbursement
+    if (payload.action === "list_banks") {
+      return new Response(JSON.stringify({ ok: true, banks: DOKU_BANKS }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     // Load referenced account (source of truth) when account_id present
     let acct: any = null;
     if (payload.account_id) {
