@@ -4721,9 +4721,11 @@ export function BendaharaPencairan() {
   };
 
   const deleteAccount = async (id: string) => {
-    const { error } = await supabase.from("bendahara_bank_accounts" as any).delete().eq("id", id);
+    if (!confirm("Nonaktifkan rekening ini? Riwayat pencairan yang sudah ada tetap tersimpan.")) return;
+    const { error } = await supabase.from("bendahara_bank_accounts" as any)
+      .update({ is_active: false, is_default: false, archived_at: new Date().toISOString() }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Rekening dihapus");
+    toast.success("Rekening dinonaktifkan");
     if (selectedAccountId === id) setSelectedAccountId("");
     loadAccounts();
   };
