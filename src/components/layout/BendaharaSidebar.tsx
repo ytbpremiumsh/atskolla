@@ -45,7 +45,7 @@ const groups: { label: string; items: { title: string; url: string; icon: any; e
   {
     label: "Keuangan",
     items: [
-      { title: "Disbursement", url: "/bendahara/withdraw", icon: ArrowDownToLine },
+      { title: "Saldo & Penarikan", url: "/bendahara/withdraw", icon: ArrowDownToLine },
     ],
   },
 ];
