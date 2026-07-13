@@ -4439,7 +4439,7 @@ export function BendaharaSaldo() {
 // ============ PENCAIRAN + RIWAYAT (gabungan) ============
 export function BendaharaPencairan() {
   const { profile, user } = useAuth();
-  const [available, setAvailable] = useState({ count: 0, gross: 0, fee: 0, net: 0 });
+  const [available, setAvailable] = useState({ count: 0, gross: 0, fee: 0, net: 0, finalPayout: 0 });
   const [availableItems, setAvailableItems] = useState<any[]>([]);
   const [breakdown, setBreakdown] = useState({ onlineTotal: 0, onlineSettled: 0, offlineCount: 0, offlineGross: 0 });
   const [open, setOpen] = useState(false);
