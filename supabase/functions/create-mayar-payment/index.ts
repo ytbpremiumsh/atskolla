@@ -192,57 +192,9 @@ serve(async (req) => {
       return ok({ payment_url: brandPaymentUrl(paymentLink.link), transaction_id: txn?.id || null });
     }
 
-    // ═══════════════════════════════════════════
-    // 4. Subscription Plan Payment
-    // ═══════════════════════════════════════════
-    if (!plan_id) throw new Error("plan_id is required");
+    // Subscription Plan Payment dinonaktifkan — sistem paket berlangganan dihapus.
+    throw new Error("Sistem paket langganan sudah dihapus. Gunakan model Payment atau Mandiri di menu Paket Sekolah.");
 
-    const { data: plan, error: planError } = await supabaseAdmin.from("subscription_plans").select("*").eq("id", plan_id).single();
-    if (planError || !plan) throw new Error("Plan not found");
-
-    let schoolId = await resolveSchoolId().catch(() => null);
-    if (!schoolId && requestedSchoolId) {
-      const { data: isSA } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "super_admin" });
-      if (isSA) schoolId = requestedSchoolId;
-    }
-    if (!schoolId) throw new Error("Akun Anda belum terhubung ke sekolah. Silakan hubungi Super Admin.");
-
-    const { data: school } = await supabaseAdmin.from("schools").select("name").eq("id", schoolId).maybeSingle();
-
-    // Free plan: auto-approved
-    if (plan.price === 0) {
-      await supabaseAdmin.from("payment_transactions").insert({
-        school_id: schoolId, plan_id: plan.id, amount: 0, status: "paid", paid_at: new Date().toISOString(), payment_method: "free",
-      });
-      const expiresAt = new Date(); expiresAt.setMonth(expiresAt.getMonth() + 1);
-      const { data: existingSub } = await supabaseAdmin.from("school_subscriptions").select("id").eq("school_id", schoolId).eq("status", "active").order("created_at", { ascending: false }).limit(1).maybeSingle();
-      if (existingSub) {
-        await supabaseAdmin.from("school_subscriptions").update({ plan_id: plan.id, expires_at: expiresAt.toISOString() }).eq("id", existingSub.id);
-      } else {
-        await supabaseAdmin.from("school_subscriptions").insert({ school_id: schoolId, plan_id: plan.id, status: "active", expires_at: expiresAt.toISOString() });
-      }
-      return new Response(JSON.stringify({ success: true, auto_approved: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const existing = await findRecentPending({ school_id: schoolId, plan_id: plan.id });
-    if (existing?.mayar_payment_url) {
-      return ok({ payment_url: brandPaymentUrl(existing.mayar_payment_url), transaction_id: existing.id });
-    }
-
-    const redirectUrl = `${siteUrl}/subscription?status=success`;
-    const paymentLink = await createMayarLink(
-      `Langganan Paket ${plan.name}`,
-      plan.price,
-      `Langganan Paket ${plan.name} - ${school?.name || "Sekolah"}`,
-      redirectUrl
-    );
-
-    const { data: txn } = await supabaseAdmin.from("payment_transactions").insert({
-      school_id: schoolId, plan_id: plan.id, amount: plan.price, status: "pending",
-      mayar_transaction_id: paymentLink?.id || null, mayar_payment_url: paymentLink?.link || null,
-    }).select("id").single();
-
-    return ok({ payment_url: brandPaymentUrl(paymentLink.link), transaction_id: txn?.id || null });
   } catch (error) {
     console.error("create-mayar-payment error:", error);
     return new Response(JSON.stringify({ success: false, error: error.message }), {
