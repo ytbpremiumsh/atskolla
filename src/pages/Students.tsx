@@ -90,18 +90,15 @@ const Students = () => {
 
   const fetchData = async () => {
     if (!profile?.school_id) { setLoading(false); return; }
-    const [studentsRes, classesRes, instrRes, schoolRes, waliRes] = await Promise.all([
+    const [studentsRes, classesRes, schoolRes, waliRes] = await Promise.all([
       supabase.from("students").select("*").eq("school_id", profile.school_id).order("class").order("name"),
       supabase.from("classes").select("*").eq("school_id", profile.school_id).order("name"),
-      supabase.from("qr_instructions").select("instruction_text").eq("school_id", profile.school_id).order("sort_order"),
       supabase.from("schools").select("name, logo").eq("id", profile.school_id).single(),
       supabase.from("class_teachers").select("class_name, user_id").eq("school_id", profile.school_id),
     ]);
     setStudents(studentsRes.data || []);
     setClasses(classesRes.data || []);
-    if (instrRes.data && instrRes.data.length > 0) {
-      setQrInstructions(instrRes.data.map((r: any) => r.instruction_text));
-    }
+
     if (schoolRes.data) {
       setSchoolInfo({ name: schoolRes.data.name, logo: schoolRes.data.logo || undefined });
     }
