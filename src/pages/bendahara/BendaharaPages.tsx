@@ -4385,7 +4385,7 @@ export function BendaharaSaldo() {
             </span>
           </div>
           <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(activeBalance)}</p>
-          <p className="text-[11px] opacity-80 mt-1">Total Bruto {fmtIDR(totals.gross)} − Sudah/akan dicairkan {fmtIDR(lockedGross)}</p>
+          <p className="text-[11px] opacity-80 mt-1">Net Rp {fmtIDR(available.net)} − Biaya admin {fmtIDR(available.count > 0 ? DEFAULT_WITHDRAW_FEE : 0)} • {available.count} transaksi online</p>
         </CardContent>
       </Card>
 
