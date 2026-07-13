@@ -167,7 +167,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    const bankCode = payload.bank_code || acct?.doku_bank_code || "";
+    const BANK_CODE_MAP: Record<string, string> = {
+      bca: "014", "bank bca": "014",
+      mandiri: "008", "bank mandiri": "008",
+      bni: "009", "bank bni": "009",
+      bri: "002", "bank bri": "002",
+      bsi: "451", "bank bsi": "451",
+      cimb: "022", "cimb niaga": "022",
+      permata: "013", "bank permata": "013",
+      danamon: "011", "bank danamon": "011",
+      btn: "200", "bank btn": "200",
+      ocbc: "028", "ocbc nisp": "028",
+      maybank: "016", panin: "019",
+      mega: "426", "bank mega": "426",
+      jago: "542", "bank jago": "542",
+      seabank: "535", jenius: "213", "bank neo": "490",
+    };
+    const resolveBankCode = (name: string) => {
+      const k = (name || "").trim().toLowerCase();
+      return BANK_CODE_MAP[k] || "";
+    };
+    const bankCode = payload.bank_code || acct?.doku_bank_code || resolveBankCode(acct?.bank_name || "");
     const accountNumber = payload.account_number || acct?.account_number || "";
     const accountHolder = payload.account_holder || acct?.account_holder || "";
     const settlementId = payload.bank_account_settlement_id || acct?.doku_bank_account_settlement_id || "";
