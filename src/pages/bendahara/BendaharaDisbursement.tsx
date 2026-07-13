@@ -112,6 +112,9 @@ export default function BendaharaDisbursement() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detail, setDetail] = useState<Settlement | null>(null);
 
+  // manage accounts dialog
+  const [manageOpen, setManageOpen] = useState(false);
+
   // add account dialog
   const [addOpen, setAddOpen] = useState(false);
   const [addBank, setAddBank] = useState("");
