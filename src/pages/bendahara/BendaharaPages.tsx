@@ -4761,7 +4761,7 @@ export function BendaharaPencairan() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatCard label="Transaksi Siap Cair" value={String(available.count)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
         <StatCard label="Total Bruto" value={fmtIDR(available.gross)} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
-        <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub={`setelah biaya pencairan ${fmtIDR(DEFAULT_WITHDRAW_FEE)}`} gradient="from-amber-500 to-orange-600" />
+        <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub={`setelah biaya pencairan ${fmtIDR(schoolSettings.withdraw_fee)} · min ${fmtIDR(schoolSettings.min_payout)}`} gradient="from-amber-500 to-orange-600" />
       </div>
 
 
