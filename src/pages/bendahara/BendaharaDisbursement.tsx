@@ -796,7 +796,7 @@ export default function BendaharaDisbursement() {
                     verification_status: "pending",
                   } as any);
                   if (error) { toast.error(error.message); return; }
-                  toast.success("Rekening ditambahkan. Klik 'Daftar ke DOKU' untuk verifikasi.");
+                  toast.success("Rekening ditambahkan. Klik 'Verifikasi' untuk memproses.");
                   setAddOpen(false);
                   setAddBank(""); setAddNumber(""); setAddHolder(""); setAddDefault(false);
                   setRefreshKey((k) => k + 1);
