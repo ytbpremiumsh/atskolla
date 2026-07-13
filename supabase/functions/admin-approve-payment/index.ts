@@ -39,41 +39,9 @@ serve(async (req) => {
       payment_method: 'manual_approve',
     }).eq('id', payment.id);
 
-    // Create or extend subscription
-    const { data: existingSub } = await supabaseAdmin
-      .from('school_subscriptions')
-      .select('id, expires_at')
-      .eq('school_id', payment.school_id)
-      .eq('status', 'active')
-      .maybeSingle();
+    // Sistem paket langganan sudah dihapus — tidak perlu buat/extend school_subscriptions.
+    const approvedPlanName = '';
 
-    const now = new Date();
-    let expiresAt: Date;
-
-    if (existingSub?.expires_at) {
-      const currentExpiry = new Date(existingSub.expires_at);
-      expiresAt = currentExpiry > now ? currentExpiry : now;
-    } else {
-      expiresAt = now;
-    }
-    expiresAt.setMonth(expiresAt.getMonth() + extend_months);
-
-    if (existingSub) {
-      await supabaseAdmin.from('school_subscriptions')
-        .update({ plan_id: payment.plan_id, expires_at: expiresAt.toISOString() })
-        .eq('id', existingSub.id);
-    } else {
-      await supabaseAdmin.from('school_subscriptions').insert({
-        school_id: payment.school_id,
-        plan_id: payment.plan_id,
-        status: 'active',
-        expires_at: expiresAt.toISOString(),
-      });
-    }
-
-    // Auto-provision WhatsApp integration for School/Premium plans
-    const { data: planInfo } = await supabaseAdmin.from('subscription_plans').select('name').eq('id', payment.plan_id).single();
-    const approvedPlanName = planInfo?.name || '';
     
     if (['School', 'Premium'].includes(approvedPlanName)) {
       const { data: existingInt } = await supabaseAdmin
