@@ -377,18 +377,23 @@ export default function BendaharaDisbursement() {
       {/* Rekening Pencairan */}
       <Card className="rounded-2xl border-border/60">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4 text-[#5B6CF9]" />
               <h3 className="font-semibold text-sm">Rekening Pencairan</h3>
             </div>
-            <span className="text-[11px] text-muted-foreground">
-              Hanya rekening <b>terverifikasi</b> yang dapat menerima pencairan.
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                Hanya rekening <b>terverifikasi</b> yang dapat menerima pencairan.
+              </span>
+              <Button size="sm" onClick={() => setAddOpen(true)} className="gap-1.5 bg-[#5B6CF9] hover:bg-[#4a5ce8]">
+                <Building2 className="h-4 w-4" /> Tambah Rekening
+              </Button>
+            </div>
           </div>
           {accounts.length === 0 ? (
             <div className="text-sm text-muted-foreground py-6 text-center">
-              Belum ada rekening. Tambahkan di menu <b>Pengaturan Rekening</b>.
+              Belum ada rekening. Klik <b>Tambah Rekening</b> di kanan atas.
             </div>
           ) : (
             <div className="grid gap-2">
