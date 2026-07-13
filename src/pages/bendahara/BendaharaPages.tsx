@@ -4531,7 +4531,7 @@ export function BendaharaPencairan() {
       // Satu query saja: ambil semua paid online sekaligus, lalu bagi di client.
       const [paidRes, hRes] = await Promise.all([
         supabase.from("spp_invoices")
-          .select("id, payment_method, settlement_id, total_amount, gateway_fee, net_amount")
+          .select("id, status, payment_method, settlement_id, total_amount, gateway_fee, net_amount")
           .eq("school_id", profile.school_id)
           .eq("status", "paid"),
         supabase.from("spp_settlements").select("*").eq("school_id", profile.school_id).order("created_at", { ascending: false }),
