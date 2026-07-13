@@ -1035,82 +1035,64 @@ function DevicesShowcase() {
       <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[720px] h-[420px] bg-[#5B6CF9]/20 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[380px] h-[380px] bg-[#a78bfa]/20 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="relative">
-        <SectionHeader
-          eyebrow="Satu platform, semua perangkat"
-          title={<>Akses ATSkolla dari <span className="text-[#5B6CF9]">laptop hingga smartphone</span>.</>}
-          sub="Antarmuka responsif yang dirancang untuk admin sekolah di desktop dan wali kelas maupun orang tua di mobile — data selalu tersinkron real-time."
-        />
+      <div className="relative grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {/* LEFT — Text */}
+        <motion.div
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <Eyebrow>Satu platform, semua perangkat</Eyebrow>
+          <h2 className="mt-4 font-display text-3xl md:text-4xl lg:text-5xl font-bold text-[#0b1020] tracking-tight leading-[1.1]">
+            Akses ATSkolla dari <span className="text-[#5B6CF9]">laptop hingga smartphone</span>.
+          </h2>
+          <p className="mt-5 text-base lg:text-lg text-[#0b1020]/70 leading-relaxed">
+            Antarmuka responsif yang dirancang untuk admin sekolah di desktop dan wali kelas maupun orang tua di mobile — data selalu tersinkron real-time.
+          </p>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 mt-4">
-          {/* LEFT — Desktop / Laptop widget */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6 }}
-            className="relative rounded-3xl bg-white border border-slate-200 shadow-xl overflow-hidden p-6 lg:p-8 flex flex-col"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5B6CF9]/10 text-[#5B6CF9] text-[11px] font-semibold uppercase tracking-wider">
-                <Activity className="h-3 w-3" /> Desktop
-              </span>
-              <span className="text-xs text-[#0b1020]/50">Untuk Admin & Kepala Sekolah</span>
+          <div className="mt-8 grid sm:grid-cols-2 gap-4">
+            <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-9 w-9 rounded-xl bg-[#5B6CF9]/10 border border-[#5B6CF9]/20 flex items-center justify-center">
+                  <Activity className="h-4 w-4 text-[#5B6CF9]" />
+                </div>
+                <div className="font-display font-semibold text-[#0b1020]">Desktop</div>
+              </div>
+              <p className="text-xs text-[#0b1020]/60 leading-relaxed">Dashboard lengkap untuk admin & kepala sekolah.</p>
             </div>
-            <h3 className="font-display text-xl lg:text-2xl font-bold text-[#0b1020] leading-tight">
-              Dashboard lengkap di <span className="text-[#5B6CF9]">laptop</span>.
-            </h3>
-            <p className="text-sm text-[#0b1020]/65 mt-2 leading-relaxed">
-              Kelola absensi, SPP, keuangan, dan seluruh administrasi sekolah dari satu layar.
-            </p>
-
-            <div
-              className="relative mt-6 rounded-2xl bg-gradient-to-br from-[#f5f7fb] to-white border border-slate-100 overflow-hidden aspect-[4/3]"
-              style={{
-                backgroundImage: `url(${headerDeviceAsset.url})`,
-                backgroundSize: "175%",
-                backgroundPosition: "8% 45%",
-                backgroundRepeat: "no-repeat",
-              }}
-              aria-label="Dashboard ATSkolla di laptop"
-              role="img"
-            />
-          </motion.div>
-
-          {/* RIGHT — Mobile widget */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="relative rounded-3xl bg-gradient-to-br from-[#0b1020] to-[#1a2340] text-white shadow-xl overflow-hidden p-6 lg:p-8 flex flex-col"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white text-[11px] font-semibold uppercase tracking-wider">
-                <ShieldCheck className="h-3 w-3" /> Mobile
-              </span>
-              <span className="text-xs text-white/60">Untuk Guru & Wali Murid</span>
+            <div className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="font-display font-semibold text-[#0b1020]">Mobile</div>
+              </div>
+              <p className="text-xs text-[#0b1020]/60 leading-relaxed">Notifikasi & monitoring untuk guru dan wali murid.</p>
             </div>
-            <h3 className="font-display text-xl lg:text-2xl font-bold leading-tight">
-              Genggam sekolah di <span className="text-[#a5b4ff]">smartphone</span>.
-            </h3>
-            <p className="text-sm text-white/70 mt-2 leading-relaxed">
-              Notifikasi real-time, monitoring anak, dan pembayaran SPP langsung dari HP.
-            </p>
+          </div>
+        </motion.div>
 
-            <div
-              className="relative mt-6 rounded-2xl bg-white/5 border border-white/10 overflow-hidden aspect-[4/3]"
-              style={{
-                backgroundImage: `url(${headerDeviceAsset.url})`,
-                backgroundSize: "260%",
-                backgroundPosition: "88% 55%",
-                backgroundRepeat: "no-repeat",
-              }}
-              aria-label="Aplikasi ATSkolla di smartphone"
-              role="img"
-            />
-          </motion.div>
-        </div>
+        {/* RIGHT — Device mockup */}
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="relative"
+        >
+          <motion.img
+            src={headerDeviceAsset.url}
+            alt="Dashboard ATSkolla di laptop dan aplikasi mobile"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="relative w-full h-auto drop-shadow-[0_45px_70px_rgba(11,16,32,0.28)] select-none"
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-[70%] h-6 rounded-[50%] bg-[#0b1020]/25 blur-2xl pointer-events-none" />
+        </motion.div>
       </div>
     </Section>
   );
