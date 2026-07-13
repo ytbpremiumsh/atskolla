@@ -48,11 +48,9 @@ const SuperAdminSchools = () => {
   const [processing, setProcessing] = useState(false);
 
   const fetchSchools = async () => {
-    const [schoolsRes, studentsRes, subsRes, plansRes, profilesRes, loginLogsRes] = await Promise.all([
+    const [schoolsRes, studentsRes, profilesRes, loginLogsRes] = await Promise.all([
       supabase.from("schools").select("*"),
       supabase.from("students").select("school_id, class"),
-      supabase.from("school_subscriptions").select("id, school_id, plan_id, status, expires_at, subscription_plans(name)"),
-      supabase.from("subscription_plans").select("id, name, price").eq("is_active", true).order("sort_order"),
       supabase.from("profiles").select("school_id, full_name, phone, user_id"),
       supabase.from("login_logs").select("user_id, email").order("created_at", { ascending: false }),
     ]);
@@ -67,15 +65,12 @@ const SuperAdminSchools = () => {
 
     const schoolsList = schoolsRes.data || [];
     const students = studentsRes.data || [];
-    const subs = subsRes.data || [];
     const profiles = profilesRes.data || [];
-    setPlans(plansRes.data || []);
+    setPlans([]);
 
     const mapped: SchoolData[] = schoolsList.map((s: any) => {
       const schoolStudents = students.filter((st: any) => st.school_id === s.id);
       const uniqueClasses = new Set(schoolStudents.map((st: any) => st.class));
-      const schoolSubs = subs.filter((sb: any) => sb.school_id === s.id);
-      const activeSub = schoolSubs.find((sb: any) => sb.status === "active") || schoolSubs[0];
 
       const adminProfile = profiles.find((p: any) => p.school_id === s.id && adminUserIds.has(p.user_id));
 
@@ -86,14 +81,13 @@ const SuperAdminSchools = () => {
         adminName: adminProfile?.full_name || s.principal_name || null,
         adminPhone: adminProfile?.phone || s.whatsapp || null,
         adminEmail: (adminProfile ? emailMap[adminProfile.user_id] : null) || s.email || null,
-        subscription: activeSub
-          ? { id: activeSub.id, plan_id: activeSub.plan_id, plan_name: (activeSub as any).subscription_plans?.name || "—", status: activeSub.status, expires_at: activeSub.expires_at }
-          : null,
+        subscription: null,
       };
     });
     setSchools(mapped);
     setLoading(false);
   };
+
 
   useEffect(() => { fetchSchools(); }, []);
 
