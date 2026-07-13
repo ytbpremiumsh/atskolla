@@ -211,29 +211,9 @@ serve(async (req) => {
           .insert({ school_id: resolvedSchoolId, is_active: false });
       }
 
-      const { data: existingSub } = await supabaseAdmin
-        .from('school_subscriptions')
-        .select('id')
-        .eq('school_id', resolvedSchoolId)
-        .maybeSingle();
+      // Sistem langganan berpaket dihapus — tidak perlu insert school_subscriptions.
 
-      if (!existingSub) {
-        const { data: freePlan } = await supabaseAdmin
-          .from('subscription_plans')
-          .select('id')
-          .eq('price', 0)
-          .eq('is_active', true)
-          .maybeSingle();
 
-        if (freePlan) {
-          await supabaseAdmin.from('school_subscriptions').insert({
-            school_id: resolvedSchoolId,
-            plan_id: freePlan.id,
-            status: 'active',
-            expires_at: null,
-          });
-        }
-      }
 
 
       // Auto-create WhatsApp Gateway (OneSender) integration for new schools
