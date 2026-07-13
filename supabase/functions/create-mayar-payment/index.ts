@@ -76,10 +76,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
 
-    const getAnyPlanId = async () => {
-      const { data } = await supabaseAdmin.from("subscription_plans").select("id").limit(1).single();
-      return data?.id;
-    };
+    const getAnyPlanId = async (): Promise<string | null> => null; // subscription_plans dropped
+
 
     // ═══════════════════════════════════════════
     // 1. ID Card Order Payment
