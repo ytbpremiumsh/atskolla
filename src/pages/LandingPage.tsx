@@ -1024,11 +1024,6 @@ function Footer() {
         </div>
       </div>
     </footer>
-    <div className="bg-slate-900 text-slate-400 text-xs py-3 px-6 lg:px-10">
-      <div className="max-w-7xl mx-auto">
-        © {new Date().getFullYear()} ATSkolla — CV Prestasi Kita Bersama. Hak cipta dilindungi.
-      </div>
-    </div>
     </>
   );
 }
