@@ -1018,12 +1018,17 @@ function Footer() {
       </div>
 
       <div className="border-t border-white/15">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/60">
-          <div>© {new Date().getFullYear()} CV Prestais Kita Bersama. All rights reserved.</div>
-          <div>Made with care for Indonesian schools.</div>
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-4 text-xs text-white/60">
+          Made with care for Indonesian schools.
         </div>
       </div>
     </footer>
+    <div className="bg-slate-900 text-slate-400 text-xs py-3 px-6 lg:px-10">
+      <div className="max-w-7xl mx-auto">
+        © {new Date().getFullYear()} ATSkolla — CV Prestasi Kita Bersama. Hak cipta dilindungi.
+      </div>
+    </div>
+    </>
   );
 }
 
