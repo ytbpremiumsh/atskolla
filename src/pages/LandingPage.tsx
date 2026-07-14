@@ -982,7 +982,7 @@ function Footer() {
           <ul className="space-y-2.5 text-sm">
             <li><a href="#modul" className="text-white/75 hover:text-white transition-colors">Modul</a></li>
             <li><a href="#pembayaran" className="text-white/75 hover:text-white transition-colors">Pembayaran</a></li>
-            <li><a href="#hardware" className="text-white/75 hover:text-white transition-colors">Hardware</a></li>
+            <li><a href="#hardware" className="text-white/75 hover:text-white transition-colors">Perangkat</a></li>
             <li><a href="#dashboard" className="text-white/75 hover:text-white transition-colors">Dashboard</a></li>
           </ul>
         </div>
