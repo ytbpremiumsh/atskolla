@@ -189,7 +189,7 @@ export default function SuperAdminAdminNotify() {
           <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 flex gap-2 items-start">
             <Info className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
             <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Email dikirim via <b>server email bawaan Lovable</b> (domain <code>notify.atskolla.com</code>) — sama seperti email pendaftaran akun.
+              Email dikirim via <b>server email bawaan Lovable</b> (domain <code>notify.email.atskolla.com</code>) — sama seperti email pendaftaran akun.
             </p>
           </div>
         </CardContent>
