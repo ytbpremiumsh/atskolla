@@ -27,7 +27,9 @@ export default function SuperAdminCMS() {
         <TabsTrigger value="caption" className="rounded-lg">Auto Caption AI</TabsTrigger>
         <TabsTrigger value="shortlink" className="rounded-lg">Shortlink</TabsTrigger>
         <TabsTrigger value="pixel" className="rounded-lg">Meta Pixel</TabsTrigger>
+        <TabsTrigger value="popup" className="rounded-lg">Popup Informasi</TabsTrigger>
       </TabsList>
+
       <TabsContent value="landing" className="mt-4"><SuperAdminLanding /></TabsContent>
       <TabsContent value="fitur" className="mt-4"><SuperAdminPresentation /></TabsContent>
       <TabsContent value="penawaran" className="mt-4"><SuperAdminPenawaran /></TabsContent>
@@ -36,6 +38,8 @@ export default function SuperAdminCMS() {
       <TabsContent value="caption" className="mt-4"><SuperAdminAutoCaption /></TabsContent>
       <TabsContent value="shortlink" className="mt-4"><SuperAdminShortlinks /></TabsContent>
       <TabsContent value="pixel" className="mt-4"><SuperAdminMetaPixel /></TabsContent>
+      <TabsContent value="popup" className="mt-4"><SuperAdminPopup /></TabsContent>
+
     </Tabs>
   );
 }

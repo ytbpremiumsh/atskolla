@@ -1121,6 +1121,8 @@ export default function LandingPage() {
         <FinalCTA />
       </main>
       <Footer />
+      <LandingPopup />
+
     </div>
     </MotionConfig>
   );
