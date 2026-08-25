@@ -58,6 +58,13 @@ export default function SuperAdminShortlinks() {
 
   const baseUrl = useMemo(() => `${window.location.origin}/s/`, []);
 
+  const codeTaken = useMemo(() => {
+    const c = form.code.trim().toLowerCase();
+    if (!c) return false;
+    return links.some((l) => l.code.toLowerCase() === c && l.id !== editing?.id);
+  }, [form.code, links, editing]);
+
+
   const fetchLinks = async () => {
     setLoading(true);
     const { data } = await supabase.from("short_links").select("*").order("created_at", { ascending: false });
