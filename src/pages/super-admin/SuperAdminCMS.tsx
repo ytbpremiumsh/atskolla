@@ -8,6 +8,8 @@ import SuperAdminTestimonials from "./SuperAdminTestimonials";
 import SuperAdminAutoCaption from "./SuperAdminAutoCaption";
 import SuperAdminShortlinks from "./SuperAdminShortlinks";
 import SuperAdminMetaPixel from "./SuperAdminMetaPixel";
+import SuperAdminPopup from "./SuperAdminPopup";
+
 
 export default function SuperAdminCMS() {
   const [params, setParams] = useSearchParams();

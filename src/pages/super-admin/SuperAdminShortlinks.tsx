@@ -110,6 +110,11 @@ export default function SuperAdminShortlinks() {
       toast({ title: "Kode tidak valid", description: "Hanya huruf, angka, - dan _.", variant: "destructive" });
       return;
     }
+    if (codeTaken) {
+      toast({ title: "Kode sudah dipakai", description: "Gunakan custom URL yang berbeda.", variant: "destructive" });
+      return;
+    }
+
     const payload = {
       code,
       target_url: form.target_url.trim(),
