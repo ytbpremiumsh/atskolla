@@ -293,16 +293,32 @@ export default function SuperAdminShortlinks() {
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Kode (URL)</Label>
+              <Label>Custom URL (kode)</Label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">{baseUrl}</span>
-                <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} placeholder="kode-unik" />
+                <span className="text-xs text-muted-foreground shrink-0">{baseUrl}</span>
+                <Input
+                  value={form.code}
+                  onChange={(e) => setForm({ ...form, code: e.target.value.toLowerCase().replace(/[^a-z0-9-_]/g, "") })}
+                  placeholder="promo-agustus"
+                />
+                <Button type="button" variant="outline" size="sm" onClick={() => setForm({ ...form, code: randomCode() })}>
+                  Acak
+                </Button>
               </div>
+              {form.code && (
+                <p className={`text-[11px] ${codeTaken ? "text-destructive" : "text-muted-foreground"}`}>
+                  {codeTaken
+                    ? "Kode ini sudah dipakai shortlink lain, gunakan kode lain."
+                    : `Tautan: ${baseUrl}${form.code}`}
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
-              <Label>URL Target</Label>
-              <Input value={form.target_url} onChange={(e) => setForm({ ...form, target_url: e.target.value })} placeholder="https://..." />
+              <Label>URL Tujuan</Label>
+              <Input value={form.target_url} onChange={(e) => setForm({ ...form, target_url: e.target.value })} placeholder="https://atskolla.com/pricing atau /register" />
+              <p className="text-[11px] text-muted-foreground">Boleh URL eksternal (https://…) atau path internal (mis. /register).</p>
             </div>
+
             <div className="space-y-1.5">
               <Label>Judul (opsional)</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Promo Mei" />
