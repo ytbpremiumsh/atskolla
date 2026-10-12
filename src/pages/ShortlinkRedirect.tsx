@@ -9,6 +9,12 @@ export default function ShortlinkRedirect() {
 
   useEffect(() => {
     if (!code) return;
+
+    // Canonicalize legacy /s/:code links to the clean root-domain URL.
+    if (window.location.pathname.startsWith("/s/")) {
+      window.history.replaceState(null, "", `/${encodeURIComponent(code)}`);
+    }
+
     (async () => {
       const { data } = await supabase
         .from("short_links")
