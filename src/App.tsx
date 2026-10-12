@@ -332,6 +332,8 @@ function AppRoutes() {
         </Route>
 
         <Route path="/s/:code" element={<ShortlinkRedirect />} />
+        {/* Root-domain shortlinks: atskolla.com/zoom */}
+        <Route path="/:code" element={<ShortlinkRedirect />} />
         {/* Kepala Sekolah */}
         <Route element={<PrincipalLayout />}>
           <Route path="/kepsek" element={<PrincipalOverview />} />
