@@ -33,6 +33,7 @@ const navItems = [
 
   // KONTEN & MARKETING
   { title: "CMS & Konten Publik", url: "/super-admin/cms", icon: Palette, group: "content" },
+  { title: "Shortlink", url: "/super-admin/shortlinks", icon: Link2, group: "content" },
 
   // SISTEM
   { title: "Backup, Server & Perangkat", url: "/super-admin/sistem", icon: Server, group: "system" },
