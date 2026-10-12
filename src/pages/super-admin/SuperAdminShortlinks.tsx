@@ -56,7 +56,7 @@ export default function SuperAdminShortlinks() {
   const [gaId, setGaId] = useState("");
   const [savingGa, setSavingGa] = useState(false);
 
-  const baseUrl = useMemo(() => `${window.location.origin}/s/`, []);
+  const baseUrl = useMemo(() => `${window.location.origin}/`, []);
 
   const codeTaken = useMemo(() => {
     const c = form.code.trim().toLowerCase();
@@ -184,7 +184,7 @@ export default function SuperAdminShortlinks() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Shortlink & Analytics</h1>
-          <p className="text-sm text-muted-foreground">Buat tautan pendek dan pantau jumlah klik. Konfigurasi Google Analytics di tab terpisah.</p>
+          <p className="text-sm text-muted-foreground">Buat tautan pendek langsung dari domain ATSkolla, misalnya atskolla.com/zoom. Bisa digunakan untuk Google Drive, Zoom, formulir, dokumen, dan URL lainnya.</p>
         </div>
       </div>
 
@@ -327,8 +327,8 @@ export default function SuperAdminShortlinks() {
             </div>
             <div className="space-y-1.5">
               <Label>URL Tujuan</Label>
-              <Input value={form.target_url} onChange={(e) => setForm({ ...form, target_url: e.target.value })} placeholder="https://atskolla.com/pricing atau /register" />
-              <p className="text-[11px] text-muted-foreground">Boleh URL eksternal (https://…) atau path internal (mis. /register).</p>
+              <Input value={form.target_url} onChange={(e) => setForm({ ...form, target_url: e.target.value })} placeholder="https://zoom.us/j/123456789 atau https://drive.google.com/..." />
+              <p className="text-[11px] text-muted-foreground">URL eksternal seperti Google Drive, Zoom, Google Forms, atau URL internal seperti /register.</p>
             </div>
 
             <div className="space-y-1.5">
