@@ -4,7 +4,7 @@ set -euo pipefail
 
 # --- KONFIGURASI ---
 DOMAIN_NAME="atskolla.com"
-REPO_URL="https://github.com/ytbpremiumsh/absenpintar.git"
+REPO_URL="https://github.com/ytbpremiumsh/atskolla.git"
 STAGING_DIR="/var/www/atskolla"
 WEB_ROOT="/www/wwwroot/$DOMAIN_NAME"
 LOCK_FILE="/tmp/atskolla-update.lock"
