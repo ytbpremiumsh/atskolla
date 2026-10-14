@@ -27,11 +27,11 @@ export default function ShortlinkRedirect() {
       try {
         // SECURITY DEFINER RPC resolves active links without requiring public
         // SELECT access to the short_links table.
-        const { data, error } = await supabase.rpc("resolve_shortlink", {
+        const { data, error } = await (supabase.rpc as any)("resolve_shortlink", {
           _code: normalizedCode,
         });
 
-        let link = !error ? data?.[0] : undefined;
+        let link: any = !error ? (data as any[] | null)?.[0] : undefined;
 
         // Backward-compatible fallback for environments where the database
         // migration has not been applied yet but public table access is enabled.
