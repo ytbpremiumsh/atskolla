@@ -107,7 +107,7 @@ export default function ShortlinkRedirect() {
         <p className="max-w-md text-muted-foreground">
           {notFound
             ? `Kode “${code}” belum terdaftar atau sedang nonaktif. Periksa kode dan statusnya di Dashboard Super Admin → CMS & Konten Publik → Shortlink.`
-            : "Sistem belum bisa memeriksa tujuan shortlink. Pastikan migrasi resolve_shortlink sudah diterapkan pada database Supabase, kemudian coba lagi."}
+            : "Database shortlink belum siap. Di Lovable, terapkan migration supabase/migrations/20261015000000_repair_shortlink_resolver.sql ke database yang terhubung, lalu coba tautan ini lagi."}
         </p>
         <a href="/" className="text-primary underline">Kembali ke beranda</a>
       </div>
