@@ -3533,6 +3533,10 @@ export type Database = {
         Returns: boolean
       }
       increment_shortlink_click: { Args: { _code: string }; Returns: undefined }
+      resolve_shortlink: {
+        Args: { _code: string }
+        Returns: { link_id: string; target_url: string }[]
+      }
       is_reserved_slug: { Args: { _slug: string }; Returns: boolean }
       mark_offline_rfid_devices: { Args: never; Returns: undefined }
       move_to_dlq: {
