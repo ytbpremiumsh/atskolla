@@ -31,13 +31,30 @@ export default function ShortlinkRedirect() {
           _code: normalizedCode,
         });
 
+        let link = !error ? data?.[0] : undefined;
+
+        // Backward-compatible fallback for environments where the database
+        // migration has not been applied yet but public table access is enabled.
         if (error) {
-          console.error("[shortlink] resolve_shortlink failed:", error.message);
-          if (!cancelled) setStatus("error");
-          return;
+          console.warn("[shortlink] resolver RPC unavailable, trying table lookup:", error.message);
+          const fallback = await supabase
+            .from("short_links")
+            .select("id, target_url, is_active")
+            .eq("code", normalizedCode)
+            .maybeSingle();
+
+          if (fallback.error) {
+            console.error("[shortlink] fallback lookup failed:", fallback.error.message);
+            if (!cancelled) setStatus("error");
+            return;
+          }
+
+          if (fallback.data?.is_active) {
+            link = { link_id: fallback.data.id, target_url: fallback.data.target_url };
+          }
         }
 
-        const link = data?.[0];
+        if (cancelled) return;
         if (!link?.target_url) {
           if (!cancelled) setStatus("notfound");
           return;
