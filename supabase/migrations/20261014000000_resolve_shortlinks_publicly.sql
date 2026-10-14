@@ -15,3 +15,8 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.resolve_shortlink(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.resolve_shortlink(text) TO anon, authenticated;
+
+-- Do not expose a public listing of every active destination URL.
+-- Redirect visitors use the resolver RPC above instead.
+DROP POLICY IF EXISTS "Public can read active shortlinks" ON public.short_links;
+DROP POLICY IF EXISTS "Public can record shortlink clicks" ON public.short_link_clicks;
