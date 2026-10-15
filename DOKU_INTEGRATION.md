@@ -45,7 +45,7 @@ Halaman **Super Admin → Payment Gateway** menyimpan nilai berikut ke tabel `pl
 | `doku_va_methods`       |       | `*` atau list         | Filter VA (lihat §4). `*` = semua VA aktif tampil |
 | `doku_qris_methods`     |       | `*` atau list         | Filter QRIS / e-money                             |
 | `doku_retail_methods`   |       | `*` atau list         | Filter minimarket                                 |
-| `doku_webhook_verify`   |       | `true`/`false`        | Set `false` sementara jika signature belum cocok saat setup |
+| `doku_webhook_verify`   |       | `true`/`false`        | Legacy; perbaikan Oktober mewajibkan verifikasi signature |
 | `gateway_va`            |       | `doku` / `mayar`      | Gateway aktif untuk channel VA                    |
 | `gateway_qris`          |       | `doku` / `mayar`      | Gateway aktif untuk channel QRIS                  |
 | `gateway_retail`        |       | `doku` / `mayar`      | Gateway aktif untuk channel Retail                |
@@ -66,9 +66,9 @@ Behaviour:
 - Verifikasi tanda tangan HMAC-SHA256 dengan skema Doku SNAP.
 - Semua request dicatat ke `spp_logs` (`event_type = doku_webhook`).
 - Jika status transaksi = `PAID` / `SUCCESS` / `SETTLED` / `COMPLETED` → invoice ditandai lunas, `payment_transactions` diupdate, log `doku_webhook_paid` dibuat.
-- **Selalu return 200 OK** ke Doku (mencegah retry-storm), status detail ada di response body.
+- **Return 200 hanya setelah sukses diproses atau status non-paid yang diabaikan**; signature salah dibalas 403, kegagalan penyimpanan dibalas 503 agar bisa dicoba ulang.
 
-Kalau saat setup awal signature belum cocok: set `platform_settings.doku_webhook_verify = false` sementara, lalu aktifkan lagi setelah stabil.
+Verifikasi signature wajib aktif. Jangan menonaktifkannya untuk memaksa invoice lunas. Pemeriksaan status independen memakai API DOKU yang ditandatangani akan memulihkan notifikasi yang gagal.
 
 ---
 
@@ -159,9 +159,9 @@ Verifikasi JWT dilakukan manual di dalam kode via `supabaseAdmin.auth.getClaims(
 
 ---
 
-## 8. Signature HMAC (Doku SNAP)
+## 8. Signature HMAC (DOKU Non-SNAP / Jokul)
 
-Setiap outbound request ke Doku menyertakan header:
+Request POST ke DOKU menyertakan header berikut. Untuk GET status, **hilangkan Digest dari header dan stringToSign**:
 
 ```
 Client-Id: <clientId>
@@ -180,7 +180,7 @@ Request-Target:<path>
 Digest:<digest>
 ```
 
-Webhook masuk diverifikasi dengan skema yang sama; `Request-Target` = `req.url.pathname`.
+Webhook masuk memakai digest raw body. Signature diverifikasi untuk path eksternal `/functions/v1/doku-webhook` atau path legacy `/doku-webhook`, karena gateway Supabase dapat menulis ulang path. Client-Id harus cocok dengan merchant yang dikonfigurasi.
 
 ---
 
@@ -214,6 +214,55 @@ Webhook masuk diverifikasi dengan skema yang sama; `Request-Target` = `req.url.p
 | Semua metode tidak muncul                          | Aktifkan metode di Doku Merchant Dashboard dulu                         |
 | `Gagal buat pembayaran Doku: ...`                  | Lihat `spp_logs` (`event_type = create_invoice_doku`) untuk raw error   |
 | Bayar sukses tapi invoice tidak lunas otomatis     | Cek notifikasi URL di Doku Dashboard, dan `spp_logs` `doku_webhook`     |
-| Webhook selalu `sig_mismatch`                      | Pastikan `doku_secret_key` benar; sementara `doku_webhook_verify=false` |
+| Webhook selalu `sig_mismatch`                      | Pastikan key merchant dan path eksternal cocok; jangan nonaktifkan signature |
 | `Doku Client-Id / Secret-Key belum dikonfigurasi`  | Isi via Super Admin > Payment Gateway                                   |
 | Klik "Test Connection" gagal                       | Cek env (`doku_env`); sandbox vs production butuh credential berbeda    |
+
+
+## 11. Pemulihan otomatis dan deployment perbaikan Oktober 2026
+
+Status implementasi di repositori tidak berarti migrasi sudah diterapkan ke produksi.
+Perubahan database produksi memerlukan persetujuan pemilik sebelum langkah berikut dijalankan.
+Tidak perlu menjalankan AI/chat Lovable untuk langkah deployment ini.
+
+1. Terapkan `supabase/migrations/20261016000000_doku_payment_reconciliation.sql` pada project
+   `bohuglednqirnaearrkj`. Ekstensi `pgcrypto`, `pg_net`, dan `pg_cron` harus tersedia (sudah terdeteksi pada project).
+   Migrasi menambah tabel referensi percobaan pembayaran, trigger registrasi, fungsi settlement atomik,
+   backfill dari transaksi dan log pembuatan invoice, serta cron setiap menit.
+2. Deploy fungsi `doku-webhook`, `spp-doku`, dan `parent-portal` beserta `_shared/doku.ts`
+   memakai Supabase CLI/connector yang berwenang. Pertahankan `verify_jwt=false` pada tiga fungsi ini.
+   Jangan deploy fungsi baru sebelum migrasi: fungsi baru memerlukan tabel dan RPC baru.
+3. Jalankan `SELECT public.reconcile_doku_payments(20);` untuk mengantrekan pemeriksaan awal.
+   Setelah respons API masuk, cron berikutnya memprosesnya. Jalur cadangan normal memerlukan sekitar
+   1–2 menit, bisa lebih lama bila antrean besar atau DOKU mengalami gangguan.
+4. Periksa `doku_payment_attempts`, `spp_logs` (`doku_verified_settlement`/`doku_reconcile_error`),
+   `cron.job_run_details`, dan invoice yang bersangkutan. Cocokkan nominal serta referensi sebelum
+   menyimpulkan lunas. Sumber kebenaran adalah respons DOKU yang terverifikasi, bukan redirect browser.
+
+Semua referensi DOKU lama dipertahankan ketika tautan dibuat ulang. Pembayaran diverifikasi berdasarkan
+nomor order, merchant, nominal total checkout termasuk biaya layanan, sekolah, dan invoice/cicilan.
+Perubahan invoice dan ledger dilakukan dalam satu transaksi, dan notifikasi berulang tidak menggandakan
+pencatatan. Pembayaran kedua untuk invoice yang sudah lunas ditandai untuk pemeriksaan bendahara;
+tidak dilakukan pengembalian dana otomatis. Cicilan memakai trigger perhitungan saldo yang sudah ada.
+Tabel dan RPC settlement hanya dapat ditulis/dipanggil oleh service role; browser tidak dapat mengubah status.
+
+Cron membaca konfigurasi DOKU dari `platform_settings`; secret tidak dicetak atau disimpan ke log aplikasi.
+Jalur otomatis ini khusus pembayaran DOKU. Mayar dan iPaymu tetap memakai implementasinya masing-masing.
+Jangan menjanjikan bebas gangguan: transaksi yang nominalnya tidak cocok, berubah, atau terbayar ganda
+harus masuk pemeriksaan, bukan dipaksa lunas.
+
+Pengujian lokal terisolasi (tidak menyentuh database produksi):
+
+```sh
+npm ci --prefix supabase/tests
+npm --prefix supabase/tests test
+```
+
+Pengujian menjalankan PostgreSQL/PLpgSQL melalui PGlite dengan jaringan DOKU dan cron tiruan,
+serta verifikasi signature Node. Ini menguji settlement atomik, penolakan nominal/identitas salah,
+referensi lama setelah regenerasi, idempotensi, cicilan, signature GET, dan pemulihan tanpa webhook.
+Pengujian ini tidak menggantikan smoke test edge function yang sudah dideploy.
+
+Untuk menghentikan worker saat investigasi: `SELECT cron.unschedule('doku-payment-reconciliation');`.
+Ini menghentikan pemeriksaan berkala dan tidak menghapus data pembayaran. Jangan membatalkan invoice
+atau menghapus ledger yang sudah dibayar saat rollback aplikasi.

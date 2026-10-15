@@ -4,7 +4,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { brandPaymentUrl } from "../_shared/brandUrl.ts";
-import { createHmac, createHash } from "https://deno.land/std@0.168.0/node/crypto.ts";
+import { buildDokuSignature, buildDokuOrderNumber, syncDokuAttempts } from "../_shared/doku.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 const DOKU_LINK_TTL_MIN = 60 * 24 * 3; // 3 days
@@ -74,35 +74,6 @@ async function getDokuConfig(supabaseAdmin: any) {
   };
 }
 
-// Doku SNAP signature (Jokul HMAC scheme):
-// stringToSign =
-//   Client-Id:{clientId}\n
-//   Request-Id:{requestId}\n
-//   Request-Timestamp:{ts}\n
-//   Request-Target:{target}\n
-//   Digest:{digest}
-// signature = "HMACSHA256=" + base64(HMAC-SHA256(stringToSign, secret))
-function buildDokuSignature(opts: {
-  clientId: string;
-  secretKey: string;
-  requestId: string;
-  requestTimestamp: string;
-  requestTarget: string;
-  body: string;
-}) {
-  const digest = createHash("sha256").update(opts.body, "utf8").digest("base64");
-  const stringToSign =
-    `Client-Id:${opts.clientId}\n` +
-    `Request-Id:${opts.requestId}\n` +
-    `Request-Timestamp:${opts.requestTimestamp}\n` +
-    `Request-Target:${opts.requestTarget}\n` +
-    `Digest:${digest}`;
-  const signature = createHmac("sha256", opts.secretKey)
-    .update(stringToSign, "utf8")
-    .digest("base64");
-  return { digest, signature: `HMACSHA256=${signature}` };
-}
-
 async function dokuFetch(cfg: { clientId: string; secretKey: string; baseUrl: string },
                          target: string, bodyObj: any) {
   const body = JSON.stringify(bodyObj);
@@ -124,7 +95,7 @@ async function dokuFetch(cfg: { clientId: string; secretKey: string; baseUrl: st
       "Request-Id": requestId,
       "Request-Timestamp": requestTimestamp,
       "Signature": signature,
-      "Digest": digest,
+      "Digest": digest!,
     },
     body,
   });
@@ -197,11 +168,7 @@ async function createDokuPayment(
   channel: string | null,
 ) {
   const totalCharged = Number(inv._amount_override ?? inv.total_amount) || 0;
-  // Samakan format nomor invoice dengan yang tersimpan di DB (SPP/YYYYMM/NIS).
-  // Sanitasi karakter yang tidak diizinkan Doku ("/") menjadi "-", dan
-  // tambahkan suffix pendek agar unik saat regenerate link.
-  const baseNo = String(inv.invoice_number || `SPP-${(inv.id || "").slice(0, 8)}`).replace(/[^A-Za-z0-9-]/g, "-");
-  const invoiceNumber = `${baseNo}-${Date.now().toString(36).slice(-4)}`;
+  const invoiceNumber = buildDokuOrderNumber(String(inv.invoice_number || `SPP-${inv.id}`));
 
   const expiredAt = new Date(Date.now() + DOKU_LINK_TTL_MIN * 60 * 1000);
 
@@ -291,86 +258,15 @@ async function createDokuPayment(
   };
 }
 
-async function checkDokuStatus(
-  cfg: { clientId: string; secretKey: string; baseUrl: string },
-  invoiceNumber: string,
-) {
-  const target = `/orders/v1/status/${encodeURIComponent(invoiceNumber)}`;
-  const body = ""; // Doku status: GET-like but we use empty body for signing consistency
-  const requestId = crypto.randomUUID();
-  const requestTimestamp = new Date().toISOString().split(".")[0] + "Z";
-  const { digest, signature } = buildDokuSignature({
-    clientId: cfg.clientId,
-    secretKey: cfg.secretKey,
-    requestId,
-    requestTimestamp,
-    requestTarget: target,
-    body,
-  });
-  const res = await fetch(`${cfg.baseUrl}${target}`, {
-    method: "GET",
-    headers: {
-      "Client-Id": cfg.clientId,
-      "Request-Id": requestId,
-      "Request-Timestamp": requestTimestamp,
-      "Signature": signature,
-      "Digest": digest,
-    },
-  });
-  const json = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, json };
-}
-
-function isPaidDokuStatus(status: unknown) {
-  const s = String(status || "").toUpperCase();
-  return ["PAID", "SUCCESS", "SETTLED", "COMPLETED"].includes(s);
-}
-
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
   const cfg = await getDokuConfig(supabaseAdmin);
   if (!cfg.clientId || !cfg.secretKey) return { checked: 0, paid: 0, error: "DOKU belum dikonfigurasi" };
-
-  const { data: invoices } = await supabaseAdmin
-    .from("spp_invoices")
-    .select("*")
-    .eq("school_id", schoolId)
-    .neq("status", "paid")
-    .not("mayar_invoice_id", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  let paid = 0;
-  for (const inv of invoices || []) {
-    try {
-      // mayar_invoice_id column is reused to store Doku invoice_number (schema-compat).
-      const stat = await checkDokuStatus(cfg, inv.mayar_invoice_id);
-      const s = stat.json?.response?.order?.status || stat.json?.order?.status;
-      if (!isPaidDokuStatus(s)) continue;
-
-      const paidAt = new Date().toISOString();
-      await supabaseAdmin.from("spp_invoices").update({
-        status: "paid",
-        paid_at: paidAt,
-        payment_method: "doku",
-      }).eq("id", inv.id);
-      await supabaseAdmin.from("payment_transactions").update({
-        status: "paid",
-        paid_at: paidAt,
-      }).eq("school_id", inv.school_id).eq("mayar_transaction_id", inv.mayar_invoice_id).eq("status", "pending");
-      await supabaseAdmin.from("spp_logs").insert({
-        school_id: inv.school_id,
-        invoice_id: inv.id,
-        event_type: "doku_sync",
-        status: "paid",
-        payload: stat.json,
-        message: "SPP paid (Doku sync)",
-      });
-      paid++;
-    } catch (e) {
-      console.error("doku sync err", inv.id, e);
-    }
-  }
-  return { checked: (invoices || []).length, paid };
+  const { data, error } = await supabaseAdmin.from("doku_payment_attempts")
+    .select("invoice_id").eq("school_id", schoolId).eq("state", "pending")
+    .order("next_check_at").limit(50);
+  if (error) throw error;
+  const invoiceIds: string[] = (data || []).map((a: any) => String(a.invoice_id));
+  return await syncDokuAttempts(supabaseAdmin, cfg, [...new Set(invoiceIds)]);
 }
 
 async function ensureFreshLink(
@@ -398,7 +294,7 @@ async function ensureFreshLink(
   }
   const totalCharged = (Number(inv.total_amount) || 0) + serviceFee;
   const created = await createDokuPayment(cfg, { ...inv, _amount_override: totalCharged }, channel);
-  await supabaseAdmin.from("spp_logs").insert({
+  const { error: logError } = await supabaseAdmin.from("spp_logs").insert({
     school_id: inv.school_id,
     invoice_id: inv.id,
     event_type: "create_invoice_doku",
@@ -406,6 +302,7 @@ async function ensureFreshLink(
     payload: created.raw,
     message: created.raw?.message || null,
   });
+  if (logError) throw logError;
   if (!created.ok || !created.url) {
     const raw = created.raw?.message || created.raw?.error?.message || JSON.stringify(created.raw).slice(0, 300);
     const upper = String(raw).toUpperCase();
@@ -414,18 +311,19 @@ async function ensureFreshLink(
       : raw;
     return { success: false, error: `Gagal buat pembayaran Doku: ${friendly}` };
   }
-  await supabaseAdmin.from("spp_invoices").update({
+  const { data: savedInvoice, error: invoiceError } = await supabaseAdmin.from("spp_invoices").update({
     mayar_invoice_id: created.dokuInvoiceId,
     payment_url: created.url,
     expired_at: created.expiry.toISOString(),
     status: "pending",
     service_fee: serviceFee,
     payment_channel: channel,
-  }).eq("id", inv.id);
-  const { data: anyPlan } = Promise.resolve({ data: null });
-  await supabaseAdmin.from("payment_transactions").insert({
+  }).eq("id", inv.id).neq("status", "paid").select("id").maybeSingle();
+  if (invoiceError) throw invoiceError;
+  if (!savedInvoice) throw new Error("Tagihan sudah lunas atau berubah; muat ulang halaman");
+  const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
     school_id: inv.school_id,
-    plan_id: anyPlan?.id || inv.school_id,
+    plan_id: inv.school_id,
     amount: totalCharged,
     status: "pending",
     mayar_transaction_id: created.dokuInvoiceId,
@@ -434,6 +332,7 @@ async function ensureFreshLink(
     service_fee: serviceFee,
     payment_channel: channel,
   });
+  if (transactionError) throw transactionError;
   return {
     success: true,
     payment_url: created.url,
@@ -504,12 +403,13 @@ serve(async (req) => {
         invoice_number: `${inv.invoice_number || "SPP"}-CIC${Date.now().toString().slice(-6)}`,
       };
       const created = await createDokuPayment(cfg, cicilanInv, channel);
-      await supabaseAdmin.from("spp_logs").insert({
+      const { error: logError } = await supabaseAdmin.from("spp_logs").insert({
         school_id: inv.school_id, invoice_id: inv.id,
         event_type: "create_installment_doku",
         status: created.ok ? "ok" : "error",
         payload: created.raw, message: created.raw?.message || null,
       });
+      if (logError) throw logError;
       if (!created.ok || !created.url) {
         const msg = created.raw?.message || created.raw?.error?.message || "Gagal buat pembayaran Doku";
         return err(String(msg));
@@ -532,10 +432,9 @@ serve(async (req) => {
       }).select("id").single();
       if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
 
-      const { data: anyPlan } = Promise.resolve({ data: null });
-      await supabaseAdmin.from("payment_transactions").insert({
+      const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: inv.school_id,
-        plan_id: anyPlan?.id || inv.school_id,
+        plan_id: inv.school_id,
         amount: totalCharged,
         status: "pending",
         mayar_transaction_id: created.dokuInvoiceId,
@@ -545,6 +444,7 @@ serve(async (req) => {
         payment_channel: channel,
       });
 
+      if (transactionError) throw transactionError;
       return ok({
         payment_url: brandPaymentUrl(created.url),
         installment_id: instRow?.id,

@@ -1,0 +1,27 @@
+name: Payment regression checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['supabase/functions/**', 'supabase/migrations/**', 'supabase/tests/**', '.github/workflows/payment-regression.yml']
+  pull_request:
+    paths: ['supabase/functions/**', 'supabase/migrations/**', 'supabase/tests/**', '.github/workflows/payment-regression.yml']
+permissions:
+  contents: read
+jobs:
+  payment-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: supabase/tests/package-lock.json
+      - run: npm ci --prefix supabase/tests
+      - run: npm --prefix supabase/tests test
+      - name: Check edge function syntax
+        run: |
+          node --check supabase/functions/doku-webhook/index.ts
+          node --check supabase/functions/spp-doku/index.ts
+          node --check supabase/functions/parent-portal/index.ts
