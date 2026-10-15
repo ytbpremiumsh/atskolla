@@ -3556,6 +3556,13 @@ export type Database = {
           read_ct: number
         }[]
       }
+      resolve_shortlink: {
+        Args: { _code: string }
+        Returns: {
+          link_id: string
+          target_url: string
+        }[]
+      }
       rfid_required_min_devices: {
         Args: { _school_id: string }
         Returns: number
