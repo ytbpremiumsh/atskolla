@@ -1,0 +1,7 @@
+<resources>
+    <color name="brand_blue">#566CE2</color>
+    <color name="brand_ink">#17243B</color>
+    <color name="brand_muted">#68758B</color>
+    <color name="brand_surface">#FFFFFF</color>
+    <color name="brand_soft">#F0F3FF</color>
+</resources>

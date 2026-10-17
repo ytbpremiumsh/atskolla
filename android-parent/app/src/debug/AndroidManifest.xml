@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Static previews contain no account data and are excluded from release builds. -->
+        <activity android:name=".BrandPreviewActivity" android:exported="true" android:theme="@style/AppTheme" />
+    </application>
+</manifest>

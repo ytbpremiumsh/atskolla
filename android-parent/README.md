@@ -35,5 +35,21 @@ tombol kembali, rotasi layar, mode offline, unggah bukti dan alur pembayaran.
 Unduhan URL HTTPS diteruskan ke browser; unduhan `blob:`/`data:` yang dibuat JavaScript
 (misalnya PDF dari jsPDF), kamera/QR, geolokasi, dan push notification belum diimplementasikan.
 Browser memiliki sesi terpisah sehingga unduhan yang memerlukan login dapat meminta login ulang.
-Ikon launcher masih memakai ikon bawaan Android.
+Ikon launcher memakai logo ATSkolla asli, termasuk adaptive icon dan splash Android 12+.
 Build APK dan Android Lint harus berhasil sebelum APK dinyatakan siap uji.
+
+
+## Versi 1.1.0 — identitas ATSkolla
+
+Logo yang disediakan pemilik digunakan tanpa perubahan pada aset PNG aslinya.
+Ikon adaptif diberi ruang aman agar tidak terpotong oleh mask launcher Android.
+Splash sistem disambung dengan loading native berlogo, animasi lembut yang menghormati
+pengaturan animasi perangkat, dan transisi setelah halaman selesai dimuat tanpa jeda buatan.
+Indikator kecil ditampilkan pada navigasi berikutnya. Ada pesan koneksi lambat,
+batas tunggu awal 45 detik, tombol coba lagi dan buka browser.
+Layout dapat digulir pada layar pendek atau ukuran font besar. Mendukung back Android 13+.
+
+APK yang dibagikan lewat Actions tetap build debug untuk pengujian. Bila Android menolak
+pembaruan karena tanda tangan APK debug lama berbeda, build sebelumnya dan build ini
+memakai keystore debug berbeda dari runner CI. Jangan menghapus aplikasi tanpa memahami
+bahwa sesi lokal akan hilang; gunakan signing key tetap untuk distribusi rutin/produksi.

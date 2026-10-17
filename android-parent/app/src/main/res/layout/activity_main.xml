@@ -1,0 +1,68 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/brand_surface">
+
+    <WebView android:id="@+id/web" android:layout_width="match_parent" android:layout_height="match_parent" />
+
+    <ProgressBar android:id="@+id/page_progress" style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent" android:layout_height="3dp" android:layout_gravity="top"
+        android:progressTint="@color/brand_blue" android:progressBackgroundTint="@color/brand_soft"
+        android:visibility="gone" android:importantForAccessibility="no" />
+
+    <FrameLayout android:id="@+id/loading_panel" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="@drawable/brand_background" android:clickable="true" android:focusable="true">
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent"
+            android:fillViewport="true" android:clipToPadding="false" android:paddingBottom="64dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="32dp">
+                <FrameLayout android:layout_width="176dp" android:layout_height="176dp">
+                    <View android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:background="@drawable/brand_halo" android:importantForAccessibility="no" />
+                    <ImageView android:id="@+id/loading_logo" android:layout_width="144dp" android:layout_height="144dp"
+                        android:layout_gravity="center" android:src="@drawable/atskolla_logo" android:scaleType="fitCenter"
+                        android:contentDescription="@string/logo_description" />
+                </FrameLayout>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp" android:text="@string/brand_name" android:textSize="34sp"
+                    android:fontFamily="sans-serif-medium" android:textColor="@color/brand_ink" android:letterSpacing="0.01" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:background="@drawable/brand_pill" android:text="@string/portal_label"
+                    android:textColor="@color/brand_blue" android:textSize="10sp" android:fontFamily="sans-serif-medium" android:letterSpacing="0.14" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp" android:text="@string/welcome_message" android:gravity="center"
+                    android:textSize="17sp" android:lineSpacingExtra="5dp" android:textColor="@color/brand_muted" />
+                <ProgressBar android:layout_width="24dp" android:layout_height="24dp" android:layout_marginTop="36dp"
+                    android:indeterminateTint="@color/brand_blue" android:importantForAccessibility="no" />
+                <TextView android:id="@+id/loading_message" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" android:text="@string/loading_message" android:gravity="center"
+                    android:textSize="12sp" android:textColor="@color/brand_muted" android:accessibilityLiveRegion="polite" />
+            </LinearLayout>
+        </ScrollView>
+        <TextView android:layout_width="match_parent" android:layout_height="48dp" android:layout_gravity="bottom"
+            android:gravity="center" android:text="@string/footer_domain" android:textSize="12sp"
+            android:textColor="@color/brand_muted" android:letterSpacing="0.05" />
+    </FrameLayout>
+
+    <FrameLayout android:id="@+id/error_panel" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="@drawable/brand_background" android:visibility="gone" android:clickable="true" android:focusable="true">
+        <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:gravity="center" android:padding="32dp">
+                <ImageView android:layout_width="104dp" android:layout_height="104dp" android:src="@drawable/atskolla_logo"
+                    android:scaleType="fitCenter" android:contentDescription="@string/logo_description" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp" android:text="@string/connection_title" android:gravity="center"
+                    android:textSize="23sp" android:fontFamily="sans-serif-medium" android:textColor="@color/brand_ink" />
+                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:text="@string/connection_message" android:gravity="center"
+                    android:textSize="15sp" android:lineSpacingExtra="5dp" android:textColor="@color/brand_muted" />
+                <Button android:id="@+id/retry" android:layout_width="match_parent" android:layout_height="56dp"
+                    android:layout_marginTop="28dp" android:text="@string/retry" android:textAllCaps="false"
+                    android:textColor="#FFFFFF" android:textSize="15sp" android:background="@drawable/brand_button" />
+                <Button android:id="@+id/open_browser" android:layout_width="match_parent" android:layout_height="52dp"
+                    android:layout_marginTop="8dp" android:text="@string/open_website" android:textAllCaps="false"
+                    android:textColor="@color/brand_blue" style="?android:attr/borderlessButtonStyle" />
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+</FrameLayout>
