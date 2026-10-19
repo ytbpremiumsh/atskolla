@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">ATSkolla Parent</string>
+    <string name="brand_name">ATSkolla</string>
+    <string name="logo_description">Logo ATSkolla</string>
+    <string name="portal_label">PORTAL ORANG TUA</string>
+    <string name="welcome_message">Lebih dekat dengan\nperjalanan belajar ananda.</string>
+    <string name="loading_message">Menyiapkan ruang orang tua…</string>
+    <string name="loading_slow">Sedang menghubungkan ke sekolah…</string>
+    <string name="footer_domain">atskolla.com</string>
+    <string name="connection_title">Belum dapat terhubung</string>
+    <string name="connection_message">Periksa koneksi internet Anda, lalu coba kembali. Data akun Anda tetap tersimpan.</string>
+    <string name="retry">Coba lagi</string>
+    <string name="reload">Muat ulang</string>
+    <string name="open_website">Buka di browser</string>
+    <string name="unsupported_link">Tautan atau unduhan ini belum didukung aplikasi.</string>
+    <string name="missing_app">Tidak ada aplikasi untuk membuka tautan ini.</string>
+    <string name="refresh_description">Muat ulang halaman</string>
+</resources>
