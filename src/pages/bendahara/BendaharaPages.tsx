@@ -41,10 +41,10 @@ const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 // Helper: format payment_method jadi label rapi
-const formatPaymentMethod = (m?: string | null): { label: string; isOffline: boolean } => {
+const formatPaymentMethod = (m?: string | null, ch?: string | null): { label: string; isOffline: boolean } => {
   const v = (m || "").toLowerCase();
   const isOffline = v === "offline_cash" || v === "offline_transfer";
-  return { label: formatPaymentMethodLabel(m), isOffline };
+  return { label: formatPaymentMethodLabel(m, ch), isOffline };
 };
 
 // Helper: hitung tahun ajaran (Juli-Juni). Bulan 7-12 = year/year+1, bulan 1-6 = year-1/year
@@ -434,7 +434,7 @@ export function BendaharaDashboard() {
     const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", profile!.school_id).maybeSingle();
     const schoolName = schoolRow?.name || "Sekolah";
     const tgl = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-";
-    const metode = formatPaymentMethod(inv.payment_method).label;
+    const metode = formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).label;
     const msg = `*${schoolName} — Konfirmasi Pembayaran SPP*\n\nYth. Bapak/Ibu *${inv.parent_name || "Wali"}*,\n\nPembayaran SPP ananda telah kami terima:\n• Nama    : ${inv.student_name}\n• Kelas   : ${inv.class_name}\n• Periode : ${inv.period_label}\n• Nominal : ${fmtIDR(inv.total_amount)}\n• Metode  : ${metode}\n• Tanggal : ${tgl}\n\nTerima kasih atas pembayarannya.`;
     setDetailBusy(`wa-${inv.id}`);
     toast.loading("Mengirim WA konfirmasi...");
@@ -797,7 +797,7 @@ export function BendaharaDashboard() {
                 </TableHeader>
                 <TableBody>
                   {recentPaidList.map((t, idx) => {
-                    const m = formatPaymentMethod(t.payment_method);
+                    const m = formatPaymentMethod(t.payment_method, (t as any).payment_channel);
                     return (
                     <TableRow key={t.id} onClick={() => setDetailInv(t)} className={`cursor-pointer transition-colors [&>td]:whitespace-nowrap ${idx % 2 === 0 ? "bg-white dark:bg-card" : "bg-emerald-50/30 dark:bg-emerald-950/10"} hover:bg-indigo-50/70 dark:hover:bg-indigo-950/20`}>
                       <TableCell className="text-xs whitespace-nowrap text-muted-foreground">{new Date(t.paid_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}</TableCell>
@@ -848,7 +848,7 @@ export function BendaharaDashboard() {
             <DialogDescription>Informasi lengkap transaksi yang sudah lunas.</DialogDescription>
           </DialogHeader>
           {detailInv && (() => {
-            const m = formatPaymentMethod(detailInv.payment_method);
+            const m = formatPaymentMethod(detailInv.payment_method, (detailInv as any).payment_channel);
             return (
               <div className="space-y-4 pt-1">
                 {/* Header siswa */}
@@ -1091,7 +1091,7 @@ function BendaharaMobileDashboard({
           ) : (
             <div className="divide-y divide-border/40">
               {recentPaidList.slice(0, 6).map((t) => {
-                const m = formatPaymentMethod(t.payment_method);
+                const m = formatPaymentMethod(t.payment_method, (t as any).payment_channel);
                 return (
                 <button key={t.id} onClick={() => onSelectPaid?.(t)} className="w-full text-left px-4 py-2.5 flex items-center gap-3 active:bg-indigo-50 dark:active:bg-indigo-950/20 transition-colors">
                   <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#5B6CF9] to-[#3D4FE0] text-white flex items-center justify-center text-xs font-bold shrink-0">
@@ -3372,7 +3372,7 @@ export function BendaharaSPPDetail() {
     const { data: schoolRow } = await supabase.from("schools").select("name").eq("id", profile!.school_id).maybeSingle();
     const schoolName = schoolRow?.name || "Sekolah";
     const tgl = inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-";
-    const metode = formatPaymentMethod(inv.payment_method).label;
+    const metode = formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).label;
     const msg = `*${schoolName} — Konfirmasi Pembayaran SPP*\n\nYth. Bapak/Ibu *${parentName || "Wali"}*,\n\nPembayaran SPP ananda telah kami terima:\n• Nama    : ${inv.student_name}\n• Kelas   : ${inv.class_name}\n• Periode : ${inv.period_label}\n• Nominal : ${fmtIDR(inv.total_amount)}\n• Metode  : ${metode}\n• Tanggal : ${tgl}\n\nTerima kasih atas pembayarannya.`;
     setBusy(`waoff-${inv.id}`);
     toast.loading("Mengirim WA konfirmasi...");
@@ -3669,7 +3669,7 @@ export function BendaharaSPPDetail() {
                       <TableCell className="text-xs">{inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
                       <TableCell className="text-xs">
                         {(() => {
-                          const m = formatPaymentMethod(inv.payment_method);
+                          const m = formatPaymentMethod(inv.payment_method, (inv as any).payment_channel);
                           if (!inv.payment_method) return "-";
                           return (
                             <Badge variant="outline" className={m.isOffline ? "border-slate-400 text-slate-700 bg-slate-50 dark:bg-slate-900/40 dark:text-slate-300" : "border-emerald-500/40 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300"}>
@@ -3724,7 +3724,7 @@ export function BendaharaSPPDetail() {
                             <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
                               {busy === `pdf-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Invoice</span></>}
                             </Button>
-                            {flags.wa && formatPaymentMethod(inv.payment_method).isOffline && inv.parent_phone && (
+                            {flags.wa && formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).isOffline && inv.parent_phone && (
                               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-8 px-2.5" disabled={busy === `waoff-${inv.id}`} onClick={() => sendOfflinePaidWa(inv)} title="Kirim konfirmasi lunas via WA">
                                 {busy === `waoff-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><MessageCircle className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Notif WA</span></>}
                               </Button>
@@ -3807,7 +3807,7 @@ export function BendaharaSPPDetail() {
                         <TableCell className="text-xs">{inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
                         <TableCell className="text-xs">
                           {(() => {
-                            const m = formatPaymentMethod(inv.payment_method);
+                            const m = formatPaymentMethod(inv.payment_method, (inv as any).payment_channel);
                             if (!inv.payment_method) return "-";
                             return (
                               <Badge variant="outline" className={m.isOffline ? "border-slate-400 text-slate-700 bg-slate-50 dark:bg-slate-900/40 dark:text-slate-300" : "border-emerald-500/40 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300"}>
@@ -3866,7 +3866,7 @@ export function BendaharaSPPDetail() {
                               <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
                                 {busy === `pdf-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Invoice</span></>}
                               </Button>
-                              {flags.wa && formatPaymentMethod(inv.payment_method).isOffline && inv.parent_phone && (
+                              {flags.wa && formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).isOffline && inv.parent_phone && (
                                 <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-8 px-2.5" disabled={busy === `waoff-${inv.id}`} onClick={() => sendOfflinePaidWa(inv)} title="Kirim konfirmasi lunas via WA">
                                   {busy === `waoff-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><MessageCircle className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Notif WA</span></>}
                                 </Button>

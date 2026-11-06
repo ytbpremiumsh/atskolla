@@ -67,7 +67,7 @@ export default function BendaharaBukuKas() {
     setLoading(true);
     const [m, inv, stl] = await Promise.all([
       supabase.from("cash_book_entries").select("*").eq("school_id", profile.school_id).order("entry_date", { ascending: false }).order("created_at", { ascending: false }),
-      supabase.from("spp_invoices").select("id, invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method, status").eq("school_id", profile.school_id).eq("status", "paid").not("paid_at", "is", null).order("paid_at", { ascending: false }),
+      supabase.from("spp_invoices").select("id, invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method, payment_channel, status").eq("school_id", profile.school_id).eq("status", "paid").not("paid_at", "is", null).order("paid_at", { ascending: false }),
       supabase.from("spp_settlements").select("id, settlement_code, withdraw_fee, final_payout, total_gross, status, requested_at, approved_at, paid_at, bank_name, account_number, account_holder").eq("school_id", profile.school_id).order("requested_at", { ascending: false }),
     ]);
     const manualRows: Entry[] = ((m.data as any[]) || []).map((r) => ({
