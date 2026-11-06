@@ -39,6 +39,7 @@ export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
 };
 
 export type SplitDay = {
+  code: string;
   date: string;
   settleDate: string;
   count: number;
@@ -59,6 +60,7 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
     .map(([date, list]) => {
       const settleDate = nextBusinessDay(date);
       return {
+        code: `STL-AUTO-${date.replace(/-/g, "")}`,
         date,
         settleDate,
         count: list.length,

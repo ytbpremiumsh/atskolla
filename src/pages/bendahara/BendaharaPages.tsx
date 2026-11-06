@@ -4514,6 +4514,12 @@ export function BendaharaPencairan() {
     setDetailItems((data as any[]) || []);
     setDetailLoading(false);
   };
+  const openSplitDay = (d: any) => {
+    setDetailSettlement({ settlement_code: d.code, requested_at: d.date + "T00:00:00", total_transactions: d.count, final_payout: d.total });
+    setDetailItems([...d.items].sort((a, b) => String(a.paid_at).localeCompare(String(b.paid_at))));
+    setDetailLoading(false);
+    setDetailOpen(true);
+  };
   const syncingRef = useRef(false);
   // OTP state
   const [otpStep, setOtpStep] = useState(false);
@@ -4574,7 +4580,7 @@ export function BendaharaPencairan() {
       // Satu query saja: ambil semua paid online sekaligus, lalu bagi di client.
       const [paidRes, hRes, sRes] = await Promise.all([
         supabase.from("spp_invoices")
-          .select("id, status, payment_method, settlement_id, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
+          .select("id, status, payment_method, payment_channel, settlement_id, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
           .eq("school_id", profile.school_id)
           .eq("status", "paid"),
         supabase.from("spp_settlements").select("*").eq("school_id", profile.school_id).order("created_at", { ascending: false }),
@@ -4922,11 +4928,12 @@ export function BendaharaPencairan() {
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal Cair</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal Cair</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {groupSplitByDay(splitPaid).length === 0 && <TableRow><TableCell colSpan={5} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
+                    {groupSplitByDay(splitPaid).length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
                     {groupSplitByDay(splitPaid).map((d) => (
-                      <TableRow key={d.date} className="[&_td]:whitespace-nowrap">
+                      <TableRow key={d.date} onClick={() => openSplitDay(d)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
+                        <TableCell className="text-xs font-mono">{d.code}</TableCell>
                         <TableCell className="text-xs">{new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
                         <TableCell>{d.count}</TableCell>
                         <TableCell className="font-semibold text-emerald-600">{fmtIDR(d.total)}</TableCell>
@@ -5264,7 +5271,7 @@ export function BendaharaPencairan() {
                       <TableCell className="text-xs">{it.class_name}</TableCell>
                       <TableCell className="text-xs">{it.period_label}</TableCell>
                       <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method, (it as any).payment_channel)}</TableCell>
-                      <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
+                      <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(/\./g, ":") + " WIB" : "-"}</TableCell>
                       <TableCell className="text-xs text-right font-semibold">{fmtIDR(it.total_amount)}</TableCell>
                     </TableRow>
                   ))}
