@@ -481,7 +481,7 @@ export function BendaharaDashboard() {
       const v = (m || "").toString().toLowerCase();
       return v === "offline_cash" || v === "offline_transfer";
     };
-    const readyToSettle = paid.filter((i: any) => !i.settlement_id && !isOffline(i.payment_method));
+    const readyToSettle = paid.filter((i: any) => !i.settlement_id && !i.doku_split && !isOffline(i.payment_method));
     // Saldo siap cair = BRUTO (sinkron dengan halaman Pencairan yang sudah tidak memotong gateway fee)
     const availableBalance = readyToSettle.reduce((s, i: any) => s + (i.total_amount || 0), 0);
     return {
@@ -557,7 +557,7 @@ export function BendaharaDashboard() {
     const cashOut = cashBook.filter((c: any) => c.direction === "out").reduce((s: number, c: any) => s + (c.amount || 0), 0);
     // Saldo kas total = kas manual (in - out) + saldo online siap dicairkan
     const readyOnline = invoices
-      .filter((i: any) => i.status === "paid" && !i.settlement_id)
+      .filter((i: any) => i.status === "paid" && !i.settlement_id && !i.doku_split)
       .filter((i: any) => {
         const v = (i.payment_method || "").toString().toLowerCase();
         return v !== "offline_cash" && v !== "offline_transfer";
