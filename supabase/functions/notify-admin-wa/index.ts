@@ -111,6 +111,8 @@ serve(async (req) => {
         .replace(/{account_holder}/g, payload?.account_holder || '-')
         .replace(/{notes}/g, payload?.notes || '-')
         .replace(/{time}/g, new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }));
+    } else if (event_type === 'bank_account_request') {
+      message = `*Pengajuan Rekening Pencairan Baru*\n\nSekolah: ${payload?.school || '-'}\nBank: ${payload?.bank || '-'}\nNo. Rek: ${payload?.account_number || '-'}\nA/N: ${payload?.account_holder || '-'}\n\nSilakan verifikasi di Super Admin > Split Settlement.\nWaktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
     } else {
       return new Response(JSON.stringify({ success: false, error: 'event_type tidak dikenal' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
