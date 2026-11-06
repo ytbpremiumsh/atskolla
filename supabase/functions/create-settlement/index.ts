@@ -58,6 +58,7 @@ serve(async (req) => {
       .eq("id", bank_account_id).maybeSingle();
     if (!acc || acc.school_id !== school_id) return json({ error: "Rekening tidak ditemukan" });
     if (acc.is_active === false) return json({ error: "Rekening sudah dinonaktifkan" });
+    if ((acc.account_type || "bank") !== "bank") return json({ error: "Pencairan hanya bisa ke rekening bank, bukan E-Wallet" });
     if (acc.verification_status !== "verified") {
       return json({ error: acc.verification_status === "rejected"
         ? "Rekening ditolak oleh admin ATSkolla. Silakan perbaiki data rekening."

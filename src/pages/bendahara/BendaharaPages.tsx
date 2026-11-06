@@ -4702,7 +4702,8 @@ export function BendaharaPencairan() {
 
 
   const saveAccount = async () => {
-    const isEw = newAccount.account_type === "ewallet";
+    const isEw = false;
+    if (newAccount.account_type !== "bank") { toast.error("Pencairan hanya bisa ke rekening bank"); return; }
     if (!newAccount.bank_name) { toast.error(isEw ? "Pilih jenis E-Wallet" : "Isi nama bank"); return; }
     if (!newAccount.account_number) { toast.error(isEw ? "Nomor E-Wallet wajib" : "Nomor rekening wajib"); return; }
     if (!newAccount.account_holder) { toast.error("Nama pemilik wajib"); return; }
@@ -5024,7 +5025,7 @@ export function BendaharaPencairan() {
       <Dialog open={bankManageOpen} onOpenChange={setBankManageOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Kelola Rekening / E-Wallet Pencairan</DialogTitle>
+            <DialogTitle>Kelola Rekening Bank Pencairan</DialogTitle>
             <DialogDescription>Simpan rekening bank atau e-wallet sekolah beserta penanggung jawab OTP.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -5073,37 +5074,8 @@ export function BendaharaPencairan() {
             </div>
             <div className="border-t pt-4 space-y-3">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah Baru</Label>
-              <div>
-                <Label>Jenis Akun</Label>
-                <Select value={newAccount.account_type} onValueChange={(v) => setNewAccount({ ...newAccount, account_type: v as "bank" | "ewallet", bank_name: "" })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bank">Rekening Bank</SelectItem>
-                    <SelectItem value="ewallet">E-Wallet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {newAccount.account_type === "ewallet" ? (
-                <>
-                  <div>
-                    <Label>Jenis E-Wallet</Label>
-                    <Select value={newAccount.bank_name} onValueChange={(v) => setNewAccount({ ...newAccount, bank_name: v })}>
-                      <SelectTrigger><SelectValue placeholder="Pilih e-wallet" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DANA">DANA</SelectItem>
-                        <SelectItem value="OVO">OVO</SelectItem>
-                        <SelectItem value="GoPay">GoPay</SelectItem>
-                        <SelectItem value="ShopeePay">ShopeePay</SelectItem>
-                        <SelectItem value="LinkAja">LinkAja</SelectItem>
-                        <SelectItem value="QRIS">QRIS</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div><Label>Nomor E-Wallet</Label><Input inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} placeholder="Nomor HP terdaftar" /></div>
-                  <div><Label>Atas Nama</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
-                </>
-              ) : (
-                <>
+              <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 p-2">Pencairan hanya bisa ke rekening bank. E-Wallet tidak didukung.</p>
+              <>
                   <div>
                     <Label>Nama Bank</Label>
                     <Select value={newAccount.bank_name} onValueChange={(v) => setNewAccount({ ...newAccount, bank_name: v })}>
@@ -5118,7 +5090,6 @@ export function BendaharaPencairan() {
                   <div><Label>Nomor Rekening</Label><Input inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} /></div>
                   <div><Label>Atas Nama (sesuai buku tabungan)</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
                 </>
-              )}
               <div>
                 <Label>Penanggung Jawab (OTP dikirim ke WA-nya)</Label>
                 <Select value={newAccount.responsible_user_id} onValueChange={(v) => setNewAccount({ ...newAccount, responsible_user_id: v })}>
