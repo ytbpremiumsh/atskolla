@@ -28,3 +28,10 @@ describe("split settlement harian", () => {
     expect(days[1]).toMatchObject({ date: "2026-11-09", status: "paid" });
   });
 });
+
+describe("kode STL harian", () => {
+  it("memakai singkatan bulan", () => {
+    const [d] = groupSplitByDay([{ paid_at: "2026-11-06T02:00:00Z", total_amount: 1 }], new Date("2026-11-06T03:00:00Z"));
+    expect(d.code).toBe("STL-NOV-20261106");
+  });
+});

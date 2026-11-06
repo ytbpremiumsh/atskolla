@@ -38,6 +38,8 @@ export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
   offline: "Diterima Langsung",
 };
 
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+
 export type SplitDay = {
   code: string;
   date: string;
@@ -60,7 +62,7 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
     .map(([date, list]) => {
       const settleDate = nextBusinessDay(date);
       return {
-        code: `STL-${date.replace(/-/g, "")}`,
+        code: `STL-${MONTHS[Number(date.slice(5, 7)) - 1]}-${date.replace(/-/g, "")}`,
         date,
         settleDate,
         count: list.length,
