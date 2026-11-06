@@ -161,7 +161,7 @@ export default function SuperAdminBendahara() {
       m.total_paid_invoices += 1;
       m.total_gross += amt; // Total diterima menampilkan gross apa adanya (termasuk offline)
       if (isOfflinePayment(inv.payment_method)) continue;
-      if (!inv.settlement_id) {
+      if (!inv.settlement_id && !(inv as any).doku_split) {
         const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
         cur.net += inv.net_amount ?? amt;
         cur.count += 1;
