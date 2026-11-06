@@ -97,6 +97,14 @@ const SuperAdminSplitSettlement = () => {
       return;
     }
     const bank = pickBank(banks[s.id] || []);
+    if (value && (!bank || bank.is_active === false)) {
+      toast.error("Sekolah ini belum punya rekening pencairan aktif");
+      return;
+    }
+    if (value && bank?.verification_status !== "verified") {
+      toast.error("Verifikasi dulu rekening sekolah ini sebelum mengaktifkan split");
+      return;
+    }
     setSavingId(s.id);
     const { error } = await supabase.from("schools").update({ doku_settlement_bank_id: value || null }).eq("id", s.id);
     if (!error && bank) {
