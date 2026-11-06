@@ -224,11 +224,14 @@ async function createDokuPayment(
   // Jika DOKU menolak aturan split (mis. ID rekening salah), tetap buat link
   // tanpa split agar wali murid bisa membayar; dana masuk ke rekening utama
   // dan dicairkan manual seperti biasa.
-  if (!res.ok && split) {
-    console.warn("[spp-doku] split settlement rejected, retry without split", res.json);
-    delete body.additional_info;
-    split = false;
-    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  // Semua pembayaran WAJIB split. Jika DOKU menolak aturan split, jangan buat
+  // link tanpa split (agar dana tidak masuk ke rekening admin).
+  if (!split) {
+    return { ok: false, url: null, raw: { message: SPLIT_NOT_READY } } as any;
+  }
+  if (!res.ok) {
+    console.warn("[spp-doku] split settlement rejected", res.json);
+    return { ok: false, url: null, raw: { message: SPLIT_NOT_READY } } as any;
   }
 
   // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
@@ -281,6 +284,8 @@ async function createDokuPayment(
     expiry: expiredAt,
   };
 }
+
+const SPLIT_NOT_READY = "Pembayaran SPP online untuk sekolah ini belum bisa digunakan karena rekening sekolah masih dalam proses verifikasi. Silakan bayar langsung ke bendahara sekolah atau coba lagi nanti.";
 
 async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<string | null> {
   if (!schoolId) return null;
