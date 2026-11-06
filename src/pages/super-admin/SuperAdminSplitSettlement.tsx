@@ -27,6 +27,29 @@ const ID_PATTERN = /^[A-Z]{3}-[0-9]{3,5}-[0-9]{6,20}$/;
 const pickBank = (list: Bank[]) =>
   list.find((b) => b.is_active && b.is_default) || list.find((b) => b.is_active) || list[0] || null;
 
+const Step = ({ n, icon: Icon, title, desc, count, tone, children }: any) => (
+    <Card className="border-0 shadow-card overflow-hidden">
+      <div className={`h-1 ${tone}`} />
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Langkah {n}</span>
+              {count !== undefined && <Badge variant="secondary" className="text-[10px]">{count}</Badge>}
+            </div>
+            <h2 className="font-semibold text-foreground">{title}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+          </div>
+        </div>
+        {children}
+      </CardContent>
+    </Card>
+  );
+
+
 const SuperAdminSplitSettlement = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [banks, setBanks] = useState<Record<string, Bank[]>>({});
@@ -149,28 +172,6 @@ const SuperAdminSplitSettlement = () => {
     toast.success(value ? `Split aktif untuk ${s.name}` : `Split dimatikan untuk ${s.name}`);
     await load();
   };
-
-  const Step = ({ n, icon: Icon, title, desc, count, tone, children }: any) => (
-    <Card className="border-0 shadow-card overflow-hidden">
-      <div className={`h-1 ${tone}`} />
-      <CardContent className="p-5 space-y-4">
-        <div className="flex items-start gap-3">
-          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-            <Icon className="h-4 w-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Langkah {n}</span>
-              {count !== undefined && <Badge variant="secondary" className="text-[10px]">{count}</Badge>}
-            </div>
-            <h2 className="font-semibold text-foreground">{title}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
-          </div>
-        </div>
-        {children}
-      </CardContent>
-    </Card>
-  );
 
   const stats = [
     { label: "Split aktif", value: activeCount, sub: "sekolah", cls: "bg-emerald-500/10 text-emerald-600" , icon: CheckCircle2 },
