@@ -212,24 +212,19 @@ async function createDokuPayment(
   const splitBankId = String(inv._split_bank_id || "").trim();
   const splitBill = Math.round(Number(inv._split_bill) || 0);
   let split = false;
-  if (splitBankId && splitBill > 0 && splitBill < Math.round(totalCharged)) {
+  if (splitBankId && splitBill > 0 && splitBill <= Math.round(totalCharged)) {
     body.additional_info = {
       settlement: [{ bank_account_settlement_id: splitBankId, value: splitBill, type: "FIX" }],
     };
     split = true;
   }
 
-  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
-
-  // Jika DOKU menolak aturan split (mis. ID rekening salah), tetap buat link
-  // tanpa split agar wali murid bisa membayar; dana masuk ke rekening utama
-  // dan dicairkan manual seperti biasa.
-  if (!res.ok && split) {
-    console.warn("[spp-doku] split settlement rejected, retry without split", res.json);
-    delete body.additional_info;
-    split = false;
-    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  // Semua pembayaran WAJIB split agar dana tidak masuk ke rekening admin.
+  if (!split) {
+    return { ok: false, url: null, split: false, raw: { message: SPLIT_NOT_READY } } as any;
   }
+
+  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
 
   // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
   // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
@@ -242,6 +237,10 @@ async function createDokuPayment(
     console.warn("[spp-doku] channel inactive, retry without payment_method_types filter", { channel, methods });
     delete body.payment.payment_method_types;
     res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  }
+  if (!res.ok) {
+    // Jangan pernah buat ulang link tanpa split.
+    console.warn("[spp-doku] split payment rejected", res.json);
   }
 
   let url: string | null =
@@ -281,6 +280,8 @@ async function createDokuPayment(
     expiry: expiredAt,
   };
 }
+
+const SPLIT_NOT_READY = "Pembayaran SPP online untuk sekolah ini belum bisa digunakan karena rekening sekolah masih dalam proses verifikasi. Silakan bayar langsung ke bendahara sekolah atau coba lagi nanti.";
 
 async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<string | null> {
   if (!schoolId) return null;
@@ -353,6 +354,7 @@ async function ensureFreshLink(
     const friendly = upper.includes("PAYMENT CHANNEL IS INACTIVE")
       ? `Channel ${String(channel || "").toUpperCase() || "pembayaran"} belum aktif di akun Doku merchant. Hubungi Super Admin untuk mengaktifkan channel ini di dashboard Doku, atau pilih metode lain.`
       : raw;
+    if (raw === SPLIT_NOT_READY) return { success: false, error: SPLIT_NOT_READY };
     return { success: false, error: `Gagal buat pembayaran Doku: ${friendly}` };
   }
   const { data: savedInvoice, error: invoiceError } = await supabaseAdmin.from("spp_invoices").update({

@@ -33,6 +33,18 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { school_id, bank_account_id, otp_code, notes, confirm_word } = body || {};
 
+    // Semua sekolah memakai DOKU Split Settlement: bendahara tidak lagi mengajukan
+    // pencairan. Hanya Super Admin yang boleh mencairkan saldo lama (sebelum split).
+    const adminClient = getAdminClient();
+    const { data: saRole } = await adminClient.from("user_roles").select("role")
+      .eq("user_id", caller.userId).eq("role", "super_admin").maybeSingle();
+    if (!saRole) {
+      return json({ error: "Pencairan sekarang otomatis lewat DOKU ke rekening sekolah. Pengajuan manual tidak diperlukan." });
+    }
+    if (body?.admin_legacy === true && school_id) {
+      return await adminLegacySettle(adminClient, school_id, caller.userId, notes);
+    }
+
     if (!school_id || !bank_account_id || !otp_code) {
       return json({ error: "school_id, bank_account_id, otp_code wajib diisi" });
     }
@@ -189,3 +201,46 @@ serve(async (req) => {
     return json({ error: e?.message || "Terjadi kesalahan" });
   }
 });
+
+
+// Super Admin: cairkan saldo lama (pembayaran non-split) — tanpa OTP, tanpa biaya, tanpa minimum.
+async function adminLegacySettle(admin: any, school_id: string, userId: string, notes: unknown) {
+  const { data: acc } = await admin.from("bendahara_bank_accounts")
+    .select("bank_name, account_number, account_holder, account_type, responsible_user_id")
+    .eq("school_id", school_id).eq("is_active", true).eq("verification_status", "verified")
+    .order("is_default", { ascending: false }).limit(1).maybeSingle();
+  if (!acc) return json({ error: "Sekolah belum punya rekening terverifikasi" });
+
+  const { data: invs } = await admin.from("spp_invoices")
+    .select("id, payment_method, total_amount, gateway_fee, net_amount")
+    .eq("school_id", school_id).eq("status", "paid").is("settlement_id", null).eq("doku_split", false);
+  const eligible = (invs || []).filter((x: any) => !OFFLINE.has((x.payment_method || "").toLowerCase()));
+  if (!eligible.length) return json({ error: "Tidak ada saldo lama" });
+
+  const code = `STL-${Date.now().toString().slice(-8)}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
+  const { data: st, error } = await admin.from("spp_settlements").insert({
+    school_id, settlement_code: code, total_transactions: 0, total_gross: 0, total_gateway_fee: 0,
+    total_net: 0, withdraw_fee: 0, final_payout: 0,
+    bank_name: acc.bank_name, account_number: acc.account_number, account_holder: acc.account_holder,
+    account_type: acc.account_type || "bank", responsible_user_id: acc.responsible_user_id,
+    requested_by: userId, status: "approved", approved_at: new Date().toISOString(),
+    notes: typeof notes === "string" ? notes.slice(0, 500) : "Saldo lama (sebelum Split Settlement)",
+  }).select().single();
+  if (error || !st) return json({ error: error?.message || "Gagal membuat pencairan" });
+
+  await admin.from("spp_invoices").update({ settlement_id: st.id })
+    .in("id", eligible.map((x: any) => x.id)).is("settlement_id", null);
+  const { data: linked } = await admin.from("spp_invoices")
+    .select("total_amount, gateway_fee, net_amount").eq("settlement_id", st.id);
+  if (!linked?.length) {
+    await admin.from("spp_settlements").delete().eq("id", st.id);
+    return json({ error: "Saldo sudah dicairkan" });
+  }
+  const t = linked.reduce((a: any, x: any) => {
+    a.c += 1; a.g += x.total_amount || 0; a.f += x.gateway_fee || 0; a.n += x.net_amount ?? (x.total_amount || 0); return a;
+  }, { c: 0, g: 0, f: 0, n: 0 });
+  await admin.from("spp_settlements").update({
+    total_transactions: t.c, total_gross: t.g, total_gateway_fee: t.f, total_net: t.n, final_payout: t.n,
+  }).eq("id", st.id);
+  return json({ success: true, settlement_code: code, final_payout: t.n, total_transactions: t.c });
+}

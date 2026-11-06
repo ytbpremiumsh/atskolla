@@ -90,6 +90,18 @@ export default function SuperAdminBendahara() {
   const [adminNote, setAdminNote] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [legacyBusy, setLegacyBusy] = useState<string | null>(null);
+  const settleLegacy = async (schoolId: string, name: string) => {
+    if (!confirm(`Buat pencairan saldo lama untuk ${name}? Setelah itu transfer manual ke rekening sekolah lalu klik "Tandai Cair" di tab Pencairan.`)) return;
+    setLegacyBusy(schoolId);
+    const { data, error } = await supabase.functions.invoke("create-settlement", { body: { school_id: schoolId, admin_legacy: true } });
+    setLegacyBusy(null);
+    const res = data as any;
+    if (error || res?.error) { toast.error(res?.error || error?.message || "Gagal"); return; }
+    toast.success(`Pencairan ${res.settlement_code} dibuat. Silakan transfer lalu tandai cair.`);
+    fetchAll();
+  };
+
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -412,6 +424,14 @@ export default function SuperAdminBendahara() {
                         <TableCell className="text-right text-sm">{fmtIDR(b.total_disbursed)}</TableCell>
                         <TableCell className="text-right">
                           <span className="font-bold text-emerald-600">{fmtIDR(b.saldo_pending)}</span>
+                          {b.saldo_pending > 0 && (
+                            <div className="mt-1">
+                              <Button size="sm" variant="outline" className="h-7 text-[11px]" disabled={legacyBusy === b.school_id}
+                                onClick={() => settleLegacy(b.school_id, s?.name || "sekolah ini")}>
+                                {legacyBusy === b.school_id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Cairkan Saldo Lama"}
+                              </Button>
+                            </div>
+                          )}
                           {b.pending_settlement > 0 && (
                             <p className="text-[10px] text-amber-600 mt-0.5">+{fmtIDR(b.pending_settlement)} menunggu</p>
                           )}
