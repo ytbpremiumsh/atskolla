@@ -5044,7 +5044,20 @@ export function BendaharaPencairan() {
                             <Badge variant="outline" className="text-[10px]">{isEw ? "E-Wallet" : "Bank"}</Badge>
                             {a.bank_name}
                             {a.is_default && <Badge className="ml-1 bg-emerald-600 text-[10px]">Utama</Badge>}
+                            {a.verification_status === "verified" ? (
+                              <Badge className="text-[10px] bg-sky-600">Terverifikasi</Badge>
+                            ) : a.verification_status === "rejected" ? (
+                              <Badge variant="destructive" className="text-[10px]">Ditolak</Badge>
+                            ) : (
+                              <Badge className="text-[10px] bg-amber-500">Menunggu verifikasi</Badge>
+                            )}
                           </p>
+                          {a.verification_status === "rejected" && a.rejection_reason && (
+                            <p className="text-[11px] text-destructive">Alasan: {a.rejection_reason}</p>
+                          )}
+                          {a.verification_status !== "verified" && a.verification_status !== "rejected" && (
+                            <p className="text-[11px] text-amber-600">Belum bisa dipakai untuk pencairan sampai diverifikasi admin ATSkolla.</p>
+                          )}
                           <p className="text-xs font-mono text-muted-foreground">{a.account_number} · {a.account_holder}</p>
                           <p className="text-[11px] text-muted-foreground">PJ: {pj?.full_name || <span className="text-amber-600">belum diatur</span>}</p>
                         </div>
