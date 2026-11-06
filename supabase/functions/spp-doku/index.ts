@@ -469,6 +469,9 @@ serve(async (req) => {
         notes: `Cicilan online oleh wali murid — ${channel || "va"}`,
       }).select("id").single();
       if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
+      if (created.split) {
+        await supabaseAdmin.from("spp_invoices").update({ doku_split: true }).eq("id", inv.id);
+      }
 
       const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: inv.school_id,

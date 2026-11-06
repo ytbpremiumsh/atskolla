@@ -14,6 +14,7 @@ export type SaldoInvoice = {
   total_amount: number | null;
   gateway_fee?: number | null;
   net_amount?: number | null;
+  doku_split?: boolean | null;
 };
 
 export type SaldoSettlement = {
@@ -39,6 +40,8 @@ export function computeAvailableSaldo(
     if (inv.status !== "paid") continue;
     if (isOfflinePayment(inv.payment_method)) continue;
     if (inv.settlement_id) continue;
+    // Sudah otomatis dikirim DOKU (Split Settlement) ke rekening sekolah.
+    if (inv.doku_split) continue;
     count += 1;
     gross += inv.total_amount || 0;
     fee += inv.gateway_fee || 0;
