@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { groupSplitByDay } from "@/lib/splitSettlement";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -4923,6 +4924,33 @@ export function BendaharaPencairan() {
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500" /> <b>Rejected</b> — ditolak (lihat catatan)</span>
             <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" /> <b>Cancelled</b> — dibatalkan oleh pemohon</span>
           </div>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-0">
+              <div className="px-4 pt-4 pb-2">
+                <p className="text-sm font-semibold">Pencairan Otomatis Harian</p>
+                <p className="text-[11px] text-muted-foreground">Pembayaran SPP online digabung per hari dan ditransfer sistem ke rekening sekolah pada hari kerja berikutnya.</p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal Cair</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {groupSplitByDay(splitPaid).length === 0 && <TableRow><TableCell colSpan={5} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
+                    {groupSplitByDay(splitPaid).map((d) => (
+                      <TableRow key={d.date} className="[&_td]:whitespace-nowrap">
+                        <TableCell className="text-xs">{new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                        <TableCell>{d.count}</TableCell>
+                        <TableCell className="font-semibold text-emerald-600">{fmtIDR(d.total)}</TableCell>
+                        <TableCell className="text-xs">{new Date(d.settleDate + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })}</TableCell>
+                        <TableCell>{d.status === "paid"
+                          ? <Badge className="bg-emerald-500 hover:bg-emerald-500">Paid</Badge>
+                          : <Badge className="bg-amber-500 hover:bg-amber-500">Diproses</Badge>}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">
               {loadingHistory ? <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div> : (
