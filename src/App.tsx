@@ -49,7 +49,6 @@ const KalenderAkademik = lazy(() => import("./pages/KalenderAkademik"));
 const AttendanceTime = lazy(() => import("./pages/AttendanceTime"));
 const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const SuperAdminDashboard = lazy(() => import("./pages/super-admin/SuperAdminDashboard"));
-const SuperAdminPayments = lazy(() => import("./pages/super-admin/SuperAdminPayments"));
 const SuperAdminPaymentGateway = lazy(() => import("./pages/super-admin/SuperAdminPaymentGateway"));
 const ExportHistory = lazy(() => import("./pages/ExportHistory"));
 const EditAttendance = lazy(() => import("./pages/EditAttendance"));
@@ -295,7 +294,7 @@ function AppRoutes() {
 
           {/* OPERASIONAL — Keuangan */}
           <Route path="/super-admin/keuangan" element={<SuperAdminKeuanganHub />} />
-          <Route path="/super-admin/payments" element={<Navigate to="/super-admin/keuangan?tab=payments" replace />} />
+          <Route path="/super-admin/payments" element={<Navigate to="/super-admin/keuangan?tab=bendahara" replace />} />
           <Route path="/super-admin/payment-gateway" element={<SuperAdminPaymentGateway />} />
           <Route path="/super-admin/split-settlement" element={<Navigate to="/super-admin/keuangan?tab=split" replace />} />
           <Route path="/super-admin/bendahara" element={<Navigate to="/super-admin/keuangan?tab=bendahara" replace />} />
