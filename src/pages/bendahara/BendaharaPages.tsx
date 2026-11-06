@@ -5087,38 +5087,47 @@ export function BendaharaPencairan() {
               {savedAccounts.length === 0 ? (
                 <p className="text-sm text-muted-foreground italic">Belum ada rekening / e-wallet</p>
               ) : (
-                <div className="space-y-2 max-h-48 overflow-auto">
+                <div className="space-y-2.5 max-h-72 overflow-auto pr-1">
                   {savedAccounts.map((a: any) => {
                     const pj = staffList.find((s) => s.user_id === a.responsible_user_id);
-                    const isEw = a.account_type === "ewallet";
+                    const st = a.verification_status;
                     return (
-                      <div key={a.id} className="flex items-center justify-between p-2 rounded-lg border bg-card">
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold flex items-center gap-1 flex-wrap">
-                            <Badge variant="outline" className="text-[10px]">{isEw ? "E-Wallet" : "Bank"}</Badge>
-                            {a.bank_name}
-                            {a.is_default && <Badge className="ml-1 bg-emerald-600 text-[10px]">Utama</Badge>}
-                            {a.verification_status === "verified" ? (
-                              <Badge className="text-[10px] bg-sky-600">Terverifikasi</Badge>
-                            ) : a.verification_status === "rejected" ? (
-                              <Badge variant="destructive" className="text-[10px]">Ditolak</Badge>
-                            ) : (
-                              <Badge className="text-[10px] bg-amber-500">Menunggu verifikasi</Badge>
-                            )}
-                          </p>
-                          {a.verification_status === "rejected" && a.rejection_reason && (
-                            <p className="text-[11px] text-destructive">Alasan: {a.rejection_reason}</p>
-                          )}
-                          {a.verification_status !== "verified" && a.verification_status !== "rejected" && (
-                            <p className="text-[11px] text-amber-600">Belum bisa dipakai untuk pencairan sampai diverifikasi admin ATSkolla.</p>
-                          )}
-                          <p className="text-xs font-mono text-muted-foreground">{a.account_number} · {a.account_holder}</p>
-                          <p className="text-[11px] text-muted-foreground">PJ: {pj?.full_name || <span className="text-amber-600">belum diatur</span>}</p>
+                      <div key={a.id} className={`rounded-xl border bg-card p-3.5 ${a.is_default ? "border-primary/40 ring-1 ring-primary/15" : ""}`}>
+                        <div className="flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <Landmark className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="text-sm font-bold leading-none mr-1">{a.bank_name}</p>
+                              {a.is_default && <Badge className="h-5 px-2 text-[10px] bg-emerald-600 hover:bg-emerald-600">Utama</Badge>}
+                              {st === "verified" ? (
+                                <Badge className="h-5 px-2 text-[10px] bg-sky-600 hover:bg-sky-600">Terverifikasi</Badge>
+                              ) : st === "rejected" ? (
+                                <Badge variant="destructive" className="h-5 px-2 text-[10px]">Ditolak</Badge>
+                              ) : (
+                                <Badge className="h-5 px-2 text-[10px] bg-amber-500 hover:bg-amber-500">Menunggu verifikasi</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm font-mono tracking-wide text-foreground">{a.account_number}</p>
+                            <p className="text-xs text-muted-foreground truncate">a.n. {a.account_holder}</p>
+                            <p className="text-xs text-muted-foreground">PJ: {pj?.full_name || <span className="text-amber-600">belum diatur</span>}</p>
+                          </div>
                         </div>
-                        <div className="flex gap-1 shrink-0">
-                          {!a.is_default && a.verification_status === "verified" && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)} className="h-7 text-xs">Jadikan Utama</Button>}
-                          {!a.is_default && <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-7 text-destructive">Hapus</Button>}
-                        </div>
+                        {st === "rejected" && a.rejection_reason && (
+                          <p className="mt-2.5 text-[11px] rounded-md bg-destructive/10 text-destructive px-2.5 py-1.5">Alasan ditolak: {a.rejection_reason}</p>
+                        )}
+                        {st !== "verified" && st !== "rejected" && (
+                          <p className="mt-2.5 text-[11px] rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1.5">Belum bisa dipakai untuk pencairan sampai diverifikasi admin ATSkolla.</p>
+                        )}
+                        {a.is_default ? (
+                          <p className="mt-2.5 pt-2.5 border-t text-[11px] text-muted-foreground">Rekening utama tidak bisa dihapus. Jadikan rekening lain sebagai utama terlebih dahulu.</p>
+                        ) : (
+                          <div className="mt-2.5 pt-2.5 border-t flex justify-end gap-2">
+                            {st === "verified" && <Button size="sm" variant="outline" onClick={() => setDefault(a.id)} className="h-8 text-xs">Jadikan Utama</Button>}
+                            <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-8 text-xs text-destructive hover:text-destructive">Hapus</Button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
