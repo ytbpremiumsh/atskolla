@@ -1365,7 +1365,7 @@ export default function ParentDashboard() {
                           <p className="text-sm font-bold truncate">{inv.period_label}</p>
                           <Badge className="bg-emerald-500 text-white border-0 text-[9px]">LUNAS</Badge>
                         </div>
-                        <p className="text-[11px] text-muted-foreground">{inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"} • {formatPaymentMethodLabel(inv.payment_method)}</p>
+                        <p className="text-[11px] text-muted-foreground">{inv.paid_at ? new Date(inv.paid_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(/\./g, ":") + " WIB" : "-"} • {formatPaymentMethodLabel(inv.payment_method)}</p>
                         <p className="text-sm font-extrabold text-emerald-600 mt-0.5">Rp {(inv.total_amount || 0).toLocaleString("id-ID")}</p>
                       </div>
                       <Button size="sm" variant="outline" className="shrink-0" disabled={sppBusy === `pdf-${inv.id}`} onClick={() => downloadSppPdf(inv)}>
