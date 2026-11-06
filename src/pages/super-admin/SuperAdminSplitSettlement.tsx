@@ -150,167 +150,165 @@ const SuperAdminSplitSettlement = () => {
     await load();
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Split className="h-6 w-6 text-primary" /> Split Settlement DOKU
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Nominal SPP murni langsung dikirim DOKU ke rekening sekolah. Biaya admin otomatis masuk ke rekening utama
-          (default) akun DOKU, yaitu rekening owner ATSkolla.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Card className="border-0 shadow-card"><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Sekolah dengan split aktif</p>
-          <p className="text-2xl font-bold text-foreground">{activeCount}</p>
-        </CardContent></Card>
-        <Card className="border-0 shadow-card"><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">Sekolah dengan rekening bendahara</p>
-          <p className="text-2xl font-bold text-foreground">{withBankCount}</p>
-        </CardContent></Card>
-      </div>
-
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <Landmark className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold text-foreground">Rekening Terdaftar di DOKU</h2>
-            <Badge variant="secondary">{regs.length}</Badge>
+  const Step = ({ n, icon: Icon, title, desc, count, tone, children }: any) => (
+    <Card className="border-0 shadow-card overflow-hidden">
+      <div className={`h-1 ${tone}`} />
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="h-9 w-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+            <Icon className="h-4 w-4" />
           </div>
-          <p className="text-xs text-muted-foreground">
-            Masukkan rekening yang sudah Verified di dashboard DOKU. Jika bendahara mengajukan rekening dengan bank dan nomor yang sama, rekening otomatis terverifikasi dan Bank Settlement ID ikut terisi. Rekening yang tidak ada di daftar ini harus diverifikasi manual.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
-            <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />
-            <Input placeholder="Nomor rekening" inputMode="numeric" value={reg.account_number} onChange={(e) => setReg({ ...reg, account_number: e.target.value })} />
-            <Input placeholder="Atas nama" value={reg.account_holder} onChange={(e) => setReg({ ...reg, account_holder: e.target.value })} />
-            <Input placeholder="BNK-xxxx-xxxx (opsional)" className="font-mono text-xs" value={reg.settlement_id} onChange={(e) => setReg({ ...reg, settlement_id: e.target.value })} />
-            <Button onClick={addReg}><Plus className="h-4 w-4 mr-1" /> Tambah</Button>
-          </div>
-          {regs.length > 0 && (
-            <div className="divide-y divide-border">
-              {regs.map((r) => (
-                <div key={r.id} className="py-2 flex items-center gap-3 text-xs">
-                  <div className="flex-1 min-w-0">
-                    <span className="font-medium text-foreground">{r.bank_name}</span>{" "}
-                    <span className="font-mono">{r.account_number}</span> a.n. {r.account_holder || "-"}
-                    {r.settlement_id && <span className="font-mono text-muted-foreground"> · {r.settlement_id}</span>}
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
-                </div>
-              ))}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Langkah {n}</span>
+              {count !== undefined && <Badge variant="secondary" className="text-[10px]">{count}</Badge>}
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold text-foreground">Pengajuan Rekening Menunggu Verifikasi</h2>
-            <Badge variant={pendingBanks.length ? "default" : "secondary"}>{pendingBanks.length}</Badge>
+            <h2 className="font-semibold text-foreground">{title}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Rekening baru yang tidak cocok dengan daftar DOKU masuk ke sini dan dikirim notifikasi (lonceng + WhatsApp admin). Rekening baru bisa dipakai untuk pencairan setelah Anda verifikasi.
-          </p>
-          {pendingBanks.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-2">Tidak ada pengajuan baru.</p>
-          ) : (
-            <div className="divide-y divide-border">
-              {pendingBanks.map((b) => (
-                <div key={b.id} className="py-3 flex flex-col md:flex-row md:items-center gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{schoolName(b.school_id)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">{b.bank_name || "-"}</span>{" "}
-                      <span className="font-mono">{b.account_number || "-"}</span> a.n. {b.account_holder || "-"}
-                    </p>
+        </div>
+        {children}
+      </CardContent>
+    </Card>
+  );
+
+  const stats = [
+    { label: "Split aktif", value: activeCount, sub: "sekolah", cls: "bg-emerald-500/10 text-emerald-600" , icon: CheckCircle2 },
+    { label: "Menunggu verifikasi", value: pendingBanks.length, sub: "rekening", cls: "bg-amber-500/10 text-amber-600", icon: ShieldCheck },
+    { label: "Terdaftar di DOKU", value: regs.length, sub: "rekening", cls: "bg-primary/10 text-primary", icon: Landmark },
+    { label: "Punya rekening", value: withBankCount, sub: "sekolah", cls: "bg-sky-500/10 text-sky-600", icon: Split },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl bg-primary/5 border border-primary/10 p-4 text-sm text-muted-foreground">
+        <span className="font-semibold text-foreground">Cara kerja: </span>
+        nominal SPP dikirim otomatis ke rekening sekolah, biaya admin masuk ke rekening utama ATSkolla di DOKU.
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {stats.map((st) => (
+          <Card key={st.label} className="border-0 shadow-card"><CardContent className="p-4 flex items-center gap-3">
+            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${st.cls}`}><st.icon className="h-5 w-5" /></div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-muted-foreground truncate">{st.label}</p>
+              <p className="text-xl font-bold text-foreground leading-tight">{st.value} <span className="text-[11px] font-normal text-muted-foreground">{st.sub}</span></p>
+            </div>
+          </CardContent></Card>
+        ))}
+      </div>
+
+      <Step n={1} icon={ShieldCheck} title="Verifikasi Pengajuan Rekening" count={pendingBanks.length}
+        tone={pendingBanks.length ? "bg-amber-500" : "bg-muted"}
+        desc="Rekening baru dari bendahara yang belum cocok dengan daftar DOKU. Periksa lalu verifikasi atau tolak.">
+        {pendingBanks.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">Tidak ada pengajuan baru.</div>
+        ) : (
+          <div className="space-y-2">
+            {pendingBanks.map((b) => (
+              <div key={b.id} className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 flex flex-col md:flex-row md:items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{schoolName(b.school_id)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-foreground">{b.bank_name || "-"}</span>{" "}
+                    <span className="font-mono">{b.account_number || "-"}</span> a.n. {b.account_holder || "-"}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => setVerification(b, "verified")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verifikasi</Button>
+                  <Button size="sm" variant="outline" onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Step>
+
+      <Step n={2} icon={Landmark} title="Rekening Terdaftar di DOKU" count={regs.length} tone="bg-primary"
+        desc="Tambahkan rekening yang sudah Verified di DOKU. Pengajuan bendahara dengan bank dan nomor yang sama akan terverifikasi otomatis.">
+        <div className="rounded-xl bg-muted/40 p-3 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2">
+          <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />
+          <Input placeholder="Nomor rekening" inputMode="numeric" value={reg.account_number} onChange={(e) => setReg({ ...reg, account_number: e.target.value })} />
+          <Input placeholder="Atas nama" value={reg.account_holder} onChange={(e) => setReg({ ...reg, account_holder: e.target.value })} />
+          <Input placeholder="Settlement ID (BNK-...)" className="font-mono text-xs" value={reg.settlement_id} onChange={(e) => setReg({ ...reg, settlement_id: e.target.value })} />
+          <Button onClick={addReg}><Plus className="h-4 w-4 mr-1" /> Tambah</Button>
+        </div>
+        {regs.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {regs.map((r) => (
+              <div key={r.id} className="rounded-xl border p-3 flex items-center gap-3">
+                <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0"><Landmark className="h-4 w-4" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{r.bank_name} <span className="font-mono font-normal">{r.account_number}</span></p>
+                  <p className="text-xs text-muted-foreground truncate">a.n. {r.account_holder || "-"}</p>
+                  {r.settlement_id && <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p>}
+                </div>
+                <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </Step>
+
+      <Step n={3} icon={Split} title="Aktifkan Split per Sekolah" tone="bg-emerald-500"
+        desc="Tempel Settlement ID (BNK-...) dari DOKU untuk rekening sekolah, lalu simpan. Rekening harus sudah terverifikasi.">
+        <div className="relative">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari sekolah..." className="pl-9" />
+        </div>
+        {loading ? (
+          <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+        ) : (
+          <div className="space-y-2">
+            {filtered.map((s) => {
+              const bank = pickBank(banks[s.id] || []);
+              const saved = s.doku_settlement_bank_id || "";
+              const dirty = (draft[s.id] || "") !== saved;
+              const synced = !!saved && bank?.doku_bank_account_settlement_id === saved;
+              const vs = bank?.verification_status;
+              return (
+                <div key={s.id} className="rounded-xl border p-3 flex flex-col md:flex-row md:items-center gap-3">
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
+                      {saved
+                        ? <Badge className="bg-emerald-500 hover:bg-emerald-500 gap-1 text-[10px]"><CheckCircle2 className="h-3 w-3" /> Split aktif</Badge>
+                        : <Badge variant="secondary" className="text-[10px]">Belum diatur</Badge>}
+                      {saved && !synced && <Badge className="bg-amber-500 hover:bg-amber-500 text-[10px]">Klik simpan untuk sinkron</Badge>}
+                    </div>
+                    {bank ? (
+                      <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+                        <Landmark className="h-3.5 w-3.5 shrink-0" />
+                        <span><span className="font-medium text-foreground">{bank.bank_name || "-"}</span> <span className="font-mono">{bank.account_number || "-"}</span> a.n. {bank.account_holder || "-"}</span>
+                        {!bank.is_active && <Badge variant="outline" className="text-[10px]">Nonaktif</Badge>}
+                        <Badge variant="outline" className={`text-[10px] ${vs === "verified" ? "border-emerald-500 text-emerald-600" : vs === "rejected" ? "border-red-500 text-red-600" : "border-amber-500 text-amber-600"}`}>
+                          {vs === "verified" ? "Terverifikasi" : vs === "rejected" ? "Ditolak" : "Menunggu verifikasi"}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-xs text-amber-600">
+                        <AlertTriangle className="h-3.5 w-3.5" /> Bendahara belum menginput rekening
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={() => setVerification(b, "verified")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verifikasi</Button>
-                    <Button size="sm" variant="outline" onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
+                    <Input
+                      value={draft[s.id] || ""}
+                      onChange={(e) => setDraft((d) => ({ ...d, [s.id]: e.target.value }))}
+                      placeholder="BNK-xxxx-xxxxxxxxxxxxx"
+                      className="font-mono text-xs md:w-64"
+                    />
+                    <Button size="sm" onClick={() => save(s)} disabled={(!dirty && synced) || savingId === s.id}>
+                      {savingId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-1" /> Simpan</>}
+                    </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="border-0 shadow-card">
-        <CardContent className="p-5 space-y-4">
-          <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-            <p>1. Lihat rekening pencairan yang sudah diinput bendahara di bawah nama sekolah.</p>
-            <p>2. Daftarkan rekening yang sama persis di DOKU: Settings → Bank Account, tunggu status Verified.</p>
-            <p>3. Salin Bank Settlement ID dari DOKU (contoh: BNK-0308-1793845037429), tempel, lalu simpan. ID otomatis tersinkron ke rekening bendahara.</p>
-            <p>4. Pastikan rekening owner (Mandiri) dijadikan rekening utama/default di DOKU.</p>
+              );
+            })}
+            {filtered.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Tidak ada sekolah</p>}
           </div>
-
-          <div className="relative">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari sekolah..." className="pl-9" />
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
-          ) : (
-            <div className="divide-y divide-border">
-              {filtered.map((s) => {
-                const bank = pickBank(banks[s.id] || []);
-                const saved = s.doku_settlement_bank_id || "";
-                const dirty = (draft[s.id] || "") !== saved;
-                const synced = !!saved && bank?.doku_bank_account_settlement_id === saved;
-                return (
-                  <div key={s.id} className="py-3 flex flex-col md:flex-row md:items-center gap-3">
-                    <div className="flex-1 min-w-0 space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-semibold text-foreground truncate">{s.name}</p>
-                        {saved ? (
-                          <Badge className="gap-1"><CheckCircle2 className="h-3 w-3" /> Split aktif</Badge>
-                        ) : (
-                          <Badge variant="secondary">Belum diatur</Badge>
-                        )}
-                      </div>
-                      {bank ? (
-                        <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                          <Landmark className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                          <span>
-                            <span className="font-medium text-foreground">{bank.bank_name || "-"}</span>{" "}
-                            <span className="font-mono">{bank.account_number || "-"}</span> a.n. {bank.account_holder || "-"}
-                            {!bank.is_active && " (nonaktif)"}
-                            {bank.verification_status === "verified" ? " — terverifikasi" : bank.verification_status === "rejected" ? " — ditolak" : " — menunggu verifikasi"}
-                            {saved && (synced ? " — tersinkron" : " — belum tersinkron, klik simpan")}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <AlertTriangle className="h-3.5 w-3.5" /> Bendahara belum menginput rekening pencairan
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        value={draft[s.id] || ""}
-                        onChange={(e) => setDraft((d) => ({ ...d, [s.id]: e.target.value }))}
-                        placeholder="BNK-xxxx-xxxxxxxxxxxxx"
-                        className="font-mono text-xs md:w-64"
-                      />
-                      <Button size="sm" onClick={() => save(s)} disabled={(!dirty && synced) || savingId === s.id}>
-                        {savingId === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-              {filtered.length === 0 && <p className="text-sm text-muted-foreground py-4 text-center">Tidak ada sekolah</p>}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </Step>
     </div>
   );
 };
