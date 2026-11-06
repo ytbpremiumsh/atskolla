@@ -360,8 +360,7 @@ function useBendaharaFlags(schoolId?: string | null) {
 }
 
 // ============ DASHBOARD ============
-function BankVerificationAlert({ schoolId }: { schoolId?: string | null }) {
-  const navigate = useNavigate();
+function useBankVerificationState(schoolId?: string | null) {
   const [state, setState] = useState<"none" | "pending" | "rejected" | "ok" | null>(null);
   useEffect(() => {
     if (!schoolId) return;
@@ -375,6 +374,12 @@ function BankVerificationAlert({ schoolId }: { schoolId?: string | null }) {
       else setState("none");
     })();
   }, [schoolId]);
+  return state;
+}
+
+function BankVerificationAlert({ schoolId, context = "dashboard" }: { schoolId?: string | null; context?: "dashboard" | "generate" }) {
+  const navigate = useNavigate();
+  const state = useBankVerificationState(schoolId);
   if (!state || state === "ok") return null;
   const title = state === "pending"
     ? "Rekening Pencairan Sedang Menunggu Verifikasi"
@@ -386,6 +391,13 @@ function BankVerificationAlert({ schoolId }: { schoolId?: string | null }) {
     : state === "rejected"
       ? "Rekening yang diajukan tidak lolos verifikasi. Pembayaran SPP secara online belum dapat digunakan. Silakan ajukan ulang rekening bank yang valid atas nama sekolah atau penanggung jawab."
       : "Pembayaran SPP secara online belum dapat digunakan oleh wali murid. Segera daftarkan rekening bank sekolah yang valid agar dana SPP dapat ditransfer otomatis ke rekening sekolah.";
+  const finalBody = context === "generate"
+    ? (state === "pending"
+        ? "Tagihan belum bisa dibuat karena rekening sekolah masih menunggu verifikasi oleh tim ATSkolla. Setelah rekening terverifikasi, halaman ini otomatis terbuka."
+        : state === "rejected"
+          ? "Tagihan belum bisa dibuat karena rekening sekolah ditolak saat verifikasi. Ajukan ulang rekening bank yang valid, lalu tunggu hingga terverifikasi."
+          : "Tagihan belum bisa dibuat karena rekening sekolah belum didaftarkan. Daftarkan rekening bank sekolah terlebih dahulu agar dana SPP bisa ditransfer otomatis.")
+    : body;
   return (
     <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4 flex flex-col md:flex-row md:items-center gap-3">
       <div className="flex items-start gap-3 flex-1">
@@ -394,7 +406,7 @@ function BankVerificationAlert({ schoolId }: { schoolId?: string | null }) {
         </div>
         <div>
           <p className="font-semibold text-amber-900 dark:text-amber-200">{title}</p>
-          <p className="text-sm text-amber-800 dark:text-amber-300/90 mt-0.5">{body}</p>
+          <p className="text-sm text-amber-800 dark:text-amber-300/90 mt-0.5">{finalBody}</p>
         </div>
       </div>
       {state !== "pending" && (
@@ -1730,6 +1742,7 @@ export function BendaharaTarif() {
 // ============ GENERATE TAGIHAN ============
 export function BendaharaGenerate() {
   const { profile } = useAuth();
+  const bankState = useBankVerificationState(profile?.school_id);
   const flags = useBendaharaFlags(profile?.school_id);
   const [classes, setClasses] = useState<string[]>([]);
   const [tariffs, setTariffs] = useState<any[]>([]);
@@ -1966,6 +1979,25 @@ export function BendaharaGenerate() {
         subtitle="SPP bulanan atau tagihan lainnya (Ujian, Praktek, Daftar Ulang, dll)"
         variant="primary"
       />
+
+      {bankState === null ? (
+        <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+      ) : bankState !== "ok" ? (
+        <>
+          <BankVerificationAlert schoolId={profile?.school_id} context="generate" />
+          <Card className="border-dashed shadow-none">
+            <CardContent className="p-8 text-center space-y-2">
+              <div className="mx-auto h-12 w-12 rounded-xl bg-muted flex items-center justify-center">
+                <Lock className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <p className="font-semibold">Pembuatan Tagihan Dikunci</p>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                SPP Bulanan dan Tagihan Lainnya baru bisa dibuat setelah rekening pencairan sekolah terverifikasi.
+              </p>
+            </CardContent>
+          </Card>
+        </>
+      ) : (
 
       <Tabs defaultValue="spp" className="w-full">
         <TabsList className="grid grid-cols-2 w-full md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
