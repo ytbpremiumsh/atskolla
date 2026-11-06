@@ -50,6 +50,13 @@
       "when": 1793951147914,
       "tag": "0006_doku_registry_and_primary_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793951179664,
+      "tag": "0007_primary_guard_require_other_verified",
+      "breakpoints": true
     }
   ]
 }
