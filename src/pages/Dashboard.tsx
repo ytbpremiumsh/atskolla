@@ -19,6 +19,7 @@ import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/PageHeader";
+import { NoBendaharaBanner } from "@/components/dashboard/NoBendaharaBanner";
 
 import { getLocalDateString } from "@/lib/dateLocal";
 import { fetchSchoolHolidayStatus, type HolidayStatus } from "@/lib/schoolHoliday";
@@ -299,6 +300,8 @@ const Dashboard = () => {
           </Card>
         </motion.div>
       )}
+
+      <NoBendaharaBanner schoolId={profile?.school_id} />
 
       {/* Header */}
       <PageHeader
