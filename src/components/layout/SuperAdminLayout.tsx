@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Building2, Megaphone, Globe, Presentation, Clock, Gift, Crown, UsersRound, MessageCircle, Eye, Palette, ChevronRight, Handshake, CreditCard, Settings, Database, Package, Server, Banknote, Mail, Wand2, BookOpen, Link2, Activity, Radio } from "lucide-react";
+import { LayoutGrid, School, Wallet, Receipt, LogOut, Shield, CalendarCheck, Building2, Megaphone, Globe, Presentation, Clock, Gift, Crown, UsersRound, MessageCircle, Eye, Palette, ChevronRight, Handshake, CreditCard, Settings, Database, Package, Server, Banknote, Mail, Wand2, BookOpen, Link2, Activity, Radio, Split } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,6 +28,7 @@ const navItems = [
   // OPERASIONAL
   { title: "Keuangan", url: "/super-admin/keuangan", icon: Banknote, group: "ops" },
   { title: "Payment Gateway", url: "/super-admin/payment-gateway", icon: CreditCard, group: "ops" },
+  { title: "Split Settlement", url: "/super-admin/split-settlement", icon: Split, group: "ops" },
   { title: "Komunikasi", url: "/super-admin/komunikasi", icon: MessageCircle, group: "ops" },
   { title: "Email", url: "/super-admin/email-hub", icon: Mail, group: "ops" },
 

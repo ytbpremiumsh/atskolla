@@ -286,7 +286,14 @@ async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<
   if (!schoolId) return null;
   const { data } = await supabaseAdmin.from("schools").select("doku_settlement_bank_id").eq("id", schoolId).maybeSingle();
   const v = String(data?.doku_settlement_bank_id || "").trim();
-  return v || null;
+  if (v) return v;
+  // Fallback: ID DOKU yang tersimpan di rekening pencairan bendahara (default & aktif).
+  const { data: acc } = await supabaseAdmin.from("bendahara_bank_accounts")
+    .select("doku_bank_account_settlement_id")
+    .eq("school_id", schoolId).eq("is_active", true).not("doku_bank_account_settlement_id", "is", null)
+    .order("is_default", { ascending: false }).limit(1).maybeSingle();
+  const f = String(acc?.doku_bank_account_settlement_id || "").trim();
+  return f || null;
 }
 
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
