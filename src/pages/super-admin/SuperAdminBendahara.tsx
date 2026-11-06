@@ -184,7 +184,7 @@ export default function SuperAdminBendahara() {
       const counted = inPeriod(inv.paid_at);
       if (!inv.settlement_id && !(inv as any).doku_split && !isOfflinePayment(inv.payment_method)) {
         const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
-        cur.net += inv.net_amount ?? amt;
+        cur.net += (inv.net_amount || amt);
         cur.count += 1;
         availableNet[inv.school_id] = cur;
       }
@@ -193,8 +193,8 @@ export default function SuperAdminBendahara() {
       m.total_gross += amt; // Total diterima menampilkan gross apa adanya (termasuk offline)
       if (isOfflinePayment(inv.payment_method)) continue;
       const ps = payoutStatus(inv);
-      if (ps === "split_processing") m.split_processing += inv.net_amount ?? amt;
-      if (ps === "split_paid") m.split_paid += inv.net_amount ?? amt;
+      if (ps === "split_processing") m.split_processing += (inv.net_amount || amt);
+      if (ps === "split_paid") m.split_paid += (inv.net_amount || amt);
     }
     for (const [sid, v] of Object.entries(availableNet)) {
       const m = map[sid]; if (!m) continue;
@@ -748,7 +748,7 @@ export default function SuperAdminBendahara() {
                         <TableCell className="text-xs">{i.period_label}</TableCell>
                         <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, i.payment_channel)}</TableCell>
                         <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
-                        <TableCell className="text-right text-sm font-semibold tabular-nums">{fmtIDR(Number(i.net_amount ?? i.total_amount))}</TableCell>
+                        <TableCell className="text-right text-sm font-semibold tabular-nums">{fmtIDR(Number(i.net_amount || i.total_amount))}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

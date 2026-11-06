@@ -45,7 +45,7 @@ export function computeAvailableSaldo(
     count += 1;
     gross += inv.total_amount || 0;
     fee += inv.gateway_fee || 0;
-    net += inv.net_amount ?? (inv.total_amount || 0);
+    net += (inv.net_amount || inv.total_amount || 0);
   }
   const finalPayout = Math.max(0, net - (count > 0 ? withdrawFee : 0));
   return { count, gross, fee, net, finalPayout };
