@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
+import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ type Bank = {
   verification_status: string | null;
   rejection_reason: string | null;
 };
+type Reg = { id: string; bank_name: string; account_number: string; account_holder: string | null; settlement_id: string | null };
 type School = { id: string; name: string; doku_settlement_bank_id: string | null };
 
 const ID_PATTERN = /^[A-Z]{3}-[0-9]{3,5}-[0-9]{6,20}$/;
@@ -33,6 +34,35 @@ const SuperAdminSplitSettlement = () => {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [regs, setRegs] = useState<Reg[]>([]);
+  const [reg, setReg] = useState({ bank_name: "", account_number: "", account_holder: "", settlement_id: "" });
+
+  const loadRegs = async () => {
+    const { data } = await supabase.from("doku_registered_accounts").select("id,bank_name,account_number,account_holder,settlement_id").order("created_at", { ascending: false });
+    setRegs((data || []) as Reg[]);
+  };
+
+  const addReg = async () => {
+    if (!reg.bank_name.trim() || !reg.account_number.trim()) { toast.error("Nama bank dan nomor rekening wajib"); return; }
+    const sid = reg.settlement_id.trim().toUpperCase();
+    if (sid && !ID_PATTERN.test(sid)) { toast.error("Format Bank Settlement ID tidak valid"); return; }
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase.from("doku_registered_accounts").insert({
+      bank_name: reg.bank_name.trim(), account_number: reg.account_number.replace(/\D/g, ""),
+      account_holder: reg.account_holder.trim() || null, settlement_id: sid || null, created_by: u.user?.id ?? null,
+    });
+    if (error) { toast.error(error.message.includes("duplicate") ? "Nomor rekening sudah ada di daftar" : error.message); return; }
+    toast.success("Ditambahkan. Pengajuan sekolah yang cocok otomatis terverifikasi.");
+    setReg({ bank_name: "", account_number: "", account_holder: "", settlement_id: "" });
+    await Promise.all([loadRegs(), load()]);
+  };
+
+  const delReg = async (id: string) => {
+    if (!confirm("Hapus dari daftar rekening DOKU?")) return;
+    const { error } = await supabase.from("doku_registered_accounts").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    loadRegs();
+  };
 
   const load = async () => {
     setLoading(true);
@@ -56,7 +86,7 @@ const SuperAdminSplitSettlement = () => {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); loadRegs(); }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -146,12 +176,46 @@ const SuperAdminSplitSettlement = () => {
       <Card className="border-0 shadow-card">
         <CardContent className="p-5 space-y-3">
           <div className="flex items-center gap-2">
+            <Landmark className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold text-foreground">Rekening Terdaftar di DOKU</h2>
+            <Badge variant="secondary">{regs.length}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Masukkan rekening yang sudah Verified di dashboard DOKU. Jika bendahara mengajukan rekening dengan bank dan nomor yang sama, rekening otomatis terverifikasi dan Bank Settlement ID ikut terisi. Rekening yang tidak ada di daftar ini harus diverifikasi manual.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+            <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />
+            <Input placeholder="Nomor rekening" inputMode="numeric" value={reg.account_number} onChange={(e) => setReg({ ...reg, account_number: e.target.value })} />
+            <Input placeholder="Atas nama" value={reg.account_holder} onChange={(e) => setReg({ ...reg, account_holder: e.target.value })} />
+            <Input placeholder="BNK-xxxx-xxxx (opsional)" className="font-mono text-xs" value={reg.settlement_id} onChange={(e) => setReg({ ...reg, settlement_id: e.target.value })} />
+            <Button onClick={addReg}><Plus className="h-4 w-4 mr-1" /> Tambah</Button>
+          </div>
+          {regs.length > 0 && (
+            <div className="divide-y divide-border">
+              {regs.map((r) => (
+                <div key={r.id} className="py-2 flex items-center gap-3 text-xs">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium text-foreground">{r.bank_name}</span>{" "}
+                    <span className="font-mono">{r.account_number}</span> a.n. {r.account_holder || "-"}
+                    {r.settlement_id && <span className="font-mono text-muted-foreground"> · {r.settlement_id}</span>}
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-card">
+        <CardContent className="p-5 space-y-3">
+          <div className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
             <h2 className="font-semibold text-foreground">Pengajuan Rekening Menunggu Verifikasi</h2>
             <Badge variant={pendingBanks.length ? "default" : "secondary"}>{pendingBanks.length}</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
-            Setiap rekening baru dari bendahara masuk ke sini dan dikirim notifikasi (lonceng + WhatsApp admin). Rekening baru bisa dipakai untuk pencairan setelah Anda verifikasi.
+            Rekening baru yang tidak cocok dengan daftar DOKU masuk ke sini dan dikirim notifikasi (lonceng + WhatsApp admin). Rekening baru bisa dipakai untuk pencairan setelah Anda verifikasi.
           </p>
           {pendingBanks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-2">Tidak ada pengajuan baru.</p>

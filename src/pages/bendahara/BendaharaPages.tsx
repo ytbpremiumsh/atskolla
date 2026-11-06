@@ -4713,19 +4713,27 @@ export function BendaharaPencairan() {
     if (!newAccount.account_holder) { toast.error("Nama pemilik wajib"); return; }
     if (!newAccount.responsible_user_id) { toast.error("Pilih Penanggung Jawab"); return; }
     if (!profile?.school_id) return;
-    if (newAccount.is_default) {
-      await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", profile.school_id);
-    }
-    const { error } = await supabase.from("bendahara_bank_accounts" as any).insert({
-      school_id: profile.school_id, ...newAccount, created_by: user?.id,
-    });
+    // Rekening baru hanya langsung jadi utama jika sekolah belum punya rekening aktif.
+    const hasActive = savedAccounts.some((a: any) => a.is_active !== false);
+    const { data: inserted, error } = await supabase.from("bendahara_bank_accounts" as any).insert({
+      school_id: profile.school_id, ...newAccount, is_default: !hasActive, created_by: user?.id,
+    }).select("verification_status").maybeSingle();
     if (error) { toast.error(error.message); return; }
-    toast.success(isEw ? "E-Wallet disimpan" : "Rekening disimpan");
+    if ((inserted as any)?.verification_status === "verified") {
+      toast.success("Rekening cocok dengan data DOKU dan langsung terverifikasi");
+    } else {
+      toast.success("Rekening diajukan. Menunggu verifikasi admin ATSkolla.");
+    }
     setNewAccount({ bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
     loadAccounts();
   };
 
   const deleteAccount = async (id: string) => {
+    const target = savedAccounts.find((a: any) => a.id === id);
+    if (target?.is_default) {
+      toast.error("Rekening utama tidak bisa dihapus. Tambahkan rekening baru, tunggu terverifikasi, jadikan utama, baru hapus yang lama.");
+      return;
+    }
     if (!confirm("Nonaktifkan rekening ini? Riwayat pencairan yang sudah ada tetap tersimpan.")) return;
     const { error } = await supabase.from("bendahara_bank_accounts" as any)
       .update({ is_active: false, is_default: false, archived_at: new Date().toISOString() }).eq("id", id);
@@ -4737,8 +4745,14 @@ export function BendaharaPencairan() {
 
   const setDefault = async (id: string) => {
     if (!profile?.school_id) return;
-    await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", profile.school_id);
-    await supabase.from("bendahara_bank_accounts" as any).update({ is_default: true }).eq("id", id);
+    const target = savedAccounts.find((a: any) => a.id === id);
+    if (target?.verification_status !== "verified") {
+      toast.error("Rekening ini belum terverifikasi, belum bisa dijadikan rekening utama");
+      return;
+    }
+    await supabase.from("bendahara_bank_accounts" as any).update({ is_default: false }).eq("school_id", profile.school_id).neq("id", id);
+    const { error } = await supabase.from("bendahara_bank_accounts" as any).update({ is_default: true }).eq("id", id);
+    if (error) { toast.error(error.message); loadAccounts(); return; }
     toast.success("Rekening utama diperbarui");
     loadAccounts();
   };
@@ -4757,7 +4771,7 @@ export function BendaharaPencairan() {
         variant="primary"
         actions={
           <Button size="sm" onClick={() => setBankManageOpen(true)} className="gap-2 bg-white text-[#5B6CF9] hover:bg-white/90 border border-white/40 shadow-sm font-semibold">
-            <Landmark className="h-4 w-4" /> Kelola Rekening
+            <Landmark className="h-4 w-4" /> Ganti / Tambah Rekening
           </Button>
         }
       />
@@ -5064,7 +5078,7 @@ export function BendaharaPencairan() {
       <Dialog open={bankManageOpen} onOpenChange={setBankManageOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Kelola Rekening Bank Pencairan</DialogTitle>
+            <DialogTitle>Ganti / Tambah Rekening Pencairan</DialogTitle>
             <DialogDescription>Simpan rekening bank atau e-wallet sekolah beserta penanggung jawab OTP.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -5102,8 +5116,8 @@ export function BendaharaPencairan() {
                           <p className="text-[11px] text-muted-foreground">PJ: {pj?.full_name || <span className="text-amber-600">belum diatur</span>}</p>
                         </div>
                         <div className="flex gap-1 shrink-0">
-                          {!a.is_default && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)} className="h-7 text-xs">Utama</Button>}
-                          <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-7 text-destructive">Hapus</Button>
+                          {!a.is_default && a.verification_status === "verified" && <Button size="sm" variant="ghost" onClick={() => setDefault(a.id)} className="h-7 text-xs">Jadikan Utama</Button>}
+                          {!a.is_default && <Button size="sm" variant="ghost" onClick={() => deleteAccount(a.id)} className="h-7 text-destructive">Hapus</Button>}
                         </div>
                       </div>
                     );
@@ -5112,7 +5126,14 @@ export function BendaharaPencairan() {
               )}
             </div>
             <div className="border-t pt-4 space-y-3">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah Baru</Label>
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah / Ganti Rekening</Label>
+              <div className="text-xs rounded-lg border p-2 space-y-1 text-muted-foreground">
+                <p className="font-semibold text-foreground">Cara mengganti rekening:</p>
+                <p>1. Tambahkan rekening baru di bawah ini.</p>
+                <p>2. Tunggu status "Terverifikasi" (langsung otomatis jika rekening sudah terdaftar di DOKU).</p>
+                <p>3. Klik "Jadikan Utama" pada rekening baru.</p>
+                <p>4. Setelah itu rekening lama baru bisa dihapus. Rekening utama tidak bisa dihapus agar dana tidak salah tujuan.</p>
+              </div>
               <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 p-2">Pencairan hanya bisa ke rekening bank. E-Wallet tidak didukung.</p>
               <>
                   <div>
@@ -5147,11 +5168,7 @@ export function BendaharaPencairan() {
                 </Select>
                 <p className="text-[11px] text-muted-foreground mt-1">Setiap transaksi pencairan wajib diotorisasi via OTP WhatsApp ke penanggung jawab.</p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={newAccount.is_default} onChange={e => setNewAccount({ ...newAccount, is_default: e.target.checked })} />
-                Jadikan utama
-              </label>
-              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Simpan</Button>
+              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Ajukan Rekening</Button>
             </div>
           </div>
         </DialogContent>

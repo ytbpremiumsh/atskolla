@@ -749,6 +749,36 @@ export type Database = {
           },
         ]
       }
+      doku_registered_accounts: {
+        Row: {
+          account_holder: string | null
+          account_number: string
+          bank_name: string
+          created_at: string
+          created_by: string | null
+          id: string
+          settlement_id: string | null
+        }
+        Insert: {
+          account_holder?: string | null
+          account_number: string
+          bank_name: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          settlement_id?: string | null
+        }
+        Update: {
+          account_holder?: string | null
+          account_number?: string
+          bank_name?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          settlement_id?: string | null
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           created_at: string
