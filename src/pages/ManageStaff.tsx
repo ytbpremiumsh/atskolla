@@ -368,8 +368,14 @@ const ManageStaff = () => {
     }
     setSavingEdit(true);
     try {
+      const wantedRoles: string[] = [];
+      if (editRoles.staff) wantedRoles.push("staff");
+      if (editRoles.teacher) wantedRoles.push("teacher");
+      if (editRoles.bendahara) wantedRoles.push("bendahara");
+      if (editRoles.principal) wantedRoles.push("principal");
       const res = await supabase.functions.invoke("update-user", {
         body: {
+          roles: wantedRoles,
           user_id: selectedStaff.user_id,
           full_name: editName.trim(),
           ...(editEmail.trim() ? { email: editEmail.trim() } : {}),
@@ -379,25 +385,8 @@ const ManageStaff = () => {
           ...(editPassword.trim() ? { password: editPassword.trim() } : {}),
         },
       });
+      if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
-
-      const currentRoles = selectedStaff.roles;
-      const wantedRoles: string[] = [];
-      if (editRoles.staff) wantedRoles.push("staff");
-      if (editRoles.teacher) wantedRoles.push("teacher");
-      if (editRoles.bendahara) wantedRoles.push("bendahara");
-      if (editRoles.principal) wantedRoles.push("principal");
-
-      for (const role of wantedRoles) {
-        if (!currentRoles.includes(role)) {
-          await supabase.from("user_roles").insert({ user_id: selectedStaff.user_id, role: role as any });
-        }
-      }
-      for (const role of currentRoles) {
-        if (!wantedRoles.includes(role)) {
-          await supabase.from("user_roles").delete().eq("user_id", selectedStaff.user_id).eq("role", role as any);
-        }
-      }
 
       toast.success("Data berhasil diperbarui");
     } catch (err: any) {
