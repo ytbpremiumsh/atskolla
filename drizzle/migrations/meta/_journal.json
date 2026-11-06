@@ -71,6 +71,13 @@
       "when": 1793956917382,
       "tag": "0009_auto_create_class_from_student",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793957442584,
+      "tag": "0010_allow_system_touch_payment_activity",
+      "breakpoints": true
     }
   ]
 }
