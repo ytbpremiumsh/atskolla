@@ -139,10 +139,15 @@ serve(async (req) => {
     if (nip) profileUpdate.nip = nip;
     if (position) profileUpdate.position = position;
 
-    await supabaseAdmin
+    const { error: profErr } = await supabaseAdmin
       .from('profiles')
       .update(profileUpdate)
       .eq('user_id', userId);
+    if (profErr) {
+      // Jangan tinggalkan akun "yatim" tanpa sekolah — batalkan agar bisa didaftarkan ulang
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw new Error('Gagal menghubungkan akun ke sekolah: ' + profErr.message);
+    }
 
     // Handle referral attribution
     if (referral_code) {
