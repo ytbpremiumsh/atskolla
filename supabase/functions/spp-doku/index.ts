@@ -212,7 +212,7 @@ async function createDokuPayment(
   const splitBankId = String(inv._split_bank_id || "").trim();
   const splitBill = Math.round(Number(inv._split_bill) || 0);
   let split = false;
-  if (splitBankId && splitBill > 0 && splitBill < Math.round(totalCharged)) {
+  if (splitBankId && splitBill > 0 && splitBill <= Math.round(totalCharged)) {
     body.additional_info = {
       settlement: [{ bank_account_settlement_id: splitBankId, value: splitBill, type: "FIX" }],
     };
@@ -354,6 +354,7 @@ async function ensureFreshLink(
     const friendly = upper.includes("PAYMENT CHANNEL IS INACTIVE")
       ? `Channel ${String(channel || "").toUpperCase() || "pembayaran"} belum aktif di akun Doku merchant. Hubungi Super Admin untuk mengaktifkan channel ini di dashboard Doku, atau pilih metode lain.`
       : raw;
+    if (raw === SPLIT_NOT_READY) return { success: false, error: SPLIT_NOT_READY };
     return { success: false, error: `Gagal buat pembayaran Doku: ${friendly}` };
   }
   const { data: savedInvoice, error: invoiceError } = await supabaseAdmin.from("spp_invoices").update({
