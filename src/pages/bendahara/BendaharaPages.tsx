@@ -4783,7 +4783,7 @@ export function BendaharaPencairan() {
       </div>
 
 
-      {true && (
+      {(
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start justify-between gap-3 flex-wrap">
