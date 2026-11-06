@@ -4767,7 +4767,7 @@ export function BendaharaPencairan() {
       <PageHeader
         icon={ArrowDownToLine}
         title="Pencairan Dana"
-        subtitle="Ajukan pencairan saldo SPP dan pantau riwayat settlement"
+        subtitle="Dana SPP online otomatis ditransfer DOKU ke rekening sekolah"
         variant="primary"
         actions={
           <Button size="sm" onClick={() => setBankManageOpen(true)} className="gap-2 bg-white text-[#5B6CF9] hover:bg-white/90 border border-white/40 shadow-sm font-semibold">
@@ -4777,14 +4777,13 @@ export function BendaharaPencairan() {
       />
 
       {/* KPI ringkas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatCard label="Transaksi Siap Cair" value={String(available.count)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
-        <StatCard label="Total Bruto" value={fmtIDR(available.gross)} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
-        <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub={`setelah biaya pencairan ${fmtIDR(schoolSettings.withdraw_fee)} · min ${fmtIDR(schoolSettings.min_payout)}`} gradient="from-amber-500 to-orange-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <StatCard label="Transaksi Otomatis DOKU" value={String(splitPaid.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
+        <StatCard label="Total Dana Masuk Otomatis" value={fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
       </div>
 
 
-      {splitPaid.length > 0 && (
+      {true && (
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -4825,7 +4824,7 @@ export function BendaharaPencairan() {
             value="pencairan"
             className="gap-2 rounded-lg font-semibold text-[#3D4FE0] dark:text-indigo-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#5B6CF9] data-[state=active]:to-[#3D4FE0] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#5B6CF9]/30 transition-all duration-300"
           >
-            <ArrowDownToLine className="h-4 w-4" /> Ajukan Pencairan
+            <ArrowDownToLine className="h-4 w-4" /> Dana Masuk
           </TabsTrigger>
           <TabsTrigger
             value="riwayat"
@@ -4837,52 +4836,33 @@ export function BendaharaPencairan() {
 
         <TabsContent value="pencairan" className="space-y-4 mt-4">
           <Card className="border-0 shadow-sm">
-            <CardHeader><CardTitle className="text-base">Preview Pencairan</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                <div><p className="text-xs text-muted-foreground">Total Transaksi</p><p className="font-bold">{available.count}</p></div>
-                <div><p className="text-xs text-muted-foreground">Total Bruto</p><p className="font-bold">{fmtIDR(available.gross)}</p></div>
-                <div><p className="text-xs text-muted-foreground">Biaya Pencairan</p><p className="font-bold">- {fmtIDR(schoolSettings.withdraw_fee)}</p></div>
-                <div className="col-span-2 md:col-span-3 border-t pt-2">
-                  <p className="text-xs text-muted-foreground">Final Payout</p>
-                  <p className="text-xl font-extrabold text-emerald-600">{fmtIDR(finalPayout)}</p>
-                </div>
-              </div>
+            <CardContent className="p-4 space-y-3 text-sm">
+              <p className="font-semibold">Pencairan dana sekarang otomatis</p>
+              <p className="text-muted-foreground">
+                Setiap pembayaran SPP online langsung dibagi oleh DOKU: nominal SPP dikirim otomatis ke rekening utama sekolah sesuai jadwal pencairan DOKU. Bendahara tidak perlu mengajukan pencairan.
+              </p>
               {(() => {
                 const acc = savedAccounts.find((x: any) => x.is_default) || savedAccounts[0];
-                return acc ? (
-                  <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/30 p-3 flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <Landmark className="h-5 w-5 text-emerald-600 mt-0.5" />
-                      <div>
-                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{acc.account_type === "ewallet" ? "E-Wallet Tujuan" : "Rekening Tujuan"}</p>
-                        <p className="text-sm font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
-                        <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}{acc.responsible_user_id ? ` · PJ: ${staffList.find((s) => s.user_id === acc.responsible_user_id)?.full_name || "—"}` : ""}</p>
-                      </div>
+                if (!acc) return <p className="text-amber-600">Belum ada rekening. Tambahkan rekening agar pembayaran SPP online bisa digunakan.</p>;
+                return (
+                  <div className="rounded-lg border p-3 flex items-start gap-3">
+                    <Landmark className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rekening Tujuan</p>
+                      <p className="font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
+                      <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}</p>
+                      {acc.verification_status !== "verified" && (
+                        <p className="text-xs text-amber-600 mt-1">Rekening belum terverifikasi. Pembayaran SPP online belum bisa digunakan sampai diverifikasi admin ATSkolla.</p>
+                      )}
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setBankManageOpen(true)} className="text-xs">Ubah</Button>
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/30 p-3 flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-bold">Belum ada rekening tersimpan</p>
-                        <p className="text-xs text-muted-foreground">Simpan rekening sekolah dulu untuk mencairkan dana.</p>
-                      </div>
-                    </div>
-                    <Button size="sm" onClick={() => setBankManageOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">Tambah</Button>
                   </div>
                 );
               })()}
-              <Button
-                disabled={available.count === 0}
-                onClick={requestSubmit}
-                className="w-full md:w-auto group relative overflow-hidden bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700 text-white font-bold shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/50 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 px-6 py-5 rounded-xl"
-              >
-                <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700" />
-                <ArrowDownToLine className="h-4 w-4 mr-2 group-hover:animate-bounce" /> Ajukan Pencairan
-              </Button>
+              {available.count > 0 && (
+                <p className="text-xs rounded-md bg-muted/60 px-3 py-2 text-muted-foreground">
+                  Ada saldo lama sebelum sistem otomatis: {available.count} transaksi ({fmtIDR(available.gross)}). Saldo ini akan dicairkan oleh admin ATSkolla.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
