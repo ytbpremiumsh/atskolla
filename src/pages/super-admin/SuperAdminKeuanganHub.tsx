@@ -1,14 +1,12 @@
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Wallet, Split, Receipt } from "lucide-react";
-import SuperAdminPayments from "./SuperAdminPayments";
+import { Wallet, Split } from "lucide-react";
 import SuperAdminBendahara from "./SuperAdminBendahara";
 import SuperAdminSplitSettlement from "./SuperAdminSplitSettlement";
 
 const TABS = [
   { value: "bendahara", label: "Dana SPP Sekolah", icon: Wallet, desc: "Pantau dana SPP tiap sekolah: diproses, sudah ditransfer, dan saldo lama." },
   { value: "split", label: "Rekening & Split", icon: Split, desc: "Verifikasi rekening sekolah dan atur pembagian otomatis ke rekening sekolah." },
-  { value: "payments", label: "Konfirmasi Bayar", icon: Receipt, desc: "Konfirmasi pembayaran paket dan add-on dari sekolah." },
 ];
 
 export default function SuperAdminKeuanganHub() {
@@ -32,7 +30,6 @@ export default function SuperAdminKeuanganHub() {
       </div>
       <TabsContent value="bendahara" className="mt-0"><SuperAdminBendahara /></TabsContent>
       <TabsContent value="split" className="mt-0"><SuperAdminSplitSettlement /></TabsContent>
-      <TabsContent value="payments" className="mt-0"><SuperAdminPayments /></TabsContent>
     </Tabs>
   );
 }
