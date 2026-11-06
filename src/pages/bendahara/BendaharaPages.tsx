@@ -476,6 +476,7 @@ export function BendaharaDashboard() {
           due_date: inv.due_date,
           paid_at: inv.paid_at,
           payment_method: inv.payment_method,
+          payment_channel: inv.payment_channel,
           status: inv.status,
           created_at: inv.created_at,
         },
