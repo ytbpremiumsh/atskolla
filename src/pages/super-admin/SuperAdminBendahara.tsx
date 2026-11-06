@@ -395,8 +395,8 @@ export default function SuperAdminBendahara() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Total SPP Diterima", value: fmtIDR(kpi.totalGross), icon: Receipt, color: "from-indigo-500 to-violet-600" },
-          { label: "Diproses Split (DOKU)", value: fmtIDR(kpi.totalProcessing), icon: Clock, color: "from-amber-500 to-orange-600" },
-          { label: "Sudah Ditransfer ke Sekolah", value: fmtIDR(kpi.totalTransferred), icon: Banknote, color: "from-emerald-500 to-teal-600" },
+          { label: "Menunggu Transfer", value: fmtIDR(kpi.totalProcessing), icon: Clock, color: "from-amber-500 to-orange-600" },
+          { label: "Sudah Masuk Rekening Sekolah", value: fmtIDR(kpi.totalTransferred), icon: Banknote, color: "from-emerald-500 to-teal-600" },
           { label: "Saldo Lama (Semua Waktu)", value: fmtIDR(kpi.totalSaldo), icon: Wallet, color: "from-sky-500 to-cyan-600" },
         ].map((k, i) => (
           <motion.div key={k.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
