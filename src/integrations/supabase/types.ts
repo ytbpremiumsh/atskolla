@@ -2373,6 +2373,7 @@ export type Database = {
           bendahara_wa_enabled: boolean
           city: string | null
           created_at: string
+          doku_settlement_bank_id: string | null
           email: string | null
           group_id: string | null
           holiday_days: number[]
@@ -2405,6 +2406,7 @@ export type Database = {
           bendahara_wa_enabled?: boolean
           city?: string | null
           created_at?: string
+          doku_settlement_bank_id?: string | null
           email?: string | null
           group_id?: string | null
           holiday_days?: number[]
@@ -2437,6 +2439,7 @@ export type Database = {
           bendahara_wa_enabled?: boolean
           city?: string | null
           created_at?: string
+          doku_settlement_bank_id?: string | null
           email?: string | null
           group_id?: string | null
           holiday_days?: number[]
@@ -2631,6 +2634,7 @@ export type Database = {
           created_at: string
           denda: number
           description: string
+          doku_split: boolean
           due_date: string
           expired_at: string | null
           gateway_fee: number
@@ -2669,6 +2673,7 @@ export type Database = {
           created_at?: string
           denda?: number
           description: string
+          doku_split?: boolean
           due_date: string
           expired_at?: string | null
           gateway_fee?: number
@@ -2707,6 +2712,7 @@ export type Database = {
           created_at?: string
           denda?: number
           description?: string
+          doku_split?: boolean
           due_date?: string
           expired_at?: string | null
           gateway_fee?: number
