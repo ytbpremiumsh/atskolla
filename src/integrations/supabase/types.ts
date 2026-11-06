@@ -670,6 +670,82 @@ export type Database = {
           },
         ]
       }
+      doku_payment_attempts: {
+        Row: {
+          attempts: number
+          bill_amount: number
+          created_at: string
+          expected_amount: number
+          installment_id: string | null
+          invoice_id: string
+          last_error: string | null
+          next_check_at: string
+          order_number: string
+          request_id: number | null
+          requested_at: string | null
+          school_id: string
+          state: string
+          transaction_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          bill_amount: number
+          created_at?: string
+          expected_amount: number
+          installment_id?: string | null
+          invoice_id: string
+          last_error?: string | null
+          next_check_at?: string
+          order_number: string
+          request_id?: number | null
+          requested_at?: string | null
+          school_id: string
+          state?: string
+          transaction_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          bill_amount?: number
+          created_at?: string
+          expected_amount?: number
+          installment_id?: string | null
+          invoice_id?: string
+          last_error?: string | null
+          next_check_at?: string
+          order_number?: string
+          request_id?: number | null
+          requested_at?: string | null
+          school_id?: string
+          state?: string
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doku_payment_attempts_installment_id_fkey"
+            columns: ["installment_id"]
+            isOneToOne: false
+            referencedRelation: "spp_installments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doku_payment_attempts_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "spp_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doku_payment_attempts_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: true
+            referencedRelation: "payment_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           created_at: string
@@ -3556,6 +3632,11 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reconcile_doku_payments: { Args: { p_limit?: number }; Returns: Json }
+      register_doku_payment_attempt: {
+        Args: { p_transaction_id: string }
+        Returns: undefined
+      }
       resolve_shortlink: {
         Args: { _code: string }
         Returns: {
@@ -3566,6 +3647,10 @@ export type Database = {
       rfid_required_min_devices: {
         Args: { _school_id: string }
         Returns: number
+      }
+      settle_verified_doku_payment: {
+        Args: { p_order: string; p_payload: Json }
+        Returns: Json
       }
       slugify: { Args: { _input: string }; Returns: string }
     }
