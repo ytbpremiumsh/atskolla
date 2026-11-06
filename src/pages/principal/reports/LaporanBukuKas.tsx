@@ -48,7 +48,7 @@ export default function LaporanBukuKas() {
         .select("entry_date, direction, category, description, reference, amount, created_at")
         .eq("school_id", schoolId);
       let qInv = supabase.from("spp_invoices")
-        .select("invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method, status")
+        .select("invoice_number, student_name, class_name, period_label, total_amount, net_amount, paid_at, payment_method, payment_channel, status")
         .eq("school_id", schoolId).eq("status", "paid").not("paid_at", "is", null);
       let qStl = supabase.from("spp_settlements")
         .select("settlement_code, withdraw_fee, status, paid_at, approved_at, requested_at, bank_name, account_number")
@@ -89,7 +89,7 @@ export default function LaporanBukuKas() {
         amount: i.total_amount ?? i.net_amount ?? 0,
         description: `Pembayaran SPP - ${i.student_name} (Kelas ${i.class_name}) Periode ${i.period_label}`,
         reference: i.invoice_number || "-",
-        method: formatPaymentMethodLabel(i.payment_method) || "-",
+        method: formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel) || "-",
         status: "Lunas",
         source: "auto",
       }));

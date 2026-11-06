@@ -108,7 +108,7 @@ export default function SuperAdminBendahara() {
       const [sR, iR, stR, bR] = await Promise.all([
         supabase.from("schools").select("id,name,npsn,bendahara_wa_enabled,bendahara_offline_enabled,installment_enabled").order("name"),
         supabase.from("spp_invoices")
-          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,paid_at,settlement_id,doku_split,created_at")
+          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,payment_channel,paid_at,settlement_id,doku_split,created_at")
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("spp_settlements")
@@ -526,7 +526,7 @@ export default function SuperAdminBendahara() {
                       <TableCell className="text-xs">{i.class_name}</TableCell>
                       <TableCell className="text-xs">{i.period_label}</TableCell>
                       <TableCell className="text-right text-sm font-semibold">{fmtIDR(i.total_amount)}</TableCell>
-                      <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method)}</TableCell>
+                      <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel)}</TableCell>
                       <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
                       <TableCell className="text-center">
                         {i.settlement_id
