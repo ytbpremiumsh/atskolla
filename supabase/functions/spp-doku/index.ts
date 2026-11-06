@@ -479,7 +479,7 @@ serve(async (req) => {
       }).select("id").single();
       if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
       // Selalu sinkronkan tanda split dengan link terbaru (bisa true atau false).
-      await supabaseAdmin.from("spp_invoices").update({ doku_split: !!created.split }).eq("id", inv.id);
+      await supabaseAdmin.from("spp_invoices").update({ doku_split: !!created.split }).eq("id", inv.id).neq("status", "paid");
 
       const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: inv.school_id,
