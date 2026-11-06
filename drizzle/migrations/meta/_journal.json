@@ -43,6 +43,13 @@
       "when": 1793950583081,
       "tag": "0005_allow_split_clear",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793951147914,
+      "tag": "0006_doku_registry_and_primary_guard",
+      "breakpoints": true
     }
   ]
 }
