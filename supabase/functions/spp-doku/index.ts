@@ -219,20 +219,12 @@ async function createDokuPayment(
     split = true;
   }
 
-  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
-
-  // Jika DOKU menolak aturan split (mis. ID rekening salah), tetap buat link
-  // tanpa split agar wali murid bisa membayar; dana masuk ke rekening utama
-  // dan dicairkan manual seperti biasa.
-  // Semua pembayaran WAJIB split. Jika DOKU menolak aturan split, jangan buat
-  // link tanpa split (agar dana tidak masuk ke rekening admin).
+  // Semua pembayaran WAJIB split agar dana tidak masuk ke rekening admin.
   if (!split) {
-    return { ok: false, url: null, raw: { message: SPLIT_NOT_READY } } as any;
+    return { ok: false, url: null, split: false, raw: { message: SPLIT_NOT_READY } } as any;
   }
-  if (!res.ok) {
-    console.warn("[spp-doku] split settlement rejected", res.json);
-    return { ok: false, url: null, raw: { message: SPLIT_NOT_READY } } as any;
-  }
+
+  let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
 
   // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
   // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
@@ -245,6 +237,10 @@ async function createDokuPayment(
     console.warn("[spp-doku] channel inactive, retry without payment_method_types filter", { channel, methods });
     delete body.payment.payment_method_types;
     res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  }
+  if (!res.ok) {
+    // Jangan pernah buat ulang link tanpa split.
+    console.warn("[spp-doku] split payment rejected", res.json);
   }
 
   let url: string | null =
