@@ -5076,18 +5076,18 @@ export function BendaharaPencairan() {
 
       {/* Kelola Rekening */}
       <Dialog open={bankManageOpen} onOpenChange={setBankManageOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Ganti / Tambah Rekening Pencairan</DialogTitle>
-            <DialogDescription>Simpan rekening bank atau e-wallet sekolah beserta penanggung jawab OTP.</DialogDescription>
+            <DialogDescription>Simpan rekening bank sekolah beserta penanggung jawab OTP.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tersimpan</Label>
               {savedAccounts.length === 0 ? (
-                <p className="text-sm text-muted-foreground italic">Belum ada rekening / e-wallet</p>
+                <p className="text-sm text-muted-foreground italic">Belum ada rekening</p>
               ) : (
-                <div className="space-y-2.5 max-h-72 overflow-auto pr-1">
+                <div className="space-y-2.5 max-h-[60vh] overflow-auto pr-1">
                   {savedAccounts.map((a: any) => {
                     const pj = staffList.find((s) => s.user_id === a.responsible_user_id);
                     const st = a.verification_status;
@@ -5134,7 +5134,7 @@ export function BendaharaPencairan() {
                 </div>
               )}
             </div>
-            <div className="border-t pt-4 space-y-3">
+            <div className="border-t pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6 space-y-3">
               <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah / Ganti Rekening</Label>
               <div className="text-xs rounded-lg border p-2 space-y-1 text-muted-foreground">
                 <p className="font-semibold text-foreground">Cara mengganti rekening:</p>
