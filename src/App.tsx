@@ -51,6 +51,7 @@ const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const SuperAdminDashboard = lazy(() => import("./pages/super-admin/SuperAdminDashboard"));
 const SuperAdminPayments = lazy(() => import("./pages/super-admin/SuperAdminPayments"));
 const SuperAdminPaymentGateway = lazy(() => import("./pages/super-admin/SuperAdminPaymentGateway"));
+const SuperAdminSplitSettlement = lazy(() => import("./pages/super-admin/SuperAdminSplitSettlement"));
 const ExportHistory = lazy(() => import("./pages/ExportHistory"));
 const EditAttendance = lazy(() => import("./pages/EditAttendance"));
 const SupportTickets = lazy(() => import("./pages/SupportTickets"));
@@ -297,6 +298,7 @@ function AppRoutes() {
           <Route path="/super-admin/keuangan" element={<SuperAdminKeuanganHub />} />
           <Route path="/super-admin/payments" element={<Navigate to="/super-admin/keuangan?tab=payments" replace />} />
           <Route path="/super-admin/payment-gateway" element={<SuperAdminPaymentGateway />} />
+          <Route path="/super-admin/split-settlement" element={<SuperAdminSplitSettlement />} />
           <Route path="/super-admin/bendahara" element={<Navigate to="/super-admin/keuangan?tab=bendahara" replace />} />
 
           {/* OPERASIONAL — Komunikasi */}

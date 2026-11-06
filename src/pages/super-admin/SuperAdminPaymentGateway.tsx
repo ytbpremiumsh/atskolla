@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { CreditCard, KeyRound, Loader2, Save, ShieldCheck, Webhook, Copy, Check, Eye, EyeOff, Zap, RefreshCw, QrCode, Store, Banknote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import DokuSplitSettlementCard from "@/components/super-admin/DokuSplitSettlementCard";
 
 type GatewayId = "mayar" | "doku" | "ipaymu";
 
@@ -593,8 +592,6 @@ const SuperAdminPaymentGateway = () => {
           </div>
         </CardContent>
       </Card>
-
-      <DokuSplitSettlementCard />
 
       {/* Mayar Key dialog */}
       <Dialog open={showMayarDialog} onOpenChange={setShowMayarDialog}>
