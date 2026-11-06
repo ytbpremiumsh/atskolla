@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { groupSplitByDay } from "@/lib/splitSettlement";
+import { groupSplitByDay, payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -4380,102 +4380,92 @@ export function BendaharaSaldo() {
 
   const totals = items.reduce((acc, i) => ({
     gross: acc.gross + (i.total_amount || 0),
-    net: acc.net + (i.net_amount || i.total_amount || 0),
-  }), { gross: 0, net: 0 });
-
+  }), { gross: 0 });
   const txCount = items.length;
 
-  // Saldo aktif harus sama dengan halaman Pencairan:
-  // hanya transaksi online yang sudah lunas dan belum terikat settlement.
-  const activeItems = items.filter((i) => !i.settlement_id);
-  const activeTotals = activeItems.reduce((acc, i) => ({
-    gross: acc.gross + (i.total_amount || 0),
-    net: acc.net + (i.net_amount || i.total_amount || 0),
-  }), { gross: 0, net: 0 });
+  // Konsep Split Settlement: semua dana online otomatis ditransfer sistem ke rekening sekolah.
+  const withStatus = items.map((i) => ({ ...i, _ps: payoutStatus(i) }));
+  const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + Number(i.net_amount ?? i.total_amount ?? 0), 0);
+  const countBy = (k: string) => withStatus.filter((i) => i._ps === k).length;
+  const processing = { total: sumBy("split_processing"), count: countBy("split_processing") };
+  const transferred = {
+    total: sumBy("split_paid") + sumDisbursed(settlements),
+    count: countBy("split_paid") + countBy("manual_paid"),
+  };
+  const legacy = { total: sumBy("legacy"), count: countBy("legacy") };
 
-  // Saldo — sumber kebenaran tunggal: helper shared (dipakai juga di Super Admin & Pencairan)
-  const available = computeAvailableSaldo(items, DEFAULT_WITHDRAW_FEE);
-  // "Sudah Dicairkan" = jumlah final_payout dari settlement berstatus paid
-  const settledPayout = sumDisbursed(settlements);
-  const settledCount = settlements.filter((s) => s.status === "paid").length;
-  // Menunggu Pencairan = final_payout dari settlement pending/requested/approved/processing
-  const pendingPayout = sumPendingPayout(settlements);
-  const pendingCount = countPendingPayout(settlements);
-  const settledFeePencairan = settlements.filter((s) => s.status === "paid").reduce((s, x) => s + (x.withdraw_fee || 0), 0);
-
-  // Banner info: dismiss selama 7 hari via localStorage
-  const [showSaldoInfo, setShowSaldoInfo] = useState(() => {
-    try {
-      const ts = Number(localStorage.getItem("saldo_info_dismissed_at") || 0);
-      if (!ts) return true;
-      const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
-      return Date.now() - ts > SEVEN_DAYS;
-    } catch { return true; }
-  });
-  const dismissSaldoInfo = () => {
-    try { localStorage.setItem("saldo_info_dismissed_at", String(Date.now())); } catch {}
-    setShowSaldoInfo(false);
+  const statusBadge = (k: PayoutStatus) => {
+    const cls: Record<PayoutStatus, string> = {
+      split_paid: "bg-emerald-500 hover:bg-emerald-500",
+      manual_paid: "bg-emerald-500 hover:bg-emerald-500",
+      split_processing: "bg-amber-500 hover:bg-amber-500",
+      legacy: "bg-sky-500 hover:bg-sky-500",
+      offline: "bg-slate-500 hover:bg-slate-500",
+    };
+    return <Badge className={`${cls[k]} text-[10px] whitespace-nowrap`}>{PAYOUT_LABEL[k]}</Badge>;
   };
 
   return (
     <div className="space-y-4">
-
-      {/* Saldo Aktif - Highlight Card */}
       <Card className="border-0 shadow-md bg-gradient-to-br from-[#5B6CF9] via-[#4c5ded] to-[#3D4FE0] text-white overflow-hidden relative">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-16 translate-x-16" />
         <CardContent className="p-5 relative">
           <div className="flex items-center gap-2 mb-1">
             <Wallet className="h-4 w-4" />
-            <p className="text-xs font-medium opacity-90">Saldo Aktif (Siap Dicairkan)</p>
+            <p className="text-xs font-medium opacity-90">Sedang Diproses Sistem</p>
             <span className="ml-auto inline-flex items-center gap-1 text-[10px] bg-white/20 px-2 py-0.5 rounded-full">
               <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" /> LIVE
             </span>
           </div>
-          <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(available.net)}</p>
-          <p className="text-[11px] opacity-80 mt-1">{available.count} transaksi online siap dicairkan</p>
+          <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(processing.total)}</p>
+          <p className="text-[11px] opacity-80 mt-1">{processing.count} transaksi akan ditransfer otomatis ke rekening sekolah pada hari kerja berikutnya</p>
         </CardContent>
       </Card>
 
-
-      {/* Ringkasan Saldo */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatCard label="Total Bruto SPP" value={fmtIDR(totals.gross)} sub={`${txCount} transaksi`} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
-        <StatCard label="Sudah Dicairkan" value={fmtIDR(settledPayout)} sub={`${settledCount} pencairan`} icon={ArrowDownToLine} gradient="from-violet-500 to-purple-600" />
-        <StatCard label="Pending Pencairan" value={fmtIDR(pendingPayout)} sub={`${pendingCount} pengajuan`} icon={Loader2} gradient="from-amber-500 to-orange-600" />
+        <StatCard label="Total SPP Online Lunas" value={fmtIDR(totals.gross)} sub={`${txCount} transaksi`} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
+        <StatCard label="Sudah Ditransfer ke Sekolah" value={fmtIDR(transferred.total)} sub={`${transferred.count} transaksi`} icon={ArrowDownToLine} gradient="from-emerald-500 to-teal-600" />
+        <StatCard label="Saldo Lama" value={fmtIDR(legacy.total)} sub={legacy.count ? `${legacy.count} transaksi, dicairkan oleh ATSkolla` : "Tidak ada"} icon={Wallet} gradient="from-sky-500 to-cyan-600" />
       </div>
 
-      {/* Tabel Riwayat */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Riwayat Transaksi Lunas</CardTitle>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
+            <span><b className="text-amber-600">Diproses Sistem</b> — dibayar hari ini, ditransfer hari kerja berikutnya</span>
+            <span><b className="text-emerald-600">Sudah Ditransfer</b> — dana sudah dikirim ke rekening sekolah</span>
+            <span><b className="text-sky-600">Saldo Lama</b> — pembayaran sebelum pencairan otomatis, dicairkan oleh ATSkolla</span>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {loading ? <div className="p-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></div> : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="whitespace-nowrap">Tanggal</TableHead>
-                  <TableHead className="whitespace-nowrap">Deskripsi</TableHead>
-                  <TableHead className="text-right whitespace-nowrap">Nominal</TableHead>
-                  <TableHead className="whitespace-nowrap">Status Cair</TableHead>
+                <TableRow className="[&_th]:whitespace-nowrap">
+                  <TableHead>Waktu Bayar</TableHead>
+                  <TableHead>Siswa</TableHead>
+                  <TableHead>Deskripsi</TableHead>
+                  <TableHead>Metode</TableHead>
+                  <TableHead className="text-right">Masuk ke Sekolah</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.length === 0 && <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Belum ada transaksi paid</TableCell></TableRow>}
-                {items.map(i => (
-                  <TableRow key={i.id}>
-                    <TableCell className="text-xs whitespace-nowrap">{i.paid_at ? new Date(i.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{i.description}</TableCell>
-                    <TableCell className="text-sm text-right font-semibold text-emerald-600 whitespace-nowrap">{fmtIDR(i.total_amount)}</TableCell>
-                    <TableCell>
-                      {i.settlement_id
-                        ? <Badge className="bg-emerald-500 text-[10px] whitespace-nowrap">DICAIRKAN</Badge>
-                        : <Badge className="bg-amber-500 text-[10px] whitespace-nowrap">SALDO AKTIF</Badge>}
-                    </TableCell>
+                {withStatus.length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Belum ada transaksi lunas</TableCell></TableRow>}
+                {withStatus.map(i => (
+                  <TableRow key={i.id} className="[&_td]:whitespace-nowrap">
+                    <TableCell className="text-xs">{i.paid_at ? new Date(i.paid_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(/\./g, ":") + " WIB" : "-"}</TableCell>
+                    <TableCell className="text-xs font-medium">{i.student_name || "-"}<span className="block text-[10px] text-muted-foreground">{i.class_name}</span></TableCell>
+                    <TableCell className="text-xs">{i.description || i.period_label}</TableCell>
+                    <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, i.payment_channel)}</TableCell>
+                    <TableCell className="text-sm text-right font-semibold text-emerald-600">{fmtIDR(Number(i.net_amount ?? i.total_amount ?? 0))}</TableCell>
+                    <TableCell>{statusBadge(i._ps)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
