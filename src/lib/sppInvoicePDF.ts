@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 
 const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
 const fmtDate = (d?: string | null) =>
@@ -24,6 +25,7 @@ export interface SppInvoicePDFData {
     due_date?: string | null;
     paid_at?: string | null;
     payment_method?: string | null;
+    payment_channel?: string | null;
     status: string;
     created_at?: string;
   };
@@ -207,14 +209,13 @@ export async function generateSppInvoicePDF(data: SppInvoicePDFData): Promise<js
     y += 6;
     const rawMethod = (data.invoice.payment_method || "").toLowerCase();
     const isOffline = rawMethod === "offline_cash" || rawMethod === "offline_transfer";
+    const ch = data.invoice.payment_channel;
     const methodLabel =
       rawMethod === "offline_cash" ? "Tunai (Pembayaran Langsung di Sekolah)"
       : rawMethod === "offline_transfer" ? "Transfer Manual ke Rekening Sekolah"
-      : rawMethod.includes("transfer") || rawMethod.includes("bank") ? "Transfer Bank"
+      : ch ? formatPaymentMethodLabel(rawMethod, ch)
       : rawMethod.includes("qris") ? "QRIS"
-      : rawMethod.includes("ewallet") || rawMethod.includes("wallet") ? "E-Wallet"
-      : rawMethod === "spp" || rawMethod === "" || rawMethod === "mayar" ? "QRIS / Transfer Bank"
-      : data.invoice.payment_method!.toUpperCase();
+      : "QRIS / Transfer / Retail";
 
     const boxHeight = isOffline ? 24 : 18;
     doc.setDrawColor(16, 185, 129);
