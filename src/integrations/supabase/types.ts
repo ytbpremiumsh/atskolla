@@ -293,6 +293,7 @@ export type Database = {
           is_active: boolean
           is_default: boolean
           notes: string | null
+          rejection_reason: string | null
           responsible_user_id: string | null
           school_id: string
           updated_at: string
@@ -316,6 +317,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
+          rejection_reason?: string | null
           responsible_user_id?: string | null
           school_id: string
           updated_at?: string
@@ -339,6 +341,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
+          rejection_reason?: string | null
           responsible_user_id?: string | null
           school_id?: string
           updated_at?: string
