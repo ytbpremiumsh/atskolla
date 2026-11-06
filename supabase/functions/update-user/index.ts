@@ -26,7 +26,7 @@ serve(async (req) => {
       throw new Error('Insufficient permissions');
     }
 
-    const { user_id, full_name, email, password, phone, nip, position } = await req.json();
+    const { user_id, full_name, email, password, phone, nip, position, roles: roles_wanted } = await req.json();
     if (!user_id) throw new Error('user_id is required');
 
     // Cross-tenant guard: school_admin only allowed to update users within own school
@@ -67,6 +67,25 @@ serve(async (req) => {
       if (updateError) {
         console.error('Auth update error:', JSON.stringify(updateError));
         throw new Error(updateError.message || 'Gagal update auth user');
+      }
+    }
+
+    // Sinkronisasi peran (role) — dilakukan di server agar tidak gagal diam-diam
+    if (Array.isArray(roles_wanted)) {
+      const ALLOWED = ['staff', 'teacher', 'bendahara', 'principal'];
+      const wanted = roles_wanted.filter((r: string) => ALLOWED.includes(r));
+      if (wanted.length === 0) throw new Error('Minimal pilih satu role');
+      const { data: cur } = await supabaseAdmin.from('user_roles').select('role').eq('user_id', user_id);
+      const current = (cur || []).map((r: any) => r.role as string);
+      const toAdd = wanted.filter((r: string) => !current.includes(r));
+      const toRemove = current.filter((r) => ALLOWED.includes(r) && !wanted.includes(r));
+      if (toAdd.length) {
+        const { error } = await supabaseAdmin.from('user_roles').insert(toAdd.map((role: string) => ({ user_id, role })));
+        if (error) throw new Error('Gagal menambah role: ' + error.message);
+      }
+      if (toRemove.length) {
+        const { error } = await supabaseAdmin.from('user_roles').delete().eq('user_id', user_id).in('role', toRemove);
+        if (error) throw new Error('Gagal menghapus role: ' + error.message);
       }
     }
 
