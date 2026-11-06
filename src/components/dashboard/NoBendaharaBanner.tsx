@@ -39,7 +39,7 @@ export function NoBendaharaBanner({ schoolId }: { schoolId?: string | null }) {
             </p>
           </div>
         </div>
-        <Button size="sm" onClick={() => navigate("/bendahara-manage")} className="shrink-0 rounded-lg">
+        <Button size="sm" onClick={() => navigate("/staff")} className="shrink-0 rounded-lg">
           Tambah Bendahara <ChevronRight className="h-4 w-4 ml-1" />
         </Button>
       </CardContent>
