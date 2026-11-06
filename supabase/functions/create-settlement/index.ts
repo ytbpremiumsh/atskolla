@@ -58,6 +58,11 @@ serve(async (req) => {
       .eq("id", bank_account_id).maybeSingle();
     if (!acc || acc.school_id !== school_id) return json({ error: "Rekening tidak ditemukan" });
     if (acc.is_active === false) return json({ error: "Rekening sudah dinonaktifkan" });
+    if (acc.verification_status !== "verified") {
+      return json({ error: acc.verification_status === "rejected"
+        ? "Rekening ditolak oleh admin ATSkolla. Silakan perbaiki data rekening."
+        : "Rekening masih menunggu verifikasi admin ATSkolla. Pencairan belum bisa dilakukan." });
+    }
     if (!acc.responsible_user_id) return json({ error: "Penanggung jawab rekening belum diatur" });
 
     // 3) Verify OTP against the responsible user (bound to rekening's PJ, not client input)
