@@ -394,7 +394,7 @@ export default function SuperAdminBendahara() {
         />
       </div>
 
-      <Tabs defaultValue="balances" className="w-full">
+      <Tabs defaultValue="invoices" className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full md:w-auto rounded-xl">
           <TabsTrigger value="invoices" className="gap-2 text-xs"><Receipt className="h-3.5 w-3.5" /> Riwayat SPP</TabsTrigger>
           <TabsTrigger value="balances" className="gap-2 text-xs"><Wallet className="h-3.5 w-3.5" /> Saldo Sekolah</TabsTrigger>
