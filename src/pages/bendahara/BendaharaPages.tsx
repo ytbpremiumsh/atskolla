@@ -4442,6 +4442,8 @@ export function BendaharaPencairan() {
   const [available, setAvailable] = useState({ count: 0, gross: 0, fee: 0, net: 0, finalPayout: 0 });
   const [availableItems, setAvailableItems] = useState<any[]>([]);
   const [breakdown, setBreakdown] = useState({ onlineTotal: 0, onlineSettled: 0, offlineCount: 0, offlineGross: 0 });
+  const [splitPaid, setSplitPaid] = useState<any[]>([]);
+  const [splitOpen, setSplitOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [bankManageOpen, setBankManageOpen] = useState(false);
@@ -4586,6 +4588,8 @@ export function BendaharaPencairan() {
         offlineCount: offline.length,
         offlineGross: offline.reduce((s, x) => s + (x.total_amount || 0), 0),
       });
+      setSplitPaid(online.filter((x) => x.doku_split && !x.settlement_id)
+        .sort((a, b) => String(b.paid_at || "").localeCompare(String(a.paid_at || ""))));
       setHistory(reconciledHistory);
       setLoadingHistory(false);
     };
@@ -4765,6 +4769,41 @@ export function BendaharaPencairan() {
         <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub={`setelah biaya pencairan ${fmtIDR(schoolSettings.withdraw_fee)} · min ${fmtIDR(schoolSettings.min_payout)}`} gradient="from-amber-500 to-orange-600" />
       </div>
 
+
+      {splitPaid.length > 0 && (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div>
+                <p className="text-sm font-semibold">Ditransfer Otomatis oleh DOKU</p>
+                <p className="text-xs text-muted-foreground">
+                  Pembayaran ini sudah langsung dikirim DOKU ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-extrabold text-emerald-600">{fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))}</p>
+                <p className="text-xs text-muted-foreground">{splitPaid.length} transaksi</p>
+              </div>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setSplitOpen((v) => !v)}>
+              {splitOpen ? "Sembunyikan rincian" : "Lihat rincian"}
+            </Button>
+            {splitOpen && (
+              <div className="max-h-64 overflow-auto divide-y divide-border rounded-lg border">
+                {splitPaid.map((x) => (
+                  <div key={x.id} className="p-2 flex justify-between gap-2 text-xs">
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{x.student_name || "-"} · {x.class_name || "-"}</p>
+                      <p className="text-muted-foreground truncate">{x.period_label || x.invoice_number} · {x.paid_at ? new Date(x.paid_at).toLocaleDateString("id-ID") : "-"}</p>
+                    </div>
+                    <p className="font-bold shrink-0">{fmtIDR(x.total_amount || 0)}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="pencairan" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">

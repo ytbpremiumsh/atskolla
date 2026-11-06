@@ -29,6 +29,20 @@
       "when": 1793950280852,
       "tag": "0003_bank_only_payout_accounts",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793950559413,
+      "tag": "0004_split_reset_on_bank_change",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793950583081,
+      "tag": "0005_allow_split_clear",
+      "breakpoints": true
     }
   ]
 }

@@ -284,16 +284,18 @@ async function createDokuPayment(
 
 async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<string | null> {
   if (!schoolId) return null;
+  // Split hanya untuk rekening bank yang AKTIF dan sudah DIVERIFIKASI Super Admin.
+  const { data: accs } = await supabaseAdmin.from("bendahara_bank_accounts")
+    .select("doku_bank_account_settlement_id, is_default")
+    .eq("school_id", schoolId).eq("is_active", true).eq("verification_status", "verified")
+    .not("doku_bank_account_settlement_id", "is", null)
+    .order("is_default", { ascending: false });
+  const ids = (accs || []).map((a: any) => String(a.doku_bank_account_settlement_id || "").trim()).filter(Boolean);
+  if (!ids.length) return null;
   const { data } = await supabaseAdmin.from("schools").select("doku_settlement_bank_id").eq("id", schoolId).maybeSingle();
   const v = String(data?.doku_settlement_bank_id || "").trim();
-  if (v) return v;
-  // Fallback: ID DOKU yang tersimpan di rekening pencairan bendahara (default & aktif).
-  const { data: acc } = await supabaseAdmin.from("bendahara_bank_accounts")
-    .select("doku_bank_account_settlement_id")
-    .eq("school_id", schoolId).eq("is_active", true).not("doku_bank_account_settlement_id", "is", null)
-    .order("is_default", { ascending: false }).limit(1).maybeSingle();
-  const f = String(acc?.doku_bank_account_settlement_id || "").trim();
-  return f || null;
+  if (v) return ids.includes(v) ? v : null; // ID sekolah harus cocok dengan rekening terverifikasi
+  return ids[0];
 }
 
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
@@ -476,9 +478,8 @@ serve(async (req) => {
         notes: `Cicilan online oleh wali murid — ${channel || "va"}`,
       }).select("id").single();
       if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
-      if (created.split) {
-        await supabaseAdmin.from("spp_invoices").update({ doku_split: true }).eq("id", inv.id);
-      }
+      // Selalu sinkronkan tanda split dengan link terbaru (bisa true atau false).
+      await supabaseAdmin.from("spp_invoices").update({ doku_split: !!created.split }).eq("id", inv.id).neq("status", "paid");
 
       const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: inv.school_id,
