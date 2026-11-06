@@ -5139,11 +5139,10 @@ export function BendaharaPencairan() {
               <div className="text-xs rounded-lg border p-2 space-y-1 text-muted-foreground">
                 <p className="font-semibold text-foreground">Cara mengganti rekening:</p>
                 <p>1. Tambahkan rekening baru di bawah ini.</p>
-                <p>2. Tunggu status "Terverifikasi" (langsung otomatis jika rekening sudah terdaftar di DOKU).</p>
+                <p>2. Tunggu status "Terverifikasi".</p>
                 <p>3. Klik "Jadikan Utama" pada rekening baru.</p>
                 <p>4. Setelah itu rekening lama baru bisa dihapus. Rekening utama tidak bisa dihapus agar dana tidak salah tujuan.</p>
               </div>
-              <p className="text-xs text-muted-foreground rounded-lg bg-muted/50 p-2">Pencairan hanya bisa ke rekening bank. E-Wallet tidak didukung.</p>
               <>
                   <div>
                     <Label>Nama Bank</Label>
