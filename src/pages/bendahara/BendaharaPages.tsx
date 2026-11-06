@@ -481,7 +481,7 @@ export function BendaharaDashboard() {
       const v = (m || "").toString().toLowerCase();
       return v === "offline_cash" || v === "offline_transfer";
     };
-    const readyToSettle = paid.filter((i: any) => !i.settlement_id && !isOffline(i.payment_method));
+    const readyToSettle = paid.filter((i: any) => !i.settlement_id && !i.doku_split && !isOffline(i.payment_method));
     // Saldo siap cair = BRUTO (sinkron dengan halaman Pencairan yang sudah tidak memotong gateway fee)
     const availableBalance = readyToSettle.reduce((s, i: any) => s + (i.total_amount || 0), 0);
     return {
@@ -557,7 +557,7 @@ export function BendaharaDashboard() {
     const cashOut = cashBook.filter((c: any) => c.direction === "out").reduce((s: number, c: any) => s + (c.amount || 0), 0);
     // Saldo kas total = kas manual (in - out) + saldo online siap dicairkan
     const readyOnline = invoices
-      .filter((i: any) => i.status === "paid" && !i.settlement_id)
+      .filter((i: any) => i.status === "paid" && !i.settlement_id && !i.doku_split)
       .filter((i: any) => {
         const v = (i.payment_method || "").toString().toLowerCase();
         return v !== "offline_cash" && v !== "offline_transfer";
@@ -4534,7 +4534,7 @@ export function BendaharaPencairan() {
       // Satu query saja: ambil semua paid online sekaligus, lalu bagi di client.
       const [paidRes, hRes, sRes] = await Promise.all([
         supabase.from("spp_invoices")
-          .select("id, status, payment_method, settlement_id, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
+          .select("id, status, payment_method, settlement_id, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
           .eq("school_id", profile.school_id)
           .eq("status", "paid"),
         supabase.from("spp_settlements").select("*").eq("school_id", profile.school_id).order("created_at", { ascending: false }),
@@ -4545,7 +4545,7 @@ export function BendaharaPencairan() {
       const allPaid = (paidRes.data || []) as any[];
       const online = allPaid.filter((x) => !isOfflinePayment(x.payment_method));
       const offline = allPaid.filter((x) => isOfflinePayment(x.payment_method));
-      const availableList = online.filter((x) => !x.settlement_id);
+      const availableList = online.filter((x) => !x.settlement_id && !x.doku_split);
 
       const fee = Number((sRes.data as any)?.withdraw_fee_default ?? DEFAULT_WITHDRAW_FEE);
       const minP = Number((sRes.data as any)?.min_payout ?? 10000);

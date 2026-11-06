@@ -96,7 +96,7 @@ export default function SuperAdminBendahara() {
       const [sR, iR, stR, bR] = await Promise.all([
         supabase.from("schools").select("id,name,npsn,bendahara_wa_enabled,bendahara_offline_enabled,installment_enabled").order("name"),
         supabase.from("spp_invoices")
-          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,paid_at,settlement_id,created_at")
+          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,paid_at,settlement_id,doku_split,created_at")
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("spp_settlements")
@@ -161,7 +161,7 @@ export default function SuperAdminBendahara() {
       m.total_paid_invoices += 1;
       m.total_gross += amt; // Total diterima menampilkan gross apa adanya (termasuk offline)
       if (isOfflinePayment(inv.payment_method)) continue;
-      if (!inv.settlement_id) {
+      if (!inv.settlement_id && !(inv as any).doku_split) {
         const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
         cur.net += inv.net_amount ?? amt;
         cur.count += 1;

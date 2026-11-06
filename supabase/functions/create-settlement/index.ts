@@ -84,7 +84,8 @@ serve(async (req) => {
     // 5) Recompute available totals from invoices (server-authoritative)
     const { data: invs } = await admin.from("spp_invoices")
       .select("id, status, payment_method, settlement_id, total_amount, gateway_fee, net_amount")
-      .eq("school_id", school_id).eq("status", "paid").is("settlement_id", null);
+      .eq("school_id", school_id).eq("status", "paid").is("settlement_id", null)
+      .eq("doku_split", false); // sudah otomatis ditransfer DOKU ke rekening sekolah
 
     const eligible = (invs || []).filter((x: any) => !OFFLINE.has((x.payment_method || "").toLowerCase()));
     if (eligible.length === 0) return json({ error: "Tidak ada saldo yang bisa dicairkan" });
