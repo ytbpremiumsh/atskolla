@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -16,6 +16,8 @@ type Bank = {
   is_default: boolean | null;
   is_active: boolean | null;
   doku_bank_account_settlement_id: string | null;
+  verification_status: string | null;
+  rejection_reason: string | null;
 };
 type School = { id: string; name: string; doku_settlement_bank_id: string | null };
 
@@ -38,7 +40,7 @@ const SuperAdminSplitSettlement = () => {
       supabase.from("schools").select("id,name,doku_settlement_bank_id").order("name"),
       supabase
         .from("bendahara_bank_accounts")
-        .select("id,school_id,bank_name,account_number,account_holder,is_default,is_active,doku_bank_account_settlement_id"),
+        .select("id,school_id,bank_name,account_number,account_holder,is_default,is_active,doku_bank_account_settlement_id,verification_status,rejection_reason"),
     ]);
     if (sRes.error) toast.error("Gagal memuat sekolah: " + sRes.error.message);
     const list = (sRes.data || []) as School[];
@@ -62,6 +64,28 @@ const SuperAdminSplitSettlement = () => {
     // Sekolah yang sudah punya rekening bendahara tampil lebih dulu.
     return [...base].sort((a, b) => Number(!!banks[b.id]?.length) - Number(!!banks[a.id]?.length));
   }, [schools, banks, q]);
+
+  const pendingBanks = Object.values(banks).flat().filter((b) => b.is_active !== false && b.verification_status === "pending");
+
+  const setVerification = async (b: Bank, status: "verified" | "rejected") => {
+    let reason: string | null = null;
+    if (status === "rejected") {
+      reason = window.prompt("Alasan penolakan rekening:", "Data rekening tidak sesuai");
+      if (reason === null) return;
+    }
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase.from("bendahara_bank_accounts").update({
+      verification_status: status,
+      verified_at: status === "verified" ? new Date().toISOString() : null,
+      verified_by: u.user?.id ?? null,
+      rejection_reason: reason,
+    }).eq("id", b.id);
+    if (error) { toast.error("Gagal: " + error.message); return; }
+    toast.success(status === "verified" ? "Rekening terverifikasi, bendahara sudah bisa mencairkan" : "Rekening ditolak");
+    await load();
+  };
+
+  const schoolName = (id: string) => schools.find((s) => s.id === id)?.name || "-";
 
   const activeCount = schools.filter((s) => !!s.doku_settlement_bank_id).length;
   const withBankCount = schools.filter((s) => !!banks[s.id]?.length).length;
@@ -112,6 +136,40 @@ const SuperAdminSplitSettlement = () => {
       </div>
 
       <Card className="border-0 shadow-card">
+        <CardContent className="p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h2 className="font-semibold text-foreground">Pengajuan Rekening Menunggu Verifikasi</h2>
+            <Badge variant={pendingBanks.length ? "default" : "secondary"}>{pendingBanks.length}</Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Setiap rekening baru dari bendahara masuk ke sini dan dikirim notifikasi (lonceng + WhatsApp admin). Rekening baru bisa dipakai untuk pencairan setelah Anda verifikasi.
+          </p>
+          {pendingBanks.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-2">Tidak ada pengajuan baru.</p>
+          ) : (
+            <div className="divide-y divide-border">
+              {pendingBanks.map((b) => (
+                <div key={b.id} className="py-3 flex flex-col md:flex-row md:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{schoolName(b.school_id)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{b.bank_name || "-"}</span>{" "}
+                      <span className="font-mono">{b.account_number || "-"}</span> a.n. {b.account_holder || "-"}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => setVerification(b, "verified")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verifikasi</Button>
+                    <Button size="sm" variant="outline" onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-card">
         <CardContent className="p-5 space-y-4">
           <div className="rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
             <p>1. Lihat rekening pencairan yang sudah diinput bendahara di bawah nama sekolah.</p>
@@ -152,6 +210,7 @@ const SuperAdminSplitSettlement = () => {
                             <span className="font-medium text-foreground">{bank.bank_name || "-"}</span>{" "}
                             <span className="font-mono">{bank.account_number || "-"}</span> a.n. {bank.account_holder || "-"}
                             {!bank.is_active && " (nonaktif)"}
+                            {bank.verification_status === "verified" ? " — terverifikasi" : bank.verification_status === "rejected" ? " — ditolak" : " — menunggu verifikasi"}
                             {saved && (synced ? " — tersinkron" : " — belum tersinkron, klik simpan")}
                           </span>
                         </div>
