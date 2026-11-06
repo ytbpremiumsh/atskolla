@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { payoutStatus, PAYOUT_LABEL, groupSplitByDay, type PayoutStatus, type SplitDay } from "@/lib/splitSettlement";
+import { payoutStatus, PAYOUT_LABEL, groupSplitByDay, wibDateKey, type PayoutStatus, type SplitDay } from "@/lib/splitSettlement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,13 @@ export default function SuperAdminBendahara() {
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [settings, setSettings] = useState<BendaharaSetting[]>([]);
   const [search, setSearch] = useState("");
+  const [period, setPeriod] = useState<"day" | "month" | "year" | "all">("month");
+  const inPeriod = (iso?: string | null) => {
+    if (period === "all") return true;
+    if (!iso) return false;
+    const k = wibDateKey(iso), t = wibDateKey(new Date().toISOString());
+    return period === "day" ? k === t : period === "month" ? k.slice(0, 7) === t.slice(0, 7) : k.slice(0, 4) === t.slice(0, 4);
+  };
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewing, setReviewing] = useState<Settlement | null>(null);
   const [adminNote, setAdminNote] = useState("");
@@ -112,7 +119,7 @@ export default function SuperAdminBendahara() {
         supabase.from("spp_invoices")
           .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,payment_channel,paid_at,settlement_id,doku_split,created_at")
           .order("created_at", { ascending: false })
-          .limit(500),
+          .limit(5000),
         supabase.from("spp_settlements")
           .select("*").order("requested_at", { ascending: false }),
         supabase.from("bendahara_settings").select("*"),
@@ -174,18 +181,20 @@ export default function SuperAdminBendahara() {
       if (inv.status !== "paid") continue;
       const m = map[inv.school_id]; if (!m) continue;
       const amt = inv.total_amount || 0;
+      const counted = inPeriod(inv.paid_at);
+      if (!inv.settlement_id && !(inv as any).doku_split && !isOfflinePayment(inv.payment_method)) {
+        const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
+        cur.net += inv.net_amount ?? amt;
+        cur.count += 1;
+        availableNet[inv.school_id] = cur;
+      }
+      if (!counted) continue;
       m.total_paid_invoices += 1;
       m.total_gross += amt; // Total diterima menampilkan gross apa adanya (termasuk offline)
       if (isOfflinePayment(inv.payment_method)) continue;
       const ps = payoutStatus(inv);
       if (ps === "split_processing") m.split_processing += inv.net_amount ?? amt;
       if (ps === "split_paid") m.split_paid += inv.net_amount ?? amt;
-      if (!inv.settlement_id && !(inv as any).doku_split) {
-        const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
-        cur.net += inv.net_amount ?? amt;
-        cur.count += 1;
-        availableNet[inv.school_id] = cur;
-      }
     }
     for (const [sid, v] of Object.entries(availableNet)) {
       const m = map[sid]; if (!m) continue;
@@ -194,12 +203,12 @@ export default function SuperAdminBendahara() {
     for (const st of settlements) {
       const m = map[st.school_id]; if (!m) continue;
       const payout = st.final_payout || 0;
-      if (st.status === "paid") m.total_disbursed += payout;
+      if (st.status === "paid" && inPeriod(st.paid_at)) m.total_disbursed += payout;
       else if (["requested", "approved", "processing"].includes(st.status))
         m.pending_settlement += payout;
     }
     return Object.values(map);
-  }, [schools, invoices, settlements]);
+  }, [schools, invoices, settlements, period]);
 
   const filteredBalances = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -221,7 +230,7 @@ export default function SuperAdminBendahara() {
 
   const filteredPaidInvoices = useMemo(() => {
     const q = search.toLowerCase().trim();
-    const paid = invoices.filter((i) => i.status === "paid");
+    const paid = invoices.filter((i) => i.status === "paid" && inPeriod(i.paid_at));
     if (!q) return paid;
     return paid.filter((i) =>
       i.student_name?.toLowerCase().includes(q) ||
@@ -229,7 +238,7 @@ export default function SuperAdminBendahara() {
       i.class_name?.toLowerCase().includes(q) ||
       schoolMap[i.school_id]?.name?.toLowerCase().includes(q)
     );
-  }, [invoices, schoolMap, search]);
+  }, [invoices, schoolMap, search, period]);
 
   const settlementGroups = useMemo(() => {
     const bySchool = new Map<string, Invoice[]>();
@@ -252,7 +261,7 @@ export default function SuperAdminBendahara() {
   const kpi = useMemo(() => {
     const totalSaldo = balances.reduce((a, b) => a + b.saldo_pending, 0);
     const totalGross = balances.reduce((a, b) => a + b.total_gross, 0);
-    const totalDisbursed = sumDisbursed(settlements);
+    const totalDisbursed = sumDisbursed(settlements.filter((st) => inPeriod(st.paid_at)));
     const pendingPayoutAmount = sumPendingPayout(settlements);
     const pendingPayoutCount = settlements.filter((s) => ["requested", "approved", "processing"].includes(s.status)).length;
     const totalProcessing = balances.reduce((a, b) => a + b.split_processing, 0);
@@ -261,9 +270,9 @@ export default function SuperAdminBendahara() {
       totalSaldo, totalGross, totalDisbursed, totalProcessing, totalTransferred,
       pendingPayoutCount,
       pendingPayoutAmount,
-      totalPaidInvoices: invoices.filter((i) => i.status === "paid").length,
+      totalPaidInvoices: invoices.filter((i) => i.status === "paid" && inPeriod(i.paid_at)).length,
     };
-  }, [balances, settlements, invoices]);
+  }, [balances, settlements, invoices, period]);
 
   const openReview = (s: Settlement) => {
     setReviewing(s);
@@ -361,13 +370,34 @@ export default function SuperAdminBendahara() {
         }
       />
 
+      {/* Filter periode */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mr-1">Periode</span>
+        <div className="inline-flex rounded-xl border bg-muted/40 p-1">
+          {([["day", "Harian"], ["month", "Bulanan"], ["year", "Tahunan"], ["all", "Semua"]] as const).map(([v, l]) => (
+            <button
+              key={v}
+              onClick={() => setPeriod(v)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${period === v ? "bg-primary text-primary-foreground shadow" : "text-muted-foreground hover:text-foreground"}`}
+            >{l}</button>
+          ))}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {period === "day" ? new Date().toLocaleDateString("id-ID", { dateStyle: "full", timeZone: "Asia/Jakarta" })
+            : period === "month" ? new Date().toLocaleDateString("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" })
+            : period === "year" ? `Tahun ${new Date().toLocaleDateString("id-ID", { year: "numeric", timeZone: "Asia/Jakarta" })}`
+            : "Seluruh waktu"}
+          {" "}&middot; {kpi.totalPaidInvoices} pembayaran
+        </span>
+      </div>
+
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Total SPP Diterima", value: fmtIDR(kpi.totalGross), icon: Receipt, color: "from-indigo-500 to-violet-600" },
           { label: "Diproses Split (DOKU)", value: fmtIDR(kpi.totalProcessing), icon: Clock, color: "from-amber-500 to-orange-600" },
           { label: "Sudah Ditransfer ke Sekolah", value: fmtIDR(kpi.totalTransferred), icon: Banknote, color: "from-emerald-500 to-teal-600" },
-          { label: "Saldo Lama (Perlu Dicairkan)", value: fmtIDR(kpi.totalSaldo), icon: Wallet, color: "from-sky-500 to-cyan-600" },
+          { label: "Saldo Lama (Semua Waktu)", value: fmtIDR(kpi.totalSaldo), icon: Wallet, color: "from-sky-500 to-cyan-600" },
         ].map((k, i) => (
           <motion.div key={k.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="border-0 shadow-card overflow-hidden">
