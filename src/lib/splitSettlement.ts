@@ -14,6 +14,30 @@ export const nextBusinessDay = (dateKey: string): string => {
   return d.toISOString().slice(0, 10);
 };
 
+export type PayoutStatus = "split_paid" | "split_processing" | "manual_paid" | "legacy" | "offline";
+
+const OFFLINE = ["offline_cash", "offline_transfer"];
+
+/** Status pencairan satu invoice lunas, konsep Split Settlement. */
+export const payoutStatus = (inv: any, now: Date = new Date()): PayoutStatus => {
+  if (OFFLINE.includes(String(inv.payment_method || ""))) return "offline";
+  if (inv.settlement_id) return "manual_paid";
+  if (inv.doku_split) {
+    if (!inv.paid_at) return "split_processing";
+    const settle = nextBusinessDay(wibDateKey(inv.paid_at));
+    return wibDateKey(now.toISOString()) >= settle ? "split_paid" : "split_processing";
+  }
+  return "legacy";
+};
+
+export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
+  split_paid: "Sudah Ditransfer",
+  split_processing: "Diproses Sistem",
+  manual_paid: "Sudah Dicairkan",
+  legacy: "Saldo Lama",
+  offline: "Diterima Langsung",
+};
+
 export type SplitDay = {
   date: string;
   settleDate: string;

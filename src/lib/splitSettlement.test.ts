@@ -5,6 +5,15 @@ describe("split settlement harian", () => {
   it("Jumat dicairkan Senin", () => {
     expect(nextBusinessDay("2026-11-06")).toBe("2026-11-09");
   });
+  it("status pencairan per transaksi", async () => {
+    const { payoutStatus } = await import("./splitSettlement");
+    const now = new Date("2026-11-10T03:00:00Z");
+    expect(payoutStatus({ doku_split: true, paid_at: "2026-11-10T02:00:00Z" }, now)).toBe("split_processing");
+    expect(payoutStatus({ doku_split: true, paid_at: "2026-11-06T02:00:00Z" }, now)).toBe("split_paid");
+    expect(payoutStatus({ payment_method: "offline_cash" }, now)).toBe("offline");
+    expect(payoutStatus({ payment_method: "doku", settlement_id: "x" }, now)).toBe("manual_paid");
+    expect(payoutStatus({ payment_method: "doku" }, now)).toBe("legacy");
+  });
   it("pembayaran hari ini masih diproses, kemarin (hari kerja) sudah paid", () => {
     const now = new Date("2026-11-10T03:00:00Z"); // Selasa 10:00 WIB
     const days = groupSplitByDay(
