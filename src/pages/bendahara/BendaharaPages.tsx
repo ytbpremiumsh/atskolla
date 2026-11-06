@@ -359,6 +359,52 @@ function useBendaharaFlags(schoolId?: string | null) {
 }
 
 // ============ DASHBOARD ============
+function BankVerificationAlert({ schoolId }: { schoolId?: string | null }) {
+  const navigate = useNavigate();
+  const [state, setState] = useState<"none" | "pending" | "rejected" | "ok" | null>(null);
+  useEffect(() => {
+    if (!schoolId) return;
+    (async () => {
+      const { data } = await supabase.from("bendahara_bank_accounts" as any)
+        .select("verification_status, is_active").eq("school_id", schoolId);
+      const rows = ((data as any[]) || []).filter((r) => r.is_active !== false);
+      if (rows.some((r) => r.verification_status === "verified")) setState("ok");
+      else if (rows.some((r) => r.verification_status === "pending")) setState("pending");
+      else if (rows.some((r) => r.verification_status === "rejected")) setState("rejected");
+      else setState("none");
+    })();
+  }, [schoolId]);
+  if (!state || state === "ok") return null;
+  const title = state === "pending"
+    ? "Rekening Pencairan Sedang Menunggu Verifikasi"
+    : state === "rejected"
+      ? "Rekening Pencairan Ditolak"
+      : "Rekening Pencairan Belum Didaftarkan";
+  const body = state === "pending"
+    ? "Pembayaran SPP secara online belum dapat digunakan oleh wali murid sampai rekening sekolah selesai diverifikasi oleh tim ATSkolla. Proses verifikasi biasanya tidak lama, mohon ditunggu."
+    : state === "rejected"
+      ? "Rekening yang diajukan tidak lolos verifikasi. Pembayaran SPP secara online belum dapat digunakan. Silakan ajukan ulang rekening bank yang valid atas nama sekolah atau penanggung jawab."
+      : "Pembayaran SPP secara online belum dapat digunakan oleh wali murid. Segera daftarkan rekening bank sekolah yang valid agar dana SPP dapat ditransfer otomatis ke rekening sekolah.";
+  return (
+    <div className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4 flex flex-col md:flex-row md:items-center gap-3">
+      <div className="flex items-start gap-3 flex-1">
+        <div className="h-10 w-10 shrink-0 rounded-xl bg-amber-500 text-white flex items-center justify-center">
+          <AlertTriangle className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="font-semibold text-amber-900 dark:text-amber-200">{title}</p>
+          <p className="text-sm text-amber-800 dark:text-amber-300/90 mt-0.5">{body}</p>
+        </div>
+      </div>
+      {state !== "pending" && (
+        <Button size="sm" className="shrink-0" onClick={() => navigate("/bendahara/withdraw?tab=pencairan")}>
+          {state === "none" ? "Daftarkan Rekening" : "Ajukan Ulang Rekening"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function BendaharaDashboard() {
   const { profile } = useAuth();
   const flags = useBendaharaFlags(profile?.school_id);
@@ -578,6 +624,7 @@ export function BendaharaDashboard() {
 
   return (
     <>
+      <BankVerificationAlert schoolId={profile?.school_id} />
       {/* ==================== MOBILE — Fintech Payou-style (emerald) ==================== */}
       <BendaharaMobileDashboard
         stats={stats}
