@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
+import { payoutStatus, PAYOUT_LABEL, groupSplitByDay, type PayoutStatus, type SplitDay } from "@/lib/splitSettlement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,7 @@ export default function SuperAdminBendahara() {
   const [reviewing, setReviewing] = useState<Settlement | null>(null);
   const [adminNote, setAdminNote] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [stlDetail, setStlDetail] = useState<(SplitDay & { school_id: string }) | null>(null);
 
   const [legacyBusy, setLegacyBusy] = useState<string | null>(null);
   const settleLegacy = async (schoolId: string, name: string) => {
@@ -229,6 +230,14 @@ export default function SuperAdminBendahara() {
       schoolMap[i.school_id]?.name?.toLowerCase().includes(q)
     );
   }, [invoices, schoolMap, search]);
+
+  const settlementGroups = useMemo(() => {
+    const bySchool = new Map<string, Invoice[]>();
+    for (const i of filteredPaidInvoices) bySchool.set(i.school_id, [...(bySchool.get(i.school_id) || []), i]);
+    const out: (SplitDay & { school_id: string })[] = [];
+    for (const [school_id, list] of bySchool) for (const g of groupSplitByDay(list)) out.push({ ...g, school_id });
+    return out.sort((a, b) => b.date.localeCompare(a.date));
+  }, [filteredPaidInvoices]);
 
   const filteredSettings = useMemo(() => {
     const bySchool: Record<string, BendaharaSetting | undefined> = {};
@@ -517,41 +526,36 @@ export default function SuperAdminBendahara() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/40">
-                    <TableHead className="font-bold">No. Invoice</TableHead>
+                    <TableHead className="font-bold">Kode Settlement</TableHead>
                     <TableHead className="font-bold">Sekolah</TableHead>
-                    <TableHead className="font-bold">Siswa</TableHead>
-                    <TableHead className="font-bold">Kelas</TableHead>
-                    <TableHead className="font-bold">Periode</TableHead>
-                    <TableHead className="text-right font-bold">Jumlah</TableHead>
-                    <TableHead className="font-bold">Metode</TableHead>
-                    <TableHead className="font-bold">Dibayar</TableHead>
-                    <TableHead className="text-center font-bold">Pencairan</TableHead>
+                    <TableHead className="font-bold">Tanggal Bayar</TableHead>
+                    <TableHead className="font-bold">Jadwal Masuk Rekening</TableHead>
+                    <TableHead className="text-center font-bold">Transaksi</TableHead>
+                    <TableHead className="text-right font-bold">Total</TableHead>
+                    <TableHead className="text-center font-bold">Status</TableHead>
+                    <TableHead className="w-[1%]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={9} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
-                  ) : filteredPaidInvoices.length === 0 ? (
-                    <TableRow><TableCell colSpan={9} className="text-center py-12 text-muted-foreground text-sm">Belum ada pembayaran SPP</TableCell></TableRow>
-                  ) : filteredPaidInvoices.map((i) => (
-                    <TableRow key={i.id} className="hover:bg-muted/30">
-                      <TableCell className="font-mono text-[11px]">{i.invoice_number}</TableCell>
-                      <TableCell className="text-sm">{schoolMap[i.school_id]?.name || "—"}</TableCell>
-                      <TableCell className="text-sm font-medium">{i.student_name}</TableCell>
-                      <TableCell className="text-xs">{i.class_name}</TableCell>
-                      <TableCell className="text-xs">{i.period_label}</TableCell>
-                      <TableCell className="text-right text-sm font-semibold">{fmtIDR(i.total_amount)}</TableCell>
-                      <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel)}</TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
+                    <TableRow><TableCell colSpan={8} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
+                  ) : settlementGroups.length === 0 ? (
+                    <TableRow><TableCell colSpan={8} className="text-center py-12 text-muted-foreground text-sm">Belum ada pembayaran SPP</TableCell></TableRow>
+                  ) : settlementGroups.map((g) => (
+                    <TableRow key={g.school_id + g.code} className="hover:bg-muted/30 cursor-pointer" onClick={() => setStlDetail(g)}>
+                      <TableCell className="font-mono text-xs font-semibold">{g.code}</TableCell>
+                      <TableCell className="text-sm">{schoolMap[g.school_id]?.name || "—"}</TableCell>
+                      <TableCell className="text-xs">{new Date(g.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                      <TableCell className="text-xs">{new Date(g.settleDate + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                      <TableCell className="text-center text-sm font-semibold">{g.count}</TableCell>
+                      <TableCell className="text-right text-sm font-bold text-emerald-600 tabular-nums">{fmtIDR(g.total)}</TableCell>
                       <TableCell className="text-center">
-                        {(() => {
-                          const ps = payoutStatus(i);
-                          const cls: Record<PayoutStatus, string> = {
-                            split_paid: "bg-emerald-500", manual_paid: "bg-emerald-500",
-                            split_processing: "bg-amber-500", legacy: "bg-sky-500", offline: "bg-slate-500",
-                          };
-                          return <Badge className={`${cls[ps]} text-white border-0 text-[10px] whitespace-nowrap`}>{PAYOUT_LABEL[ps]}</Badge>;
-                        })()}
+                        <Badge className={`${g.status === "paid" ? "bg-emerald-500" : "bg-amber-500"} text-white border-0 text-[10px] whitespace-nowrap`}>
+                          {g.status === "paid" ? "Sudah Ditransfer" : "Diproses Sistem"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button size="sm" variant="ghost" className="h-8 text-xs rounded-lg"><Eye className="h-3.5 w-3.5 mr-1" /> Detail</Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -679,6 +683,51 @@ export default function SuperAdminBendahara() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Detail Settlement SPP */}
+      <Dialog open={!!stlDetail} onOpenChange={(o) => !o && setStlDetail(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="font-mono">{stlDetail?.code}</span>
+            </DialogTitle>
+          </DialogHeader>
+          {stlDetail && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Sekolah</p><p className="font-semibold text-xs">{schoolMap[stlDetail.school_id]?.name}</p></div>
+                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Transaksi</p><p className="font-semibold">{stlDetail.count}</p></div>
+                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Total</p><p className="font-semibold text-emerald-600">{fmtIDR(stlDetail.total)}</p></div>
+                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-semibold text-xs">{stlDetail.status === "paid" ? "Sudah Ditransfer" : "Diproses Sistem"}</p></div>
+              </div>
+              <div className="max-h-[50vh] overflow-auto rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/40">
+                      <TableHead className="text-xs">Siswa</TableHead>
+                      <TableHead className="text-xs">Periode</TableHead>
+                      <TableHead className="text-xs">Metode</TableHead>
+                      <TableHead className="text-xs">Waktu</TableHead>
+                      <TableHead className="text-xs text-right">Jumlah</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stlDetail.items.map((i: any) => (
+                      <TableRow key={i.id}>
+                        <TableCell className="py-2"><p className="text-sm font-medium">{i.student_name}</p><p className="text-[11px] text-muted-foreground">{i.class_name} &middot; <span className="font-mono">{i.invoice_number}</span></p></TableCell>
+                        <TableCell className="text-xs">{i.period_label}</TableCell>
+                        <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, i.payment_channel)}</TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
+                        <TableCell className="text-right text-sm font-semibold tabular-nums">{fmtIDR(Number(i.net_amount ?? i.total_amount))}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Review Settlement Dialog */}
       <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
