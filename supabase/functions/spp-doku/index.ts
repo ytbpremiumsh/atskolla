@@ -206,7 +206,30 @@ async function createDokuPayment(
     body.payment.payment_method_types = methods;
   }
 
+  // DOKU Split Settlement: nominal SPP murni (tanpa biaya admin) dikirim ke
+  // rekening sekolah (FIX). Sisanya (biaya admin dikurangi potongan DOKU)
+  // otomatis masuk ke rekening utama/default merchant (owner ATSkolla).
+  const splitBankId = String(inv._split_bank_id || "").trim();
+  const splitBill = Math.round(Number(inv._split_bill) || 0);
+  let split = false;
+  if (splitBankId && splitBill > 0 && splitBill < Math.round(totalCharged)) {
+    body.additional_info = {
+      settlement: [{ bank_account_settlement_id: splitBankId, value: splitBill, type: "FIX" }],
+    };
+    split = true;
+  }
+
   let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+
+  // Jika DOKU menolak aturan split (mis. ID rekening salah), tetap buat link
+  // tanpa split agar wali murid bisa membayar; dana masuk ke rekening utama
+  // dan dicairkan manual seperti biasa.
+  if (!res.ok && split) {
+    console.warn("[spp-doku] split settlement rejected, retry without split", res.json);
+    delete body.additional_info;
+    split = false;
+    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
+  }
 
   // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
   // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
@@ -249,6 +272,7 @@ async function createDokuPayment(
     null;
   return {
     ok: res.ok && !!url,
+    split,
     url,
     dokuInvoiceId,
     sessionId,
@@ -256,6 +280,13 @@ async function createDokuPayment(
     status: res.status,
     expiry: expiredAt,
   };
+}
+
+async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<string | null> {
+  if (!schoolId) return null;
+  const { data } = await supabaseAdmin.from("schools").select("doku_settlement_bank_id").eq("id", schoolId).maybeSingle();
+  const v = String(data?.doku_settlement_bank_id || "").trim();
+  return v || null;
 }
 
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
@@ -293,7 +324,11 @@ async function ensureFreshLink(
     };
   }
   const totalCharged = (Number(inv.total_amount) || 0) + serviceFee;
-  const created = await createDokuPayment(cfg, { ...inv, _amount_override: totalCharged }, channel);
+  const splitBankId = await schoolSplitBankId(supabaseAdmin, inv.school_id);
+  const created = await createDokuPayment(cfg, {
+    ...inv, _amount_override: totalCharged,
+    _split_bank_id: splitBankId, _split_bill: Number(inv.total_amount) || 0,
+  }, channel);
   const { error: logError } = await supabaseAdmin.from("spp_logs").insert({
     school_id: inv.school_id,
     invoice_id: inv.id,
@@ -318,6 +353,7 @@ async function ensureFreshLink(
     status: "pending",
     service_fee: serviceFee,
     payment_channel: channel,
+    doku_split: !!created.split,
   }).eq("id", inv.id).neq("status", "paid").select("id").maybeSingle();
   if (invoiceError) throw invoiceError;
   if (!savedInvoice) throw new Error("Tagihan sudah lunas atau berubah; muat ulang halaman");
@@ -399,6 +435,8 @@ serve(async (req) => {
       const cicilanInv = {
         ...inv,
         _amount_override: totalCharged,
+        _split_bank_id: await schoolSplitBankId(supabaseAdmin, inv.school_id),
+        _split_bill: amount,
         period_label: `Cicilan ${inv.period_label || ""}`.trim(),
         invoice_number: `${inv.invoice_number || "SPP"}-CIC${Date.now().toString().slice(-6)}`,
       };
