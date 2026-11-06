@@ -526,7 +526,7 @@ export default function SuperAdminBendahara() {
                       <TableCell className="text-xs">{i.class_name}</TableCell>
                       <TableCell className="text-xs">{i.period_label}</TableCell>
                       <TableCell className="text-right text-sm font-semibold">{fmtIDR(i.total_amount)}</TableCell>
-                      <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method)}</TableCell>
+                      <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel)}</TableCell>
                       <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
                       <TableCell className="text-center">
                         {i.settlement_id

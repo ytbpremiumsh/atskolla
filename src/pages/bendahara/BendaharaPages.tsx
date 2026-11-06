@@ -3460,7 +3460,7 @@ export function BendaharaSPPDetail() {
         inv.invoice_number || "-",
         inv.period_label || `${MONTHS[(inv.period_month || 1) - 1]} ${inv.period_year}`,
         inv.paid_at ? new Date(inv.paid_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" }) : "-",
-        formatPaymentMethodLabel(inv.payment_method) || "-",
+        formatPaymentMethodLabel(inv.payment_method, (inv as any).payment_channel) || "-",
         fmtIDR(inv.amount || 0),
         fmtIDR(inv.denda || 0),
         fmtIDR(inv.total_amount || 0),
@@ -4188,7 +4188,7 @@ export function BendaharaImportExport() {
       "Jatuh Tempo": i.due_date ? new Date(i.due_date).toLocaleDateString("id-ID") : "",
       "Status": i.status === "paid" ? "Lunas" : i.status === "pending" ? "Pending" : i.status === "expired" ? "Kadaluarsa" : "Belum Bayar",
       "Tgl Bayar": i.paid_at ? new Date(i.paid_at).toLocaleDateString("id-ID") : "",
-      "Metode": formatPaymentMethodLabel(i.payment_method),
+      "Metode": formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel),
     }));
 
     const filterTag = `${expAY === "all" ? "ALL" : expAY.replace("/", "-")}_${expClass === "all" ? "SEMUA-KELAS" : expClass.replace(/\s/g, "-")}_${expStatus.toUpperCase()}`;
@@ -5245,7 +5245,7 @@ export function BendaharaPencairan() {
                       <TableCell className="text-xs font-medium">{it.student_name}</TableCell>
                       <TableCell className="text-xs">{it.class_name}</TableCell>
                       <TableCell className="text-xs">{it.period_label}</TableCell>
-                      <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method)}</TableCell>
+                      <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method, (it as any).payment_channel)}</TableCell>
                       <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleDateString("id-ID") : "-"}</TableCell>
                       <TableCell className="text-xs text-right font-semibold">{fmtIDR(it.total_amount)}</TableCell>
                     </TableRow>
@@ -5278,7 +5278,7 @@ function PresetLaporan({ items, students, school, year }: { items: any[]; studen
     "Periode": i.period_label,
     "Nominal": i.total_amount,
     "Tgl Bayar": i.paid_at ? new Date(i.paid_at).toLocaleDateString("id-ID") : "",
-    "Metode": formatPaymentMethodLabel(i.payment_method),
+    "Metode": formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel),
     "Status": i.status === "paid" ? "Lunas" : "Belum",
   }));
 
@@ -5539,7 +5539,7 @@ export function BendaharaLaporan() {
       "Jatuh Tempo": i.due_date ? new Date(i.due_date).toLocaleDateString("id-ID") : "",
       "Status": i.status === "paid" ? "Lunas" : i.status === "pending" ? "Pending" : i.status === "expired" ? "Kadaluarsa" : "Belum Bayar",
       "Tgl Bayar": i.paid_at ? new Date(i.paid_at).toLocaleDateString("id-ID") : "",
-      "Metode": formatPaymentMethodLabel(i.payment_method),
+      "Metode": formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel),
     }));
 
     const filterTag = `${expAY === "all" ? "ALL" : expAY.replace("/", "-")}_${expClass === "all" ? "SEMUA-KELAS" : expClass.replace(/\s/g, "-")}_${expStatus.toUpperCase()}`;

@@ -93,7 +93,7 @@ export default function BendaharaBukuKas() {
       amount: i.total_amount ?? i.net_amount ?? 0,
       description: `Pembayaran SPP - ${i.student_name} (Kelas ${i.class_name}) Periode ${i.period_label}`,
       reference: i.invoice_number || null,
-      method: formatPaymentMethodLabel(i.payment_method),
+      method: formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel),
       status: "Lunas",
       source: "auto",
     }));
