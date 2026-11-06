@@ -388,7 +388,7 @@ export default function SuperAdminBendahara() {
       <Tabs defaultValue="balances" className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full md:w-auto rounded-xl">
           <TabsTrigger value="balances" className="gap-2 text-xs"><Wallet className="h-3.5 w-3.5" /> Saldo Sekolah</TabsTrigger>
-          <TabsTrigger value="settlements" className="gap-2 text-xs"><Banknote className="h-3.5 w-3.5" /> Pencairan Manual (Lama)</TabsTrigger>
+          <TabsTrigger value="settlements" className="gap-2 text-xs"><Banknote className="h-3.5 w-3.5" /> Arsip Pencairan</TabsTrigger>
           <TabsTrigger value="invoices" className="gap-2 text-xs"><Receipt className="h-3.5 w-3.5" /> Riwayat SPP</TabsTrigger>
           <TabsTrigger value="settings" className="gap-2 text-xs"><Settings2 className="h-3.5 w-3.5" /> Konfigurasi</TabsTrigger>
         </TabsList>
@@ -456,45 +456,50 @@ export default function SuperAdminBendahara() {
         </TabsContent>
 
         {/* PENCAIRAN */}
-        <TabsContent value="settlements" className="mt-5">
-          <Card className="border-0 shadow-card overflow-hidden">
+        <TabsContent value="settlements" className="mt-5 space-y-3">
+          <div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-3">
+            <Banknote className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Catatan pencairan sebelum sistem pembagian otomatis, termasuk pencairan saldo lama dari tombol <span className="font-semibold text-foreground">Cairkan Saldo Lama</span>. Pembayaran SPP baru tidak masuk ke sini karena ditransfer otomatis ke rekening sekolah.
+            </p>
+          </div>
+          <Card className="border shadow-none overflow-hidden rounded-xl">
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/40">
-                    <TableHead className="font-bold">Kode</TableHead>
-                    <TableHead className="font-bold">Sekolah</TableHead>
-                    <TableHead className="text-center font-bold">Tx</TableHead>
-                    <TableHead className="text-right font-bold">Total</TableHead>
-                    <TableHead className="text-right font-bold">Payout</TableHead>
-                    <TableHead className="font-bold">Rekening</TableHead>
-                    <TableHead className="text-center font-bold">Status</TableHead>
-                    <TableHead className="font-bold">Diajukan</TableHead>
-                    <TableHead className="text-center font-bold">Aksi</TableHead>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="text-[11px] uppercase tracking-wide font-semibold whitespace-nowrap">Kode / Sekolah</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-wide font-semibold text-right whitespace-nowrap">Nominal</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-wide font-semibold whitespace-nowrap">Rekening Tujuan</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-wide font-semibold text-center">Status</TableHead>
+                    <TableHead className="text-[11px] uppercase tracking-wide font-semibold whitespace-nowrap">Diajukan</TableHead>
+                    <TableHead className="w-[1%]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={9} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
                   ) : filteredSettlements.length === 0 ? (
-                    <TableRow><TableCell colSpan={9} className="text-center py-12 text-muted-foreground text-sm">Belum ada pengajuan pencairan</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">Belum ada catatan pencairan</TableCell></TableRow>
                   ) : filteredSettlements.map((s) => (
-                    <TableRow key={s.id} className="hover:bg-muted/30">
-                      <TableCell className="font-mono text-[11px]">{s.settlement_code}</TableCell>
-                      <TableCell className="text-sm font-medium">{schoolMap[s.school_id]?.name || "—"}</TableCell>
-                      <TableCell className="text-center text-sm">{s.total_transactions}</TableCell>
-                      <TableCell className="text-right text-sm">{fmtIDR(s.total_gross || s.total_net)}</TableCell>
-                      <TableCell className="text-right text-sm font-semibold text-emerald-600">{fmtIDR(s.final_payout)}</TableCell>
-                      <TableCell className="text-xs">
-                        <p className="font-semibold">{s.bank_name || "—"}</p>
-                        <p className="text-muted-foreground">{s.account_number}</p>
-                        <p className="text-muted-foreground">{s.account_holder}</p>
+                    <TableRow key={s.id} className="hover:bg-muted/30 align-middle">
+                      <TableCell className="py-3 min-w-[220px]">
+                        <p className="text-sm font-semibold leading-tight">{schoolMap[s.school_id]?.name || "—"}</p>
+                        <p className="font-mono text-[11px] text-muted-foreground mt-0.5 break-all">{s.settlement_code}</p>
                       </TableCell>
-                      <TableCell className="text-center"><StatusBadge status={s.status} /></TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(s.requested_at)}</TableCell>
-                      <TableCell className="text-center">
-                        <Button size="sm" variant="outline" className="h-7 text-[11px] rounded-lg" onClick={() => openReview(s)}>
-                          <Eye className="h-3 w-3 mr-1" /> Review
+                      <TableCell className="py-3 text-right whitespace-nowrap">
+                        <p className="text-sm font-bold text-emerald-600 tabular-nums">{fmtIDR(s.final_payout)}</p>
+                        <p className="text-[11px] text-muted-foreground tabular-nums">dari {fmtIDR(s.total_gross || s.total_net)} &middot; {s.total_transactions} transaksi</p>
+                      </TableCell>
+                      <TableCell className="py-3 min-w-[180px]">
+                        <p className="text-sm font-medium leading-tight">{s.bank_name || "—"} <span className="font-mono text-xs text-muted-foreground">{s.account_number}</span></p>
+                        <p className="text-[11px] text-muted-foreground truncate max-w-[220px]">a.n. {s.account_holder || "—"}</p>
+                      </TableCell>
+                      <TableCell className="py-3 text-center"><StatusBadge status={s.status} /></TableCell>
+                      <TableCell className="py-3 text-xs text-muted-foreground whitespace-nowrap">{fmtDate(s.requested_at)}</TableCell>
+                      <TableCell className="py-3 text-right">
+                        <Button size="sm" variant="ghost" className="h-8 text-xs rounded-lg" onClick={() => openReview(s)}>
+                          <Eye className="h-3.5 w-3.5 mr-1" /> Detail
                         </Button>
                       </TableCell>
                     </TableRow>
