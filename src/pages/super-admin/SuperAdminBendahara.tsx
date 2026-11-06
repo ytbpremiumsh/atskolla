@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -157,11 +158,13 @@ export default function SuperAdminBendahara() {
     const map: Record<string, {
       school_id: string; total_paid_invoices: number; total_gross: number;
       saldo_pending: number; total_disbursed: number; pending_settlement: number;
+      split_processing: number; split_paid: number;
     }> = {};
     for (const s of schools) {
       map[s.id] = {
         school_id: s.id, total_paid_invoices: 0, total_gross: 0,
         saldo_pending: 0, total_disbursed: 0, pending_settlement: 0,
+        split_processing: 0, split_paid: 0,
       };
     }
     // Kumpulkan net per sekolah untuk invoice online yang belum ter-link settlement
@@ -173,6 +176,9 @@ export default function SuperAdminBendahara() {
       m.total_paid_invoices += 1;
       m.total_gross += amt; // Total diterima menampilkan gross apa adanya (termasuk offline)
       if (isOfflinePayment(inv.payment_method)) continue;
+      const ps = payoutStatus(inv);
+      if (ps === "split_processing") m.split_processing += inv.net_amount ?? amt;
+      if (ps === "split_paid") m.split_paid += inv.net_amount ?? amt;
       if (!inv.settlement_id && !(inv as any).doku_split) {
         const cur = availableNet[inv.school_id] || { net: 0, count: 0 };
         cur.net += inv.net_amount ?? amt;
@@ -240,8 +246,10 @@ export default function SuperAdminBendahara() {
     const totalDisbursed = sumDisbursed(settlements);
     const pendingPayoutAmount = sumPendingPayout(settlements);
     const pendingPayoutCount = settlements.filter((s) => ["requested", "approved", "processing"].includes(s.status)).length;
+    const totalProcessing = balances.reduce((a, b) => a + b.split_processing, 0);
+    const totalTransferred = balances.reduce((a, b) => a + b.split_paid, 0) + totalDisbursed;
     return {
-      totalSaldo, totalGross, totalDisbursed,
+      totalSaldo, totalGross, totalDisbursed, totalProcessing, totalTransferred,
       pendingPayoutCount,
       pendingPayoutAmount,
       totalPaidInvoices: invoices.filter((i) => i.status === "paid").length,
@@ -331,7 +339,7 @@ export default function SuperAdminBendahara() {
       <PageHeader
         icon={Wallet}
         title="Manajemen Bendahara"
-        subtitle="Pantau saldo, pencairan dana, riwayat pembayaran SPP, dan konfigurasi tiap sekolah"
+        subtitle="Semua SPP online dibagi otomatis (Split Settlement) ke rekening sekolah. Pantau dana diproses, sudah ditransfer, dan saldo lama."
         actions={
           <Button
             onClick={fetchAll}
@@ -347,10 +355,10 @@ export default function SuperAdminBendahara() {
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {[
-          { label: "Saldo Belum Cair", value: fmtIDR(kpi.totalSaldo), icon: Wallet, color: "from-emerald-500 to-teal-600" },
           { label: "Total SPP Diterima", value: fmtIDR(kpi.totalGross), icon: Receipt, color: "from-indigo-500 to-violet-600" },
-          { label: "Total Dicairkan", value: fmtIDR(kpi.totalDisbursed), icon: Banknote, color: "from-blue-500 to-cyan-600" },
-          { label: `Pencairan Pending (${kpi.pendingPayoutCount})`, value: fmtIDR(kpi.pendingPayoutAmount), icon: Clock, color: "from-amber-500 to-orange-600" },
+          { label: "Diproses Split (DOKU)", value: fmtIDR(kpi.totalProcessing), icon: Clock, color: "from-amber-500 to-orange-600" },
+          { label: "Sudah Ditransfer ke Sekolah", value: fmtIDR(kpi.totalTransferred), icon: Banknote, color: "from-emerald-500 to-teal-600" },
+          { label: "Saldo Lama (Perlu Dicairkan)", value: fmtIDR(kpi.totalSaldo), icon: Wallet, color: "from-sky-500 to-cyan-600" },
         ].map((k, i) => (
           <motion.div key={k.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
             <Card className="border-0 shadow-card overflow-hidden">
@@ -380,7 +388,7 @@ export default function SuperAdminBendahara() {
       <Tabs defaultValue="balances" className="w-full">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full md:w-auto rounded-xl">
           <TabsTrigger value="balances" className="gap-2 text-xs"><Wallet className="h-3.5 w-3.5" /> Saldo Sekolah</TabsTrigger>
-          <TabsTrigger value="settlements" className="gap-2 text-xs"><Banknote className="h-3.5 w-3.5" /> Pencairan</TabsTrigger>
+          <TabsTrigger value="settlements" className="gap-2 text-xs"><Banknote className="h-3.5 w-3.5" /> Pencairan Manual (Lama)</TabsTrigger>
           <TabsTrigger value="invoices" className="gap-2 text-xs"><Receipt className="h-3.5 w-3.5" /> Riwayat SPP</TabsTrigger>
           <TabsTrigger value="settings" className="gap-2 text-xs"><Settings2 className="h-3.5 w-3.5" /> Konfigurasi</TabsTrigger>
         </TabsList>
@@ -395,15 +403,16 @@ export default function SuperAdminBendahara() {
                     <TableHead className="font-bold">Sekolah</TableHead>
                     <TableHead className="text-center font-bold">Invoice Lunas</TableHead>
                     <TableHead className="text-right font-bold">Total Diterima</TableHead>
-                    <TableHead className="text-right font-bold">Sudah Dicairkan</TableHead>
-                    <TableHead className="text-right font-bold text-emerald-600">Saldo Aktif</TableHead>
+                    <TableHead className="text-right font-bold text-amber-600">Diproses Split</TableHead>
+                    <TableHead className="text-right font-bold text-emerald-600">Sudah Ditransfer</TableHead>
+                    <TableHead className="text-right font-bold text-sky-600">Saldo Lama</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-12"><Loader2 className="h-5 w-5 animate-spin inline" /></TableCell></TableRow>
                   ) : filteredBalances.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center py-12 text-muted-foreground text-sm">Tidak ada data</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground text-sm">Tidak ada data</TableCell></TableRow>
                   ) : filteredBalances.map((b) => {
                     const s = schoolMap[b.school_id];
                     return (
@@ -421,9 +430,10 @@ export default function SuperAdminBendahara() {
                         </TableCell>
                         <TableCell className="text-center font-semibold">{b.total_paid_invoices}</TableCell>
                         <TableCell className="text-right text-sm">{fmtIDR(b.total_gross)}</TableCell>
-                        <TableCell className="text-right text-sm">{fmtIDR(b.total_disbursed)}</TableCell>
+                        <TableCell className="text-right text-sm text-amber-600 font-semibold">{fmtIDR(b.split_processing)}</TableCell>
+                        <TableCell className="text-right text-sm text-emerald-600 font-semibold">{fmtIDR(b.split_paid + b.total_disbursed)}</TableCell>
                         <TableCell className="text-right">
-                          <span className="font-bold text-emerald-600">{fmtIDR(b.saldo_pending)}</span>
+                          <span className="font-bold text-sky-600">{fmtIDR(b.saldo_pending)}</span>
                           {b.saldo_pending > 0 && (
                             <div className="mt-1">
                               <Button size="sm" variant="outline" className="h-7 text-[11px]" disabled={legacyBusy === b.school_id}
@@ -529,9 +539,14 @@ export default function SuperAdminBendahara() {
                       <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, (i as any).payment_channel)}</TableCell>
                       <TableCell className="text-[11px] text-muted-foreground whitespace-nowrap">{fmtDate(i.paid_at)}</TableCell>
                       <TableCell className="text-center">
-                        {i.settlement_id
-                          ? <Badge className="bg-emerald-500 text-white border-0 text-[10px]">Sudah Cair</Badge>
-                          : <Badge className="bg-amber-500 text-white border-0 text-[10px]">Belum Cair</Badge>}
+                        {(() => {
+                          const ps = payoutStatus(i);
+                          const cls: Record<PayoutStatus, string> = {
+                            split_paid: "bg-emerald-500", manual_paid: "bg-emerald-500",
+                            split_processing: "bg-amber-500", legacy: "bg-sky-500", offline: "bg-slate-500",
+                          };
+                          return <Badge className={`${cls[ps]} text-white border-0 text-[10px] whitespace-nowrap`}>{PAYOUT_LABEL[ps]}</Badge>;
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))}
