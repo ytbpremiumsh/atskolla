@@ -93,7 +93,7 @@ export default function SuperAdminBendahara() {
 
   const [legacyBusy, setLegacyBusy] = useState<string | null>(null);
   const settleLegacy = async (schoolId: string, name: string) => {
-    if (!confirm(`Buat pencairan saldo lama untuk ${name}? Setelah itu transfer manual ke rekening sekolah lalu klik "Tandai Cair" di tab Pencairan.`)) return;
+    if (!confirm(`Buat pencairan saldo lama untuk ${name}? Setelah itu transfer manual ke rekening sekolah lalu klik "Sudah Ditransfer" di tab Arsip Pencairan.`)) return;
     setLegacyBusy(schoolId);
     const { data, error } = await supabase.functions.invoke("create-settlement", { body: { school_id: schoolId, admin_legacy: true } });
     setLegacyBusy(null);
@@ -460,7 +460,7 @@ export default function SuperAdminBendahara() {
           <div className="flex items-start gap-3 rounded-xl border bg-muted/30 p-3">
             <Banknote className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Catatan pencairan sebelum sistem pembagian otomatis, termasuk pencairan saldo lama dari tombol <span className="font-semibold text-foreground">Cairkan Saldo Lama</span>. Pembayaran SPP baru tidak masuk ke sini karena ditransfer otomatis ke rekening sekolah.
+              Semua pembayaran SPP sekarang ditransfer otomatis oleh sistem ke rekening sekolah, jadi tidak ada lagi pengajuan pencairan. Halaman ini hanya arsip catatan lama dan pencairan sisa saldo lama dari tombol <span className="font-semibold text-foreground">Cairkan Saldo Lama</span>.
             </p>
           </div>
           <Card className="border shadow-none overflow-hidden rounded-xl">
@@ -684,7 +684,7 @@ export default function SuperAdminBendahara() {
       <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Review Pencairan Dana</DialogTitle>
+            <DialogTitle>Detail Arsip Pencairan</DialogTitle>
           </DialogHeader>
           {reviewing && (
             <div className="space-y-3 text-sm">
@@ -696,7 +696,7 @@ export default function SuperAdminBendahara() {
                 <div><p className="text-xs text-muted-foreground">Total</p><p className="font-semibold">{fmtIDR(reviewing.total_gross || reviewing.total_net)}</p></div>
                 <div><p className="text-xs text-muted-foreground">Biaya Tarik</p><p className="font-semibold text-rose-600">-{fmtIDR(reviewing.withdraw_fee)}</p></div>
                 <div className="col-span-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-lg p-2.5">
-                  <p className="text-[11px] text-muted-foreground">Final Payout</p>
+                  <p className="text-[11px] text-muted-foreground">Diterima Sekolah</p>
                   <p className="text-lg font-bold text-emerald-600">{fmtIDR(reviewing.final_payout)}</p>
                 </div>
               </div>
@@ -706,12 +706,21 @@ export default function SuperAdminBendahara() {
                 <p className="text-xs">{reviewing.account_number}</p>
                 <p className="text-xs">a.n. {reviewing.account_holder}</p>
               </div>
+              {["requested", "approved", "processing"].includes(reviewing.status) ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-500/10 dark:border-amber-500/20 p-2.5 text-xs text-amber-800 dark:text-amber-300">
+                  Pencairan saldo lama ini belum selesai. Transfer manual ke rekening di atas, lalu klik <b>Sudah Ditransfer</b>.
+                </div>
+              ) : (
+                <div className="rounded-lg border bg-muted/30 p-2.5 text-xs text-muted-foreground">
+                  Catatan ini sudah selesai dan hanya untuk arsip. Tidak perlu tindakan apa pun.
+                </div>
+              )}
               <div className="space-y-1.5">
                 <Label className="text-xs">Catatan Admin</Label>
                 <Textarea
                   value={adminNote}
                   onChange={(e) => setAdminNote(e.target.value)}
-                  placeholder="Opsional, mis: bukti transfer, alasan ditolak..."
+                  placeholder="Opsional, mis: nomor bukti transfer..."
                   rows={3}
                   className="text-sm"
                 />
@@ -720,15 +729,16 @@ export default function SuperAdminBendahara() {
           )}
           <DialogFooter className="gap-2 flex-wrap">
             <Button variant="outline" onClick={() => setReviewOpen(false)} disabled={actionLoading}>Tutup</Button>
-            <Button variant="destructive" onClick={() => updateSettlement("rejected")} disabled={actionLoading}>
-              <XCircle className="h-4 w-4 mr-1" /> Tolak
-            </Button>
-            <Button onClick={() => updateSettlement("approved")} disabled={actionLoading} className="bg-indigo-600 hover:bg-indigo-700 text-white">
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Setujui
-            </Button>
-            <Button onClick={() => updateSettlement("paid")} disabled={actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              {actionLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Banknote className="h-4 w-4 mr-1" />} Tandai Cair
-            </Button>
+            {reviewing && ["requested", "approved", "processing"].includes(reviewing.status) && (
+              <>
+                <Button variant="ghost" onClick={() => updateSettlement("rejected")} disabled={actionLoading} className="text-rose-600">
+                  <XCircle className="h-4 w-4 mr-1" /> Batalkan
+                </Button>
+                <Button onClick={() => updateSettlement("paid")} disabled={actionLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  {actionLoading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />} Sudah Ditransfer
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
