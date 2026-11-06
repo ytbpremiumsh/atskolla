@@ -26,9 +26,8 @@ const navItems = [
   { title: "Add-on", url: "/super-admin/addons", icon: Wallet, group: "manage" },
 
   // OPERASIONAL
-  { title: "Keuangan", url: "/super-admin/keuangan", icon: Banknote, group: "ops" },
+  { title: "Transaksi & Pencairan", url: "/super-admin/keuangan", icon: Banknote, group: "ops" },
   { title: "Payment Gateway", url: "/super-admin/payment-gateway", icon: CreditCard, group: "ops" },
-  { title: "Split Settlement", url: "/super-admin/split-settlement", icon: Split, group: "ops" },
   { title: "Komunikasi", url: "/super-admin/komunikasi", icon: MessageCircle, group: "ops" },
   { title: "Email", url: "/super-admin/email-hub", icon: Mail, group: "ops" },
 
