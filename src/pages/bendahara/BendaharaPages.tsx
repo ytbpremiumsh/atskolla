@@ -4545,7 +4545,7 @@ export function BendaharaPencairan() {
       const allPaid = (paidRes.data || []) as any[];
       const online = allPaid.filter((x) => !isOfflinePayment(x.payment_method));
       const offline = allPaid.filter((x) => isOfflinePayment(x.payment_method));
-      const availableList = online.filter((x) => !x.settlement_id);
+      const availableList = online.filter((x) => !x.settlement_id && !x.doku_split);
 
       const fee = Number((sRes.data as any)?.withdraw_fee_default ?? DEFAULT_WITHDRAW_FEE);
       const minP = Number((sRes.data as any)?.min_payout ?? 10000);
