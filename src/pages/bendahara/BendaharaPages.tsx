@@ -4767,7 +4767,7 @@ export function BendaharaPencairan() {
     }).select("verification_status").maybeSingle();
     if (error) { toast.error(error.message); return; }
     if ((inserted as any)?.verification_status === "verified") {
-      toast.success("Rekening cocok dengan data DOKU dan langsung terverifikasi");
+      toast.success("Rekening cocok dengan data sistem dan langsung terverifikasi");
     } else {
       toast.success("Rekening diajukan. Menunggu verifikasi admin ATSkolla.");
     }
@@ -4814,7 +4814,7 @@ export function BendaharaPencairan() {
       <PageHeader
         icon={ArrowDownToLine}
         title="Pencairan Dana"
-        subtitle="Dana SPP online otomatis ditransfer DOKU ke rekening sekolah"
+        subtitle="Dana SPP online otomatis ditransfer sistem ke rekening sekolah"
         variant="primary"
         actions={
           <Button size="sm" onClick={() => setBankManageOpen(true)} className="gap-2 bg-white text-[#5B6CF9] hover:bg-white/90 border border-white/40 shadow-sm font-semibold">
@@ -4825,7 +4825,7 @@ export function BendaharaPencairan() {
 
       {/* KPI ringkas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <StatCard label="Transaksi Otomatis DOKU" value={String(splitPaid.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
+        <StatCard label="Transaksi Otomatis Sistem" value={String(splitPaid.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
         <StatCard label="Total Dana Masuk Otomatis" value={fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
       </div>
 
@@ -4835,9 +4835,9 @@ export function BendaharaPencairan() {
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <p className="text-sm font-semibold">Ditransfer Otomatis oleh DOKU</p>
+                <p className="text-sm font-semibold">Ditransfer Otomatis oleh Sistem</p>
                 <p className="text-xs text-muted-foreground">
-                  Pembayaran ini sudah langsung dikirim DOKU ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
+                  Pembayaran ini sudah langsung dikirim sistem ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
                 </p>
               </div>
               <div className="text-right">
@@ -4886,7 +4886,7 @@ export function BendaharaPencairan() {
             <CardContent className="p-4 space-y-3 text-sm">
               <p className="font-semibold">Pencairan dana sekarang otomatis</p>
               <p className="text-muted-foreground">
-                Setiap pembayaran SPP online langsung dibagi oleh DOKU: nominal SPP dikirim otomatis ke rekening utama sekolah sesuai jadwal pencairan DOKU. Bendahara tidak perlu mengajukan pencairan.
+                Setiap pembayaran SPP online langsung dibagi oleh sistem: nominal SPP dikirim otomatis ke rekening utama sekolah sesuai jadwal pencairan sistem. Bendahara tidak perlu mengajukan pencairan.
               </p>
               {(() => {
                 const acc = savedAccounts.find((x: any) => x.is_default) || savedAccounts[0];
