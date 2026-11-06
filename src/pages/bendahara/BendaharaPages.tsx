@@ -5168,11 +5168,7 @@ export function BendaharaPencairan() {
                 </Select>
                 <p className="text-[11px] text-muted-foreground mt-1">Setiap transaksi pencairan wajib diotorisasi via OTP WhatsApp ke penanggung jawab.</p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={newAccount.is_default} onChange={e => setNewAccount({ ...newAccount, is_default: e.target.checked })} />
-                Jadikan utama
-              </label>
-              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Simpan</Button>
+              <Button onClick={saveAccount} className="w-full bg-emerald-600 hover:bg-emerald-700">Ajukan Rekening</Button>
             </div>
           </div>
         </DialogContent>
