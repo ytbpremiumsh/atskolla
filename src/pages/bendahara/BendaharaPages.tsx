@@ -1776,6 +1776,22 @@ export function BendaharaGenerate() {
     });
   }, [profile?.school_id]);
 
+  const [monthlyInvs, setMonthlyInvs] = useState<any[]>([]);
+  const reloadMonthly = async () => {
+    if (!profile?.school_id) return;
+    const [all, monthly] = await Promise.all([
+      supabase.from("spp_invoices").select("student_id, period_month, period_year").eq("school_id", profile.school_id),
+      supabase.from("spp_invoices")
+        .select("id, student_id, student_name, class_name, period_label, bill_category, total_amount, status, due_date, created_at, bill_type")
+        .eq("school_id", profile.school_id)
+        .or("bill_type.is.null,bill_type.neq.custom")
+        .order("created_at", { ascending: false }),
+    ]);
+    setExistingInvs(all.data || []);
+    setMonthlyInvs(monthly.data || []);
+  };
+  useEffect(() => { reloadMonthly(); }, [profile?.school_id]);
+
   // Reset range when AY changes
   useEffect(() => { setRangeFrom(0); setRangeTo(ayMonths.length - 1); }, [schoolYear]);
 
@@ -1936,9 +1952,7 @@ export function BendaharaGenerate() {
           );
         })();
       }
-      // refresh existing invs to reflect new state
-      const { data } = await supabase.from("spp_invoices").select("student_id, period_month, period_year").eq("school_id", profile.school_id);
-      setExistingInvs(data || []);
+      await reloadMonthly();
     } finally { setLoading(false); }
   };
 
@@ -2167,6 +2181,7 @@ export function BendaharaGenerate() {
           </Button>
         </DialogContent>
       </Dialog>
+          <ActiveCustomInvoicesList invoices={monthlyInvs} onChanged={reloadMonthly} title="SPP Bulanan yang Sudah Dibuat" />
         </TabsContent>
 
         <TabsContent value="custom" className="space-y-4 mt-4">
@@ -2531,7 +2546,7 @@ function BendaharaGenerateCustom() {
   );
 }
 
-function ActiveCustomInvoicesList({ invoices, onChanged }: { invoices: any[]; onChanged: () => void | Promise<void> }) {
+function ActiveCustomInvoicesList({ invoices, onChanged, title = "Tagihan Custom Aktif" }: { invoices: any[]; onChanged: () => void | Promise<void>; title?: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
 
@@ -2587,7 +2602,7 @@ function ActiveCustomInvoicesList({ invoices, onChanged }: { invoices: any[]; on
     <Card className="border-0 shadow-sm">
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tagihan Custom Aktif</Label>
+          <Label className="text-xs uppercase tracking-wide text-muted-foreground">{title}</Label>
           <Badge variant="secondary" className="text-[10px]">{groups.length} grup</Badge>
         </div>
         <div className="space-y-2">
