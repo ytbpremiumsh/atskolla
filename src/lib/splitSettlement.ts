@@ -66,7 +66,7 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
         date,
         settleDate,
         count: list.length,
-        total: list.reduce((s, x) => s + Number(x.net_amount ?? x.total_amount ?? 0), 0),
+        total: list.reduce((s, x) => s + Number(x.net_amount || x.total_amount || 0), 0),
         status: (today >= settleDate ? "paid" : "processing") as SplitDay["status"],
         items: list,
       };
