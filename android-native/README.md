@@ -177,3 +177,7 @@ tanpa memfilter daftar saudara untuk notifikasi. Pilihan manual berikutnya tetap
 Refresh data ditunda selama drag/fling, auto-refresh tidak membangun ulang halaman saat
 pengguna membaca bagian bawah. Pola titik kartu memakai shader tile, bukan ratusan
 perintah gambar lingkaran berulang. FCM tetap memerlukan konfigurasi proyek/pengirim.
+
+## Version 2.9.0
+
+Native installment choice dialog matches the web flow: valid-payment progress, pending amount, server-calculated remaining balance, full/partial mode cards, formatted nominal, quick amounts, and transaction history. Both full remaining balance and partial amounts use the installment endpoint to avoid charging the original invoice total again. Minimum Rp10,000 and server remaining limits match the web; active pending links open the existing in-app checkout. No external browser, backend schema or Lovable AI changes. Emulator checks exercise quick amounts, boundaries, paid invoices, pending locks and expiry.

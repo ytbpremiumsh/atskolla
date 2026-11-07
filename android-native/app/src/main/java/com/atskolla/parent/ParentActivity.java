@@ -303,7 +303,15 @@ public class ParentActivity extends Activity {
         if(rows.length()==0){LinearLayout empty=Ui.card(this);empty(empty,"Belum ada tagihan dari sekolah.");add(empty);}if(rows.length()>visibleRows)add(button(this,"Tampilkan lebih banyak",false,()->{visibleRows+=40;load(false);}));if(!pendingPayment.isEmpty()&&!cached&&paymentChecks<8&&foreground){main.removeCallbacks(paymentPoll);main.postDelayed(paymentPoll,20000);}
     }
     final Runnable paymentPoll=()->{if(foreground&&screen.equals("spp")&&!pendingPayment.isEmpty()&&paymentChecks++<8)load(true);};
-    void installments(JSONObject invoice){call("installment_list",j("student_id",studentId,"invoice_id",s(invoice,"id")),r->{epoch++;base("Cicilan tagihan",true);LinearLayout summary=card(s(invoice,"period_label"),s(invoice,"invoice_number"));label(summary,"Lunas: "+rupiah(number(r,"paid_amount")));label(summary,"Menunggu pembayaran: "+rupiah(number(r,"pending_amount")));label(summary,"Dapat dicicil: "+rupiah(number(r,"remaining")));if(number(r,"remaining")>=10000)action(summary,"Lunasi sisa "+rupiah(number(r,"remaining")),true,()->payment(invoice,Math.round(number(r,"remaining"))));if(number(r,"remaining")>0){EditText amount=input(this,"Nominal cicilan (Rp)",InputType.TYPE_CLASS_NUMBER);add(amount);Button create=button(this,"Pilih metode pembayaran",true,()->{try{long value=Long.parseLong(amount.getText().toString());if(value<10000||value>number(r,"remaining")){amount.setError("Masukkan nominal Rp10.000 hingga sisa tagihan");return;}payment(invoice,value);}catch(Exception e){amount.setError("Masukkan nominal cicilan");}});add(create);}list(arr(r,"installments"),row->{LinearLayout c=card(rupiah(number(row,"amount")),date(s(row,"created_at")));badge(c,s(row,"status"));if("pending".equals(s(row,"status"))&&!s(row,"mayar_payment_url").isEmpty())action(c,"Lanjutkan pembayaran",false,()->launchCheckout(invoice,s(row,"id"),s(row,"mayar_payment_url"),child()));});},null);}
+    void installments(JSONObject invoice){
+        final String pupilId=studentId;final JSONObject pupil=child();
+        call("installment_list",j("student_id",pupilId,"invoice_id",s(invoice,"id")),summary->{
+            if(!pupilId.equals(studentId))return;
+            new InstallmentChoiceModal(this,invoice,summary,
+                amount->{if(pupilId.equals(studentId))payment(invoice,amount);},
+                item->{if(pupilId.equals(studentId))launchCheckout(invoice,s(item,"id"),s(item,"mayar_payment_url"),pupil);}).show();
+        },null);
+    }
     void launchCheckout(JSONObject invoice,String installmentId,String url,JSONObject pupil){
         if(!CheckoutPolicy.allowed(url)){alert("Tautan belum didukung","Pembayaran tidak dialihkan ke browser. Hubungi admin sekolah untuk memeriksa tautan penyedia.");return;}
         pendingPayment=s(invoice,"id");paymentChecks=0;screen="spp";

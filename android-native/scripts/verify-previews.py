@@ -56,3 +56,10 @@ preview=ET.parse('previews/pdf-preview.xml').getroot()
 assert any(n.get('text')=='Download bukti pembayaran' for n in preview.iter('node')), 'Native PDF preview missing download button'
 download=ET.parse('previews/pdf-download.xml').getroot()
 assert any(n.get('text')=='PDF DOWNLOAD PASSED' for n in download.iter('node')), 'Actual PDF download failed after preview process restart'
+
+installment=ET.parse('previews/modal-installment.xml').getroot()
+texts=[n.get('text','') for n in installment.iter('node')]
+for label in ['Bayar Tagihan','Sudah dibayar (valid)','Rp 10.000 / Rp 1.000.000','Rp 990.000','Bayar Lunas','Cicil','Nominal cicilan (Rp)','RIWAYAT TRANSAKSI CICILAN','✓ Lunas']:
+    assert label in texts, f'Installment modal missing: {label}'
+assert any(n.get('class')=='android.widget.Button' and n.get('enabled')=='false' and 'Lanjut Pilih Metode' in n.get('text','') for n in installment.iter('node')), 'Empty installment must disable continuation'
+print('Native installment modal: quick amounts, minimum/maximum, pending locks, full remaining payment and expiry checks passed')
