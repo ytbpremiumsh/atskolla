@@ -11,7 +11,7 @@ class TeacherStore {
  TeacherStore(TeacherApi api){this.api=api;}
  String uid(){return api.uid();}String schoolId(){return s(profile,"school_id");}String scope(){return q("school_id","eq."+schoolId());}
  ZoneId zone(){switch(s(school,"timezone")){case "WITA":return ZoneId.of("Asia/Makassar");case "WIT":return ZoneId.of("Asia/Jayapura");default:return ZoneId.of("Asia/Jakarta");}}
- LocalDate today(){return LocalDate.now(zone());}String timeNow(){return LocalTime.now(zone()).withNano(0).toString();}
+ LocalDate today(){return LocalDate.now(zone());}String timeNow(){return LocalTime.now(zone()).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));}
  void initialize()throws Exception{
   profile=first(api.get("profiles",q("select","*","user_id","eq."+uid())));if(schoolId().isEmpty())throw new IOException("Akun belum terhubung ke sekolah. Hubungi admin sekolah.");
   roles=api.get("user_roles",q("select","role","user_id","eq."+uid()));boolean permitted=false;for(JSONObject r:list(roles))if(Arrays.asList("teacher","wali_kelas").contains(s(r,"role")))permitted=true;
