@@ -133,7 +133,7 @@ public class ParentActivity extends Activity {
         words.addView(text(this,"Setiap langkah,\nselalu terhubung.",26,INK,true));gap(words,8);
         words.addView(text(this,"Ikuti kabar sekolah dan perjalanan belajar ananda.",13,MUTED,false));
         intro.addView(words,new LinearLayout.LayoutParams(0,-2,1));
-        intro.setBackground(surface(this,0xFFEEF0FE,22));pad(intro,20);add(intro);SchoolMotionView scene=new SchoolMotionView(this,false);intro.addView(scene,new LinearLayout.LayoutParams(dp(this,90),dp(this,115)));intro.setAlpha(0);intro.setTranslationY(dp(this,8));intro.animate().alpha(1).translationY(0).setDuration(280).start();
+        intro.setBackground(surface(this,0xFFEEF0FE,22));pad(intro,20);add(intro);SchoolMotionView scene=new SchoolMotionView(this,false);intro.addView(scene,new LinearLayout.LayoutParams(dp(this,100),dp(this,60)));intro.setAlpha(0);intro.setTranslationY(dp(this,8));intro.animate().alpha(1).translationY(0).setDuration(280).start();
         LinearLayout c=Ui.card(this);pad(c,22);add(c);
         c.addView(text(this,"Portal Wali Murid",23,INK,true));gap(c,4);c.addView(text(this,"Pantau aktivitas ananda dengan mudah",13,MUTED,false));gap(c,20);
         LinearLayout methods=row(this);methods.setBackground(bg(this,BG,14));pad(methods,4);
