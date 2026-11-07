@@ -63,3 +63,6 @@ for label in ['Bayar Tagihan','Sudah dibayar (valid)','Rp 10.000 / Rp 1.000.000'
     assert label in texts, f'Installment modal missing: {label}'
 assert any(n.get('class')=='android.widget.Button' and n.get('enabled')=='false' and 'Lanjut Pilih Metode' in n.get('text','') for n in installment.iter('node')), 'Empty installment must disable continuation'
 print('Native installment modal: quick amounts, minimum/maximum, pending locks, full remaining payment and expiry checks passed')
+
+account=ET.parse('previews/account.xml').getroot()
+assert not any('Hapus data tersimpan'==n.get('text') or 'Penghapusan akun dan data'==n.get('text') for n in account.iter('node')), 'Destructive account actions still visible'

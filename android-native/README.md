@@ -181,3 +181,7 @@ perintah gambar lingkaran berulang. FCM tetap memerlukan konfigurasi proyek/peng
 ## Version 2.9.0
 
 Native installment choice dialog matches the web flow: valid-payment progress, pending amount, server-calculated remaining balance, full/partial mode cards, formatted nominal, quick amounts, and transaction history. Both full remaining balance and partial amounts use the installment endpoint to avoid charging the original invoice total again. Minimum Rp10,000 and server remaining limits match the web; active pending links open the existing in-app checkout. No external browser, backend schema or Lovable AI changes. Emulator checks exercise quick amounts, boundaries, paid invoices, pending locks and expiry.
+
+## Version 2.10.0
+
+Invoice preview reuses private PDF files keyed by invoice data, school metadata and app version. It avoids the redundant spp_list call; school metadata is fetched once per student/session. The exact web generator remains bundled. Scripts stream from assets, logo fetches are bounded/downsampled and base64 PDF output travels in 32KB chunks. Preview bitmaps are capped at 960px and no longer recycled while RenderThread may still use them. Renderer failure/timeouts return to the app. School-themed native 2D scenes animate the splash and login, respect disabled system animations, pause offscreen and react to taps. Privacy no longer exposes cache/account/data deletion buttons; logout and the privacy policy remain.
