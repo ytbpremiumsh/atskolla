@@ -15,3 +15,6 @@ with zipfile.ZipFile(p/'teacher-report.xlsx') as z:
  ET.fromstring(z.read('xl/worksheets/sheet1.xml'))
  assert b'Nadia Putri' in z.read('xl/worksheets/sheet1.xml')
 print('18 native teacher screens, assignment guards, holiday/suspension rules, attendance writes, leave sync, encrypted sessions and PDF/XLSX exports passed')
+
+calendar=ET.parse(p/'calendar.xml')
+assert any(n.get('text')=='Kegiatan literasi sekolah' for n in calendar.iter('node')), 'Calendar event missing'
