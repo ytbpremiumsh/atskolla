@@ -1,9 +1,9 @@
-# ATSkolla Parent — Android native 2.7
+# ATSkolla Parent — Android native 2.8
 
 Layar layanan ditulis dengan Java dan widget Android. Hanya checkout penyedia pembayaran
 yang ditampilkan melalui WebView terisolasi. Generator PDF resmi web dijalankan lokal,
 tanpa navigasi jarak jauh atau JavaScript bridge.
-ID aplikasi `com.atskolla.parent`, versionCode 37, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 38, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -164,3 +164,16 @@ berdampingan. Picker mengambil label, deskripsi, logo dan default channel dari
 `src/lib/paymentChannels.ts`; fee dinamis dari payment_config, QRIS memakai rumus web.
 Tagihan baru dideteksi dari perbedaan ID terhadap daftar awal, tanpa mengumumkan semua
 tagihan lama pada pemeriksaan pertama. Deteksi tetap berkala sampai FCM dikonfigurasi.
+
+## PDF, login dan scroll 2.8
+
+PDF dibuka dalam preview PdfRenderer native sebelum diunduh. Android 10+ menyimpan PDF
+langsung ke Download/ATSkolla melalui MediaStore tanpa izin penyimpanan luas. Android 8–9
+memakai pemilih lokasi setelah tombol Download ditekan; sumber dokumen disimpan privat
+sehingga tidak bergantung pada byte array Activity yang bisa hilang saat proses dibuat ulang.
+Tidak ada toast persiapan PDF. Error renderer web ditangani tanpa menutup proses aplikasi.
+Login kartu memilih siswa dengan nomor kartu yang dimasukkan sekali setelah autentikasi,
+tanpa memfilter daftar saudara untuk notifikasi. Pilihan manual berikutnya tetap disimpan.
+Refresh data ditunda selama drag/fling, auto-refresh tidak membangun ulang halaman saat
+pengguna membaca bagian bawah. Pola titik kartu memakai shader tile, bukan ratusan
+perintah gambar lingkaran berulang. FCM tetap memerlukan konfigurasi proyek/pengirim.

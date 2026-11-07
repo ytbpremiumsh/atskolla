@@ -51,3 +51,8 @@ assert any(n.get('text')=='CHECKOUT CONFIRMED' for n in partial.iter('node')), '
 
 routing=ET.parse('previews/payment-routing.xml').getroot()
 assert any(n.get('text')=='PAYMENT ROUTES PASSED' for n in routing.iter('node')), 'New or resumed payment redirected out of the APK'
+
+preview=ET.parse('previews/pdf-preview.xml').getroot()
+assert any(n.get('text')=='Download bukti pembayaran' for n in preview.iter('node')), 'Native PDF preview missing download button'
+download=ET.parse('previews/pdf-download.xml').getroot()
+assert any(n.get('text')=='PDF DOWNLOAD PASSED' for n in download.iter('node')), 'Actual PDF download failed after preview process restart'

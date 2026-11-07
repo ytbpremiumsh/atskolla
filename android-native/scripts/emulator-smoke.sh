@@ -52,6 +52,20 @@ for attempt in $(seq 1 20); do
 done
 adb exec-out run-as com.atskolla.parent cat files/invoice-fixture.pdf > previews/invoice-fixture.pdf
 adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.PdfPreviewCheckActivity
+adb shell uiautomator dump /sdcard/pdf-preview.xml
+adb pull /sdcard/pdf-preview.xml previews/pdf-preview.xml
+adb shell screencap -p /sdcard/pdf-preview.png
+adb pull /sdcard/pdf-preview.png previews/pdf-preview.png
+adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.PdfPreviewCheckActivity --ez reuse true --ez auto_download true
+for attempt in $(seq 1 15); do
+  adb shell uiautomator dump /sdcard/pdf-download.xml
+  adb pull /sdcard/pdf-download.xml previews/pdf-download.xml
+  if rg -q 'PDF DOWNLOAD PASSED|PDF DOWNLOAD FAILED' previews/pdf-download.xml; then break; fi
+  sleep 1
+done
+adb shell am force-stop com.atskolla.parent
 adb shell am start -W -n com.atskolla.parent/.NativeLifecycleCheckActivity
 for attempt in $(seq 1 20); do
   adb shell uiautomator dump /sdcard/lifecycle.xml

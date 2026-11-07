@@ -24,16 +24,10 @@ final class Ui {
     static Button colorButton(Context c,String label,int start,int end,Runnable action){Button b=button(c,label,true,action);b.setBackground(new RippleDrawable(ColorStateList.valueOf(0x30FFFFFF),gradient(c,start,end,16),null));return b;}
     static android.graphics.drawable.Drawable brand(Context c, boolean dark){
         return new android.graphics.drawable.Drawable(){
-            final Paint paint=new Paint(3);
-            @Override public void draw(Canvas canvas){
-                Rect b=getBounds(); float r=dp(c,24); Path clip=new Path();clip.addRoundRect(new RectF(b),r,r,Path.Direction.CW);
-                canvas.save();canvas.clipPath(clip);
-                paint.setColor(Color.WHITE);paint.setAlpha(255);paint.setStyle(Paint.Style.FILL);paint.setShader(new LinearGradient(b.left,b.top,b.right,b.bottom,new int[]{BLUE,0xFF4338CA,dark?0xFF1E1B4B:0xFF4C5DED},null,Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
-                paint.setColor(0x16FFFFFF);canvas.drawCircle(b.right,b.top,dp(c,130),paint);canvas.drawCircle(b.left,b.bottom,dp(c,90),paint);
-                paint.setColor(0x14FFFFFF);for(int x=b.left+12;x<b.right;x+=dp(c,24))for(int y=b.top+12;y<b.bottom;y+=dp(c,24))canvas.drawCircle(x,y,dp(c,1),paint);
-                canvas.restore();
-            }
-            @Override public void setAlpha(int a){} @Override public void setColorFilter(ColorFilter f){} @Override public int getOpacity(){return PixelFormat.TRANSLUCENT;}
+            final Paint paint=new Paint(3);final Path clip=new Path();final Bitmap dots=Bitmap.createBitmap(dp(c,24),dp(c,24),Bitmap.Config.ARGB_8888);final BitmapShader pattern;LinearGradient colors;int width=-1,height=-1;
+            {Paint dot=new Paint(3);dot.setColor(0x14FFFFFF);new Canvas(dots).drawCircle(dp(c,12),dp(c,12),dp(c,1),dot);pattern=new BitmapShader(dots,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT);}
+            @Override public void draw(Canvas canvas){Rect b=getBounds();if(b.width()!=width||b.height()!=height){width=b.width();height=b.height();clip.reset();clip.addRoundRect(new RectF(b),dp(c,24),dp(c,24),Path.Direction.CW);colors=new LinearGradient(b.left,b.top,b.right,b.bottom,new int[]{BLUE,0xFF4338CA,dark?0xFF1E1B4B:0xFF4C5DED},null,Shader.TileMode.CLAMP);}canvas.save();canvas.clipPath(clip);paint.setColor(Color.WHITE);paint.setAlpha(255);paint.setStyle(Paint.Style.FILL);paint.setShader(colors);canvas.drawRect(b,paint);paint.setShader(null);paint.setColor(0x16FFFFFF);canvas.drawCircle(b.right,b.top,dp(c,130),paint);canvas.drawCircle(b.left,b.bottom,dp(c,90),paint);paint.setColor(Color.WHITE);paint.setAlpha(255);paint.setShader(pattern);canvas.drawRect(b,paint);paint.setShader(null);canvas.restore();}
+            @Override public void setAlpha(int a){}@Override public void setColorFilter(ColorFilter f){}@Override public int getOpacity(){return PixelFormat.TRANSLUCENT;}
         };
     }
     static TextView chip(Context c,String label,int color,int fill){TextView t=text(c,label,11,color,true);t.setPadding(dp(c,10),dp(c,5),dp(c,10),dp(c,5));t.setBackground(bg(c,fill,20));return t;}
