@@ -32,7 +32,7 @@ for filename in ['restored.xml','restored-again.xml']:
     assert not any('Portal Wali Murid'==n.get('text','') for n in root.iter('node')), 'Login unexpectedly requested'
 print('Native Keystore persistence, session renewal, arrival/departure notifications, de-duplication and persisted jobs verified')
 
-for modal in ['students','payment','success']:
+for modal in ['students','payment','ready','success']:
     root=ET.parse(Path('previews')/f'modal-{modal}.xml').getroot()
     assert any(n.get('class')=='android.widget.Button' for n in root.iter('node')), f'Custom modal actions absent: {modal}'
 pending=ET.parse('previews/checkout-pending.xml').getroot()

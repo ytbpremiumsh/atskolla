@@ -23,8 +23,13 @@ final class BrandImages {
         workers.execute(()->{
             HttpURLConnection connection=null;
             try{
-                connection=(HttpURLConnection)new URL(url).openConnection();connection.setInstanceFollowRedirects(false);
-                connection.setConnectTimeout(8000);connection.setReadTimeout(10000);
+                String currentUrl=url;
+                for(int redirect=0;redirect<4;redirect++){
+                    connection=(HttpURLConnection)new URL(currentUrl).openConnection();connection.setInstanceFollowRedirects(false);connection.setConnectTimeout(8000);connection.setReadTimeout(10000);
+                    int status=connection.getResponseCode();if(status<300||status>399)break;
+                    String location=connection.getHeaderField("Location");if(location==null)return;String next=new URL(new URL(currentUrl),location).toString();if(!next.startsWith("https://"))return;connection.disconnect();connection=null;currentUrl=next;
+                }
+                if(connection==null)return;
                 if(connection.getResponseCode()!=200||connection.getContentLengthLong()>3*1024*1024)return;
                 ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buffer=new byte[8192];int count;
                 try(InputStream in=connection.getInputStream()){while((count=in.read(buffer))!=-1){if(out.size()+count>3*1024*1024)return;out.write(buffer,0,count);}}

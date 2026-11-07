@@ -43,6 +43,9 @@ final class Ui {
         Glyph(Context c,String kind,int color){super(c);this.kind=kind;this.color=color;setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);}
         @Override protected void onDraw(Canvas canvas){super.onDraw(canvas);canvas.save();canvas.scale(getWidth()/24f,getHeight()/24f);p.setColor(color);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(1.7f);p.setStrokeCap(Paint.Cap.ROUND);p.setStrokeJoin(Paint.Join.ROUND);Path path=new Path();
             switch(kind){
+                case "qris":canvas.drawRoundRect(3,3,10,10,1,1,p);canvas.drawRoundRect(14,3,21,10,1,1,p);canvas.drawRoundRect(3,14,10,21,1,1,p);canvas.drawLine(14,14,18,14,p);canvas.drawLine(18,14,18,18,p);canvas.drawLine(14,18,14,21,p);canvas.drawLine(18,21,21,21,p);canvas.drawLine(21,16,21,18,p);break;
+                case "bank":path.moveTo(2,8);path.lineTo(12,2);path.lineTo(22,8);path.close();canvas.drawPath(path,p);canvas.drawLine(3,21,21,21,p);for(int x=5;x<=19;x+=7)canvas.drawLine(x,11,x,18,p);break;
+                case "store":canvas.drawRoundRect(4,9,20,21,1,1,p);path.moveTo(2,9);path.lineTo(5,3);path.lineTo(19,3);path.lineTo(22,9);path.close();canvas.drawPath(path,p);canvas.drawLine(9,3,8,9,p);canvas.drawLine(15,3,16,9,p);canvas.drawRect(13,14,17,21,p);canvas.drawRect(7,13,10,16,p);break;
                 case "logout":canvas.drawRoundRect(3,3,13,21,2,2,p);canvas.drawLine(10,12,22,12,p);path.moveTo(18,8);path.lineTo(22,12);path.lineTo(18,16);canvas.drawPath(path,p);break;
                 case "send":path.moveTo(2,10);path.lineTo(22,2);path.lineTo(15,22);path.lineTo(10,14);path.close();canvas.drawPath(path,p);canvas.drawLine(10,14,22,2,p);break;
                 case "clock":canvas.drawCircle(12,12,9,p);canvas.drawLine(12,6,12,12,p);canvas.drawLine(12,12,16,15,p);break;

@@ -11,11 +11,12 @@ import static com.atskolla.parent.Ui.*;
 /** A shared, scrollable native dialog with consistent cards and comfortable actions. */
 final class CardModal {
     final Activity activity;
-    String title="",message="",positive="",negative="",neutral="";
+    String title="",message="",positive="",negative="",neutral="",icon="card";
     DialogInterface.OnClickListener onPositive,onNegative,onNeutral,onItem;
     String[] items;View custom;
     CardModal(Activity activity){this.activity=activity;}
-    CardModal setTitle(String value){title=value;return this;}
+    CardModal setTitle(String value){title=value;if(value.toLowerCase(java.util.Locale.ROOT).contains("bayar")||value.toLowerCase(java.util.Locale.ROOT).contains("metode"))icon="wallet";return this;}
+    CardModal setIcon(String value){icon=value;return this;}
     CardModal setMessage(String value){message=value;return this;}
     CardModal setPositiveButton(String text,DialogInterface.OnClickListener callback){positive=text;onPositive=callback;return this;}
     CardModal setNegativeButton(String text,DialogInterface.OnClickListener callback){negative=text;onNegative=callback;return this;}
@@ -25,7 +26,7 @@ final class CardModal {
     Dialog show(){
         Dialog dialog=new Dialog(activity);dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         LinearLayout panel=column(activity);pad(panel,22);panel.setBackground(surface(activity,Color.WHITE,26));
-        LinearLayout header=row(activity);header.addView(iconTile(activity,"sparkle",Color.WHITE,BLUE,38),new LinearLayout.LayoutParams(dp(activity,38),dp(activity,38)));
+        LinearLayout header=row(activity);header.addView(iconTile(activity,icon,Color.WHITE,BLUE,38),new LinearLayout.LayoutParams(dp(activity,38),dp(activity,38)));
         TextView heading=text(activity,title,19,INK,true);heading.setPadding(dp(activity,12),0,0,0);header.addView(heading,new LinearLayout.LayoutParams(0,-2,1));panel.addView(header);gap(panel,18);
         if(!message.isEmpty()){TextView detail=text(activity,message,14,MUTED,false);detail.setLineSpacing(dp(activity,4),1);panel.addView(detail);gap(panel,18);}
         if(items!=null)for(int i=0;i<items.length;i++){final int index=i;Button choice=button(activity,items[i]+"  ›",false,()->{dialog.dismiss();if(onItem!=null)onItem.onClick(dialog,index);});choice.setGravity(Gravity.CENTER_VERTICAL|Gravity.START);panel.addView(choice,new LinearLayout.LayoutParams(-1,-2));gap(panel,10);}

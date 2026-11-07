@@ -13,7 +13,7 @@ for screen in home attendance spp schedule more info leave contact messages grad
   adb shell screencap -p "/sdcard/$screen.png"
   adb pull "/sdcard/$screen.png" "previews/$screen.png"
 done
-for modal in students payment success; do
+for modal in students payment ready success; do
   adb shell am force-stop com.atskolla.parent
   adb shell am start -W -n com.atskolla.parent/.NativePreviewActivity --es modal "$modal"
   adb shell uiautomator dump /sdcard/modal.xml
