@@ -46,7 +46,7 @@ final class InstallmentChoiceModal {
             partialTile=mode("Cicil","Bayar sebagian","Min Rp 10.000","clock",()->select(false));
             LinearLayout.LayoutParams left=new LinearLayout.LayoutParams(0,-1,1);left.rightMargin=dp(activity,8);modes.addView(fullTile,left);modes.addView(partialTile,new LinearLayout.LayoutParams(0,-1,1));content.addView(modes);gap(content,16);
             editor=column(activity);editor.addView(text(activity,"Nominal cicilan (Rp)",12,INK,true));gap(editor,7);
-            amount=input(activity,"Maks "+rupiah(remaining),InputType.TYPE_CLASS_NUMBER);amount.setTextSize(16);amount.setMinHeight(dp(activity,48));amount.setFilters(new InputFilter[]{new InputFilter.LengthFilter(20)});editor.addView(amount);gap(editor,5);
+            amount=input(activity,"Maks "+rupiah(remaining),InputType.TYPE_CLASS_NUMBER);amount.setKeyListener(android.text.method.DigitsKeyListener.getInstance("0123456789."));amount.setRawInputType(InputType.TYPE_CLASS_NUMBER);amount.setTextSize(16);amount.setMinHeight(dp(activity,48));amount.setFilters(new InputFilter[]{new InputFilter.LengthFilter(20)});editor.addView(amount);gap(editor,5);
             // Three columns wrap safely on small phones and with larger system fonts.
             LinearLayout quick=column(activity),quickRow=null;LinkedHashSet<Long> values=new LinkedHashSet<>(Arrays.asList(100000L,250000L,500000L,remaining));int index=0;
             for(long value:values){if(value<=0||value>remaining)continue;if(index%3==0){quickRow=row(activity);quick.addView(quickRow);}final long v=value;Button b=button(activity,v==remaining?"Sisa":rupiah(v),false,()->{amount.setText(String.valueOf(v));amount.setSelection(amount.length());});b.setTextSize(10);b.setMinHeight(dp(activity,40));b.setPadding(dp(activity,4),dp(activity,3),dp(activity,4),dp(activity,3));LinearLayout.LayoutParams size=new LinearLayout.LayoutParams(0,dp(activity,44),1);size.rightMargin=dp(activity,4);quickRow.addView(b,size);index++;}
@@ -61,7 +61,7 @@ final class InstallmentChoiceModal {
                 content.addView(card);gap(content,7);
             }
         }
-        dialog=new CardModal(activity).setTitle("Bayar Tagihan").setIcon("wallet").setCloseButton().setMessage(s(invoice,"period_label")+" • "+rupiah(total)).setView(content).show();return dialog;
+        dialog=new CardModal(activity).setTitle("Bayar Tagihan").setIcon("wallet").setCloseButton().setTallContent().setMessage(s(invoice,"period_label")+" • "+rupiah(total)).setView(content).show();return dialog;
     }
     private LinearLayout mode(String title,String subtitle,String value,String icon,Runnable action){LinearLayout tile=column(activity);pad(tile,11);tile.setMinimumHeight(dp(activity,100));LinearLayout titleRow=row(activity);titleRow.addView(new Glyph(activity,icon,BLUE),new LinearLayout.LayoutParams(dp(activity,17),dp(activity,17)));TextView name=text(activity,title,13,INK,true);name.setPadding(dp(activity,7),0,0,0);titleRow.addView(name,new LinearLayout.LayoutParams(0,-2,1));tile.addView(titleRow);gap(tile,5);tile.addView(text(activity,subtitle,10,MUTED,false));gap(tile,3);tile.addView(text(activity,value,12,INK,true));tile.setFocusable(true);tile.setContentDescription(title+", "+subtitle+", "+value);tile.setOnClickListener(v->action.run());return tile;}
     void select(boolean value){full=value;if(editor==null)return;editor.setVisibility(full?View.GONE:View.VISIBLE);style(fullTile,full,0xFF10A979);style(partialTile,!full,BLUE);update();}

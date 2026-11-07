@@ -14,7 +14,7 @@ final class InstallmentChoiceCheck {
     static void run(Activity activity){
         long[] continued={0};InstallmentChoiceModal choice=new InstallmentChoiceModal(activity,invoice(),summary(),value->continued[0]=value,item->{});Dialog dialog=choice.show();
         require(!choice.proceed.isEnabled()&&choice.nominal()==0,"Empty amount must not create payment");
-        Button quick=find((ViewGroup)choice.editor,"Rp 100.000");require(quick!=null,"Quick amount missing");quick.performClick();require(choice.nominal()==100000&&choice.proceed.isEnabled(),"Quick amount changed");
+        Button quick=find((ViewGroup)choice.editor,"Rp 100.000");require(quick!=null,"Quick amount missing");quick.performClick();require(choice.nominal()==100000&&choice.proceed.isEnabled()&&"100.000".contentEquals(choice.amount.getText()),"Quick amount changed");
         choice.amount.setText("9999");require(!choice.proceed.isEnabled(),"Minimum amount not enforced");
         choice.amount.setText("990001");require(!choice.proceed.isEnabled(),"Amount exceeded server remaining");
         choice.amount.setText("10000");require(choice.proceed.isEnabled(),"Minimum amount rejected");choice.proceed.performClick();require(continued[0]==10000&&!dialog.isShowing(),"Partial payment callback failed");
