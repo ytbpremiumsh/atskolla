@@ -19,7 +19,7 @@ final class ParentNotifications {
             Vault vault=new Vault(context);String token=vault.get("token");if(token.isEmpty())return;
             JSONObject me;
             try{me=api.call("me",new JSONObject(),token);}catch(ParentApi.Failure error){if(!error.unauthorized||!mayRenew||foreground)throw error;String next=ParentSessions.renew(context,api,token);if(next.isEmpty())throw error;token=next;me=api.call("me",new JSONObject(),token);}
-            if(!active(context,vault,token))return;vault.put("me",me.toString());
+            synchronized(Vault.LOCK){if(!active(context,vault,token))return;vault.put("me",me.toString());}
             JSONArray children=me.optJSONArray("students");if(children==null)return;
             Instant since;try{since=Instant.parse(vault.get("notifications_since"));}catch(Exception e){return;}
             String from=LocalDate.now(ZoneId.of("Asia/Jakarta")).minusDays(1).toString(),to=LocalDate.now(ZoneId.of("Asia/Jakarta")).toString();
