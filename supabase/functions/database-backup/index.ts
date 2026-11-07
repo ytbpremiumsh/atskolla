@@ -2,6 +2,7 @@ import { backupManifest, exportApplicationData, restoreOrder } from "../_shared/
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
+  'X-ATSkolla-Backup-Version': '3',
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
