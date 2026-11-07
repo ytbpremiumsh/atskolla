@@ -8,7 +8,7 @@ import android.view.*;
 import android.widget.*;
 
 final class Ui {
-    static final int BLUE=Color.rgb(82,104,224),INK=Color.rgb(24,36,61),MUTED=Color.rgb(107,120,143),BG=Color.rgb(246,248,252),LINE=Color.rgb(232,237,246);
+    static final int BLUE=Color.rgb(91,108,249),INK=Color.rgb(24,36,61),MUTED=Color.rgb(107,120,143),BG=Color.rgb(244,245,251),LINE=Color.rgb(232,237,246);
     static int dp(Context c,float v){return Math.round(v*c.getResources().getDisplayMetrics().density);}
     static GradientDrawable bg(Context c,int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(c,radius));return d;}
     static LinearLayout column(Context c){LinearLayout v=new LinearLayout(c);v.setOrientation(LinearLayout.VERTICAL);return v;}
@@ -16,9 +16,25 @@ final class Ui {
     static TextView text(Context c,String value,int size,int color,boolean bold){TextView t=new TextView(c);t.setText(value);t.setTextSize(size);t.setTextColor(color);t.setFontFeatureSettings("kern");if(bold)t.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));t.setLineSpacing(dp(c,3),1);return t;}
     static void pad(View v,int all){int d=dp(v.getContext(),all);v.setPadding(d,d,d,d);}
     static void gap(LinearLayout v,int height){View gap=new View(v.getContext());v.addView(gap,new LinearLayout.LayoutParams(1,dp(v.getContext(),height)));}
-    static LinearLayout card(Context c){LinearLayout v=column(c);pad(v,20);v.setBackground(bg(c,Color.WHITE,20));v.setElevation(dp(c,1));return v;}
+    static LinearLayout card(Context c){LinearLayout v=column(c);pad(v,20);v.setBackground(bg(c,Color.WHITE,20));v.setElevation(dp(c,2));return v;}
     static Button button(Context c,String label,boolean primary,Runnable action){Button b=new Button(c);b.setText(label);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));b.setTextColor(primary?Color.WHITE:BLUE);b.setMinHeight(dp(c,48));b.setPadding(dp(c,16),dp(c,8),dp(c,16),dp(c,8));b.setBackground(new RippleDrawable(ColorStateList.valueOf(0x225268E0),bg(c,primary?BLUE:0xFFF0F3FF,14),null));b.setOnClickListener(v->action.run());return b;}
     static EditText input(Context c,String hint,int type){EditText e=new EditText(c);e.setHint(hint);e.setTextSize(16);e.setTextColor(INK);e.setHintTextColor(MUTED);e.setInputType(type);e.setSingleLine(true);e.setMinHeight(dp(c,56));e.setPadding(dp(c,16),dp(c,12),dp(c,16),dp(c,12));GradientDrawable d=bg(c,BG,14);d.setStroke(dp(c,1),LINE);e.setBackground(d);return e;}
+    static android.graphics.drawable.Drawable brand(Context c, boolean dark){
+        return new android.graphics.drawable.Drawable(){
+            final Paint paint=new Paint(3);
+            @Override public void draw(Canvas canvas){
+                Rect b=getBounds(); float r=dp(c,24); Path clip=new Path();clip.addRoundRect(new RectF(b),r,r,Path.Direction.CW);
+                canvas.save();canvas.clipPath(clip);
+                paint.setShader(new LinearGradient(b.left,b.top,b.right,b.bottom,new int[]{BLUE,0xFF4338CA,dark?0xFF1E1B4B:0xFF4C5DED},null,Shader.TileMode.CLAMP));canvas.drawRect(b,paint);paint.setShader(null);
+                paint.setColor(0x16FFFFFF);canvas.drawCircle(b.right,b.top,dp(c,130),paint);canvas.drawCircle(b.left,b.bottom,dp(c,90),paint);
+                paint.setColor(0x14FFFFFF);for(int x=b.left+12;x<b.right;x+=dp(c,24))for(int y=b.top+12;y<b.bottom;y+=dp(c,24))canvas.drawCircle(x,y,dp(c,1),paint);
+                canvas.restore();
+            }
+            @Override public void setAlpha(int a){} @Override public void setColorFilter(ColorFilter f){} @Override public int getOpacity(){return PixelFormat.TRANSLUCENT;}
+        };
+    }
+    static TextView chip(Context c,String label,int color,int fill){TextView t=text(c,label,11,color,true);t.setPadding(dp(c,10),dp(c,5),dp(c,10),dp(c,5));t.setBackground(bg(c,fill,20));return t;}
+    static FrameLayout iconTile(Context c,String kind,int color,int fill,int size){FrameLayout tile=new FrameLayout(c);tile.setBackground(bg(c,fill,16));tile.addView(new Glyph(c,kind,color),new FrameLayout.LayoutParams(dp(c,size/2),dp(c,size/2),Gravity.CENTER));return tile;}
     static class Glyph extends View {
         final String kind;final int color;final Paint p=new Paint(3);
         Glyph(Context c,String kind,int color){super(c);this.kind=kind;this.color=color;setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);}
