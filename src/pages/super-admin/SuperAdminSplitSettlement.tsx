@@ -1,3 +1,4 @@
+import { BankBookAttachment } from "@/components/bank/BankBookAttachment";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,8 @@ type Bank = {
   doku_bank_account_settlement_id: string | null;
   verification_status: string | null;
   rejection_reason: string | null;
+  bank_branch: string | null;
+  bank_book_path: string | null;
 };
 type Reg = { id: string; bank_name: string; account_number: string; account_holder: string | null; settlement_id: string | null };
 type School = { id: string; name: string; doku_settlement_bank_id: string | null };
@@ -93,9 +96,10 @@ const SuperAdminSplitSettlement = () => {
       supabase.from("schools").select("id,name,doku_settlement_bank_id").order("name"),
       supabase
         .from("bendahara_bank_accounts")
-        .select("id,school_id,bank_name,account_number,account_holder,is_default,is_active,doku_bank_account_settlement_id,verification_status,rejection_reason"),
+        .select("id,school_id,bank_name,account_number,account_holder,is_default,is_active,doku_bank_account_settlement_id,verification_status,rejection_reason,bank_branch,bank_book_path"),
     ]);
     if (sRes.error) toast.error("Gagal memuat sekolah: " + sRes.error.message);
+    if (bRes.error) toast.error("Gagal memuat rekening: " + bRes.error.message);
     const list = (sRes.data || []) as School[];
     const byS: Record<string, Bank[]> = {};
     for (const b of (bRes.data || []) as Bank[]) (byS[b.school_id] ||= []).push(b);
@@ -214,6 +218,8 @@ const SuperAdminSplitSettlement = () => {
                     <span className="font-medium text-foreground">{b.bank_name || "-"}</span>{" "}
                     <span className="font-mono">{b.account_number || "-"}</span> a.n. {b.account_holder || "-"}
                   </p>
+                  <p className="mt-1 text-xs text-muted-foreground">Cabang: <span className="font-medium text-foreground">{b.bank_branch || "Belum diisi (rekening lama)"}</span></p>
+                  <BankBookAttachment path={b.bank_book_path} bank={b.bank_name} holder={b.account_holder} />
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" onClick={() => setVerification(b, "verified")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verifikasi</Button>
@@ -291,6 +297,8 @@ const SuperAdminSplitSettlement = () => {
                         <AlertTriangle className="h-3.5 w-3.5" /> Bendahara belum menginput rekening
                       </div>
                     )}
+                    {bank && <div className="space-y-1"><p className="text-xs text-muted-foreground">Cabang: {bank.bank_branch || "Belum diisi (rekening lama)"}</p><BankBookAttachment path={bank.bank_book_path} bank={bank.bank_name} holder={bank.account_holder} /></div>}
+                    {(banks[s.id] || []).filter(b => b.id !== bank?.id && b.is_active !== false).map(b => <details key={b.id} className="rounded-lg border p-2 text-xs"><summary className="cursor-pointer font-medium">Rekening lain: {b.bank_name} · {b.account_number}</summary><p className="mt-2">a.n. {b.account_holder} · Cabang: {b.bank_branch || "Belum diisi"}</p><BankBookAttachment path={b.bank_book_path} bank={b.bank_name} holder={b.account_holder} /></details>)}
                   </div>
                   <div className="flex gap-2">
                     <Input

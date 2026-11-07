@@ -2,6 +2,6 @@
   "name": "atskolla-payment-regression-tests",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node --test doku.test.ts doku-reconciliation.test.mjs operational-reliability.test.mjs" },
+  "scripts": { "test": "node --test doku.test.ts doku-reconciliation.test.mjs operational-reliability.test.mjs bank-evidence.test.mjs" },
   "devDependencies": { "@electric-sql/pglite": "0.5.10" }
 }

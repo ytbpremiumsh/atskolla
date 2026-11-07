@@ -283,6 +283,8 @@ export type Database = {
           account_type: string
           archived_at: string | null
           bank_name: string
+          bank_branch: string | null
+          bank_book_path: string | null
           created_at: string
           created_by: string | null
           doku_bank_account_settlement_id: string | null
@@ -307,6 +309,8 @@ export type Database = {
           account_type?: string
           archived_at?: string | null
           bank_name: string
+          bank_branch: string | null
+          bank_book_path: string | null
           created_at?: string
           created_by?: string | null
           doku_bank_account_settlement_id?: string | null
@@ -331,6 +335,8 @@ export type Database = {
           account_type?: string
           archived_at?: string | null
           bank_name?: string
+          bank_branch?: string | null
+          bank_book_path?: string | null
           created_at?: string
           created_by?: string | null
           doku_bank_account_settlement_id?: string | null
