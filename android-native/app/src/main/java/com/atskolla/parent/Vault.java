@@ -14,6 +14,7 @@ import javax.crypto.spec.GCMParameterSpec;
 
 /** All tokens and cached student data are encrypted with a non-exportable device key. */
 final class Vault {
+    static final Object LOCK=new Object();
     private final SharedPreferences prefs;
     private final String alias="atskolla-parent-native-v1";
     Vault(Context c) { prefs=c.getSharedPreferences("native-vault",Context.MODE_PRIVATE); }
@@ -27,18 +28,19 @@ final class Vault {
         }
         return ((KeyStore.SecretKeyEntry)ks.getEntry(alias,null)).getSecretKey();
     }
-    synchronized void put(String name,String value) throws Exception {
+    void put(String name,String value) throws Exception { synchronized(LOCK){
         Cipher c=Cipher.getInstance("AES/GCM/NoPadding");c.init(Cipher.ENCRYPT_MODE,key());
         String data=Base64.encodeToString(c.getIV(),Base64.NO_WRAP)+":"+Base64.encodeToString(c.doFinal(value.getBytes(StandardCharsets.UTF_8)),Base64.NO_WRAP);
-        prefs.edit().putString(name,data).apply();
-    }
-    synchronized String get(String name) {
+        if(!prefs.edit().putString(name,data).commit())throw new java.io.IOException("Sesi tidak dapat disimpan di perangkat");
+    }}
+    String get(String name) { synchronized(LOCK){
         try {
             String raw=prefs.getString(name,"");if(raw.isEmpty())return "";
             String[] p=raw.split(":",2);Cipher c=Cipher.getInstance("AES/GCM/NoPadding");
             c.init(Cipher.DECRYPT_MODE,key(),new GCMParameterSpec(128,Base64.decode(p[0],Base64.NO_WRAP)));
             return new String(c.doFinal(Base64.decode(p[1],Base64.NO_WRAP)),StandardCharsets.UTF_8);
         } catch(Exception e) { prefs.edit().remove(name).apply();return ""; }
-    }
-    synchronized void clear(){prefs.edit().clear().apply();}
+    }}
+    void clear(){synchronized(LOCK){prefs.edit().clear().commit();}}
+    void clearCache(){synchronized(LOCK){SharedPreferences.Editor editor=prefs.edit();for(String key:prefs.getAll().keySet())for(String action:new String[]{"attendance:","announcements:","spp_list:","schedule:","calendar:","homeroom:","grades:","list_messages:","list_leaves:"})if(key.startsWith(action)){editor.remove(key);break;}editor.commit();}}
 }

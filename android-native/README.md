@@ -1,8 +1,8 @@
-# ATSkolla Parent — Android native 2.3
+# ATSkolla Parent — Android native 2.4
 
 Android UI ditulis dengan Java dan widget Android. Tidak ada WebView, HTML, React,
 JavaScript bridge, atau mesin browser tertanam. Logo ATSkolla memakai aset asli.
-ID aplikasi `com.atskolla.parent`, versionCode 33, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 34, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -104,3 +104,27 @@ diurutkan per jam, dengan header indigo dan warna tiap mata pelajaran. Status se
 berlangsung memakai waktu Asia/Jakarta (WIB), sesuai dasar waktu aplikasi saat ini.
 Izin/sakit menampilkan formulir dan riwayat pada satu halaman; draft alasan dipertahankan
 saat data disegarkan, dan tombol kirim menunggu lampiran selesai diunggah.
+
+## Desain dan sesi 2.4
+
+Splash berlogo menuju login atau dashboard berdasarkan sesi tersimpan. Tombol kembali
+dari beranda memindahkan aplikasi ke latar belakang. Sesi/kode kartu disimpan dengan
+Android Keystore dan commit atomik, bukan memori proses. Login kartu dapat memulihkan
+sesi kedaluwarsa secara otomatis selama kartu masih valid. Login OTP tanpa kartu
+tersimpan tetap tunduk pada masa sesi server. Logout menghapus kredensial, data
+tersimpan, dan notifikasi; hapus cache tidak menghapus kredensial.
+
+Notifikasi Android Datang/Pulang mendeteksi data hadir berdasarkan attendance_type,
+tidak dibatasi metode QR/NFC/wajah/manual. Hanya siswa dalam akun dan akses API yang
+sah diproses. Pemeriksaan 30 detik saat aplikasi tampak dan JobScheduler persisten
+15 menit atau lebih di latar belakang. Ini bukan FCM/push instan: belum ada proyek
+Firebase/konfigurasi pengirim di lingkungan ini. Android dapat menunda saat hemat
+baterai, offline, atau menghentikan job setelah force-stop sampai aplikasi dibuka.
+Notifikasi diaktifkan setelah izin pengguna, memiliki kanal khusus, menyamarkan detail
+ketika terkunci, dan membuka riwayat siswa/tanggal yang sesuai. Riwayat sebelum aktivasi
+tidak diumumkan ulang. Identitas peristiwa tanggal/waktu/arah disimpan terenkripsi untuk
+mencegah notifikasi ganda, termasuk bila metode dikoreksi.
+
+Pengujian debug menggunakan API fixture tanpa jaringan: Keystore/cache/renewal/logout,
+dua notifikasi Android, metode absensi, deduplikasi, job persisten, dan dua restart
+proses yang tetap menuju dashboard. Seluruh fixture dan activity uji tidak ada di release.

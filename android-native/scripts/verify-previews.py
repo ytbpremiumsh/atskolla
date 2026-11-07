@@ -23,3 +23,11 @@ assert any(n.get('text')=='07:30' for n in schedule.iter('node')), 'Lesson time 
 assert any(n.get('text')=='Kadaluarsa' for n in spp.iter('node')), 'Expired bill status missing'
 leave=ET.parse('previews/leave.xml').getroot()
 assert any(n.get('text')=='Kirim Pengajuan' for n in leave.iter('node')), 'Inline leave form missing'
+
+checks=ET.parse('previews/lifecycle.xml').getroot()
+assert any(n.get('text')=='CHECKS PASSED' for n in checks.iter('node')), 'Native session/notification integration checks failed'
+for filename in ['restored.xml','restored-again.xml']:
+    root=ET.parse(Path('previews')/filename).getroot()
+    assert any('RINGKASAN BULAN INI' in n.get('text','') for n in root.iter('node')), 'Session lost after process restart'
+    assert not any('Portal Wali Murid'==n.get('text','') for n in root.iter('node')), 'Login unexpectedly requested'
+print('Native Keystore persistence, session renewal, arrival/departure notifications, de-duplication and persisted jobs verified')

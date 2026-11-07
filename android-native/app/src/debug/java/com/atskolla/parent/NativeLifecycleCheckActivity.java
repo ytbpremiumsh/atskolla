@@ -1,0 +1,32 @@
+package com.atskolla.parent;
+
+import android.app.*;
+import android.app.job.*;
+import android.os.Bundle;
+import android.widget.TextView;
+import org.json.*;
+import java.time.*;
+
+/** Real device Keystore, session, job and Android-notification checks; no network calls. */
+public final class NativeLifecycleCheckActivity extends Activity {
+    static JSONObject student(){return ParentActivity.j("id","sample-student","name","Nadia Putri","class","VII A","student_id","DEMO-001","card_number","0000000000000000","schools",ParentActivity.j("name","Sekolah Contoh"));}
+    static JSONObject me(){return ParentActivity.j("students",new JSONArray().put(student()));}
+    static final class Api extends ParentApi {
+        int renewals;final JSONArray attendance;
+        Api(android.content.Context c,JSONArray rows){super(c);attendance=rows;}
+        @Override JSONObject call(String action,JSONObject args,String token){if(action.equals("login_card")){renewals++;return ParentActivity.j("token","test-renewed-session");}if(action.equals("attendance")){if(!args.optString("student_id").equals("sample-student"))throw new AssertionError("Cross-student request");return ParentActivity.j("attendance",attendance);}if(action.equals("me"))return me();if(action.equals("announcements"))return ParentActivity.j("announcements",new JSONArray());if(action.equals("spp_list"))return ParentActivity.j("invoices",new JSONArray());return ParentActivity.j("ok",true);}
+    }
+    static void require(boolean value,String message){if(!value)throw new AssertionError(message);}
+    @Override public void onCreate(Bundle state){super.onCreate(state);TextView label=new TextView(this);label.setText("CHECKING");setContentView(label);new Thread(()->{try{
+        Vault vault=new Vault(this);ParentNotificationJob.disable(this);vault.clear();vault.put("token","test-original-session");vault.put("remembered_card","0000000000000000");vault.put("me",me().toString());vault.put("attendance:{}","cached");vault.clearCache();require(new Vault(this).get("token").equals("test-original-session"),"Session lost after cache clear");require(!new Vault(this).get("remembered_card").isEmpty(),"Remembered card lost");require(vault.get("attendance:{}").isEmpty(),"Cache not cleared");
+        Api api=new Api(this,new JSONArray());require(ParentSessions.renew(this,api,"test-original-session").equals("test-renewed-session"),"Session not renewed");require(ParentSessions.renew(this,api,"test-original-session").equals("test-renewed-session")&&api.renewals==1,"Session renewed twice");vault.clear();require(ParentSessions.renew(this,api,"test-renewed-session").isEmpty(),"Logged-out session resurrected");
+        Instant now=Instant.now();ZonedDateTime first=now.minusSeconds(50).atZone(ZoneId.of("Asia/Jakarta")),second=now.minusSeconds(20).atZone(ZoneId.of("Asia/Jakarta"));
+        JSONObject arrival=ParentActivity.j("date",first.toLocalDate().toString(),"time",first.toLocalTime().withNano(0).toString(),"status","hadir","attendance_type","masuk","method","QR"),departure=ParentActivity.j("date",second.toLocalDate().toString(),"time",second.toLocalTime().withNano(0).toString(),"status","hadir","attendance_type","pulang","method","face");
+        require(AttendanceEvents.fresh(arrival,now.minusSeconds(60),now),"Arrival not detected");require(AttendanceEvents.direction(departure).equals("Pulang"),"Departure not detected");require(!AttendanceEvents.fresh(arrival,now,now),"Historical event incorrectly announced");
+        String identity=AttendanceEvents.key("sample-student",arrival);for(String method:new String[]{"QR","NFC","face","manual","fingerprint"}){arrival.put("method",method);require(AttendanceEvents.fresh(arrival,now.minusSeconds(60),now),"Method omitted: "+method);require(identity.equals(AttendanceEvents.key("sample-student",arrival)),"Method edit generated a duplicate event");}arrival.put("status","alfa");require(AttendanceEvents.direction(arrival).isEmpty(),"Absence announced as arrival");arrival.put("status","hadir");
+        vault.put("token","test-notifications-session");vault.put("me",me().toString());vault.put("notifications_enabled","yes");vault.put("notifications_since",now.minusSeconds(60).toString());Api notifications=new Api(this,new JSONArray().put(arrival).put(departure));ParentNotifications.check(this,false,notifications);NotificationManager manager=getSystemService(NotificationManager.class);for(int wait=0;wait<30&&manager.getActiveNotifications().length<2;wait++)Thread.sleep(100);require(manager.getActiveNotifications().length==2,"Expected two Android attendance notifications");ParentNotifications.check(this,false,notifications);require(manager.getActiveNotifications().length==2,"Duplicate notifications");require(new JSONArray(vault.get("attendance_notification_seen:sample-student")).length()==2,"Seen events not persisted");
+        ParentNotificationJob.schedule(this);JobInfo job=getSystemService(JobScheduler.class).getPendingJob(81021);require(job!=null&&job.isPersisted(),"Background checks do not survive reboot");ParentNotificationJob.disable(this);for(int wait=0;wait<20&&manager.getActiveNotifications().length!=0;wait++)Thread.sleep(100);require(manager.getActiveNotifications().length==0,"Notifications remain after disable");vault.clear();ParentNotifications.check(this,false,notifications);require(manager.getActiveNotifications().length==0,"Logged-out notification delivered");
+        // Synthetic session for process-restart routing checks. Notifications stay disabled.
+        vault.put("token","test-restored-session");vault.put("me",me().toString());vault.put("notifications_enabled","no");vault.put("notifications_prompted","yes");runOnUiThread(()->label.setText("CHECKS PASSED"));
+    }catch(Throwable error){runOnUiThread(()->label.setText("CHECKS FAILED: "+error));throw new RuntimeException(error);}},"native-lifecycle-check").start();}
+}
