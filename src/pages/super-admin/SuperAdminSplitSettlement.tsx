@@ -3,8 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle, Plus, Trash2 } from "lucide-react";
+import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle, Plus, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -63,6 +65,39 @@ const SuperAdminSplitSettlement = () => {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [regs, setRegs] = useState<Reg[]>([]);
+  const [editingRegistry, setEditingRegistry] = useState<Reg | null>(null);
+  const [registrySettlementId, setRegistrySettlementId] = useState("");
+  const [registrySaving, setRegistrySaving] = useState(false);
+  const registrySaveBusy = useRef(false);
+  const editRegistry = (account: Reg) => { setEditingRegistry(account);setRegistrySettlementId(account.settlement_id || ""); };
+  const saveRegistry = async () => {
+    if (!editingRegistry || registrySaveBusy.current) return;
+    const value = registrySettlementId.trim().toUpperCase();
+    if (!value || !ID_PATTERN.test(value)) { toast.error("Masukkan Settlement ID resmi dari DOKU dengan format BNK-..."); return; }
+    registrySaveBusy.current = true;setRegistrySaving(true);
+    try {
+      let update = supabase.from("doku_registered_accounts").update({ settlement_id: value }).eq("id", editingRegistry.id);
+      update = editingRegistry.settlement_id === null ? update.is("settlement_id", null) : update.eq("settlement_id", editingRegistry.settlement_id);
+      const { error } = await update.select("id").single();
+      if (error) throw error;
+      const edited = editingRegistry;
+      setEditingRegistry(null);
+      const refreshed = await load();
+      setDraft(previous => {
+        const next = { ...previous };
+        for (const school of refreshed.schoolRows) {
+          const bank = pickBank(refreshed.bankRows[school.id] || []);
+          if (bank && (bank.bank_name || "").replace(/\s/g, "").toUpperCase() === edited.bank_name.replace(/\s/g, "").toUpperCase()
+            && (bank.account_number || "").replace(/\D/g, "") === edited.account_number.replace(/\D/g, "")) next[school.id] = value;
+        }
+        return next;
+      });
+      toast.success("Settlement ID tersimpan. Periksa dan klik Simpan pada Langkah 3 untuk menerapkannya ke sekolah.");
+    } catch (error) {
+      const issue = error as { message?: string; code?: string };
+      toast.error(issue?.code === "PGRST116" ? "Data rekening sudah berubah. Tutup formulir, muat ulang, lalu coba lagi." : "Gagal menyimpan Settlement ID: " + (issue?.message || "Coba lagi."));
+    } finally { registrySaveBusy.current = false;setRegistrySaving(false); }
+  };
   const [reg, setReg] = useState({ bank_name: "", account_number: "", account_holder: "", settlement_id: "" });
 
   const loadRegs = async () => {
@@ -83,7 +118,7 @@ const SuperAdminSplitSettlement = () => {
     if (error) { toast.error(error.message.includes("duplicate") ? "Nomor rekening sudah ada di daftar" : error.message); return; }
     toast.success("Ditambahkan. Pengajuan sekolah yang cocok otomatis terverifikasi.");
     setReg({ bank_name: "", account_number: "", account_holder: "", settlement_id: "" });
-    await Promise.all([loadRegs(), load()]);
+    await load();
   };
 
   const delReg = async (id: string) => {
@@ -95,14 +130,19 @@ const SuperAdminSplitSettlement = () => {
 
   const load = async () => {
     setLoading(true);
-    const [sRes, bRes] = await Promise.all([
+    const [sRes, bRes, rRes] = await Promise.all([
       supabase.from("schools").select("id,name,doku_settlement_bank_id").order("name"),
       supabase
         .from("bendahara_bank_accounts")
         .select("id,school_id,bank_name,account_number,account_holder,is_default,is_active,doku_bank_account_settlement_id,verification_status,rejection_reason,bank_branch,bank_book_path"),
+      supabase.from("doku_registered_accounts").select("id,bank_name,account_number,account_holder,settlement_id").order("created_at", { ascending: false }),
     ]);
     if (sRes.error) toast.error("Gagal memuat sekolah: " + sRes.error.message);
     if (bRes.error) toast.error("Gagal memuat rekening: " + bRes.error.message);
+    if (rRes.error) toast.error("Gagal memuat daftar rekening: " + rRes.error.message);
+    const registry = (rRes.data || []) as Reg[];
+    setRegs(registry);
+    const registryId = (bank: Bank | null) => bank ? registry.find(r => r.bank_name.replace(/\s/g, "").toUpperCase() === (bank.bank_name || "").replace(/\s/g, "").toUpperCase() && r.account_number.replace(/\D/g, "") === (bank.account_number || "").replace(/\D/g, ""))?.settlement_id || "" : "";
     const list = (sRes.data || []) as School[];
     const byS: Record<string, Bank[]> = {};
     for (const b of (bRes.data || []) as Bank[]) (byS[b.school_id] ||= []).push(b);
@@ -110,13 +150,14 @@ const SuperAdminSplitSettlement = () => {
     setBanks(byS);
     setDraft(
       Object.fromEntries(
-        list.map((s) => [s.id, s.doku_settlement_bank_id || pickBank(byS[s.id] || [])?.doku_bank_account_settlement_id || ""]),
+        list.map((s) => [s.id, s.doku_settlement_bank_id || pickBank(byS[s.id] || [])?.doku_bank_account_settlement_id || registryId(pickBank(byS[s.id] || [])) || ""]),
       ),
     );
     setLoading(false);
+    return { schoolRows: list, bankRows: byS };
   };
 
-  useEffect(() => { load(); loadRegs(); }, []);
+  useEffect(() => { load(); }, []);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -151,7 +192,7 @@ const SuperAdminSplitSettlement = () => {
         if (error) throw error;
         toast.success("Rekening ditolak");
       }
-      await Promise.all([load(), loadRegs()]);
+      await load();
     } catch (error) {
       toast.error("Gagal memproses rekening: " + ((error as {message?: string})?.message || "Silakan coba lagi."));
     } finally { verificationBusy.current = false;setVerifyingId(null); }
@@ -266,12 +307,27 @@ const SuperAdminSplitSettlement = () => {
                   <p className="text-xs text-muted-foreground truncate">a.n. {r.account_holder || "-"}</p>
                   {r.settlement_id ? <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p> : <p className="text-[11px] text-amber-700 dark:text-amber-400">Settlement ID DOKU belum diisi</p>}
                 </div>
-                <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <Button type="button" size="sm" variant="outline" onClick={() => editRegistry(r)} disabled={registrySaving} className="gap-1.5"><Pencil className="h-3.5 w-3.5" />Edit</Button>
+                  <Button size="icon" variant="ghost" aria-label={`Hapus rekening ${r.bank_name}`} disabled={registrySaving} className="text-muted-foreground hover:text-destructive" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </Step>
+
+      <Dialog open={!!editingRegistry} onOpenChange={open => { if (!open && !registrySaveBusy.current) setEditingRegistry(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Settlement ID DOKU</DialogTitle><DialogDescription>Isi ID resmi dari dashboard DOKU untuk rekening berikut.</DialogDescription></DialogHeader>
+          <div className="space-y-1 rounded-xl border bg-muted/40 p-3 text-sm"><p className="font-semibold">{editingRegistry?.bank_name} <span className="font-mono">{editingRegistry?.account_number}</span></p><p className="text-muted-foreground">a.n. {editingRegistry?.account_holder || "-"}</p></div>
+          <form className="space-y-4" onSubmit={event => { event.preventDefault();saveRegistry(); }}>
+            <div className="space-y-2"><Label htmlFor="registry-settlement-id">Settlement ID</Label><Input id="registry-settlement-id" autoFocus autoComplete="off" placeholder="BNK-xxxx-xxxxxxxxxxxxx" value={registrySettlementId} disabled={registrySaving} onChange={event => setRegistrySettlementId(event.target.value)} className="font-mono" /><p className="text-xs text-muted-foreground">ID ini tidak dibuat oleh tombol Verifikasi. Salin ID milik rekening yang sama dari DOKU.</p></div>
+            <p className="rounded-lg bg-primary/5 p-3 text-xs text-muted-foreground">Setelah tersimpan, ID tersedia di Langkah 3. Untuk mengaktifkan atau mengganti Split Settlement sekolah, periksa nilainya lalu klik Simpan di Langkah 3.</p>
+            <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={registrySaving} onClick={() => setEditingRegistry(null)}>Batal</Button><Button type="submit" disabled={registrySaving || !registrySettlementId.trim()}>{registrySaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Simpan ID</Button></div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Step n={3} icon={Split} title="Aktifkan Split per Sekolah" tone="bg-emerald-500"
         desc="Tempel Settlement ID (BNK-...) dari DOKU untuk rekening sekolah, lalu simpan. Rekening harus sudah terverifikasi.">
