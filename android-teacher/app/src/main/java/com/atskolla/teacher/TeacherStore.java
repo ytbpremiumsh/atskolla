@@ -16,9 +16,16 @@ class TeacherStore {
   profile=first(api.get("profiles",q("select","*","user_id","eq."+uid())));if(schoolId().isEmpty())throw new IOException("Akun belum terhubung ke sekolah. Hubungi admin sekolah.");
   roles=api.get("user_roles",q("select","role","user_id","eq."+uid()));boolean permitted=false;for(JSONObject r:list(roles))if(Arrays.asList("teacher","wali_kelas").contains(s(r,"role")))permitted=true;
   assignments=api.get("class_teachers",scope()+"&"+q("select","class_name,school_id","user_id","eq."+uid()));if(!permitted&&assignments.length()==0)throw new IOException("Akun ini tidak memiliki akses Guru atau Wali Kelas.");
-  school=first(api.get("schools",q("id","eq."+schoolId(),"select","id,name,address,city,logo,timezone,is_suspended,suspended_reason,holiday_mode,holiday_mode_label,holiday_days")));checkSchool();
-  schedules=api.all("teaching_schedules",scope()+"&"+q("select","*","teacher_id","eq."+uid(),"is_active","eq.true","order","day_of_week,start_time"));
-  classes=api.all("classes",scope()+"&"+q("select","id,name,wa_group_id","order","name"));subjects=api.all("subjects",scope()+"&"+q("select","id,name,color"));teachers=api.all("profiles",scope()+"&"+q("select","user_id,full_name"));
+  java.util.concurrent.ExecutorService pool=java.util.concurrent.Executors.newFixedThreadPool(4);
+  try {
+   java.util.concurrent.Future<JSONObject> schoolTask=pool.submit(()->first(api.get("schools",q("id","eq."+schoolId(),"select","id,name,address,city,logo,timezone,is_suspended,suspended_reason,holiday_mode,holiday_mode_label,holiday_days"))));
+   java.util.concurrent.Future<JSONArray> scheduleTask=pool.submit(()->api.all("teaching_schedules",scope()+"&"+q("select","*","teacher_id","eq."+uid(),"is_active","eq.true","order","day_of_week,start_time")));
+   java.util.concurrent.Future<JSONArray> classTask=pool.submit(()->api.all("classes",scope()+"&"+q("select","id,name,wa_group_id","order","name")));
+   java.util.concurrent.Future<JSONArray> subjectTask=pool.submit(()->api.all("subjects",scope()+"&"+q("select","id,name,color")));
+   java.util.concurrent.Future<JSONArray> teacherTask=pool.submit(()->api.all("profiles",scope()+"&"+q("select","user_id,full_name")));
+   school=schoolTask.get();checkSchool();schedules=scheduleTask.get();classes=classTask.get();subjects=subjectTask.get();teachers=teacherTask.get();
+  } catch(java.util.concurrent.ExecutionException e){if(e.getCause() instanceof Exception)throw (Exception)e.getCause();throw new IOException("Data sekolah belum dapat dimuat",e);}finally{pool.shutdownNow();}
+
  }
  void checkSchool()throws IOException{if(school.optBoolean("is_suspended"))throw new IOException("Akses sekolah ditangguhkan. "+s(school,"suspended_reason"));}
  List<String> waliClasses(){List<String> out=new ArrayList<>();for(JSONObject a:list(assignments))out.add(s(a,"class_name"));return out;}
