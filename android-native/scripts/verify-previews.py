@@ -48,3 +48,6 @@ assert Path('previews/invoice-fixture.pdf').read_bytes().startswith(b'%PDF'), 'I
 
 partial=ET.parse('previews/checkout-partial.xml').getroot()
 assert any(n.get('text')=='CHECKOUT CONFIRMED' for n in partial.iter('node')), 'Verified installment did not close while main invoice remained partial'
+
+routing=ET.parse('previews/payment-routing.xml').getroot()
+assert any(n.get('text')=='PAYMENT ROUTES PASSED' for n in routing.iter('node')), 'New or resumed payment redirected out of the APK'

@@ -1,9 +1,9 @@
-# ATSkolla Parent — Android native 2.6
+# ATSkolla Parent — Android native 2.7
 
 Layar layanan ditulis dengan Java dan widget Android. Hanya checkout penyedia pembayaran
 yang ditampilkan melalui WebView terisolasi. Generator PDF resmi web dijalankan lokal,
 tanpa navigasi jarak jauh atau JavaScript bridge.
-ID aplikasi `com.atskolla.parent`, versionCode 36, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 37, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -155,3 +155,12 @@ Dialog native memakai CardModal bersama: sudut membulat, ikon indigo, jarak tomb
 konten bergulir dan animasi masuk/keluar singkat. Pemilih siswa memiliki pencarian, foto/
 inisial, kelas dan penanda aktif; header identitas memakai kartu tersendiri. QR menggunakan
 modul rounded dan tiga finder indigo seperti web, dengan uji decode identitas tiap siswa.
+
+## Pembayaran dan tagihan 2.7
+
+Pembayaran baru dan tombol Lanjutkan pembayaran pada riwayat cicilan memakai activity internal
+yang sama; transisi fade tanpa slide. Kartu tagihan lebih ringkas, dengan tindakan sekunder
+berdampingan. Picker mengambil label, deskripsi, logo dan default channel dari
+`src/lib/paymentChannels.ts`; fee dinamis dari payment_config, QRIS memakai rumus web.
+Tagihan baru dideteksi dari perbedaan ID terhadap daftar awal, tanpa mengumumkan semua
+tagihan lama pada pemeriksaan pertama. Deteksi tetap berkala sampai FCM dikonfigurasi.

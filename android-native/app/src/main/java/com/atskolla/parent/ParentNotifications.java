@@ -40,7 +40,7 @@ final class ParentNotifications {
                 for(JSONObject row:ordered){String key=AttendanceEvents.key(id,row);if(seen.contains(key)||!AttendanceEvents.fresh(row,since,Instant.now()))continue;
                     synchronized(Vault.LOCK){if(!active(context,vault,token))return;showAttendance(context,student,row,key);seen.add(key);while(seen.size()>256)seen.remove(seen.iterator().next());vault.put(seenKey,new JSONArray(seen).toString());}
                 }
-                try{JSONObject payments=api.call("spp_list",new JSONObject().put("student_id",id),token);JSONArray invoices=payments.optJSONArray("invoices");if(invoices!=null)PaymentNotifications.check(context,student,invoices,api,token,since);}catch(ParentApi.Failure e){if(e.unauthorized)throw e;}catch(Exception ignored){}
+                try{JSONObject payments=api.call("spp_list",new JSONObject().put("student_id",id),token);JSONArray invoices=payments.optJSONArray("invoices");if(invoices!=null){NewInvoiceNotifications.check(context,student,invoices,token);PaymentNotifications.check(context,student,invoices,api,token,since);}}catch(ParentApi.Failure e){if(e.unauthorized)throw e;}catch(Exception ignored){}
                 JSONObject announcements;try{announcements=api.call("announcements",new JSONObject().put("student_id",id),token);}catch(ParentApi.Failure e){if(e.unauthorized)throw e;announcements=new JSONObject();}catch(java.io.IOException e){announcements=new JSONObject();}
                 if(!active(context,vault,token))return;
                 JSONArray news=announcements.optJSONArray("announcements");String newsKey="notification_seen:"+id;Instant cutoff=since;try{String saved=vault.get(newsKey);if(!saved.isEmpty())cutoff=Instant.parse(saved);}catch(Exception ignored){}

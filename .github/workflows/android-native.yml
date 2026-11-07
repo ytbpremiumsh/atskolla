@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['android-native/**', 'src/lib/sppInvoicePDF.ts', 'src/lib/paymentMethod.ts', 'package-lock.json', '.github/workflows/android-native.yml']
+    paths: ['android-native/**', 'src/lib/sppInvoicePDF.ts', 'src/lib/paymentMethod.ts', 'src/lib/paymentChannels.ts', 'src/assets/payment/**', 'package-lock.json', '.github/workflows/android-native.yml']
   pull_request:
-    paths: ['android-native/**', 'src/lib/sppInvoicePDF.ts', 'src/lib/paymentMethod.ts', 'package-lock.json', '.github/workflows/android-native.yml']
+    paths: ['android-native/**', 'src/lib/sppInvoicePDF.ts', 'src/lib/paymentMethod.ts', 'src/lib/paymentChannels.ts', 'src/assets/payment/**', 'package-lock.json', '.github/workflows/android-native.yml']
 permissions:
   contents: read
 jobs:

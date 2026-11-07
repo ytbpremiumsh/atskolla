@@ -22,6 +22,10 @@ for modal in students payment success; do
   adb pull "/sdcard/modal-$modal.png" "previews/modal-$modal.png"
 done
 adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.PaymentRouteCheckActivity
+adb shell uiautomator dump /sdcard/payment-routing.xml
+adb pull /sdcard/payment-routing.xml previews/payment-routing.xml
+adb shell am force-stop com.atskolla.parent
 adb shell am start -W -n com.atskolla.parent/.CheckoutCheckActivity --es mode pending
 sleep 6
 adb shell uiautomator dump /sdcard/checkout-pending.xml
