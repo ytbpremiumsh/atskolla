@@ -22,3 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+/android-native/app/src/main/assets/invoice-renderer.js

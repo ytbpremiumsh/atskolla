@@ -17,7 +17,9 @@ final class ParentNotifications {
         if(!ParentNotificationJob.enabled(context)||!ParentNotificationJob.allowed(context)||!CHECK.tryLock())return;
         try{
             Vault vault=new Vault(context);String token=vault.get("token");if(token.isEmpty())return;
-            JSONObject me;try{me=new JSONObject(vault.get("me"));}catch(Exception e){return;}
+            JSONObject me;
+            try{me=api.call("me",new JSONObject(),token);}catch(ParentApi.Failure error){if(!error.unauthorized||!mayRenew||foreground)throw error;String next=ParentSessions.renew(context,api,token);if(next.isEmpty())throw error;token=next;me=api.call("me",new JSONObject(),token);}
+            if(!active(context,vault,token))return;vault.put("me",me.toString());
             JSONArray children=me.optJSONArray("students");if(children==null)return;
             Instant since;try{since=Instant.parse(vault.get("notifications_since"));}catch(Exception e){return;}
             String from=LocalDate.now(ZoneId.of("Asia/Jakarta")).minusDays(1).toString(),to=LocalDate.now(ZoneId.of("Asia/Jakarta")).toString();
@@ -27,10 +29,10 @@ final class ParentNotifications {
                 JSONObject result;
                 try{result=api.call("attendance",new JSONObject().put("student_id",id).put("from",from).put("to",to),token);}
                 catch(ParentApi.Failure error){
-                    if(!error.unauthorized||!mayRenew||foreground)throw error;
+                    if(!error.unauthorized){result=new JSONObject();}else {if(!mayRenew||foreground)throw error;
                     String next=ParentSessions.renew(context,api,token);if(next.isEmpty())throw error;token=next;
-                    result=api.call("attendance",new JSONObject().put("student_id",id).put("from",from).put("to",to),token);
-                }
+                    result=api.call("attendance",new JSONObject().put("student_id",id).put("from",from).put("to",to),token);}
+                }catch(java.io.IOException error){result=new JSONObject();}
                 if(!active(context,vault,token))return;
                 JSONArray rows=result.optJSONArray("attendance");LinkedHashSet<String> seen=new LinkedHashSet<>();String seenKey="attendance_notification_seen:"+id;
                 try{JSONArray saved=new JSONArray(vault.get(seenKey));for(int n=0;n<saved.length();n++)seen.add(saved.getString(n));}catch(Exception ignored){}
@@ -38,7 +40,8 @@ final class ParentNotifications {
                 for(JSONObject row:ordered){String key=AttendanceEvents.key(id,row);if(seen.contains(key)||!AttendanceEvents.fresh(row,since,Instant.now()))continue;
                     synchronized(Vault.LOCK){if(!active(context,vault,token))return;showAttendance(context,student,row,key);seen.add(key);while(seen.size()>256)seen.remove(seen.iterator().next());vault.put(seenKey,new JSONArray(seen).toString());}
                 }
-                JSONObject announcements=api.call("announcements",new JSONObject().put("student_id",id),token);
+                try{JSONObject payments=api.call("spp_list",new JSONObject().put("student_id",id),token);JSONArray invoices=payments.optJSONArray("invoices");if(invoices!=null)PaymentNotifications.check(context,student,invoices,api,token,since);}catch(ParentApi.Failure e){if(e.unauthorized)throw e;}catch(Exception ignored){}
+                JSONObject announcements;try{announcements=api.call("announcements",new JSONObject().put("student_id",id),token);}catch(ParentApi.Failure e){if(e.unauthorized)throw e;announcements=new JSONObject();}catch(java.io.IOException e){announcements=new JSONObject();}
                 if(!active(context,vault,token))return;
                 JSONArray news=announcements.optJSONArray("announcements");String newsKey="notification_seen:"+id;Instant cutoff=since;try{String saved=vault.get(newsKey);if(!saved.isEmpty())cutoff=Instant.parse(saved);}catch(Exception ignored){}
                 Instant newest=cutoff;int count=0;if(news!=null)for(int n=0;n<news.length();n++){try{Instant date=Instant.parse(news.getJSONObject(n).optString("created_at"));if(date.isAfter(cutoff)&&date.isBefore(Instant.now().plusSeconds(300))){count++;if(date.isAfter(newest))newest=date;}}catch(Exception ignored){}}

@@ -31,3 +31,17 @@ for filename in ['restored.xml','restored-again.xml']:
     assert any('RINGKASAN BULAN INI' in n.get('text','') for n in root.iter('node')), 'Session lost after process restart'
     assert not any('Portal Wali Murid'==n.get('text','') for n in root.iter('node')), 'Login unexpectedly requested'
 print('Native Keystore persistence, session renewal, arrival/departure notifications, de-duplication and persisted jobs verified')
+
+for modal in ['students','payment','success']:
+    root=ET.parse(Path('previews')/f'modal-{modal}.xml').getroot()
+    assert any(n.get('class')=='android.widget.Button' for n in root.iter('node')), f'Custom modal actions absent: {modal}'
+pending=ET.parse('previews/checkout-pending.xml').getroot()
+assert any(n.get('class')=='android.webkit.WebView' for n in pending.iter('node')), 'Embedded checkout missing'
+assert not any(n.get('text')=='CHECKOUT CONFIRMED' for n in pending.iter('node')), 'Unconfirmed checkout closed'
+paid=ET.parse('previews/checkout-paid.xml').getroot()
+assert any(n.get('text')=='CHECKOUT CONFIRMED' for n in paid.iter('node')), 'Server-confirmed checkout did not close successfully'
+print('Custom modals, in-app checkout pending/success routing, all-sibling attendance and payment notifications verified')
+
+invoice=ET.parse('previews/invoice-check.xml').getroot()
+assert any(n.get('text')=='INVOICE CHECK PASSED' for n in invoice.iter('node')), 'Shared web invoice generator failed on Android'
+assert Path('previews/invoice-fixture.pdf').read_bytes().startswith(b'%PDF'), 'Invalid official invoice PDF'

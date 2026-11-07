@@ -13,6 +13,35 @@ for screen in home attendance spp schedule more info leave contact messages grad
   adb shell screencap -p "/sdcard/$screen.png"
   adb pull "/sdcard/$screen.png" "previews/$screen.png"
 done
+for modal in students payment success; do
+  adb shell am force-stop com.atskolla.parent
+  adb shell am start -W -n com.atskolla.parent/.NativePreviewActivity --es modal "$modal"
+  adb shell uiautomator dump /sdcard/modal.xml
+  adb pull /sdcard/modal.xml "previews/modal-$modal.xml"
+  adb shell screencap -p "/sdcard/modal-$modal.png"
+  adb pull "/sdcard/modal-$modal.png" "previews/modal-$modal.png"
+done
+adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.CheckoutCheckActivity --es mode pending
+sleep 6
+adb shell uiautomator dump /sdcard/checkout-pending.xml
+adb pull /sdcard/checkout-pending.xml previews/checkout-pending.xml
+adb shell screencap -p /sdcard/checkout-pending.png
+adb pull /sdcard/checkout-pending.png previews/checkout-pending.png
+adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.CheckoutCheckActivity --es mode paid
+sleep 7
+adb shell uiautomator dump /sdcard/checkout-paid.xml
+adb pull /sdcard/checkout-paid.xml previews/checkout-paid.xml
+adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.InvoiceCheckActivity
+for attempt in $(seq 1 20); do
+  adb shell uiautomator dump /sdcard/invoice-check.xml
+  adb pull /sdcard/invoice-check.xml previews/invoice-check.xml
+  if rg -q 'INVOICE CHECK PASSED|INVOICE CHECK FAILED' previews/invoice-check.xml; then break; fi
+  sleep 1
+done
+adb exec-out run-as com.atskolla.parent cat files/invoice-fixture.pdf > previews/invoice-fixture.pdf
 adb shell am force-stop com.atskolla.parent
 adb shell am start -W -n com.atskolla.parent/.NativeLifecycleCheckActivity
 for attempt in $(seq 1 20); do
