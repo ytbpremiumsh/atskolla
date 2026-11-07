@@ -39,6 +39,8 @@ public class PaymentActivity extends Activity {
         JSONObject verified=paid;main.post(()->{checking=false;if(isDestroyed()||!resumed||completed)return;if(!token.equals(vault.get("token")))return;if(verified!=null){completed=true;main.removeCallbacks(poll);try{PaymentNotifications.publish(this,student,invoice,verified,(installmentId.isEmpty()?"invoice:":"installment:")+expected,token);}catch(Exception ignored){}setResult(RESULT_OK,new Intent().putExtra("invoice_id",invoiceId).putExtra("student_id",childId));Toast.makeText(this,"Pembayaran berhasil dikonfirmasi",Toast.LENGTH_LONG).show();finish();}else status.setText("Belum ada konfirmasi sukses. Status diperiksa otomatis.");});
         }catch(Exception e){main.post(()->{checking=false;if(!isDestroyed())status.setText("Konfirmasi belum tersedia. Akan dicoba ulang; jangan membayar dua kali.");});}});}
     private void requestClose(){new CardModal(this).setTitle("Tutup pembayaran?").setMessage("Transaksi yang sudah dibayar tetap diproses server. Anda dapat melihat status terbaru pada Tagihan.").setNegativeButton("Lanjut pembayaran",null).setPositiveButton("Kembali ke tagihan",(d,w)->finish()).show();}
+    // Modern gestures use the registered OnBackInvokedCallback; legacy devices call this override.
+    @android.annotation.SuppressLint("GestureBackNavigation")
     @Override public void onBackPressed(){requestClose();}
     @Override protected void onResume(){super.onResume();resumed=true;main.removeCallbacks(poll);main.post(poll);if(web!=null)web.onResume();}
     @Override protected void onPause(){resumed=false;main.removeCallbacks(poll);if(web!=null)web.onPause();super.onPause();}
