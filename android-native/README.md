@@ -1,8 +1,8 @@
-# ATSkolla Parent — Android native 2.2
+# ATSkolla Parent — Android native 2.3
 
 Android UI ditulis dengan Java dan widget Android. Tidak ada WebView, HTML, React,
 JavaScript bridge, atau mesin browser tertanam. Logo ATSkolla memakai aset asli.
-ID aplikasi `com.atskolla.parent`, versionCode 32, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 33, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -88,3 +88,19 @@ Kartu pelajar memakai desain portrait web, identitas, foto, logo, nomor kartu,
 QR dengan quiet zone, perbesar QR, salin nomor, ekspor QR dan kartu PNG 1080 px.
 Lampiran buku tabungan dan cabang rekening berada di portal bendahara dan
 Super Admin; data rekening sekolah tidak dibuka ke aplikasi orang tua.
+
+## Desain 2.3 sesuai referensi mobile
+
+Tombol tidak lagi memakai StateListAnimator/elevation Android: ripple tetap ada,
+namun shadow kotak bawaan dihilangkan. Navigasi pill dengan tombol layanan di tengah,
+header sekolah dan logo, kartu beranda indigo, pintasan izin/riwayat/pengumuman,
+ringkasan tagihan dari API dan filter statistik hari ini/7/30 hari. Statistik
+menghitung tanggal unik berdasarkan catatan datang, tidak menggandakan datang/pulang.
+
+Tagihan memiliki total merah/hijau, badge status, nominal besar, kartu pastel sesuai
+status, tombol orange untuk link kedaluwarsa, serta akses cicilan/PDF yang tetap ada.
+Hanya data server yang menentukan status lunas. Jadwal dikelompokkan menurut hari,
+diurutkan per jam, dengan header indigo dan warna tiap mata pelajaran. Status sedang
+berlangsung memakai waktu Asia/Jakarta (WIB), sesuai dasar waktu aplikasi saat ini.
+Izin/sakit menampilkan formulir dan riwayat pada satu halaman; draft alasan dipertahankan
+saat data disegarkan, dan tombol kirim menunggu lampiran selesai diunggah.
