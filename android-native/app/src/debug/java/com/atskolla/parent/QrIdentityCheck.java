@@ -13,6 +13,8 @@ final class QrIdentityCheck {
             check(activity, ParentActivity.j("id","b","student_id","NIS-B","qr_code","web-siswa-B"), "web-siswa-B");
             check(activity, ParentActivity.j("id","c","student_id","NIS-C"), "NIS-C");
             check(activity, ParentActivity.j("id","d"), "d");
+            check(activity, ParentActivity.j("id","f","qr_code","00000000-1111-2222-3333-444444444444"), "00000000-1111-2222-3333-444444444444");
+            check(activity, ParentActivity.j("id","g","qr_code","1234567890123456"), "1234567890123456");
             check(activity, ParentActivity.j("id","e","qr_code","Siswa-É-学校"), "Siswa-É-学校");
         } catch (Exception error) { throw new IllegalStateException("Student QR differs from web identity",error); }
     }

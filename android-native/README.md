@@ -1,8 +1,9 @@
-# ATSkolla Parent — Android native 2.4
+# ATSkolla Parent — Android native 2.6
 
-Android UI ditulis dengan Java dan widget Android. Tidak ada WebView, HTML, React,
-JavaScript bridge, atau mesin browser tertanam. Logo ATSkolla memakai aset asli.
-ID aplikasi `com.atskolla.parent`, versionCode 34, Android 8.0+ (minSdk 26), target/compile API 36.
+Layar layanan ditulis dengan Java dan widget Android. Hanya checkout penyedia pembayaran
+yang ditampilkan melalui WebView terisolasi. Generator PDF resmi web dijalankan lokal,
+tanpa navigasi jarak jauh atau JavaScript bridge.
+ID aplikasi `com.atskolla.parent`, versionCode 36, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -17,11 +18,25 @@ ID aplikasi `com.atskolla.parent`, versionCode 34, Android 8.0+ (minSdk 26), tar
   jalur permintaan langsung tersedia di /penghapusan-akun dan menu Akun.
   Permintaan diproses pengelola bersama sekolah, bukan menghapus catatan siswa otomatis.
 
-Pembayaran memakai ACTION_VIEW ke halaman HTTPS gateway pada browser perangkat, bukan WebView.
-Login, data siswa, navigasi dan seluruh layar layanan tetap native. Status lunas tidak disimpulkan
-berdasarkan redirect browser; hanya dari API server. Notifikasi pengumuman dapat diaktifkan pengguna melalui pemeriksaan berkala Android
-(minimal 15 menit, dapat tertunda oleh pengaturan baterai/jaringan). Ini bukan push instan.
-Pengumuman dan beranda juga disegarkan saat aplikasi terlihat; pesan tidak ditandai dibaca di latar belakang.
+Pembayaran dibuka di PaymentActivity internal, bukan browser eksternal. Hanya navigasi HTTPS
+pada domain penyedia yang didukung. Akses file/content, mixed content, jendela tambahan, dan
+JavaScript bridge dinonaktifkan; kesalahan TLS dibatalkan. Callback/teks sukses pada halaman
+bukan bukti pembayaran. API server menentukan sukses, dengan invoice/ID cicilan yang tepat.
+Layar menutup setelah verifikasi; cicilan tidak mengubah keseluruhan invoice menjadi lunas.
+Kecocokan seluruh metode gateway tetap harus diuji pada sandbox pemilik sebelum rilis publik.
+
+Invoice APK memakai `src/lib/sppInvoicePDF.ts` dan formatter yang sama dengan portal web,
+dibundel pada setiap build. Data tagihan dimuat ulang sebelum ekspor. Renderer lokal tidak
+menerima token sesi, tidak memiliki bridge JavaScript, dan memblokir jaringan/navigasi.
+Logo sekolah diambil melalui HTTPS dengan batas ukuran sebelum pembuatan PDF.
+
+Notifikasi absensi dan pembayaran memeriksa semua siswa yang diotorisasi oleh akun wali,
+bukan hanya siswa yang sedang dipilih. Daftar keluarga diperbarui dari server. Notifikasi
+pembayaran mencantumkan nama siswa, tagihan dan waktu WIB; peristiwa lama/duplikat diabaikan.
+Pemeriksaan sekitar 30 detik saat ParentActivity terlihat, dan minimal 15 menit atau lebih
+saat di latar belakang. Ini belum FCM/push instan; konfigurasi Firebase/pengirim belum tersedia.
+Pengumuman dan beranda juga disegarkan saat aplikasi terlihat; pesan tidak ditandai dibaca
+di latar belakang.
 
 ## Ringan dan keamanan
 
@@ -43,12 +58,17 @@ lokal dan mencoba mencabut sesi server. Backend API dan RLS tetap menjadi sumber
 JDK 17, Gradle 8.13, AGP 8.11.1, SDK 36. Dependency runtime tunggal ZXing Core 3.5.3 (QR).
 
 ```sh
+# Dari root repository:
+npm ci --ignore-scripts
+node android-native/scripts/build-invoice.mjs
+cd android-native
 gradle :app:assembleDebug :app:assembleRelease :app:bundleRelease :app:lintRelease
 ```
 
 Workflow `.github/workflows/android-native.yml` membangun APK debug, APK release unsigned,
 AAB release unsigned, mapping R8, dan utilitas resmi signing. Job emulator Android 16 memeriksa
-13 layar native dengan fixture sintetis dari src/debug, serta startup login aplikasi.
+13 layar native, modal, checkout pending/sukses/cicilan, generator PDF web di Android,
+notifikasi tiga siswa, pemulihan sesi, serta startup login dengan fixture sintetis src/debug.
 Fixture/activity preview tidak dikemas pada APK/AAB release. Tes tidak mengirim OTP, pesan,
 pengajuan izin, atau transaksi nyata. Alur berakun, upload dan pembayaran ujung-ke-ujung
 masih perlu pengujian perangkat dengan akun pemilik dan sandbox gateway sebelum rilis publik.
@@ -77,7 +97,7 @@ Lihat [catatan rilis dan verifikasi operasional](../docs/OPERATIONS-RELEASE.md) 
 ## Desain 2.2
 
 Warna #5B6CF9, panel gradasi dan pola titik mengikuti portal web. Login memiliki
-pilihan kartu/WhatsApp, ilustrasi asli web yang dikompresi lokal, validasi input,
+pilihan kartu/WhatsApp, panel pengantar tanpa ilustrasi orang, validasi input,
 dan hitung mundur kirim ulang OTP. Beranda memuat identitas ananda, nomor kartu,
 pintasan delapan layanan dan kartu digital. Foto siswa dan logo sekolah diambil
 dari data API yang sama; fallback inisial/logo ATSkolla dipakai ketika kosong.
@@ -128,3 +148,10 @@ mencegah notifikasi ganda, termasuk bila metode dikoreksi.
 Pengujian debug menggunakan API fixture tanpa jaringan: Keystore/cache/renewal/logout,
 dua notifikasi Android, metode absensi, deduplikasi, job persisten, dan dua restart
 proses yang tetap menuju dashboard. Seluruh fixture dan activity uji tidak ada di release.
+
+## Antarmuka 2.6
+
+Dialog native memakai CardModal bersama: sudut membulat, ikon indigo, jarak tombol,
+konten bergulir dan animasi masuk/keluar singkat. Pemilih siswa memiliki pencarian, foto/
+inisial, kelas dan penanda aktif; header identitas memakai kartu tersendiri. QR menggunakan
+modul rounded dan tiga finder indigo seperti web, dengan uji decode identitas tiap siswa.

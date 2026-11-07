@@ -25,5 +25,5 @@ final class StudentQr {
         finder(canvas,paint,q,q,unit);finder(canvas,paint,last,q,unit);finder(canvas,paint,q,last,unit);return bitmap;
     }
     private static boolean finder(int x,int y,int l,int t){return x>=l&&x<l+7&&y>=t&&y<t+7;}
-    private static void finder(Canvas canvas,Paint paint,int x,int y,float u){float l=x*u,t=y*u;paint.setColor(0xFF5B6CF9);canvas.drawRoundRect(l,t,l+7*u,t+7*u,2.2f*u,2.2f*u,paint);paint.setColor(Color.WHITE);canvas.drawRoundRect(l+u,t+u,l+6*u,t+6*u,1.3f*u,1.3f*u,paint);paint.setColor(0xFF5B6CF9);canvas.drawRoundRect(l+2*u,t+2*u,l+5*u,t+5*u,.6f*u,.6f*u,paint);}
+    private static void finder(Canvas canvas,Paint paint,int x,int y,float u){float l=x*u,t=y*u;paint.setColor(0xFF4F46E5);canvas.drawRoundRect(l,t,l+7*u,t+7*u,2.2f*u,2.2f*u,paint);paint.setColor(Color.WHITE);canvas.drawRoundRect(l+u,t+u,l+6*u,t+6*u,1.3f*u,1.3f*u,paint);paint.setColor(0xFF4F46E5);canvas.drawRoundRect(l+2*u,t+2*u,l+5*u,t+5*u,.6f*u,.6f*u,paint);}
 }
