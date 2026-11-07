@@ -1,8 +1,8 @@
-# ATSkolla Parent — Android native 2.1
+# ATSkolla Parent — Android native 2.2
 
 Android UI ditulis dengan Java dan widget Android. Tidak ada WebView, HTML, React,
 JavaScript bridge, atau mesin browser tertanam. Logo ATSkolla memakai aset asli.
-ID aplikasi `com.atskolla.parent`, versionCode 31, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 32, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -73,3 +73,18 @@ Kunci signing baru, bila dibuat untuk distribusi perdana, diserahkan secara priv
 Simpan cadangan kunci di tempat aman; kehilangannya dapat mengganggu pembaruan.
 
 Lihat [catatan rilis dan verifikasi operasional](../docs/OPERATIONS-RELEASE.md) untuk urutan deployment dan batasan pengujian.
+
+## Desain 2.2
+
+Warna #5B6CF9, panel gradasi dan pola titik mengikuti portal web. Login memiliki
+pilihan kartu/WhatsApp, ilustrasi asli web yang dikompresi lokal, validasi input,
+dan hitung mundur kirim ulang OTP. Beranda memuat identitas ananda, nomor kartu,
+pintasan delapan layanan dan kartu digital. Foto siswa dan logo sekolah diambil
+dari data API yang sama; fallback inisial/logo ATSkolla dipakai ketika kosong.
+Gambar dibatasi 3 MB, dikecilkan saat decode, disimpan hanya di cache memori 6 MB,
+dan dibuang saat keluar. Tidak ada SDK gambar/analitik tambahan.
+
+Kartu pelajar memakai desain portrait web, identitas, foto, logo, nomor kartu,
+QR dengan quiet zone, perbesar QR, salin nomor, ekspor QR dan kartu PNG 1080 px.
+Lampiran buku tabungan dan cabang rekening berada di portal bendahara dan
+Super Admin; data rekening sekolah tidak dibuka ke aplikasi orang tua.

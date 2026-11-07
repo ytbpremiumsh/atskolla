@@ -6,11 +6,11 @@ adb logcat -c
 for screen in home attendance spp schedule more info leave contact messages grades calendar card account; do
   adb shell am force-stop com.atskolla.parent
   adb shell am start -W -n com.atskolla.parent/.NativePreviewActivity --es screen "$screen"
-  sleep 2
-  adb shell screencap -p "/sdcard/$screen.png"
-  adb pull "/sdcard/$screen.png" "previews/$screen.png"
   adb shell uiautomator dump /sdcard/window.xml
   adb pull /sdcard/window.xml "previews/$screen.xml"
+  # UIAutomator waits for the native UI to become idle before the screenshot.
+  adb shell screencap -p "/sdcard/$screen.png"
+  adb pull "/sdcard/$screen.png" "previews/$screen.png"
 done
 adb shell am force-stop com.atskolla.parent
 adb shell pm clear com.atskolla.parent
