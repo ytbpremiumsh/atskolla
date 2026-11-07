@@ -1,8 +1,8 @@
-# ATSkolla Parent — Android native 2.0
+# ATSkolla Parent — Android native 2.1
 
 Android UI ditulis dengan Java dan widget Android. Tidak ada WebView, HTML, React,
 JavaScript bridge, atau mesin browser tertanam. Logo ATSkolla memakai aset asli.
-ID aplikasi `com.atskolla.parent`, versionCode 30, Android 8.0+ (minSdk 26), target/compile API 36.
+ID aplikasi `com.atskolla.parent`, versionCode 31, Android 8.0+ (minSdk 26), target/compile API 36.
 
 ## Fitur
 
@@ -14,12 +14,14 @@ ID aplikasi `com.atskolla.parent`, versionCode 30, Android 8.0+ (minSdk 26), tar
   PDF rincian tagihan/bukti pembayaran, pemeriksaan status ketika kembali dari pembayaran.
 - Kartu pelajar native dengan QR, salin nomor, dan ekspor PNG.
 - Hapus cache perangkat dan logout. Penghapusan akun sekolah diminta melalui wali kelas/admin;
-  tidak ada API penghapusan akun mandiri pada backend Parent yang sekarang.
+  jalur permintaan langsung tersedia di /penghapusan-akun dan menu Akun.
+  Permintaan diproses pengelola bersama sekolah, bukan menghapus catatan siswa otomatis.
 
 Pembayaran memakai ACTION_VIEW ke halaman HTTPS gateway pada browser perangkat, bukan WebView.
 Login, data siswa, navigasi dan seluruh layar layanan tetap native. Status lunas tidak disimpulkan
-berdasarkan redirect browser; hanya dari API server. Push notification sistem belum tersedia pada
-API Parent; pengumuman dan pesan tersedia dalam aplikasi dengan penyegaran manual.
+berdasarkan redirect browser; hanya dari API server. Notifikasi pengumuman dapat diaktifkan pengguna melalui pemeriksaan berkala Android
+(minimal 15 menit, dapat tertunda oleh pengaturan baterai/jaringan). Ini bukan push instan.
+Pengumuman dan beranda juga disegarkan saat aplikasi terlihat; pesan tidak ditandai dibaca di latar belakang.
 
 ## Ringan dan keamanan
 
@@ -69,3 +71,5 @@ tetapi bukan jaminan disetujui atau dipublikasikan Google. Tidak ada publikasi o
 
 Kunci signing baru, bila dibuat untuk distribusi perdana, diserahkan secara privat kepada pemilik.
 Simpan cadangan kunci di tempat aman; kehilangannya dapat mengganggu pembaruan.
+
+Lihat [catatan rilis dan verifikasi operasional](../docs/OPERATIONS-RELEASE.md) untuk urutan deployment dan batasan pengujian.

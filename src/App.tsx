@@ -65,6 +65,8 @@ const Presentation = lazy(() => import("./pages/Presentation"));
 const Proposal = lazy(() => import("./pages/Proposal"));
 const PitchDeck = lazy(() => import("./pages/PitchDeck"));
 const LegalTerms = lazy(() => import("./pages/legal/Terms"));
+const LegalPrivacy = lazy(() => import("./pages/legal/Privacy"));
+const AccountDeletion = lazy(() => import("./pages/legal/AccountDeletion"));
 const LegalRefund = lazy(() => import("./pages/legal/Refund"));
 const LegalFAQ = lazy(() => import("./pages/legal/FAQ"));
 const LegalContact = lazy(() => import("./pages/legal/Contact"));
@@ -249,6 +251,8 @@ function AppRoutes() {
         <Route path="/proposal" element={<Proposal />} />
         <Route path="/pitchdeck" element={<PitchDeck />} />
         <Route path="/syarat-ketentuan" element={<LegalTerms />} />
+        <Route path="/kebijakan-privasi" element={<LegalPrivacy />} />
+        <Route path="/penghapusan-akun" element={<AccountDeletion />} />
         <Route path="/kebijakan-refund" element={<LegalRefund />} />
         <Route path="/faq" element={<LegalFAQ />} />
         <Route path="/kontak" element={<LegalContact />} />

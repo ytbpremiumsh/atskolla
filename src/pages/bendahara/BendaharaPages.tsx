@@ -4434,10 +4434,10 @@ export function BendaharaSaldo() {
   const txCount = items.length;
 
   // Konsep Split Settlement: semua dana online otomatis ditransfer sistem ke rekening sekolah.
-  const withStatus = items.map((i) => ({ ...i, _ps: payoutStatus(i) }));
+  const withStatus = items.map((i) => ({ ...i, _ps: payoutStatus({ ...i, settlement_status: settlements.find(s => s.id === i.settlement_id)?.status }) }));
   const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + Number(i.net_amount || i.total_amount || 0), 0);
   const countBy = (k: string) => withStatus.filter((i) => i._ps === k).length;
-  const processing = { total: sumBy("split_processing"), count: countBy("split_processing") };
+  const processing = { total: sumBy("split_processing") + sumBy("manual_processing"), count: countBy("split_processing") + countBy("manual_processing") };
   const transferred = {
     total: sumBy("split_paid") + sumDisbursed(settlements),
     count: countBy("split_paid") + countBy("manual_paid"),
@@ -4448,6 +4448,7 @@ export function BendaharaSaldo() {
     const cls: Record<PayoutStatus, string> = {
       split_paid: "bg-emerald-500 hover:bg-emerald-500",
       manual_paid: "bg-emerald-500 hover:bg-emerald-500",
+      manual_processing: "bg-amber-500 hover:bg-amber-500",
       split_processing: "bg-amber-500 hover:bg-amber-500",
       legacy: "bg-sky-500 hover:bg-sky-500",
       offline: "bg-slate-500 hover:bg-slate-500",
@@ -4468,7 +4469,7 @@ export function BendaharaSaldo() {
             </span>
           </div>
           <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(processing.total)}</p>
-          <p className="text-[11px] opacity-80 mt-1">{processing.count} transaksi akan ditransfer otomatis ke rekening sekolah pada hari kerja berikutnya</p>
+          <p className="text-[11px] opacity-80 mt-1">{processing.count} transaksi menunggu konfirmasi settlement penyedia pembayaran</p>
         </CardContent>
       </Card>
 
@@ -4482,7 +4483,7 @@ export function BendaharaSaldo() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Riwayat Transaksi Lunas</CardTitle>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
-            <span><b className="text-amber-600">Diproses Sistem</b> — dibayar hari ini, ditransfer hari kerja berikutnya</span>
+            <span><b className="text-amber-600">Diproses Sistem</b> — pembayaran lunas, konfirmasi settlement bank belum tersedia</span>
             <span><b className="text-emerald-600">Sudah Ditransfer</b> — dana sudah dikirim ke rekening sekolah</span>
             <span><b className="text-sky-600">Saldo Lama</b> — pembayaran sebelum pencairan otomatis, dicairkan oleh ATSkolla</span>
           </div>
@@ -4974,11 +4975,11 @@ export function BendaharaPencairan() {
             <CardContent className="p-0">
               <div className="px-4 pt-4 pb-2">
                 <p className="text-sm font-semibold">Pencairan Otomatis Harian</p>
-                <p className="text-[11px] text-muted-foreground">Pembayaran SPP online digabung per hari dan ditransfer sistem ke rekening sekolah pada hari kerja berikutnya.</p>
+                <p className="text-[11px] text-muted-foreground">Pembayaran lunas dikelompokkan per hari. Tanggal perkiraan bukan konfirmasi dana diterima. Jadwal aktual mengikuti penyedia pembayaran.</p>
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal Cair</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal penyedia</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                   <TableBody>
                     {groupSplitByDay(splitPaid).length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
                     {groupSplitByDay(splitPaid).map((d) => (
@@ -4987,10 +4988,10 @@ export function BendaharaPencairan() {
                         <TableCell className="text-xs">{new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
                         <TableCell>{d.count}</TableCell>
                         <TableCell className="font-semibold text-emerald-600">{fmtIDR(d.total)}</TableCell>
-                        <TableCell className="text-xs">{new Date(d.settleDate + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })}</TableCell>
+                        <TableCell className="text-xs">Sesuai penyedia</TableCell>
                         <TableCell>{d.status === "paid"
                           ? <Badge className="bg-emerald-500 hover:bg-emerald-500">Paid</Badge>
-                          : <Badge className="bg-amber-500 hover:bg-amber-500">Diproses</Badge>}</TableCell>
+                          : <Badge className="bg-amber-500 hover:bg-amber-500">Menunggu konfirmasi bank</Badge>}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

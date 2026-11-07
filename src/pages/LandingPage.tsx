@@ -41,10 +41,10 @@ const TRUST_BADGES = [
 ];
 
 const STATS = [
-  { value: "500+", label: "Sekolah Terdaftar", icon: Building2 },
-  { value: "120K+", label: "Siswa Aktif", icon: GraduationCap },
-  { value: "Rp 45M+", label: "Total Transaksi", icon: Wallet },
-  { value: "8.2 Jt+", label: "Rekaman Kehadiran", icon: Activity },
+  { value: "Absensi", label: "QR, RFID & wajah", icon: Building2 },
+  { value: "Portal Wali", label: "Informasi ananda", icon: GraduationCap },
+  { value: "SPP Online", label: "Tagihan & pembayaran", icon: Wallet },
+  { value: "Laporan", label: "Rekap sekolah", icon: Activity },
 ];
 
 const PROBLEMS = [
@@ -327,16 +327,16 @@ function Hero() {
 
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-100">
             <div>
-              <div className="font-display text-2xl font-bold text-[#0b1020]">500+</div>
-              <div className="text-xs text-[#0b1020]/50 mt-0.5">Sekolah Aktif</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">Rp0</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Langganan inti</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-bold text-[#0b1020]">99.9%</div>
-              <div className="text-xs text-[#0b1020]/50 mt-0.5">Uptime SLA</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">Per Peran</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Akses pengguna</div>
             </div>
             <div>
-              <div className="font-display text-2xl font-bold text-[#0b1020]">24/7</div>
-              <div className="text-xs text-[#0b1020]/50 mt-0.5">Support Indonesia</div>
+              <div className="font-display text-2xl font-bold text-[#0b1020]">Bantuan</div>
+              <div className="text-xs text-[#0b1020]/50 mt-0.5">Kanal dukungan</div>
             </div>
           </div>
         </motion.div>
@@ -862,8 +862,8 @@ function WhyFree() {
                 { l: "Biaya langganan sekolah", v: "Rp 0", accent: true },
                 { l: "Setup & onboarding", v: "Gratis" },
                 { l: "Update platform", v: "Otomatis" },
-                { l: "Support dasar", v: "24/7" },
-                { l: "Backup data harian", v: "Termasuk" },
+                { l: "Support dasar", v: "Kanal bantuan" },
+                { l: "Salinan data aplikasi", v: "Melalui admin" },
               ].map((row) => (
                 <div key={row.l} className="flex items-center justify-between border-b border-slate-200 pb-4 last:border-0">
                   <div className={`text-sm ${row.accent ? "text-[#0b1020] font-semibold" : "text-[#0b1020]/65"}`}>{row.l}</div>
@@ -1004,7 +1004,7 @@ function Footer() {
           <div className="font-display font-bold text-white text-[15px] mb-4">Perusahaan</div>
           <ul className="space-y-2.5 text-sm">
             <li><a href="/syarat-ketentuan" className="text-white/75 hover:text-white transition-colors">Syarat & Ketentuan</a></li>
-            <li><a href="/kebijakan-refund" className="text-white/75 hover:text-white transition-colors">Kebijakan Privasi</a></li>
+            <li><a href="/kebijakan-privasi" className="text-white/75 hover:text-white transition-colors">Kebijakan Privasi</a></li>
             <li><a href="/kontak" className="text-white/75 hover:text-white transition-colors">Hubungi Kami</a></li>
           </ul>
         </div>

@@ -1,3 +1,4 @@
+import { SchoolSetupGuide } from "@/components/SchoolSetupGuide";
 import { useEffect, useState, useCallback } from "react";
 // ProductTour disabled per user request
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -302,6 +303,7 @@ const Dashboard = () => {
       )}
 
       <NoBendaharaBanner schoolId={profile?.school_id} />
+      <SchoolSetupGuide />
 
       {/* Header */}
       <PageHeader

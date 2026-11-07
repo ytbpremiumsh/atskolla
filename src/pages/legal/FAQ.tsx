@@ -29,7 +29,7 @@ const FAQS: QA[] = [
 
   // SPP
   { category: "Pembayaran SPP", q: "Bagaimana cara wali murid membayar SPP?", a: "Wali murid login ke portal wali murid, memilih tagihan yang ingin dibayar, lalu memilih metode pembayaran (VA bank, QRIS, atau retail). Setelah bayar, status tagihan otomatis terupdate." },
-  { category: "Pembayaran SPP", q: "Apakah pembayaran langsung masuk ke rekening sekolah?", a: "Bisa dan ya. Dana masuk ke saldo sekolah dan dapat dicairkan (withdraw) ke rekening resmi sekolah melalui menu Bendahara. Proses pencairan membutuhkan waktu 2x24 jam setelah pengajuan withdraw." },
+  { category: "Pembayaran SPP", q: "Apakah pembayaran langsung masuk ke rekening sekolah?", a: "Pembayaran DOKU Split mengalokasikan pokok tagihan ke rekening sekolah yang aktif dan terverifikasi, tanpa pengajuan withdraw manual. Dana masuk mengikuti jadwal settlement bank/penyedia pembayaran. Status tagihan lunas berbeda dari konfirmasi dana diterima rekening. Saldo dari transaksi lama mengikuti alur pencairan yang ditampilkan bendahara." },
   { category: "Pembayaran SPP", q: "Bagaimana jika wali murid salah transfer nominal?", a: "Sistem hanya menerima nominal yang sesuai tagihan. Untuk VA, nominal sudah terkunci sehingga tidak bisa salah bayar." },
 
   // VA & QRIS
@@ -38,7 +38,7 @@ const FAQS: QA[] = [
   { category: "VA & QRIS", q: "Berapa biaya layanannya?", a: "VA: Rp 5.000. QRIS: minimal Rp 3.000 (persentase dari nominal tagihan). Retail: Rp 8.000. Biaya ini ditampilkan transparan pada saat checkout." },
 
   // Status
-  { category: "Status Pembayaran", q: "Berapa lama status pembayaran terupdate?", a: "Umumnya kurang dari 1 menit setelah pembayaran berhasil. Sistem menerima notifikasi otomatis dari payment gateway (webhook)." },
+  { category: "Status Pembayaran", q: "Berapa lama status pembayaran terupdate?", a: "Status diperbarui setelah server menerima konfirmasi sah dari payment gateway. Sistem DOKU juga memeriksa ulang transaksi tertunda secara berkala. Waktu pembaruan bergantung pada respons penyedia dan koneksi. Kembali dari halaman pembayaran saja tidak menjadi bukti lunas." },
   { category: "Status Pembayaran", q: "Sudah bayar tapi status masih pending, apa yang harus dilakukan?", a: "Tunggu maksimal 15 menit. Jika masih pending, hubungi tim ATSkolla dengan menyertakan bukti pembayaran." },
   { category: "Status Pembayaran", q: "Apakah bisa cetak bukti pembayaran?", a: "Ya. Wali murid dan bendahara dapat mengunduh invoice PDF setelah pembayaran berhasil." },
 

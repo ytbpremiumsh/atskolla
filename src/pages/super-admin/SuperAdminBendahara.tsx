@@ -559,7 +559,7 @@ export default function SuperAdminBendahara() {
                     <TableHead className="font-bold">Kode Settlement</TableHead>
                     <TableHead className="font-bold">Sekolah</TableHead>
                     <TableHead className="font-bold">Tanggal Bayar</TableHead>
-                    <TableHead className="font-bold">Jadwal Masuk Rekening</TableHead>
+                    <TableHead className="font-bold">Jadwal penyedia</TableHead>
                     <TableHead className="text-center font-bold">Transaksi</TableHead>
                     <TableHead className="text-right font-bold">Total</TableHead>
                     <TableHead className="text-center font-bold">Status</TableHead>
@@ -576,12 +576,12 @@ export default function SuperAdminBendahara() {
                       <TableCell className="font-mono text-xs font-semibold">{g.code}</TableCell>
                       <TableCell className="text-sm">{schoolMap[g.school_id]?.name || "—"}</TableCell>
                       <TableCell className="text-xs">{new Date(g.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
-                      <TableCell className="text-xs">{new Date(g.settleDate + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                      <TableCell className="text-xs">Sesuai penyedia</TableCell>
                       <TableCell className="text-center text-sm font-semibold">{g.count}</TableCell>
                       <TableCell className="text-right text-sm font-bold text-emerald-600 tabular-nums">{fmtIDR(g.total)}</TableCell>
                       <TableCell className="text-center">
                         <Badge className={`${g.status === "paid" ? "bg-emerald-500" : "bg-amber-500"} text-white border-0 text-[10px] whitespace-nowrap`}>
-                          {g.status === "paid" ? "Sudah Ditransfer" : "Diproses Sistem"}
+                          {g.status === "paid" ? "Sudah Ditransfer" : "Menunggu Konfirmasi Bank"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -728,7 +728,7 @@ export default function SuperAdminBendahara() {
                 <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Sekolah</p><p className="font-semibold text-xs">{schoolMap[stlDetail.school_id]?.name}</p></div>
                 <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Transaksi</p><p className="font-semibold">{stlDetail.count}</p></div>
                 <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Total</p><p className="font-semibold text-emerald-600">{fmtIDR(stlDetail.total)}</p></div>
-                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-semibold text-xs">{stlDetail.status === "paid" ? "Sudah Ditransfer" : "Diproses Sistem"}</p></div>
+                <div className="rounded-lg bg-muted/40 p-2.5"><p className="text-[11px] text-muted-foreground">Status</p><p className="font-semibold text-xs">{stlDetail.status === "paid" ? "Sudah Ditransfer" : "Menunggu Konfirmasi Bank"}</p></div>
               </div>
               <div className="max-h-[50vh] overflow-auto rounded-lg border">
                 <Table>

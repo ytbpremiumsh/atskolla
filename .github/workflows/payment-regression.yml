@@ -25,3 +25,6 @@ jobs:
           node --check supabase/functions/doku-webhook/index.ts
           node --check supabase/functions/spp-doku/index.ts
           node --check supabase/functions/parent-portal/index.ts
+          node --check supabase/functions/database-backup/index.ts
+          node --check supabase/functions/gdrive-backup/index.ts
+          node --check supabase/functions/_shared/backup.ts

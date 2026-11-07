@@ -253,7 +253,7 @@ const SuperAdminBackup = () => {
       <PageHeader
         icon={Database}
         title="Backup & Migrasi"
-        subtitle="Export data platform, backup otomatis ke Google Drive, dan sistem pemulihan"
+        subtitle="Ekspor data aplikasi, salinan Google Drive, dan pemulihan data. Pembacaan bertahap bukan snapshot database."
       />
 
       {/* Overview Cards */}
@@ -377,7 +377,7 @@ const SuperAdminBackup = () => {
             Import / Restore Database
           </h3>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            Pindahkan seluruh data ke website / instance lain. Upload file backup JSON hasil export.
+            Salinan JSON mencakup tabel aplikasi. Akun Auth, berkas Storage, dan struktur database memerlukan backup penyedia. Pemulihan JSON memakai upsert tanpa menghapus data lama.
           </p>
         </div>
         <CardContent className="p-4 space-y-4">
@@ -466,7 +466,7 @@ const SuperAdminBackup = () => {
             Backup ke Google Drive
           </h3>
           <p className="text-[10px] text-muted-foreground mt-0.5">
-            Upload backup otomatis ke Google Drive dengan folder per tanggal
+            Salin data aplikasi ke Google Drive dengan folder per tanggal setelah login Google.
           </p>
         </div>
         <CardContent className="p-4 space-y-4">

@@ -1,20 +1,10 @@
+import { exportApplicationData } from "../_shared/backup.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
-
-const TABLES = [
-  'schools', 'profiles', 'user_roles', 'students', 'classes', 'class_teachers',
-  'attendance_logs', 'dismissal_logs', 'dismissal_settings', 'school_integrations',
-  'payment_transactions',
-  'notifications', 'support_tickets', 'ticket_replies', 'wa_message_logs',
-  'landing_content', 'landing_testimonials', 'landing_trusted_schools',
-  'platform_settings', 'referrals', 'point_transactions', 'rewards',
-  'reward_claims', 'affiliates', 'affiliate_commissions', 'affiliate_withdrawals',
-  'login_logs', 'school_groups',
-]
 
 async function uploadToGoogleDrive(accessToken: string, fileName: string, content: string, folderId?: string) {
   // Create the file metadata
@@ -27,7 +17,7 @@ async function uploadToGoogleDrive(accessToken: string, fileName: string, conten
   }
 
   // Use multipart upload
-  const boundary = 'foo_bar_baz'
+  const boundary = crypto.randomUUID()
   const body = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${content}\r\n--${boundary}--`
 
   const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
@@ -125,23 +115,9 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Google access token required' }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // Export all tables
-      const backup: Record<string, any[]> = {}
-      const stats: Record<string, number> = {}
-
-      for (const table of TABLES) {
-        const { data, error } = await supabase.from(table).select('*').limit(10000)
-        if (error) {
-          console.error(`Error exporting ${table}:`, error.message)
-          backup[table] = []
-          stats[table] = 0
-        } else {
-          backup[table] = data || []
-          stats[table] = (data || []).length
-        }
-      }
-
-      const totalRows = Object.values(stats).reduce((a, b) => a + b, 0)
+      const {backup,meta} = await exportApplicationData(supabase)
+      const stats = meta.stats
+      const totalRows = meta.total_rows
       const now = new Date()
       const dateStr = now.toISOString().split('T')[0] // e.g. 2026-04-11
 
@@ -151,7 +127,7 @@ Deno.serve(async (req) => {
 
       // Upload backup file
       const fileName = `backup_${now.toISOString().replace(/[:.]/g, '-')}.json`
-      const content = JSON.stringify(backup, null, 2)
+      const content = JSON.stringify({backup,meta})
       const uploadResult = await uploadToGoogleDrive(google_access_token, fileName, content, dateFolderId)
 
       // Save backup metadata
@@ -171,6 +147,7 @@ Deno.serve(async (req) => {
         success: true,
         message: `Backup berhasil diupload ke Google Drive`,
         meta: {
+          ...meta,
           exported_at: now.toISOString(),
           tables: Object.keys(stats).length,
           total_rows: totalRows,

@@ -1,5 +1,4 @@
-// Mengelompokkan pembayaran split otomatis per hari (WIB) dan memperkirakan
-// status pencairan: dana dianggap masuk rekening pada hari kerja berikutnya (T+1).
+// Payment confirmation is distinct from bank settlement. Dates never prove receipt.
 
 export const wibDateKey = (iso: string): string => {
   const d = new Date(new Date(iso).getTime() + 7 * 3600 * 1000);
@@ -14,25 +13,25 @@ export const nextBusinessDay = (dateKey: string): string => {
   return d.toISOString().slice(0, 10);
 };
 
-export type PayoutStatus = "split_paid" | "split_processing" | "manual_paid" | "legacy" | "offline";
+export type PayoutStatus = "split_paid" | "split_processing" | "manual_paid" | "manual_processing" | "legacy" | "offline";
 
 const OFFLINE = ["offline_cash", "offline_transfer"];
 
 /** Status pencairan satu invoice lunas, konsep Split Settlement. */
 export const payoutStatus = (inv: any, now: Date = new Date()): PayoutStatus => {
   if (OFFLINE.includes(String(inv.payment_method || ""))) return "offline";
-  if (inv.settlement_id) return "manual_paid";
   if (inv.doku_split) {
-    if (!inv.paid_at) return "split_processing";
-    const settle = nextBusinessDay(wibDateKey(inv.paid_at));
-    return wibDateKey(now.toISOString()) >= settle ? "split_paid" : "split_processing";
+    // This requires an explicit provider confirmation, never elapsed time.
+    return inv.settlement_status === "paid" && inv.settlement_confirmed_at ? "split_paid" : "split_processing";
   }
+  if (inv.settlement_id) return inv.settlement_status === "paid" ? "manual_paid" : "manual_processing";
   return "legacy";
 };
 
 export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
   split_paid: "Sudah Ditransfer",
-  split_processing: "Diproses Sistem",
+  split_processing: "Menunggu Konfirmasi Bank",
+  manual_processing: "Pencairan Diproses",
   manual_paid: "Sudah Dicairkan",
   legacy: "Saldo Lama",
   offline: "Diterima Langsung",
@@ -51,7 +50,7 @@ export type SplitDay = {
 };
 
 export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[] => {
-  const today = wibDateKey(now.toISOString());
+
   const map = new Map<string, any[]>();
   for (const it of items) {
     if (!it.paid_at) continue;
@@ -66,8 +65,8 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
         date,
         settleDate,
         count: list.length,
-        total: list.reduce((s, x) => s + Number(x.net_amount || x.total_amount || 0), 0),
-        status: (today >= settleDate ? "paid" : "processing") as SplitDay["status"],
+        total: list.reduce((s, x) => s + Number(x.total_amount ?? 0), 0),
+        status: (list.every(i => payoutStatus(i, now) === "split_paid") ? "paid" : "processing") as SplitDay["status"],
         items: list,
       };
     })

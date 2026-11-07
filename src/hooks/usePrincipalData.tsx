@@ -1,7 +1,10 @@
-import { createContext, useContext, useCallback, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useCallback, useEffect, useState, useRef, ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, subMonths, endOfMonth } from "date-fns";
+import { loadPrincipalSummary } from "@/lib/principalSummary";
+import { fetchAllPages } from "@/lib/pagedQuery";
+import { getLocalDateString, getLocalTimeString } from "@/lib/dateLocal";
 import { toast } from "sonner";
 
 export interface PrincipalStats {
@@ -21,7 +24,7 @@ export interface PrincipalData {
   liveClasses: any[];
   teacherAtt: { hadir: number; izin: number; sakit: number; alfa: number; belum: number };
   classAtt: Array<{ name: string; total: number; hadir: number }>;
-  finance: { totalTagihan: number; totalPembayaran: number; tunggakan: number; saldoKas: number; danaPending: number };
+  finance: { totalTagihan: number; totalPembayaran: number; tunggakan: number; saldoKas: number; danaPending: number; splitAllocated: number };
   settlements: any[];
   monthly: any[];
   ranking: any[];
@@ -38,7 +41,7 @@ export interface PrincipalData {
 
 const Ctx = createContext<PrincipalData | null>(null);
 
-const todayStr = () => new Date().toISOString().slice(0, 10);
+
 
 export function PrincipalDataProvider({ children }: { children: ReactNode }) {
   const { user, profile, loading: authLoading } = useAuth();
@@ -53,7 +56,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
   const [liveClasses, setLiveClasses] = useState<any[]>([]);
   const [teacherAtt, setTeacherAtt] = useState({ hadir: 0, izin: 0, sakit: 0, alfa: 0, belum: 0 });
   const [classAtt, setClassAtt] = useState<Array<{ name: string; total: number; hadir: number }>>([]);
-  const [finance, setFinance] = useState({ totalTagihan: 0, totalPembayaran: 0, tunggakan: 0, saldoKas: 0, danaPending: 0 });
+  const [finance, setFinance] = useState({ totalTagihan: 0, totalPembayaran: 0, tunggakan: 0, saldoKas: 0, danaPending: 0, splitAllocated: 0 });
   const [settlements, setSettlements] = useState<any[]>([]);
   const [monthly, setMonthly] = useState<any[]>([]);
   const [ranking, setRanking] = useState<any[]>([]);
@@ -70,49 +73,59 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t);
   }, []);
 
+  const loadingRequest = useRef<string | null>(null);
+  const hasLoaded = useRef<string | null>(null);
+  const activeSchool = useRef(schoolId);
+  activeSchool.current = schoolId;
+
   const loadAll = useCallback(async () => {
     if (!schoolId) { setLoading(false); return; }
-    setLoading(true);
+    if (loadingRequest.current === schoolId) return;
+    loadingRequest.current = schoolId;
+    if (hasLoaded.current !== schoolId) setLoading(true);
     try {
-      const today = todayStr();
-      const jsDay = new Date().getDay();
+      const summary = await loadPrincipalSummary(schoolId);
+      if (!summary?.finance) throw new Error("Ringkasan keuangan belum tersedia");
+      if (activeSchool.current !== schoolId) return;
+      const timezone = summary.timezone || "Asia/Jakarta";
+      const today = getLocalDateString(timezone);
+      const jsDay = new Date(today+"T12:00:00Z").getUTCDay();
       const dow = jsDay === 0 ? 6 : jsDay - 1; // Monday=0..Sunday=6 sesuai skema jadwal
-      const hhmm = new Date().toTimeString().slice(0, 8);
-      const monthAgo = format(subMonths(new Date(), 5), "yyyy-MM-dd");
+      const hhmm = getLocalTimeString(timezone);
+
 
       const [
         schoolQ, studentsQ, classesQ, teachersQ, teacherLogsQ, studentLogsQ,
         schedulesQ, subjectAttQ, invoicesQ, cashQ, setlAllQ,
-        leavesQ, annQ, setlPendingQ, wdQ, holidaysQ, allInvoicesQ,
-        allTeacherLogsQ, allStudentLogsQ, allCashQ,
+        leavesQ, annQ, setlPendingQ, holidaysQ,
       ] = await Promise.all([
         supabase.from("schools").select("name").eq("id", schoolId).maybeSingle(),
-        supabase.from("students").select("id, class").eq("school_id", schoolId),
-        supabase.from("classes").select("id, name").eq("school_id", schoolId),
-        supabase.from("user_roles").select("user_id").eq("role", "teacher" as any),
-        supabase.from("teacher_attendance_logs").select("user_id, status, attendance_type").eq("school_id", schoolId).eq("date", today),
-        supabase.from("attendance_logs").select("student_id, status, attendance_type, created_at").eq("school_id", schoolId).eq("date", today),
-        supabase.from("teaching_schedules").select("id, teacher_id, class_id, subject_id, start_time, end_time, day_of_week, is_active").eq("school_id", schoolId).eq("day_of_week", dow).eq("is_active", true),
-        supabase.from("subject_attendance").select("teaching_schedule_id, status").eq("school_id", schoolId).eq("date", today),
-        supabase.from("spp_invoices").select("total_amount, status, paid_at, created_at, due_date, settlement_id, payment_method").eq("school_id", schoolId),
-        supabase.from("cash_book_entries").select("direction, amount, entry_date, category, description, created_at").eq("school_id", schoolId).order("entry_date", { ascending: false }).limit(2000),
+        fetchAllPages(() => supabase.from("students").select("id, class").eq("school_id", schoolId)),
+        fetchAllPages(() => supabase.from("classes").select("id, name").eq("school_id", schoolId)),
+        fetchAllPages(() => supabase.from("user_roles").select("user_id").eq("role", "teacher" as any)),
+        fetchAllPages(() => supabase.from("teacher_attendance_logs").select("user_id, status, attendance_type").eq("school_id", schoolId).eq("date", today)),
+        fetchAllPages(() => supabase.from("attendance_logs").select("student_id, status, attendance_type, created_at").eq("school_id", schoolId).eq("date", today)),
+        fetchAllPages(() => supabase.from("teaching_schedules").select("id, teacher_id, class_id, subject_id, start_time, end_time, day_of_week, is_active").eq("school_id", schoolId).eq("day_of_week", dow).eq("is_active", true)),
+        fetchAllPages(() => supabase.from("subject_attendance").select("teaching_schedule_id, status").eq("school_id", schoolId).eq("date", today)),
+        supabase.from("spp_invoices").select("total_amount, status, paid_at, created_at").eq("school_id", schoolId).eq("status", "paid").order("paid_at", { ascending: false }).limit(8),
+        supabase.from("cash_book_entries").select("direction, amount, entry_date, category, description, created_at").eq("school_id", schoolId).order("entry_date", { ascending: false }).limit(8),
         supabase.from("spp_settlements").select("*").eq("school_id", schoolId).order("requested_at", { ascending: false }).limit(10),
         supabase.from("parent_leave_requests").select("*, students(name, class)").eq("school_id", schoolId).eq("status", "pending").order("created_at", { ascending: false }).limit(20),
         supabase.from("school_announcements").select("*").eq("school_id", schoolId).order("created_at", { ascending: false }).limit(20),
         supabase.from("spp_settlements").select("*").eq("school_id", schoolId).eq("status", "pending").order("requested_at", { ascending: false }),
-        supabase.from("affiliate_withdrawals").select("*").eq("status", "pending").order("created_at", { ascending: false }).limit(10),
-        supabase.from("school_holidays").select("*").eq("school_id", schoolId).gte("date", format(startOfMonth(new Date()), "yyyy-MM-dd")).lte("date", format(endOfMonth(subMonths(new Date(), -1)), "yyyy-MM-dd")),
-        supabase.from("spp_invoices").select("total_amount, paid_at, status, created_at").eq("school_id", schoolId).gte("created_at", monthAgo),
-        supabase.from("teacher_attendance_logs").select("date, status").eq("school_id", schoolId).gte("date", monthAgo),
-        supabase.from("attendance_logs").select("date, status, student_id").eq("school_id", schoolId).gte("date", monthAgo),
-        supabase.from("cash_book_entries").select("entry_date, direction, amount").eq("school_id", schoolId).gte("entry_date", monthAgo),
+        supabase.from("school_holidays").select("*").eq("school_id", schoolId).gte("date", format(startOfMonth(new Date(today+"T12:00:00")), "yyyy-MM-dd")).lte("date", format(endOfMonth(new Date(today+"T12:00:00")), "yyyy-MM-dd")),
       ]);
 
-      if (schoolQ.data?.name) setSchoolName(schoolQ.data.name);
+      for (const response of [schoolQ, studentsQ, classesQ, teachersQ, teacherLogsQ, studentLogsQ, schedulesQ, subjectAttQ, invoicesQ, cashQ, setlAllQ, leavesQ, annQ, setlPendingQ, holidaysQ]) { if (response.error) throw response.error; }
+
 
       const students = studentsQ.data || [];
       const classes = classesQ.data || [];
-      const teacherIds = new Set((teachersQ.data || []).map((r: any) => r.user_id));
+      const teacherProfiles = await fetchAllPages(() => supabase.from("profiles").select("user_id").eq("school_id", schoolId));
+      if (activeSchool.current !== schoolId) return;
+      if (schoolQ.data?.name) setSchoolName(schoolQ.data.name);
+      const schoolUsers = new Set(teacherProfiles.data.map((p: any) => p.user_id));
+      const teacherIds = new Set((teachersQ.data || []).filter((r: any) => schoolUsers.has(r.user_id)).map((r: any) => r.user_id));
 
       const teacherLogsAll = (teacherLogsQ.data || []).filter((l: any) => teacherIds.has(l.user_id));
       const teacherArrival = teacherLogsAll.filter((l: any) => (l.attendance_type ?? "datang") === "datang");
@@ -124,6 +137,8 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       setTeacherAtt({ hadir: tHadir, izin: tIzin, sakit: tSakit, alfa: tAlfa, belum: tBelum });
 
       const studentLogs = (studentLogsQ.data || []).filter((l: any) => (l.attendance_type ?? "datang") === "datang");
+      const studentsById = new Map(students.map((s: any) => [s.id,s]));
+      const counted = new Set<string>();
       const uniqStudentPresent = new Set(studentLogs.filter((l: any) => l.status === "hadir").map((l: any) => l.student_id)).size;
       const rate = students.length > 0 ? Math.round((uniqStudentPresent / students.length) * 100) : 0;
 
@@ -132,10 +147,10 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       students.forEach((s: any) => { classSize[s.class || "-"] = (classSize[s.class || "-"] || 0) + 1; });
       Object.keys(classSize).forEach(c => { byClass[c] = { hadir: 0, total: classSize[c] }; });
       studentLogs.forEach((l: any) => {
-        const st = students.find((s: any) => s.id === l.student_id);
+        const st: any = studentsById.get(l.student_id);
         const cls = st?.class || "-";
         if (!byClass[cls]) byClass[cls] = { hadir: 0, total: classSize[cls] || 0 };
-        if (l.status === "hadir") byClass[cls].hadir += 1;
+        if (l.status === "hadir" && !counted.has(l.student_id)) { byClass[cls].hadir += 1; counted.add(l.student_id); }
       });
       setClassAtt(Object.entries(byClass).map(([name, v]) => ({ name, hadir: v.hadir, total: v.total })).sort((a, b) => a.name.localeCompare(b.name)));
 
@@ -147,10 +162,12 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       const teacherProfileIds = Array.from(new Set(schedules.map((s: any) => s.teacher_id).filter(Boolean)));
 
       const [subjMap, clsMap, tchMap] = await Promise.all([
-        subjectIds.length ? supabase.from("subjects").select("id, name").in("id", subjectIds) : Promise.resolve({ data: [] as any[] }),
-        classIds.length ? supabase.from("classes").select("id, name").in("id", classIds) : Promise.resolve({ data: [] as any[] }),
-        teacherProfileIds.length ? supabase.from("profiles").select("user_id, full_name").in("user_id", teacherProfileIds) : Promise.resolve({ data: [] as any[] }),
+        subjectIds.length ? supabase.from("subjects").select("id, name").in("id", subjectIds) : Promise.resolve({ data: [] as any[], error: null }),
+        classIds.length ? supabase.from("classes").select("id, name").in("id", classIds) : Promise.resolve({ data: [] as any[], error: null }),
+        teacherProfileIds.length ? supabase.from("profiles").select("user_id, full_name").in("user_id", teacherProfileIds) : Promise.resolve({ data: [] as any[], error: null }),
       ]);
+      for (const response of [subjMap, clsMap, tchMap]) { if (response.error) throw response.error; }
+      if (activeSchool.current !== schoolId) return;
       const sMap = new Map((subjMap.data || []).map((x: any) => [x.id, x.name]));
       const cMap = new Map((clsMap.data || []).map((x: any) => [x.id, x.name]));
       const tMap = new Map((tchMap.data || []).map((x: any) => [x.user_id, x.full_name]));
@@ -162,7 +179,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       schedules.forEach((s: any) => {
         const [sh, sm] = s.start_time.split(":").map(Number);
         const [eh, em] = s.end_time.split(":").map(Number);
-        const startMin = sh * 60 + sm, endMin = eh * 60 + em, curMin = nowD.getHours() * 60 + nowD.getMinutes();
+        const startMin = sh * 60 + sm, endMin = eh * 60 + em, curMin = Number(hhmm.slice(0,2)) * 60 + Number(hhmm.slice(3,5));
         const progress = Math.min(100, Math.max(0, ((curMin - startMin) / (endMin - startMin)) * 100));
         const hadir = subjectAtt.filter((a: any) => a.teaching_schedule_id === s.id && a.status === "hadir").length;
         const className = cMap.get(s.class_id) || "-";
@@ -193,67 +210,10 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
         attendanceRate: rate,
       });
 
-      const invoices = invoicesQ.data || [];
-      const nowDate = new Date();
-      const isOfflineMethod = (m: any) => {
-        const v = (m || "").toString().toLowerCase();
-        return v === "offline_cash" || v === "offline_transfer";
-      };
-      const totalTagihan = invoices.reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
-      const totalPembayaran = invoices.filter((i: any) => i.status === "paid").reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
-      // Tunggakan = pending yang sudah lewat jatuh tempo (sinkron dg Bendahara)
-      const tunggakan = invoices
-        .filter((i: any) => i.status === "pending" && i.due_date && new Date(i.due_date) < nowDate)
-        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
       const cashEntries = cashQ.data || [];
-      const cashIn = cashEntries.filter((e: any) => e.direction === "in").reduce((s: number, e: any) => s + (e.amount || 0), 0);
-      const cashOut = cashEntries.filter((e: any) => e.direction === "out").reduce((s: number, e: any) => s + (e.amount || 0), 0);
-      // Saldo online siap dicairkan (paid online, belum di-settle) — bruto
-      const readyOnline = invoices
-        .filter((i: any) => i.status === "paid" && !i.settlement_id && !isOfflineMethod(i.payment_method))
-        .reduce((s: number, i: any) => s + (i.total_amount || 0), 0);
-      // Saldo Buku Kas = murni kas manual (in - out), sinkron dengan halaman Buku Kas Bendahara
-      const saldoKas = cashIn - cashOut;
-      // Menunggu Pencairan = saldo online siap dicairkan (sama definisi dg availableBalance Bendahara)
-      const danaPending = readyOnline;
-      setFinance({ totalTagihan, totalPembayaran, tunggakan, saldoKas, danaPending });
+      setFinance(summary.finance);
       setSettlements(setlAllQ.data || []);
-
-      const monthsList: Array<{ key: string; label: string }> = [];
-      for (let i = 5; i >= 0; i--) {
-        const d = subMonths(new Date(), i);
-        monthsList.push({ key: format(d, "yyyy-MM"), label: format(d, "MMM") });
-      }
-      const invByMonth = new Map<string, number>();
-      const teacherByMonth = new Map<string, number>();
-      const studentByMonth = new Map<string, number>();
-      const inByMonth = new Map<string, number>();
-      const outByMonth = new Map<string, number>();
-      (allInvoicesQ.data || []).forEach((i: any) => {
-        if (i.status === "paid" && i.paid_at) {
-          const k = i.paid_at.slice(0, 7);
-          invByMonth.set(k, (invByMonth.get(k) || 0) + (i.total_amount || 0));
-        }
-      });
-      (allTeacherLogsQ.data || []).forEach((l: any) => {
-        if (l.status === "hadir") { const k = l.date.slice(0, 7); teacherByMonth.set(k, (teacherByMonth.get(k) || 0) + 1); }
-      });
-      (allStudentLogsQ.data || []).forEach((l: any) => {
-        if (l.status === "hadir") { const k = l.date.slice(0, 7); studentByMonth.set(k, (studentByMonth.get(k) || 0) + 1); }
-      });
-      (allCashQ.data || []).forEach((e: any) => {
-        const k = e.entry_date.slice(0, 7);
-        if (e.direction === "in") inByMonth.set(k, (inByMonth.get(k) || 0) + (e.amount || 0));
-        else outByMonth.set(k, (outByMonth.get(k) || 0) + (e.amount || 0));
-      });
-      setMonthly(monthsList.map(m => ({
-        month: m.label,
-        Guru: teacherByMonth.get(m.key) || 0,
-        Siswa: studentByMonth.get(m.key) || 0,
-        SPP: invByMonth.get(m.key) || 0,
-        Pendapatan: inByMonth.get(m.key) || 0,
-        Pengeluaran: outByMonth.get(m.key) || 0,
-      })));
+      setMonthly((summary.monthly || []).map((m: any) => ({...m, month: format(new Date(m.key+"T12:00:00"), "MMM")})));
 
       const rankArr = Object.entries(byClass).map(([name, v]) => ({
         name,
@@ -271,7 +231,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       setLeaves(leavesQ.data || []);
       setAnnouncements((annQ.data || []).filter((a: any) => a.type === "draft" || a.type === "pending"));
       setPendingSettlements(setlPendingQ.data || []);
-      setWithdrawals(wdQ.data || []);
+      setWithdrawals([]);
 
       const notifList: any[] = [];
       const totalApprovals = (leavesQ.data?.length || 0) + (setlPendingQ.data?.length || 0);
@@ -280,7 +240,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       if (classesWithoutAtt > 0) notifList.push({ key: "attclass", title: `${classesWithoutAtt} kelas belum melakukan absensi hari ini`, tone: "warning" });
       const teachersJournalDone = new Set((subjectAttQ.data || []).map((a: any) => a.teaching_schedule_id)).size;
       if (schedules.length - teachersJournalDone > 0) notifList.push({ key: "jurnal", title: `${schedules.length - teachersJournalDone} jadwal belum diisi jurnal`, tone: "info" });
-      const paymentsToday = (invoicesQ.data || []).filter((i: any) => i.paid_at?.slice(0, 10) === today).length;
+      const paymentsToday = Number(summary.payments_today || 0);
       if (paymentsToday > 0) notifList.push({ key: "spp", title: `${paymentsToday} pembayaran SPP masuk hari ini`, tone: "success" });
       setNotifs(notifList);
 
@@ -292,12 +252,15 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       (setlAllQ.data || []).slice(0, 4).forEach((s: any) => tl.push({ type: "settlement", label: `Pencairan ${s.settlement_code} (${s.status})`, at: s.requested_at, tone: "info" }));
       tl.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
       setTimeline(tl.slice(0, 30));
+      hasLoaded.current = schoolId;
 
     } catch (e) {
+      if (activeSchool.current !== schoolId) return;
       console.error("Principal load error", e);
       toast.error("Gagal memuat data");
     } finally {
-      setLoading(false);
+      if (loadingRequest.current === schoolId) loadingRequest.current = null;
+      if (activeSchool.current === schoolId) setLoading(false);
     }
   }, [schoolId]);
 
@@ -306,7 +269,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
     if (!user || !schoolId) { setLoading(false); return; }
     loadAll();
     // Auto refresh every 60s so kepsek dashboard selalu segar tanpa tombol manual
-    const t = setInterval(() => { loadAll(); }, 60_000);
+    const t = setInterval(() => { if (document.visibilityState === "visible") loadAll(); }, 60_000);
     return () => clearInterval(t);
   }, [authLoading, user, schoolId, loadAll]);
 

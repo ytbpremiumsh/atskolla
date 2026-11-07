@@ -1,66 +1,9 @@
+import { backupManifest, exportApplicationData, restoreOrder } from "../_shared/backup.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-// Tables we explicitly skip from backup (managed by Supabase or transient)
-const SKIP_TABLES = new Set<string>([
-  'parent_otps',          // transient OTP codes
-  'parent_sessions',      // transient sessions
-  'password_reset_otps',  // transient OTP
-])
-
-const PAGE_SIZE = 1000
-
-async function listPublicTables(supabase: any): Promise<string[]> {
-  // Use information_schema via RPC fallback. We use the REST api with a raw query is not available,
-  // so try a known-safe approach: query pg_tables via PostgREST? Not possible.
-  // Use a hardcoded discovery by attempting select on known tables list maintained below as fallback.
-  // Best approach: call sql via supabase.rpc on a security-definer function — none exists.
-  // Solution: maintain an EXTENDED list mirroring current schema, plus skip set.
-  return [
-    'affiliate_commissions', 'affiliate_withdrawals', 'affiliates',
-    'attendance_logs', 'bendahara_settings', 'class_teachers', 'classes',
-    'email_logs', 'email_settings',
-    'id_card_designs', 'id_card_order_items', 'id_card_orders',
-    'landing_content', 'landing_testimonials', 'landing_trusted_schools',
-    'login_logs', 'notifications',
-    'parent_leave_requests', 'parent_messages',
-    'payment_transactions', 'dismissal_logs', 'dismissal_settings',
-    'platform_settings', 'point_transactions', 'profiles',
-    'referrals',
-    'reward_claims', 'rewards',
-    'school_addons', 'school_announcements', 'school_groups',
-    'school_integrations', 'schools',
-    'spp_invoices', 'spp_logs', 'spp_settlements', 'spp_tariffs',
-    'student_grades', 'students', 'subject_attendance', 'subjects',
-    'support_tickets', 'teaching_schedules',
-    'ticket_replies', 'user_roles', 'wa_credits', 'wa_message_logs',
-  ]
-}
-
-async function fetchAllRows(supabase: any, table: string): Promise<any[]> {
-  const all: any[] = []
-  let from = 0
-  while (true) {
-    const { data, error } = await supabase
-      .from(table)
-      .select('*')
-      .range(from, from + PAGE_SIZE - 1)
-    if (error) {
-      console.error(`Error exporting ${table} at offset ${from}:`, error.message)
-      break
-    }
-    if (!data || data.length === 0) break
-    all.push(...data)
-    if (data.length < PAGE_SIZE) break
-    from += PAGE_SIZE
-    // Safety: max 200k rows per table
-    if (from > 200000) break
-  }
-  return all
 }
 
 Deno.serve(async (req) => {
@@ -93,54 +36,17 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const { action } = body
 
-    const tables = (await listPublicTables(supabase)).filter(t => !SKIP_TABLES.has(t))
+    const manifest = await backupManifest(supabase)
+    const tables = manifest.map(t => t.table_name)
 
     if (action === 'export') {
-      const backup: Record<string, any[]> = {}
-      const stats: Record<string, number> = {}
-      const errors: Record<string, string> = {}
-
-      for (const table of tables) {
-        try {
-          const rows = await fetchAllRows(supabase, table)
-          backup[table] = rows
-          stats[table] = rows.length
-        } catch (e: any) {
-          errors[table] = e?.message || String(e)
-          backup[table] = []
-          stats[table] = 0
-        }
-      }
-
-      const totalRows = Object.values(stats).reduce((a, b) => a + b, 0)
-
-      await supabase.from('platform_settings').upsert({
-        key: 'last_backup_at',
-        value: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'key' })
-
-      await supabase.from('platform_settings').upsert({
-        key: 'last_backup_stats',
-        value: JSON.stringify({ tables: Object.keys(stats).length, total_rows: totalRows, stats }),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'key' })
-
-      return new Response(JSON.stringify({
-        success: true,
-        backup,
-        meta: {
-          version: 2,
-          exported_at: new Date().toISOString(),
-          tables: Object.keys(stats).length,
-          total_rows: totalRows,
-          stats,
-          errors,
-          skipped: Array.from(SKIP_TABLES),
-        },
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      const {backup,meta} = await exportApplicationData(supabase)
+      const {error: recordError} = await supabase.from('platform_settings').upsert([
+        {key:'last_backup_at', value:meta.exported_at, updated_at:meta.exported_at},
+        {key:'last_backup_stats', value:JSON.stringify(meta), updated_at:meta.exported_at},
+      ], {onConflict:'key'})
+      if(recordError) throw recordError
+      return new Response(JSON.stringify({success:true,backup,meta}), {headers:{...corsHeaders,'Content-Type':'application/json'}})
     }
 
     if (action === 'stats') {
@@ -148,7 +54,7 @@ Deno.serve(async (req) => {
       for (const table of tables) {
         const { count, error } = await supabase.from(table).select('*', { count: 'exact', head: true })
         if (error) {
-          stats[table] = 0
+          throw new Error(`Gagal membaca statistik ${table}: ${error.message}`)
         } else {
           stats[table] = count || 0
         }
@@ -190,59 +96,28 @@ Deno.serve(async (req) => {
         })
       }
 
-      // Dependency order: parents first, children last.
-      const RESTORE_ORDER = [
-        'schools', 'school_groups', 
-        'profiles', 'user_roles',
-        'classes', 'subjects', 'teaching_schedules', 'class_teachers',
-        'students', 'student_grades',
-        'attendance_logs', 'subject_attendance', 'teacher_attendance_logs',
-        'dismissal_settings', 'dismissal_logs',
-        'school_holidays', 'school_announcements', 'school_integrations',
-        'spp_tariffs', 'spp_invoices', 'spp_logs', 'spp_settlements',
-        'bendahara_settings', 'bendahara_bank_accounts',
-        'id_card_designs', 'id_card_orders', 'id_card_order_items',
-        'landing_content', 'landing_testimonials', 'landing_trusted_schools',
-        'panduan_content',
-        'platform_settings', 'email_settings', 'email_logs',
-        'notifications', 'login_logs',
-        'affiliates', 'affiliate_commissions', 'affiliate_withdrawals', 'referrals',
-        'rewards', 'reward_claims', 'point_transactions',
-        'short_links', 'short_link_clicks',
-        'parent_leave_requests', 'parent_messages',
-        'payment_transactions', 'school_addons',
-        'support_tickets', 'ticket_replies',
-        'wa_credits', 'wa_message_logs',
-      ]
-
+      if(mode !== 'upsert') throw new Error('Replace tidak didukung. Gunakan upsert atau pemulihan database penyedia agar penghapusan tidak parsial.')
+      const orderedTables = restoreOrder(manifest,Object.keys(payload))
+      for(const table of orderedTables) if(!Array.isArray(payload[table.table_name])) throw new Error(`Data ${table.table_name} harus berupa array`)
       const CHUNK = 200
       const stats: Record<string, { inserted: number; failed: number; error?: string }> = {}
 
-      const tablesInPayload = new Set(Object.keys(payload))
-      const orderedTables = RESTORE_ORDER.filter(t => tablesInPayload.has(t))
-      // Append any extra tables that were in payload but not in our order
-      for (const t of tablesInPayload) if (!orderedTables.includes(t)) orderedTables.push(t)
-
-      for (const table of orderedTables) {
-        if (SKIP_TABLES.has(table)) continue
+      for (const entry of orderedTables) {
+        const table = entry.table_name
+        const conflict = entry.key_columns.join(",")
         const rows = payload[table] || []
         if (!Array.isArray(rows) || rows.length === 0) { stats[table] = { inserted: 0, failed: 0 }; continue }
-
-        // Replace mode: wipe existing rows first (dangerous — for full migrations only).
-        if (mode === 'replace') {
-          try { await supabase.from(table).delete().not('id', 'is', null) } catch (_) {}
-        }
 
         let inserted = 0
         let failed = 0
         let lastErr: string | undefined
         for (let i = 0; i < rows.length; i += CHUNK) {
           const chunk = rows.slice(i, i + CHUNK)
-          const { error } = await supabase.from(table).upsert(chunk, { onConflict: 'id', ignoreDuplicates: false })
+          const { error } = await supabase.from(table).upsert(chunk, { onConflict: conflict, ignoreDuplicates: false })
           if (error) {
             // Retry row-by-row so a single bad row doesn't drop the whole chunk
             for (const row of chunk) {
-              const { error: rowErr } = await supabase.from(table).upsert(row, { onConflict: 'id' })
+              const { error: rowErr } = await supabase.from(table).upsert(row, { onConflict: conflict })
               if (rowErr) { failed++; lastErr = rowErr.message } else { inserted++ }
             }
           } else {
@@ -256,7 +131,8 @@ Deno.serve(async (req) => {
       const totalFailed = Object.values(stats).reduce((a, s) => a + s.failed, 0)
 
       return new Response(JSON.stringify({
-        success: true,
+        success: totalFailed === 0,
+        partial: totalFailed > 0,
         mode,
         summary: {
           tables: Object.keys(stats).length,

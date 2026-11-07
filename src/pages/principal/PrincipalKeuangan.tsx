@@ -22,13 +22,15 @@ export default function PrincipalKeuangan() {
         icon={Wallet}
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <FinanceCard label="Total Tagihan" value={fmtIDR(finance.totalTagihan)} icon={DollarSign} />
         <FinanceCard label="Total Pembayaran" value={fmtIDR(finance.totalPembayaran)} icon={TrendingUp} tone="emerald" />
         <FinanceCard label="Tunggakan" value={fmtIDR(finance.tunggakan)} icon={TrendingDown} tone="rose" />
         <FinanceCard label="Saldo Buku Kas" value={fmtIDR(finance.saldoKas)} icon={Wallet} tone="sky" />
-        <FinanceCard label="Menunggu Pencairan" value={fmtIDR(finance.danaPending)} icon={Clock} tone="amber" />
+        <FinanceCard label="Saldo lama siap diajukan" value={fmtIDR(finance.danaPending)} icon={Clock} tone="amber" />
+        <FinanceCard label="Dialokasikan melalui Split" value={fmtIDR(finance.splitAllocated)} icon={TrendingUp} tone="emerald" />
       </div>
+      <p className="text-xs text-muted-foreground">Lunas berarti pembayaran telah dikonfirmasi. Alokasi split belum menjadi bukti dana diterima bank. Waktu settlement mengikuti penyedia pembayaran.</p>
 
       <Card className="rounded-2xl">
         <CardHeader>

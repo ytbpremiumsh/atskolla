@@ -13,12 +13,11 @@ const REFUNDABLE = [
   "Kesalahan sistem yang mengakibatkan dana terpotong ganda (double charge).",
   "Pembayaran berhasil namun tagihan tidak terupdate pada sistem karena gangguan teknis.",
   "Kesalahan input nominal oleh sistem (bukan oleh pengguna).",
-  "Pembatalan berlangganan pada masa uji coba (trial) yang tidak sengaja ter-charge.",
 ];
 
 const NON_REFUNDABLE = [
   "Pembayaran SPP yang sudah dikonfirmasi diterima sekolah dan tercatat di rekening tujuan.",
-  "Berlangganan yang sudah dipakai (fitur premium telah aktif dan digunakan).",
+  "Layanan tambahan yang telah diserahkan sesuai kesepakatan, kecuali terdapat dasar pengembalian yang sah.",
   "Kesalahan input nominal atau data pembayaran oleh pengguna.",
   "Perubahan keputusan sepihak setelah layanan diterima.",
   "Biaya layanan payment gateway (VA, QRIS, retail) yang sudah dipotong pihak ketiga.",

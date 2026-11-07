@@ -3626,6 +3626,8 @@ export type Database = {
       }
     }
     Functions: {
+      principal_finance_summary: { Args: { p_school_id: string }; Returns: Json }
+      operations_health: { Args: Record<PropertyKey, never>; Returns: Json }
       _fmt_idr: { Args: { amt: number }; Returns: string }
       check_package_status: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }

@@ -51,7 +51,7 @@ export function LegalLayout({
     setMeta("description", description);
     setMeta("og:title", `${title} — ATSkolla`, "property");
     setMeta("og:description", description, "property");
-    setMeta("og:url", `https://absenpintar.online${path}`, "property");
+    setMeta("og:url", `https://www.atskolla.com${path}`, "property");
     setMeta("og:type", "website", "property");
 
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -60,7 +60,7 @@ export function LegalLayout({
       canonical.setAttribute("rel", "canonical");
       document.head.appendChild(canonical);
     }
-    canonical.setAttribute("href", `https://absenpintar.online${path}`);
+    canonical.setAttribute("href", `https://www.atskolla.com${path}`);
     window.scrollTo({ top: 0, behavior: "auto" });
   }, [title, description, path]);
 
@@ -116,6 +116,8 @@ export function LegalLayout({
             {[
               { to: "/syarat-ketentuan", label: "Syarat" },
               { to: "/kebijakan-refund", label: "Refund" },
+              { to: "/kebijakan-privasi", label: "Privasi" },
+              { to: "/penghapusan-akun", label: "Penghapusan Akun" },
               { to: "/faq", label: "FAQ" },
               { to: "/kontak", label: "Kontak" },
             ].map((l) => (
