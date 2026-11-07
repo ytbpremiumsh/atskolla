@@ -4541,6 +4541,22 @@ export function BendaharaPencairan() {
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [newAccount, setNewAccount] = useState({ bank_branch: "", bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank" as "bank" | "ewallet", responsible_user_id: "" });
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const [existingBankBookPath, setExistingBankBookPath] = useState("");
+  const [editingRejection, setEditingRejection] = useState("");
+  const bankFormRef = useRef<HTMLDivElement>(null);
+  const resetAccountForm = () => {
+    setEditingAccountId(null);setExistingBankBookPath("");setEditingRejection("");setBankBookFile(null);
+    if (bankBookInput.current) bankBookInput.current.value = "";
+    setNewAccount({ bank_branch: "", bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
+  };
+  const editRejectedAccount = (account: any) => {
+    if (accountSavingRef.current || account.verification_status !== "rejected") return;
+    setEditingAccountId(account.id);setExistingBankBookPath(account.bank_book_path || "");setEditingRejection(account.rejection_reason || "");setBankBookFile(null);
+    if (bankBookInput.current) bankBookInput.current.value = "";
+    setNewAccount({ bank_name: account.bank_name || "", bank_branch: account.bank_branch || "", account_number: account.account_number || "", account_holder: account.account_holder || "", notes: account.notes || "", is_default: false, account_type: "bank", responsible_user_id: account.responsible_user_id || "" });
+    requestAnimationFrame(() => {bankFormRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });document.getElementById(account.bank_branch ? "bank-number" : "bank-branch")?.focus({ preventScroll: true });});
+  };
   const [bankBookFile, setBankBookFile] = useState<File | null>(null);
   const [bankBookPreview, setBankBookPreview] = useState("");
   const [accountSaving, setAccountSaving] = useState(false);
@@ -4615,8 +4631,8 @@ export function BendaharaPencairan() {
       .order("is_default", { ascending: false }).order("created_at", { ascending: false });
     const list = (data as any[]) || [];
     setSavedAccounts(list);
-    if (list.length && !selectedAccountId) {
-      const def = list.find((x: any) => x.is_default) || list[0];
+    if (list.length) {
+      const def = list.find((x: any) => x.id === selectedAccountId) || list.find((x: any) => x.is_default) || list[0];
       setSelectedAccountId(def.id);
       setBank({ bank_name: def.bank_name, account_number: def.account_number, account_holder: def.account_holder, notes: def.notes || "", account_type: def.account_type || "bank", responsible_user_id: def.responsible_user_id || "" });
     }
@@ -4824,29 +4840,43 @@ export function BendaharaPencairan() {
     if (!/^[0-9]{5,34}$/.test(newAccount.account_number.replace(/\s/g, ""))) { toast.error("Nomor rekening harus berisi 5–34 digit angka"); return; }
     if (!newAccount.account_holder.trim()) { toast.error("Nama pemilik wajib"); return; }
     if (!newAccount.bank_branch.trim()) { toast.error("Cabang bank wajib diisi"); return; }
-    if (!bankBookFile) { toast.error("Lampirkan foto halaman depan buku tabungan"); return; }
+    if (!bankBookFile && !existingBankBookPath) { toast.error("Lampirkan foto halaman depan buku tabungan"); return; }
     if (!newAccount.responsible_user_id) { toast.error("Pilih Penanggung Jawab"); return; }
     if (!profile?.school_id) return;
     if (accountSavingRef.current || !user?.id) return;
     accountSavingRef.current = true;setAccountSaving(true);
     let uploadedPath = "";
     try {
-      await validateBankBook(bankBookFile);
-      const extension = bankBookFile.type === "image/jpeg" ? "jpg" : bankBookFile.type === "image/png" ? "png" : "webp";
-      uploadedPath = `${profile.school_id}/${user.id}/${crypto.randomUUID()}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from(BANK_BOOK_BUCKET).upload(uploadedPath, bankBookFile, { contentType: bankBookFile.type, upsert: false });
-      if (uploadError) throw new Error("Foto belum terunggah. " + uploadError.message);
-      const hasActive = savedAccounts.some((a: any) => a.is_active !== false);
-      const { data: inserted, error } = await supabase.from("bendahara_bank_accounts").insert({
-        school_id: profile.school_id, ...newAccount, bank_branch: newAccount.bank_branch.trim(),
-        account_number: newAccount.account_number.replace(/\D/g, ""), account_holder: newAccount.account_holder.trim(),
-        bank_book_path: uploadedPath, is_default: !hasActive, created_by: user.id,
-      }).select("verification_status").single();
-      if (error) throw error;
+      let documentPath = existingBankBookPath;
+      if (bankBookFile) {
+        await validateBankBook(bankBookFile);
+        const extension = bankBookFile.type === "image/jpeg" ? "jpg" : bankBookFile.type === "image/png" ? "png" : "webp";
+        uploadedPath = `${profile.school_id}/${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from(BANK_BOOK_BUCKET).upload(uploadedPath, bankBookFile, { contentType: bankBookFile.type, upsert: false });
+        if (uploadError) throw new Error("Foto belum terunggah. " + uploadError.message);
+        documentPath = uploadedPath;
+      }
+      let approved = false;
+      if (editingAccountId) {
+        const { error } = await supabase.rpc("resubmit_bank_account", {
+          p_account_id: editingAccountId, p_bank_name: newAccount.bank_name, p_bank_branch: newAccount.bank_branch.trim(),
+          p_account_number: newAccount.account_number, p_account_holder: newAccount.account_holder.trim(),
+          p_responsible_user_id: newAccount.responsible_user_id, p_bank_book_path: documentPath, p_notes: newAccount.notes || null,
+        });
+        if (error) throw error;
+      } else {
+        const hasActive = savedAccounts.some((a: any) => a.is_active !== false);
+        const { data: inserted, error } = await supabase.from("bendahara_bank_accounts").insert({
+          school_id: profile.school_id, ...newAccount, bank_branch: newAccount.bank_branch.trim(),
+          account_number: newAccount.account_number.replace(/\D/g, ""), account_holder: newAccount.account_holder.trim(),
+          bank_book_path: documentPath, is_default: !hasActive, created_by: user.id,
+        }).select("verification_status").single();
+        if (error) throw error;
+        approved = inserted.verification_status === "verified";
+      }
       uploadedPath = "";
-      toast.success(inserted.verification_status === "verified" ? "Rekening cocok dengan data sistem dan langsung terverifikasi" : "Rekening dan lampiran diajukan. Menunggu verifikasi admin ATSkolla.");
-      setNewAccount({ bank_branch: "", bank_name: "", account_number: "", account_holder: "", notes: "", is_default: false, account_type: "bank", responsible_user_id: "" });
-      setBankBookFile(null);if (bankBookInput.current) bankBookInput.current.value = "";
+      toast.success(editingAccountId ? "Data diperbarui dan diajukan ulang. Menunggu verifikasi Super Admin." : approved ? "Rekening cocok dengan data sistem dan langsung terverifikasi" : "Rekening dan lampiran diajukan. Menunggu verifikasi admin ATSkolla.");
+      resetAccountForm();
       await loadAccounts();
     } catch (error) {
       if (uploadedPath) await supabase.storage.from(BANK_BOOK_BUCKET).remove([uploadedPath]);
@@ -5257,6 +5287,7 @@ export function BendaharaPencairan() {
                         {st !== "verified" && st !== "rejected" && (
                           <p className="mt-2.5 text-[11px] rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1.5">Belum bisa dipakai untuk pencairan sampai diverifikasi admin ATSkolla.</p>
                         )}
+                        {st === "rejected" && <div className="mt-3"><Button type="button" size="sm" disabled={accountSaving} onClick={() => editRejectedAccount(a)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" />Perbarui Data</Button></div>}
                         {a.is_default ? (
                           <p className="mt-2.5 pt-2.5 border-t text-[11px] text-muted-foreground">Rekening utama tidak bisa dihapus. Jadikan rekening lain sebagai utama terlebih dahulu.</p>
                         ) : (
@@ -5271,8 +5302,9 @@ export function BendaharaPencairan() {
                 </div>
               )}
             </div>
-            <div className="border-t pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6 space-y-3">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tambah / Ganti Rekening</Label>
+            <div ref={bankFormRef} className="scroll-mt-4 border-t pt-4 md:border-t-0 md:pt-0 md:border-l md:pl-6 space-y-3">
+              <Label className="text-xs uppercase tracking-wide text-muted-foreground">{editingAccountId ? "Perbarui Rekening Ditolak" : "Tambah / Ganti Rekening"}</Label>
+              {editingAccountId && <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200"><p className="font-semibold">Perbaiki data pengajuan sebelumnya</p><p className="mt-1">Alasan ditolak: {editingRejection || "Periksa kembali data rekening."}</p><p className="mt-1">Data lama sudah terisi. Perbaiki bagian yang salah, lalu ajukan ulang untuk diperiksa Super Admin.</p><Button type="button" variant="outline" size="sm" disabled={accountSaving} className="mt-2" onClick={resetAccountForm}>Batal Perbarui</Button></div>}
               <div className="text-xs rounded-lg border p-2 space-y-1 text-muted-foreground">
                 <p className="font-semibold text-foreground">Cara mengganti rekening:</p>
                 <p>1. Tambahkan rekening baru di bawah ini.</p>
@@ -5293,7 +5325,7 @@ export function BendaharaPencairan() {
                     </Select>
                   </div>
                   <div><Label htmlFor="bank-branch">Cabang Bank</Label><Input id="bank-branch" placeholder="Contoh: KCP Purwokerto" maxLength={120} value={newAccount.bank_branch} onChange={e => setNewAccount({ ...newAccount, bank_branch: e.target.value })} /></div>
-                  <div><Label>Nomor Rekening</Label><Input inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} /></div>
+                  <div><Label htmlFor="bank-number">Nomor Rekening</Label><Input id="bank-number" inputMode="numeric" value={newAccount.account_number} onChange={e => setNewAccount({ ...newAccount, account_number: e.target.value })} /></div>
                   <div><Label>Atas Nama (sesuai buku tabungan)</Label><Input value={newAccount.account_holder} onChange={e => setNewAccount({ ...newAccount, account_holder: e.target.value })} /></div>
                 </>
               <div>
@@ -5317,10 +5349,11 @@ export function BendaharaPencairan() {
               <div className="space-y-2 rounded-xl border border-dashed bg-muted/30 p-3">
                 <Label htmlFor="bank-book-file">Foto Halaman Depan Buku Tabungan</Label>
                 <p className="text-xs text-muted-foreground">Pastikan nama pemilik, nomor rekening, dan bank terbaca jelas. JPG, PNG, atau WebP, maksimal 5 MB. Dokumen hanya untuk verifikasi rekening.</p>
+                {existingBankBookPath && <div className="rounded-lg border bg-background p-2"><p className="text-xs text-muted-foreground">Lampiran sebelumnya tetap digunakan jika Anda tidak memilih foto baru.</p><BankBookAttachment path={existingBankBookPath} bank={newAccount.bank_name} holder={newAccount.account_holder} /></div>}
                 <Input id="bank-book-file" ref={bankBookInput} type="file" accept="image/jpeg,image/png,image/webp" disabled={accountSaving} onChange={e => selectBankBook(e.target.files?.[0])} className="h-auto py-2 file:mr-3" />
                 {bankBookPreview && <div className="space-y-2"><img src={bankBookPreview} alt="Pratinjau halaman depan buku tabungan" className="max-h-48 w-full rounded-lg object-contain bg-background" /><p className="break-all text-xs text-muted-foreground">{bankBookFile?.name}</p><Button type="button" variant="ghost" size="sm" disabled={accountSaving} onClick={() => {setBankBookFile(null);if (bankBookInput.current) bankBookInput.current.value = "";}}>Hapus pilihan foto</Button></div>}
               </div>
-              <Button onClick={saveAccount} disabled={accountSaving} className="w-full bg-emerald-600 hover:bg-emerald-700">{accountSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengajukan rekening…</> : "Ajukan Rekening"}</Button>
+              <Button onClick={saveAccount} disabled={accountSaving} className="w-full bg-emerald-600 hover:bg-emerald-700">{accountSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Mengajukan rekening…</> : editingAccountId ? "Simpan Perbaikan & Ajukan Ulang" : "Ajukan Rekening"}</Button>
             </div>
           </div>
         </DialogContent>

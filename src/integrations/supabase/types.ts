@@ -295,6 +295,7 @@ export type Database = {
           is_active: boolean
           is_default: boolean
           notes: string | null
+          requires_review: boolean
           rejection_reason: string | null
           responsible_user_id: string | null
           school_id: string
@@ -321,6 +322,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
+          requires_review?: boolean
           rejection_reason?: string | null
           responsible_user_id?: string | null
           school_id: string
@@ -347,6 +349,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
+          requires_review?: boolean
           rejection_reason?: string | null
           responsible_user_id?: string | null
           school_id?: string
@@ -3632,6 +3635,10 @@ export type Database = {
       }
     }
     Functions: {
+      resubmit_bank_account: {
+        Args: { p_account_id: string; p_bank_name: string; p_bank_branch: string; p_account_number: string; p_account_holder: string; p_responsible_user_id: string; p_bank_book_path: string; p_notes?: string | null }
+        Returns: Json
+      }
       verify_and_register_bank_account: {
         Args: { p_account_id: string }
         Returns: Json
