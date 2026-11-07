@@ -7,7 +7,7 @@ import android.content.Context;
 public class NativePreviewActivity extends ParentActivity {
     @Override protected boolean preview(){return true;}
     @Override protected void startPreview(){
-        BrandRenderCheck.run(this);api=new Fixtures(this);token="native-ui-preview";studentId="sample-student";
+        BrandRenderCheck.run(this);QrIdentityCheck.run(this);api=new Fixtures(this);token="native-ui-preview";studentId="sample-student";
         JSONObject student=j("id",studentId,"name","Nadia Putri","class","VII A","student_id","DEMO-001","card_number","0000000000000000","qr_code","ATSkolla-demo","parent_name","Orang Tua Nadia","parent_phone","","schools",j("name","Sekolah Contoh"));
         students=new JSONArray().put(student);screen=getIntent().getStringExtra("screen");if(screen==null)screen="home";dashboard();
     }
@@ -15,6 +15,7 @@ public class NativePreviewActivity extends ParentActivity {
         Fixtures(Context c){super(c);}
         @Override JSONObject call(String action,JSONObject args,String token){
             switch(action){
+                case "me":return j("students",new JSONArray().put(j("id","sample-student","name","Nadia Putri","class","VII A","student_id","DEMO-001","card_number","0000000000000000","qr_code","ATSkolla-demo","schools",j("name","Sekolah Contoh"))));
                 case "attendance":return j("ok",true,"attendance",new JSONArray().put(j("date",day().toString(),"time","07:04","status","hadir","attendance_type","masuk","notes","Tepat waktu")).put(j("date",day().toString(),"time","14:05","status","hadir","attendance_type","pulang","notes","Pulang sekolah")));
                 case "announcements":return j("announcements",new JSONArray().put(j("title","Pertemuan orang tua dan wali kelas","message","Mari bersama mendukung perjalanan belajar ananda. Pertemuan dilaksanakan di aula sekolah.","created_at",day().toString(),"is_pinned",true)));
                 case "schedule":return j("schedule",new JSONArray().put(j("day_of_week",1,"start_time","07:30","end_time","08:30","room","Ruang 7A","subjects",j("name","Matematika"),"profiles",j("full_name","Ibu Guru"))).put(j("day_of_week",1,"start_time","08:30","end_time","09:30","subjects",j("name","Bahasa Indonesia dan Sastra Nusantara"),"profiles",j("full_name","Bapak Guru dengan nama yang lebih panjang"))).put(j("day_of_week",2,"start_time","09:00","end_time","10:00","room","Laboratorium","subjects",j("name","Informatika","color","#10B981"),"profiles",j("full_name","Ibu Ratna"))));

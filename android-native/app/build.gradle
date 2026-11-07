@@ -6,8 +6,8 @@ android {
         applicationId 'com.atskolla.parent'
         minSdk 26
         targetSdk 36
-        versionCode 34
-        versionName '2.4.0'
+        versionCode 35
+        versionName '2.5.0'
     }
     buildTypes {
         release {
