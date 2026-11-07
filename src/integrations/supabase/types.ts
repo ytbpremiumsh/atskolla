@@ -3632,6 +3632,10 @@ export type Database = {
       }
     }
     Functions: {
+      verify_and_register_bank_account: {
+        Args: { p_account_id: string }
+        Returns: Json
+      }
       principal_finance_summary: { Args: { p_school_id: string }; Returns: Json }
       operations_health: { Args: Record<PropertyKey, never>; Returns: Json }
       _fmt_idr: { Args: { amt: number }; Returns: string }

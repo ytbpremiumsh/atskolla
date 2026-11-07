@@ -1,5 +1,5 @@
 import { BankBookAttachment } from "@/components/bank/BankBookAttachment";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,13 +58,16 @@ const SuperAdminSplitSettlement = () => {
   const [banks, setBanks] = useState<Record<string, Bank[]>>({});
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const verificationBusy = useRef(false);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [regs, setRegs] = useState<Reg[]>([]);
   const [reg, setReg] = useState({ bank_name: "", account_number: "", account_holder: "", settlement_id: "" });
 
   const loadRegs = async () => {
-    const { data } = await supabase.from("doku_registered_accounts").select("id,bank_name,account_number,account_holder,settlement_id").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("doku_registered_accounts").select("id,bank_name,account_number,account_holder,settlement_id").order("created_at", { ascending: false });
+    if (error) { toast.error("Gagal memuat daftar rekening: " + error.message); return; }
     setRegs((data || []) as Reg[]);
   };
 
@@ -125,21 +128,33 @@ const SuperAdminSplitSettlement = () => {
   const pendingBanks = Object.values(banks).flat().filter((b) => b.is_active !== false && b.verification_status === "pending");
 
   const setVerification = async (b: Bank, status: "verified" | "rejected") => {
+    if (verificationBusy.current) return;
     let reason: string | null = null;
     if (status === "rejected") {
       reason = window.prompt("Alasan penolakan rekening:", "Data rekening tidak sesuai");
       if (reason === null) return;
+      if (!reason.trim()) { toast.error("Isi alasan penolakan rekening"); return; }
     }
-    const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("bendahara_bank_accounts").update({
-      verification_status: status,
-      verified_at: status === "verified" ? new Date().toISOString() : null,
-      verified_by: u.user?.id ?? null,
-      rejection_reason: reason,
-    }).eq("id", b.id);
-    if (error) { toast.error("Gagal: " + error.message); return; }
-    toast.success(status === "verified" ? "Rekening terverifikasi, bendahara sudah bisa mencairkan" : "Rekening ditolak");
-    await load();
+    verificationBusy.current = true;setVerifyingId(b.id);
+    try {
+      if (status === "verified") {
+        const { error } = await supabase.rpc("verify_and_register_bank_account", { p_account_id: b.id });
+        if (error) throw error;
+        toast.success("Rekening terverifikasi dan otomatis ditambahkan ke daftar rekening DOKU di ATSkolla.");
+      } else {
+        const { data: u, error: authError } = await supabase.auth.getUser();
+        if (authError || !u.user) throw new Error("Sesi berakhir. Silakan masuk kembali.");
+        const { error } = await supabase.from("bendahara_bank_accounts").update({
+          verification_status: "rejected", verified_at: null, verified_by: u.user.id,
+          rejection_reason: reason?.trim() || null,
+        }).eq("id", b.id).eq("verification_status", "pending").select("id").single();
+        if (error) throw error;
+        toast.success("Rekening ditolak");
+      }
+      await Promise.all([load(), loadRegs()]);
+    } catch (error) {
+      toast.error("Gagal memproses rekening: " + ((error as {message?: string})?.message || "Silakan coba lagi."));
+    } finally { verificationBusy.current = false;setVerifyingId(null); }
   };
 
   const schoolName = (id: string) => schools.find((s) => s.id === id)?.name || "-";
@@ -205,7 +220,7 @@ const SuperAdminSplitSettlement = () => {
 
       <Step n={1} icon={ShieldCheck} title="Verifikasi Pengajuan Rekening" count={pendingBanks.length}
         tone={pendingBanks.length ? "bg-amber-500" : "bg-muted"}
-        desc="Rekening baru dari bendahara yang belum cocok dengan daftar DOKU. Periksa lalu verifikasi atau tolak.">
+        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui sekaligus menambahkannya ke daftar rekening DOKU di ATSkolla.">
         {pendingBanks.length === 0 ? (
           <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">Tidak ada pengajuan baru.</div>
         ) : (
@@ -222,8 +237,8 @@ const SuperAdminSplitSettlement = () => {
                   <BankBookAttachment path={b.bank_book_path} bank={b.bank_name} holder={b.account_holder} />
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setVerification(b, "verified")}><CheckCircle2 className="h-4 w-4 mr-1" /> Verifikasi</Button>
-                  <Button size="sm" variant="outline" onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
+                  <Button size="sm" disabled={verifyingId !== null} onClick={() => setVerification(b, "verified")}>{verifyingId === b.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />} {verifyingId === b.id ? "Memproses…" : "Verifikasi"}</Button>
+                  <Button size="sm" variant="outline" disabled={verifyingId !== null} onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
                 </div>
               </div>
             ))}
@@ -232,7 +247,8 @@ const SuperAdminSplitSettlement = () => {
       </Step>
 
       <Step n={2} icon={Landmark} title="Rekening Terdaftar di DOKU" count={regs.length} tone="bg-primary"
-        desc="Tambahkan rekening yang sudah Verified di DOKU. Pengajuan bendahara dengan bank dan nomor yang sama akan terverifikasi otomatis.">
+        desc="Rekening yang Anda verifikasi otomatis masuk ke daftar ini. Penambahan manual tetap tersedia untuk rekening lain.">
+        <p className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">Daftar ini tersimpan di ATSkolla. Penambahan ke daftar tidak mendaftarkan rekening ke layanan DOKU dan tidak otomatis mengaktifkan Split Settlement. Settlement ID tetap menggunakan ID resmi dari DOKU.</p>
         <div className="rounded-xl bg-muted/40 p-3 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2">
           <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />
           <Input placeholder="Nomor rekening" inputMode="numeric" value={reg.account_number} onChange={(e) => setReg({ ...reg, account_number: e.target.value })} />
@@ -248,7 +264,7 @@ const SuperAdminSplitSettlement = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{r.bank_name} <span className="font-mono font-normal">{r.account_number}</span></p>
                   <p className="text-xs text-muted-foreground truncate">a.n. {r.account_holder || "-"}</p>
-                  {r.settlement_id && <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p>}
+                  {r.settlement_id ? <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p> : <p className="text-[11px] text-amber-700 dark:text-amber-400">Settlement ID DOKU belum diisi</p>}
                 </div>
                 <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive" onClick={() => delReg(r.id)}><Trash2 className="h-4 w-4" /></Button>
               </div>
