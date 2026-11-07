@@ -1,3 +1,6 @@
+import { fetchAllPages } from "@/lib/pagedQuery";
+import { payoutStatus, PAYOUT_LABEL } from "@/lib/splitSettlement";
+import { usePrincipalData } from "@/hooks/usePrincipalData";
 import { useEffect, useMemo, useState } from "react";
 import { Wallet } from "lucide-react";
 import { Landmark, ArrowDownToLine, FileText, Loader2, Receipt, TrendingUp, Banknote, Download } from "lucide-react";
@@ -43,6 +46,9 @@ function StatCard({ label, value, icon: Icon, gradient, sub }: {
  */
 export default function LaporanSettlement() {
   const { profile } = useAuth();
+  const { finance } = usePrincipalData();
+  const [error, setError] = useState("");
+  const [visibleRows, setVisibleRows] = useState(40);
   const schoolId = profile?.school_id;
   const [settlements, setSettlements] = useState<any[]>([]);
   const [paidInvoices, setPaidInvoices] = useState<any[]>([]);
@@ -51,18 +57,24 @@ export default function LaporanSettlement() {
 
   useEffect(() => {
     if (!schoolId) return;
+    let cancelled = false;
     (async () => {
+      try {
+      setError("");
       setLoading(true);
       const [sRes, iRes] = await Promise.all([
-        supabase.from("spp_settlements").select("*").eq("school_id", schoolId).order("requested_at", { ascending: false }),
-        supabase.from("spp_invoices")
-          .select("id, invoice_number, student_name, class_name, period_label, total_amount, payment_method, paid_at, settlement_id, status")
-          .eq("school_id", schoolId).eq("status", "paid").order("paid_at", { ascending: false }),
+        fetchAllPages(() => supabase.from("spp_settlements").select("*").eq("school_id", schoolId)),
+        fetchAllPages(() => supabase.from("spp_invoices")
+          .select("id, invoice_number, student_name, class_name, period_label, total_amount, payment_method, paid_at, settlement_id, status, doku_split")
+          .eq("school_id", schoolId).eq("status", "paid")),
       ]);
-      setSettlements(sRes.data || []);
-      setPaidInvoices(iRes.data || []);
-      setLoading(false);
+      if (cancelled) return;
+      setSettlements(sRes.data.sort((a,b) => (b.requested_at||"").localeCompare(a.requested_at||"")));
+      setPaidInvoices(iRes.data.sort((a,b) => (b.paid_at||"").localeCompare(a.paid_at||"")));
+      } catch(e) { if(!cancelled) setError("Gagal memuat laporan. Total tidak ditampilkan sebagai hasil lengkap."); }
+      finally { if(!cancelled) setLoading(false); }
     })();
+    return () => { cancelled = true; };
   }, [schoolId]);
 
   const isOffline = (m?: string | null) => {
@@ -70,11 +82,13 @@ export default function LaporanSettlement() {
     return v === "offline_cash" || v === "offline_transfer";
   };
 
+  const statusFor = (i:any) => payoutStatus({...i,settlement_status:settlements.find(s=>s.id===i.settlement_id)?.status});
+
   const paidSummary = useMemo(() => {
     const arr = paidInvoices;
     const online = arr.filter((i) => !isOffline(i.payment_method));
-    const settled = online.filter((i) => !!i.settlement_id);
-    const unsettled = online.filter((i) => !i.settlement_id);
+    const settled = online.filter((i) => ["manual_paid","split_paid"].includes(statusFor(i)));
+    const unsettled = online.filter((i) => !i.settlement_id && !i.doku_split);
     return {
       total: arr.length,
       totalGross: arr.reduce((a, x) => a + (x.total_amount || 0), 0),
@@ -83,7 +97,7 @@ export default function LaporanSettlement() {
       unsettledCount: unsettled.length,
       unsettledGross: unsettled.reduce((a, x) => a + (x.total_amount || 0), 0),
     };
-  }, [paidInvoices]);
+  }, [paidInvoices,settlements]);
 
   const badge = (s: string) => {
     const map: Record<string, string> = {
@@ -125,7 +139,7 @@ export default function LaporanSettlement() {
     Periode: i.period_label,
     Metode: isOffline(i.payment_method) ? "Offline" : "Online",
     Nominal: i.total_amount || 0,
-    "Status Cair": i.settlement_id ? "Sudah Cair" : (isOffline(i.payment_method) ? "-" : "Belum Cair"),
+    "Status Cair": PAYOUT_LABEL[statusFor(i)],
   }));
   const paidCsv: Header[] = [
     { key: "Invoice", label: "Invoice" }, { key: "Tanggal", label: "Tanggal" },
@@ -164,7 +178,7 @@ export default function LaporanSettlement() {
               <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
             ) : settlements.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="text-center py-10 text-sm text-muted-foreground">Belum ada pengajuan settlement</TableCell></TableRow>
-            ) : settlements.map((s) => {
+            ) : settlements.slice(0,visibleRows).map((s) => {
               const withdrawFee = s.withdraw_fee ?? 3000;
               const finalPayout = s.final_payout ?? Math.max(0, (s.total_gross || 0) - withdrawFee);
               return (
@@ -210,7 +224,7 @@ export default function LaporanSettlement() {
               <TableRow><TableCell colSpan={8} className="text-center py-10"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></TableCell></TableRow>
             ) : paidInvoices.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="text-center py-10 text-sm text-muted-foreground">Belum ada transaksi lunas</TableCell></TableRow>
-            ) : paidInvoices.map((i) => {
+            ) : paidInvoices.slice(0,visibleRows).map((i) => {
               const offline = isOffline(i.payment_method);
               return (
                 <TableRow key={i.id} className="[&_td]:whitespace-nowrap hover:bg-muted/40">
@@ -224,13 +238,7 @@ export default function LaporanSettlement() {
                   </TableCell>
                   <TableCell className="text-right text-xs font-mono">{fmtIDR(i.total_amount || 0)}</TableCell>
                   <TableCell>
-                    {offline ? (
-                      <Badge variant="outline" className="text-[10px]">Kas Manual</Badge>
-                    ) : i.settlement_id ? (
-                      <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white text-[10px]">Sudah Cair</Badge>
-                    ) : (
-                      <Badge className="bg-amber-500 hover:bg-amber-500 text-white text-[10px]">Belum Cair</Badge>
-                    )}
+                    <Badge variant="outline" className="text-[10px]">{PAYOUT_LABEL[statusFor(i)]}</Badge>
                   </TableCell>
                 </TableRow>
               );
@@ -255,10 +263,11 @@ export default function LaporanSettlement() {
         }
       />
 
+      {error && <p role="alert" className="text-destructive">{error}</p>}
       {/* Saldo Aktif - Highlight Card */}
       {(() => {
-        const activeBalance = paidSummary.unsettledGross;
-        const onlineGross = paidSummary.settledGross + paidSummary.unsettledGross;
+        const activeBalance = finance.danaPending;
+        const onlineGross = paidSummary.unsettledGross;
         const lockedGross = paidSummary.settledGross;
         return (
           <Card className="border-0 shadow-md bg-gradient-to-br from-[#5B6CF9] via-[#4c5ded] to-[#3D4FE0] text-white overflow-hidden relative">
@@ -266,19 +275,19 @@ export default function LaporanSettlement() {
             <CardContent className="p-5 relative">
               <div className="flex items-center gap-2 mb-1">
                 <Wallet className="h-4 w-4" />
-                <p className="text-xs font-medium opacity-90">Saldo Aktif (Siap Dicairkan)</p>
+                <p className="text-xs font-medium opacity-90">Saldo Lama Siap Diajukan</p>
                 <span className="ml-auto inline-flex items-center gap-1 text-[10px] bg-white/20 px-2 py-0.5 rounded-full">
                   <span className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" /> LIVE
                 </span>
               </div>
               <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(activeBalance)}</p>
-              <p className="text-[11px] opacity-80 mt-1">Total Bruto {fmtIDR(onlineGross)} − Sudah/akan dicairkan {fmtIDR(lockedGross)}</p>
+              <p className="text-[11px] opacity-80 mt-1">Saldo ini mengecualikan pembayaran Split otomatis. Alokasi Split {fmtIDR(finance.splitAllocated)} belum menjadi bukti dana diterima bank.</p>
             </CardContent>
           </Card>
         );
       })()}
 
-      <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
+      {error ? null : <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
           <TabsTrigger
             value="riwayat"
@@ -298,12 +307,12 @@ export default function LaporanSettlement() {
           {(() => {
             const availableCount = paidSummary.unsettledCount;
             const availableGross = paidSummary.unsettledGross;
-            const finalPayout = availableCount > 0 ? Math.max(0, availableGross - 3000) : 0;
+            const finalPayout = finance.danaPending;
             return (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <StatCard label="Transaksi Siap Cair" value={String(availableCount)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
                 <StatCard label="Total Bruto" value={fmtIDR(availableGross)} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
-                <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub="setelah biaya pencairan Rp 3.000" gradient="from-amber-500 to-orange-600" />
+                <StatCard label="Final Payout" value={fmtIDR(finalPayout)} icon={Banknote} sub="mengikuti pengaturan biaya sekolah" gradient="from-amber-500 to-orange-600" />
               </div>
             );
           })()}
@@ -315,12 +324,13 @@ export default function LaporanSettlement() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <StatCard label="Total Nominal SPP" value={fmtIDR(paidSummary.totalGross)} sub={`${paidSummary.total} transaksi`} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
             <StatCard label="Sudah Dicairkan" value={fmtIDR(paidSummary.settledGross)} sub={`${paidSummary.settledCount} transaksi`} icon={ArrowDownToLine} gradient="from-violet-500 to-purple-600" />
-            <StatCard label="Pending Pencairan" value={fmtIDR(paidSummary.unsettledGross)} sub={`${paidSummary.unsettledCount} transaksi`} icon={Loader2} gradient="from-amber-500 to-orange-600" />
+            <StatCard label="Saldo lama bruto" value={fmtIDR(paidSummary.unsettledGross)} sub={`${paidSummary.unsettledCount} transaksi`} icon={Loader2} gradient="from-amber-500 to-orange-600" />
           </div>
 
           {renderPaidTable()}
         </TabsContent>
-      </Tabs>
+      </Tabs>}
+      {!error && Math.max(settlements.length,paidInvoices.length)>visibleRows && <Button variant="outline" onClick={()=>setVisibleRows(n=>n+40)}>Tampilkan berikutnya</Button>}
     </div>
   );
 }

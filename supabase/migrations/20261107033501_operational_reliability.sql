@@ -14,8 +14,8 @@ BEGIN
  IF tz IS NULL OR NOT EXISTS (SELECT 1 FROM pg_catalog.pg_timezone_names WHERE name=tz) THEN tz := 'Asia/Jakarta'; END IF;
  today := (now() AT TIME ZONE tz)::date;
  first_month := (date_trunc('month',today) - interval '5 months')::date;
- WITH invoices AS MATERIALIZED (SELECT * FROM public.spp_invoices WHERE school_id=p_school_id),
- cash AS MATERIALIZED (SELECT * FROM public.cash_book_entries WHERE school_id=p_school_id),
+ WITH invoices AS MATERIALIZED (SELECT total_amount,status,settlement_id,doku_split,payment_method,net_amount,installment_paid_amount,due_date,paid_at FROM public.spp_invoices WHERE school_id=p_school_id),
+ cash AS MATERIALIZED (SELECT direction,amount,entry_date FROM public.cash_book_entries WHERE school_id=p_school_id),
  legacy AS (SELECT count(*) n, coalesce(sum(coalesce(net_amount,total_amount,0)),0) net FROM invoices
    WHERE status='paid' AND settlement_id IS NULL AND NOT coalesce(doku_split,false)
    AND lower(coalesce(payment_method,'')) NOT IN ('offline_cash','offline_transfer')),

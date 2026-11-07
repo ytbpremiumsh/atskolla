@@ -18,6 +18,7 @@ export interface PrincipalStats {
 
 export interface PrincipalData {
   loading: boolean;
+  error: string | null;
   schoolName: string;
   now: Date;
   stats: PrincipalStats;
@@ -47,6 +48,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
   const { user, profile, loading: authLoading } = useAuth();
   const schoolId = profile?.school_id;
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(new Date());
   const [schoolName, setSchoolName] = useState("");
   const [stats, setStats] = useState<PrincipalStats>({
@@ -253,10 +255,12 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
       tl.sort((a, b) => (b.at || "").localeCompare(a.at || ""));
       setTimeline(tl.slice(0, 30));
       hasLoaded.current = schoolId;
+      setError(null);
 
     } catch (e) {
       if (activeSchool.current !== schoolId) return;
       console.error("Principal load error", e);
+      setError("Laporan belum dapat diperbarui. Periksa koneksi dan coba lagi. Angka tidak ditampilkan sebagai hasil lengkap ketika pengambilan data gagal.");
       toast.error("Gagal memuat data");
     } finally {
       if (loadingRequest.current === schoolId) loadingRequest.current = null;
@@ -275,7 +279,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
 
   return (
     <Ctx.Provider value={{
-      loading, schoolName, now, stats, liveClasses, teacherAtt, classAtt, finance,
+      loading, error, schoolName, now, stats, liveClasses, teacherAtt, classAtt, finance,
       settlements, monthly, ranking, calendar, timeline, notifs, leaves,
       announcements, pendingSettlements, withdrawals, refresh: loadAll, setLeaves,
     }}>

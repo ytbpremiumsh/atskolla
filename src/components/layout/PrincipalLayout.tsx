@@ -36,6 +36,12 @@ function HeaderInner() {
   );
 }
 
+function PrincipalContent(){
+  const {error,refresh}=usePrincipalData();
+  if(error)return <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-5 space-y-3"><p>{error}</p><Button variant="outline" onClick={()=>refresh()}>Coba lagi</Button></div>;
+  return <Outlet />;
+}
+
 export function PrincipalLayout() {
   const { user, profile, roles, loading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -117,7 +123,7 @@ export function PrincipalLayout() {
             <main className="no-motion flex-1 p-4 md:p-6 w-full pb-10">
               <Suspense fallback={<div className="h-32" />}>
                 <SchoolAccessGate>
-                  <Outlet />
+                  <PrincipalContent />
                 </SchoolAccessGate>
               </Suspense>
             </main>

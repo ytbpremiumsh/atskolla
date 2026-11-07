@@ -4435,7 +4435,7 @@ export function BendaharaSaldo() {
 
   // Konsep Split Settlement: semua dana online otomatis ditransfer sistem ke rekening sekolah.
   const withStatus = items.map((i) => ({ ...i, _ps: payoutStatus({ ...i, settlement_status: settlements.find(s => s.id === i.settlement_id)?.status }) }));
-  const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + Number(i.net_amount || i.total_amount || 0), 0);
+  const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + Number(i.net_amount ?? i.total_amount ?? 0), 0);
   const countBy = (k: string) => withStatus.filter((i) => i._ps === k).length;
   const processing = { total: sumBy("split_processing") + sumBy("manual_processing"), count: countBy("split_processing") + countBy("manual_processing") };
   const transferred = {
@@ -4510,7 +4510,7 @@ export function BendaharaSaldo() {
                     <TableCell className="text-xs font-medium">{i.student_name || "-"}<span className="block text-[10px] text-muted-foreground">{i.class_name}</span></TableCell>
                     <TableCell className="text-xs">{i.description || i.period_label}</TableCell>
                     <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, i.payment_channel)}</TableCell>
-                    <TableCell className="text-sm text-right font-semibold text-emerald-600">{fmtIDR(Number(i.net_amount || i.total_amount || 0))}</TableCell>
+                    <TableCell className="text-sm text-right font-semibold text-emerald-600">{fmtIDR(Number(i.net_amount ?? i.total_amount ?? 0))}</TableCell>
                     <TableCell>{statusBadge(i._ps)}</TableCell>
                   </TableRow>
                 ))}
@@ -4655,7 +4655,7 @@ export function BendaharaPencairan() {
       const invoiceBySettlement = online.reduce((map, x) => {
         if (!x.settlement_id) return map;
         const current = map.get(x.settlement_id) || { count: 0, gross: 0, fee: 0, net: 0 };
-        const netVal = (x.net_amount || x.total_amount || 0);
+        const netVal = (x.net_amount ?? x.total_amount ?? 0);
         current.count += 1;
         current.gross += x.total_amount || 0;
         current.fee += x.gateway_fee || 0;
