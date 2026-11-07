@@ -45,3 +45,6 @@ print('Custom modals, in-app checkout pending/success routing, all-sibling atten
 invoice=ET.parse('previews/invoice-check.xml').getroot()
 assert any(n.get('text')=='INVOICE CHECK PASSED' for n in invoice.iter('node')), 'Shared web invoice generator failed on Android'
 assert Path('previews/invoice-fixture.pdf').read_bytes().startswith(b'%PDF'), 'Invalid official invoice PDF'
+
+partial=ET.parse('previews/checkout-partial.xml').getroot()
+assert any(n.get('text')=='CHECKOUT CONFIRMED' for n in partial.iter('node')), 'Verified installment did not close while main invoice remained partial'

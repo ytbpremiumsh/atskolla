@@ -34,6 +34,11 @@ sleep 7
 adb shell uiautomator dump /sdcard/checkout-paid.xml
 adb pull /sdcard/checkout-paid.xml previews/checkout-paid.xml
 adb shell am force-stop com.atskolla.parent
+adb shell am start -W -n com.atskolla.parent/.CheckoutCheckActivity --es mode partial
+sleep 7
+adb shell uiautomator dump /sdcard/checkout-partial.xml
+adb pull /sdcard/checkout-partial.xml previews/checkout-partial.xml
+adb shell am force-stop com.atskolla.parent
 adb shell am start -W -n com.atskolla.parent/.InvoiceCheckActivity
 for attempt in $(seq 1 20); do
   adb shell uiautomator dump /sdcard/invoice-check.xml
