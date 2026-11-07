@@ -7,7 +7,7 @@ import android.content.Context;
 public class NativePreviewActivity extends ParentActivity {
     @Override protected boolean preview(){return true;}
     @Override protected void startPreview(){
-        api=new Fixtures(this);token="native-ui-preview";studentId="sample-student";
+        BrandRenderCheck.run(this);api=new Fixtures(this);token="native-ui-preview";studentId="sample-student";
         JSONObject student=j("id",studentId,"name","Nadia Putri","class","VII A","student_id","DEMO-001","card_number","0000000000000000","qr_code","ATSkolla-demo","parent_name","Orang Tua Nadia","parent_phone","","schools",j("name","Sekolah Contoh"));
         students=new JSONArray().put(student);screen=getIntent().getStringExtra("screen");if(screen==null)screen="home";dashboard();
     }
