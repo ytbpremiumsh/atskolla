@@ -1,0 +1,13 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.atskolla.teacher'
+ compileSdk 36
+ defaultConfig { applicationId 'com.atskolla.teacher'; minSdk 26; targetSdk 36; versionCode 1; versionName '1.0.0' }
+ buildFeatures { buildConfig true }
+ buildTypes { release { minifyEnabled true; shrinkResources true; proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' } }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+ sourceSets { main { res.srcDirs = ['../../android-native/app/src/main/res']; assets.srcDirs = [layout.buildDirectory.dir('teacher-assets')] } }
+}
+tasks.register('teacherAssets', Copy) { from('../../android-native/app/src/main/assets') { include 'api.json' }; into(layout.buildDirectory.dir('teacher-assets')) }
+tasks.named('preBuild').configure { dependsOn('teacherAssets') }
+dependencies { implementation 'com.google.zxing:core:3.5.3' }
