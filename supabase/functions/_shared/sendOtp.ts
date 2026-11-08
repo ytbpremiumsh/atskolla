@@ -9,7 +9,7 @@
 //
 // Returns { ok, gateway, raw } for logging/diagnostics.
 
-const MPWA_URL = "https://app.ayopintar.com/send-message";
+const MPWA_URL = "https://atskollagateway.my.id/send-message";
 
 export type OtpSendResult = {
   ok: boolean;

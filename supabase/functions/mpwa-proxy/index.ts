@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_BASE = 'https://app.ayopintar.com';
+const MPWA_BASE = 'https://atskollagateway.my.id';
 
 const generateQrRequest = async (apiKey: string, device: string, force?: boolean) => {
   const params = new URLSearchParams({

@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_SEND_URL = 'https://app.ayopintar.com/send-message';
+const MPWA_SEND_URL = 'https://atskollagateway.my.id/send-message';
 
 const formatPhone = (v: string) => {
   let p = (v || '').replace(/\D/g, '');

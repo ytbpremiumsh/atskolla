@@ -533,7 +533,7 @@ const SuperAdminRegistrationWA = () => {
                   type="password"
                   value={settings.mpwa_platform_api_key}
                   onChange={(e) => setSettings({ ...settings, mpwa_platform_api_key: e.target.value })}
-                  placeholder="API Key dari MPWA (app.ayopintar.com)"
+                  placeholder="API Key dari MPWA (atskollagateway.my.id)"
                 />
               </div>
 

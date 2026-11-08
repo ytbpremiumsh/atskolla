@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_SEND_URL = 'https://app.ayopintar.com/send-message';
-const MPWA_BUTTON_URL = 'https://app.ayopintar.com/send-button';
+const MPWA_SEND_URL = 'https://atskollagateway.my.id/send-message';
+const MPWA_BUTTON_URL = 'https://atskollagateway.my.id/send-button';
 
 /**
  * Detect if a message should be sent as a button message.

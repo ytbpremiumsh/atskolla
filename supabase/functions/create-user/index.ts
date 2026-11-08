@@ -309,7 +309,7 @@ serve(async (req) => {
           if (ps.mpwa_platform_connected === 'true' && ps.mpwa_platform_api_key && ps.mpwa_platform_sender) {
             try {
               console.log('[create-user] Sending via MPWA, sender:', ps.mpwa_platform_sender);
-              const res = await fetch('https://app.ayopintar.com/send-message', {
+              const res = await fetch('https://atskollagateway.my.id/send-message', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
