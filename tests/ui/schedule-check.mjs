@@ -24,6 +24,14 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.screenshot({ path: 'ui-previews/class-desktop.png', fullPage: true });
 
+  await page.route('**/rest/v1/schools_public*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'school',name:'SMA Negeri 1',slug:'smanegeri1',logo:null})}));
+  await page.goto('http://127.0.0.1:4177/tests/ui/tenant.html');
+  await page.getByRole('heading',{name:'SMA Negeri 1',exact:true}).waitFor();
+  assert.equal(new URL(page.url()).pathname,'/t/smanegeri1/admin');
+  assert.match(await page.getByRole('link',{name:'Portal wali murid'}).getAttribute('href'),/\/t\/smanegeri1\/login$/);
+  await page.getByRole('link',{name:'Portal wali murid'}).click();
+  await page.getByText('Login wali murid',{exact:true}).waitFor();
+  assert.equal(new URL(page.url()).pathname,'/t/smanegeri1/login');
   await page.goto(url+'?onboarding=1');
   await page.getByRole('heading',{name:'Persiapan sekolah',exact:true}).waitFor();
   assert.equal(await page.getByRole('link',{name:'Lanjutkan',exact:true}).getAttribute('href'),'/school-settings');

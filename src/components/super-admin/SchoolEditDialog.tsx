@@ -85,7 +85,7 @@ const SchoolEditDialog = ({ school, onClose, onSaved }: SchoolEditDialogProps) =
                 onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase() })}
                 placeholder="smk-cendikia"
               />
-              <span className="text-xs text-muted-foreground whitespace-nowrap">.{getRootDomain() || "absenpintar.online"}</span>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">.{getRootDomain() || "atskolla.com"}</span>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
               Mengubah subdomain akan memutus semua bookmark & QR sekolah lama. Hanya huruf kecil, angka, dan tanda hubung.
@@ -97,7 +97,7 @@ const SchoolEditDialog = ({ school, onClose, onSaved }: SchoolEditDialogProps) =
                 rel="noreferrer"
                 className="text-[11px] text-primary hover:underline mt-1 inline-block font-mono"
               >
-                Buka: {form.slug}.{getRootDomain() || "absenpintar.online"}
+                Buka: {buildTenantUrl(form.slug, "/")}
               </a>
             )}
           </div>

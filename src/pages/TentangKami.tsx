@@ -5,7 +5,7 @@ import {
   Building2, GraduationCap, MapPin, Target, Compass, CheckCircle2,
 } from "lucide-react";
 
-const ATSKOLLA_LOGO_URL = "https://absenpintar.online/images/logo-atskolla.png";
+const ATSKOLLA_LOGO_URL = "https://www.atskolla.com/images/logo-atskolla.png";
 
 const VALUES = [
   { icon: ShieldCheck, title: "Terpercaya", desc: "Data terenkripsi, backup harian, dan audit log lengkap untuk keamanan sekolah." },

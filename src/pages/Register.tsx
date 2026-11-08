@@ -28,7 +28,7 @@ const motion: any = new Proxy({}, {
 });
 const AnimatePresence = ({ children }: { children: ReactNode; mode?: string; initial?: boolean }) => <Fragment>{children}</Fragment>;
 import { supabase } from "@/integrations/supabase/client";
-import { getRootDomain } from "@/lib/tenant";
+import { buildTenantUrl, getRootDomain } from "@/lib/tenant";
 
 interface SchoolData {
   npsn: string;
@@ -66,7 +66,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [referralInput, setReferralInput] = useState(refCode);
   const [registering, setRegistering] = useState(false);
-  const [logo, setLogo] = useState("https://absenpintar.online/images/logo-atskolla.png");
+  const [logo, setLogo] = useState("https://www.atskolla.com/images/logo-atskolla.png");
   const [agreeTos, setAgreeTos] = useState(false);
 
   // School-level extra info (required)
@@ -82,7 +82,7 @@ const Register = () => {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "reserved" | "invalid">("idle");
-  const rootDomain = typeof window !== "undefined" ? (getRootDomain() || "absenpintar.online") : "absenpintar.online";
+  const rootDomain = typeof window !== "undefined" ? (getRootDomain() || "atskolla.com") : "atskolla.com";
 
   const slugify = (s: string) =>
     s.toLowerCase()
@@ -274,9 +274,7 @@ const Register = () => {
         return;
       }
 
-      const loginUrl = data.school_slug
-        ? `${window.location.protocol}//${data.school_slug}.${rootDomain}/admin`
-        : "/admin";
+      const loginUrl = data.school_slug ? buildTenantUrl(data.school_slug, "/admin") : "/admin";
       setRegisteredUrl(loginUrl); setRegistering(false);
 
     } catch (err: any) {
@@ -522,10 +520,10 @@ const Register = () => {
                       </motion.div>
                     )}
 
-                    {/* Subdomain / Alamat Website Sekolah — shown once schoolData is ready */}
+                    {/* Subdomain / Nama Alamat Sekolah — shown once schoolData is ready */}
                     {schoolData && (
                       <motion.div variants={itemVariants} className="space-y-2">
-                        <Label htmlFor="schoolSlug">Alamat Website Sekolah <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="schoolSlug">Nama Alamat Sekolah <span className="text-red-500">*</span></Label>
                         <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
                           <Input
                             id="schoolSlug"
@@ -540,11 +538,12 @@ const Register = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 min-h-[16px]">
+                          <p className="text-[11px] text-muted-foreground">Nama ini menjadi identitas sekolah. Link login langsung menggunakan www.atskolla.com/t/nama-sekolah/admin. Subdomain memerlukan aktivasi DNS dan hosting terpisah.</p>
                           {slugStatus === "checking" && (
                             <><Loader2 className="h-3 w-3 animate-spin text-muted-foreground" /><span className="text-[11px] text-muted-foreground">Mengecek ketersediaan…</span></>
                           )}
                           {slugStatus === "available" && (
-                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Tersedia — akses di <span className="font-mono">{slug}.{rootDomain}</span></span></>
+                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Nama tersedia — calon subdomain: <span className="font-mono">{slug}.{rootDomain}</span></span></>
                           )}
                           {slugStatus === "taken" && (
                             <span className="text-[11px] text-red-600 font-medium">✗ Sudah dipakai sekolah lain</span>

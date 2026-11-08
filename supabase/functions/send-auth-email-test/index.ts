@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 const SITE_NAME = "ATSkolla";
-const SITE_URL = "https://absenpintar.online";
+const SITE_URL = "https://www.atskolla.com";
 const SENDER_DOMAIN = "notify.email.atskolla.com";
 
 function json(body: unknown) {

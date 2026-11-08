@@ -1,59 +1,32 @@
-# Auto Wildcard Subdomain `*.atskolla.com`
+# Alamat sekolah ATSkolla
 
-Setiap sekolah baru otomatis mendapat URL `{slug}.atskolla.com` (mis. `smkcendikia.atskolla.com`).
-Slug dibuat otomatis oleh database dari nama sekolah; Super Admin bisa mengubahnya
-dari halaman **Manajemen Sekolah**.
+Link sekolah yang langsung bekerja pada hosting yang sudah dipublikasikan:
+`https://www.atskolla.com/t/{slug}/admin` untuk petugas dan
+`https://www.atskolla.com/t/{slug}/login` untuk wali murid.
+TenantProvider membaca slug dari path dan tidak memaksa pengalihan ke hostname yang belum aktif.
 
-## Setup Sekali Pakai (di Cloudflare)
+## Subdomain asli pada Lovable
 
-Agar wildcard subdomain bekerja, domain `atskolla.com` harus diproxy oleh Cloudflare:
+Dokumentasi Lovable mengharuskan setiap subdomain ditambahkan dan dikonfigurasi secara individual:
+https://docs.lovable.dev/features/custom-domain
 
-1. **Tambahkan `atskolla.com` ke Cloudflare** dan ubah nameserver di registrar
-   domain ke nameserver Cloudflare.
-2. **DNS Records** (Cloudflare → DNS):
-   - `CNAME` `@` → `absenpintar.lovable.app` (Proxied / awan oranye ON)
-   - `CNAME` `*` → `absenpintar.lovable.app` (Proxied / awan oranye ON)
-   - `CNAME` `www` → `absenpintar.lovable.app` (Proxied / awan oranye ON)
-3. **SSL/TLS** → Mode **Full**.
-4. **SSL/TLS → Edge Certificates** → pastikan **Universal SSL** aktif (mencakup
-   wildcard `*.atskolla.com` secara gratis).
-5. **Lovable → Project Settings → Domains** → Connect Domain `atskolla.com`:
-   - Centang **"Domain uses Cloudflare or a similar proxy"** untuk verifikasi CNAME.
-   - Verifikasi cukup pada domain root. Wildcard `*` ditangani oleh Cloudflare
-     ke origin yang sama.
+1. Project → Settings → Domains → Connect domain.
+2. Masukkan `{slug}.atskolla.com`.
+3. Ikuti record DNS yang ditampilkan Lovable, bukan IP yang ditebak dari panduan lama.
+4. Tunggu status Active dan sertifikat HTTPS tersedia.
+5. Periksa pengaturan Primary domain. Jika primary aktif, domain lain dapat diarahkan ke primary dan identitas hostname sekolah hilang. Unset as primary membuat domain tersambung melayani proyek secara setara; pertimbangkan dampaknya terhadap domain pemasaran.
+6. Uji `/admin`, refresh URL tersebut, login, dan pemisahan data antarsekolah.
 
-Setelah langkah ini selesai sekali, **semua sekolah baru otomatis bisa diakses
-via subdomain** tanpa konfigurasi DNS tambahan.
+Record wildcard Cloudflare `*` saja tidak menjamin origin hosting menerima semua hostname.
+DNS, TLS, dan routing aplikasi harus semuanya benar. Panduan lama yang menjanjikan
+cukup memverifikasi domain root untuk seluruh subdomain tidak dapat dijadikan jaminan.
 
-> **Alternatif: Self-Host di VPS** — Jika ingin hosting sendiri (Nginx + Let's Encrypt
-> wildcard SSL), lihat panduan lengkap di [`VPS_WILDCARD_SETUP.md`](./VPS_WILDCARD_SETUP.md).
-> Kode aplikasi tidak berubah — `TenantProvider` otomatis bekerja di kedua skenario.
+## Otomatis untuk setiap sekolah baru
 
-## Cara Sistem Memetakan Subdomain → Sekolah
+Gunakan origin/frontend yang menerima wildcard host dan wildcard TLS, misalnya VPS
+sesuai `VPS_WILDCARD_SETUP.md`, atau reverse proxy yang dikonfigurasi dan diuji di Cloudflare.
+Frontend dapat tetap dikembangkan di Lovable/GitHub; backend Lovable Cloud tidak perlu
+ikut dipindahkan. Jangan arahkan wildcard ke VPS gateway WhatsApp tanpa menyiapkan
+virtual host frontend ATSkolla yang terpisah.
 
-- File `src/lib/tenant.tsx` membaca `window.location.hostname`, mengekstrak
-  subdomain, lalu fetch baris di tabel `schools` berdasarkan kolom `slug`.
-- Subdomain yang tidak terdaftar menampilkan halaman *"Sekolah tidak ditemukan"*.
-- Domain root (`atskolla.com`, `www.atskolla.com`) tetap menampilkan landing
-  page marketing.
-- Saat sekolah baru daftar, trigger DB `schools_autoslug` membuat slug unik
-  otomatis (collision di-handle dengan suffix `-2`, `-3`, dst).
-
-## Slug yang Dipesan
-
-Subdomain berikut diblokir oleh DB (tidak bisa dipakai sekolah):
-`www`, `app`, `api`, `admin`, `super`, `affiliate`, `parent`, `support`, `help`,
-`docs`, `blog`, `mail`, `wa`, `whatsapp`, `cdn`, `dashboard`, `login`,
-`register`, `monitoring`, `scan`, `public`, `demo`, dll.
-
-## Catatan Sesi Login
-
-Session disimpan di localStorage sehingga **terisolasi per subdomain**. User
-yang login di `smkA.atskolla.com` tidak otomatis ikut login di
-`smkB.atskolla.com`. Ini sesuai pola multi-tenant.
-
-## Override Host (Opsional)
-
-Jika ingin menambah domain root lain (mis. `absenpintar.online`), tambahkan
-ke env `VITE_ROOT_HOSTS` (comma-separated, lowercase). Default sudah mencakup
-`atskolla.com`, `absenpintar.online`, `absenpintar.com`, `localhost`.
+Sampai konfigurasi infrastruktur itu selesai, bagikan link `/t/{slug}/...` yang stabil.

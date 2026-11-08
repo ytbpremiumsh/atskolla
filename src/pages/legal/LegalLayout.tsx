@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const ATSKOLLA_LOGO_URL = "https://absenpintar.online/images/logo-atskolla.png";
+const ATSKOLLA_LOGO_URL = "https://www.atskolla.com/images/logo-atskolla.png";
 
 interface TocItem {
   id: string;

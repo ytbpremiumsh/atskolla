@@ -9,6 +9,7 @@ import {
   School,
   Info,
 } from "lucide-react";
+import { buildTenantUrl, parseSubdomain } from "@/lib/tenant";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -211,7 +212,7 @@ export function SchoolSetupPanel({
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(
-                    `${window.location.origin}/login`,
+                    parseSubdomain() ? buildTenantUrl(parseSubdomain()!, "/login") : `${window.location.origin}/login`,
                   );
                   toast.success("Alamat Portal Wali Murid disalin");
                 } catch {

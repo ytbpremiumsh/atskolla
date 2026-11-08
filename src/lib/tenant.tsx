@@ -112,22 +112,7 @@ const TenantContext = createContext<TenantState>({
 });
 
 export function TenantProvider({ children }: { children: ReactNode }) {
-  // If we're on a root host with a path-based tenant (/t/{slug}/...),
-  // redirect to the school's subdomain form so URLs are always consistent.
-  if (typeof window !== "undefined") {
-    const pathSlug = parseTenantPath(window.location.pathname);
-    const host = window.location.hostname.toLowerCase().split(":")[0];
-    const root = getRootDomain();
-    const isLocal = host === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(host);
-    // Only redirect on a real root host (not already a subdomain, not local)
-    const isRoot = ROOT_HOSTS.has(host) || (host.startsWith("www.") && ROOT_HOSTS.has(host.slice(4)));
-    if (pathSlug && isRoot && !isLocal && root && root !== "localhost") {
-      const rest = window.location.pathname.replace(/^\/t\/[^/]+/, "") || "/";
-      const target = `${window.location.protocol}//${pathSlug}.${root}${rest}${window.location.search}${window.location.hash}`;
-      window.location.replace(target);
-    }
-  }
-
+  // Path-based school links must stay on the published host until DNS/hosting is ready.
   const [state, setState] = useState<TenantState>(() => {
     const slug = typeof window !== "undefined" ? parseSubdomain() : null;
     return { loading: !!slug, slug, school: null, notFound: false };
@@ -191,35 +176,27 @@ export function isRootHost(): boolean {
   return parseSubdomain() === null;
 }
 
-/**
- * Build a tenant URL using the school's own subdomain
- * (e.g. https://smkcendikia.atskolla.com/admin). Requires wildcard SSL /
- * DNS to be provisioned for the root domain — that is now the default on
- * Lovable-managed hosting for ATSkolla.
- */
+/** Stable school links work without per-school DNS or custom-domain setup. */
 export function buildTenantUrl(slug: string, path: string = "/"): string {
-  if (typeof window === "undefined") return path;
-  const root = getRootDomain();
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  if (root && root !== "localhost") {
-    return `${window.location.protocol}//${slug}.${root}${normalizedPath}`;
-  }
-  // Local dev fallback keeps the path-based form so React Router basename resolves it.
-  return `/t/${slug}${normalizedPath}`;
+  return buildTenantPathUrl(slug, path);
 }
 
-/** Path-based tenant URL (legacy fallback for schools without wildcard SSL). */
 export function buildTenantPathUrl(slug: string, path: string = "/"): string {
-  if (typeof window === "undefined") return path;
-  const root = getRootDomain();
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  if (root && root !== "localhost") {
-    return `${window.location.protocol}//${root}/t/${slug}${normalizedPath}`;
+  if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/i.test(slug) || RESERVED.has(slug.toLowerCase())) {
+    throw new Error("Alamat sekolah tidak valid");
   }
-  return `/t/${slug}${normalizedPath}`;
+  if (typeof window === "undefined") return `/t/${slug}${normalizedPath}`;
+  const host = window.location.hostname.toLowerCase();
+  const local = host === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(host);
+  const origin = local || host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com")
+    ? window.location.origin : "https://www.atskolla.com";
+  return `${origin}/t/${slug.toLowerCase()}${normalizedPath}`;
 }
 
-/** @deprecated Use buildTenantUrl — it now returns the subdomain form by default. */
-export const buildTenantSubdomainUrl = buildTenantUrl;
-
-
+/** Only use this hostname after adding/verifying it in the hosting/DNS settings. */
+export function buildTenantSubdomainUrl(slug: string, path: string = "/"): string {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  if (!/^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/i.test(slug) || RESERVED.has(slug.toLowerCase())) throw new Error("Alamat sekolah tidak valid");
+  return `https://${slug.toLowerCase()}.atskolla.com${normalizedPath}`;
+}

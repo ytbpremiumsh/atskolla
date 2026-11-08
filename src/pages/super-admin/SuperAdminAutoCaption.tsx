@@ -33,7 +33,7 @@ Cocok untuk SD, SMP, SMA, SMK, MA & Pesantren — dari sekolah kecil sampai yaya
 
 🎁 Coba GRATIS 7 hari Premium tanpa kartu kredit! Buktikan sendiri kemudahannya.
 
-👉 Daftar sekarang: https://absenpintar.online
+👉 Daftar sekarang: https://www.atskolla.com
 💬 Konsultasi gratis: wa.me/6281234567890
 
 #ATSkolla #AbsensiSekolah #SekolahDigital #PendidikanIndonesia #EdTech`;
@@ -134,7 +134,7 @@ export default function SuperAdminAutoCaption() {
   const [length, setLength] = useState("sedang");
   const [topic, setTopic] = useState("");
   const [audience, setAudience] = useState("Kepala sekolah & yayasan SMA/SMK di Indonesia");
-  const [cta, setCta] = useState("Daftar gratis di absenpintar.online");
+  const [cta, setCta] = useState("Daftar gratis di www.atskolla.com");
   const [variants, setVariants] = useState(2);
   const [emoji, setEmoji] = useState(true);
   const [hashtags, setHashtags] = useState(true);

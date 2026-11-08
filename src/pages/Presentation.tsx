@@ -362,7 +362,7 @@ const Presentation = () => {
   const [ctaBtn1Link, setCtaBtn1Link] = useState("/register");
   const [ctaBtn2Link, setCtaBtn2Link] = useState("/login");
   const [dark, setDark] = useState(false);
-  const [headerLogo, setHeaderLogo] = useState("https://absenpintar.online/images/logo-atskolla.png");
+  const [headerLogo, setHeaderLogo] = useState("https://www.atskolla.com/images/logo-atskolla.png");
 
   useEffect(() => {
     const fetchData = async () => {

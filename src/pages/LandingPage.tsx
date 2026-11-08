@@ -4,7 +4,7 @@ import { motion, MotionConfig } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import headerDeviceAsset from "@/assets/header-device.png.asset.json";
 import atskollaPlatformLogo from "@/assets/atskolla-platform-logo.png.asset.json";
-const ATSKOLLA_LOGO_URL = "https://absenpintar.online/images/logo-atskolla.png";
+const ATSKOLLA_LOGO_URL = "https://www.atskolla.com/images/logo-atskolla.png";
 import { useLandingTheme, LANDING_THEME_CSS } from "@/hooks/useLandingTheme";
 import LandingPopup from "@/components/LandingPopup";
 import ThemeToggle from "@/components/landing/ThemeToggle";

@@ -35,7 +35,7 @@ export function RegisterWelcomeEmail({
   name = 'Bapak/Ibu',
   school = '-',
   email = '-',
-  login_url = 'https://absenpintar.online/login',
+  login_url = 'https://www.atskolla.com/admin',
 }: Props) {
   return (
     <Html>
@@ -157,7 +157,7 @@ export function RegisterWelcomeEmail({
             © ATSkolla — Absensi Pintar untuk Sekolah Modern
           </Text>
           <Text style={{ fontSize: 11, color: '#94A3B8', textAlign: 'center' as const, margin: 0 }}>
-            <a href="https://absenpintar.online" style={{ color: '#94A3B8', textDecoration: 'none' }}>absenpintar.online</a>
+            <a href="https://www.atskolla.com" style={{ color: '#94A3B8', textDecoration: 'none' }}>www.atskolla.com</a>
           </Text>
         </Container>
       </Body>
@@ -173,6 +173,6 @@ export const template: TemplateEntry = {
     name: 'Budi Santoso',
     school: 'SDN 1 Jakarta',
     email: 'budi@sdn1.sch.id',
-    login_url: 'https://absenpintar.online/login',
+    login_url: 'https://www.atskolla.com/admin',
   },
 }

@@ -564,7 +564,7 @@ const SuperAdminPaymentGateway = () => {
               className="font-mono text-xs"
             />
             <p className="text-[10px] text-muted-foreground">
-              Domain yang dipakai tombol "Kembali ke Halaman Merchant" di halaman pembayaran iPaymu. Kosongkan untuk memakai <code>https://absenpintar.online</code>.
+              Domain yang dipakai tombol "Kembali ke Halaman Merchant" di halaman pembayaran iPaymu. Kosongkan untuk memakai <code>https://www.atskolla.com</code>.
             </p>
           </div>
 

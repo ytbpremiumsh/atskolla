@@ -269,23 +269,11 @@ serve(async (req) => {
             const { data: sd } = await supabaseAdmin.from('schools').select('slug').eq('id', resolvedSchoolId).maybeSingle();
             slug = sd?.slug || null;
           }
-          // Determine base domain: platform_settings.base_domain > request Origin header > fallback
-          let baseDomain = (ps.base_domain || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
-          if (!baseDomain) {
-            try {
-              const origin = req.headers.get('origin') || req.headers.get('referer') || '';
-              const host = origin ? new URL(origin).hostname : '';
-              // Strip subdomain: keep last 2 parts (e.g. smk.atskolla.com -> atskolla.com)
-              if (host && !host.includes('localhost') && !host.endsWith('.lovable.app') && !host.endsWith('.lovableproject.com')) {
-                const parts = host.split('.');
-                baseDomain = parts.length >= 2 ? parts.slice(-2).join('.') : host;
-              }
-            } catch (_) { /* ignore */ }
-          }
-          if (!baseDomain) baseDomain = 'absenpintar.online';
-          const siteUrl = slug ? `https://${slug}.${baseDomain}` : `https://${baseDomain}`;
-          const adminUrl = `${siteUrl}/admin`;
-          const parentUrl = `${siteUrl}/login`;
+          const baseDomain = 'www.atskolla.com';
+          const siteUrl = 'https://www.atskolla.com';
+          const schoolPath = slug ? `/t/${encodeURIComponent(slug)}` : '';
+          const adminUrl = `${siteUrl}${schoolPath}/admin`;
+          const parentUrl = `${siteUrl}${schoolPath}/login`;
 
           const template = ps.wa_registration_message || 'Selamat datang, {name}!';
           let message = template
@@ -295,7 +283,8 @@ serve(async (req) => {
             .replace(/{url}/g, siteUrl)
             .replace(/{site_url}/g, siteUrl)
             .replace(/{admin_url}/g, adminUrl)
-            .replace(/{parent_url}/g, parentUrl);
+            .replace(/{parent_url}/g, parentUrl)
+            .replace(/https?:\/\/(?:www\.)?absenpintar\.online(?:\/login)?/gi, adminUrl);
 
           // Append link info if template did not include it
           const domainRe = new RegExp(baseDomain.replace(/\./g, '\\.'), 'i');
@@ -388,7 +377,7 @@ serve(async (req) => {
               name: full_name || 'Bapak/Ibu',
               school: school_name || '-',
               email,
-              login_url: 'https://absenpintar.online/login',
+              login_url: 'https://www.atskolla.com/admin',
             },
           }),
         });
