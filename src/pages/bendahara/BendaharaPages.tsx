@@ -5027,13 +5027,12 @@ export function BendaharaPencairan() {
         </TabsContent>
 
         <TabsContent value="riwayat" className="space-y-4 mt-4">
-          {/* Legend status */}
-          <div className="rounded-lg border bg-muted/20 p-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" /> <b>Pending</b> — menunggu review Super Admin</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" /> <b>Approved</b> — disetujui, akan segera ditransfer</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" /> <b>Paid</b> — dana sudah masuk rekening</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500" /> <b>Rejected</b> — ditolak (lihat catatan)</span>
-            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400" /> <b>Cancelled</b> — dibatalkan oleh pemohon</span>
+          {/* Legend status — alur settlement otomatis */}
+          <div className="rounded-xl border bg-muted/20 p-3 space-y-1.5 text-[11px]">
+            <p className="font-semibold text-foreground text-xs">Keterangan Status</p>
+            <div className="flex items-start gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" /><span><b>Diproses Sistem</b> — pembayaran diterima, dana dikirim ke rekening sekolah 1 hari kerja berikutnya</span></div>
+            <div className="flex items-start gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" /><span><b>Sudah Ditransfer</b> — dana sudah masuk ke rekening sekolah</span></div>
+            <p className="text-muted-foreground pt-1">Semua pembayaran SPP online dikirim otomatis. Bendahara tidak perlu mengajukan pencairan.</p>
           </div>
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">
