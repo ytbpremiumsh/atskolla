@@ -5900,11 +5900,11 @@ export function BendaharaLaporan() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-[15px] text-indigo-950 dark:text-indigo-100 truncate">Kelas {r.cls}</span>
-                            <span className="shrink-0 whitespace-nowrap text-[10px] font-semibold bg-white/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{r.totalCount} tagihan</span>
                           </div>
                           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                             <span className="text-[10px] font-semibold bg-[#5B6CF9] text-white px-2 py-0.5 rounded-full">{r.paidCount} Lunas</span>
                             <span className="text-[10px] font-semibold bg-white/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{belum} Belum</span>
+                            <span className="shrink-0 whitespace-nowrap text-[10px] font-semibold bg-white/80 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">{r.totalCount} tagihan</span>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
