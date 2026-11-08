@@ -141,7 +141,7 @@ function toast({ ...props }: Toast) {
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
-      toast: { ...props, title: indonesianMessage(props.title) as React.ReactNode, description: indonesianMessage(props.description) as React.ReactNode, id },
+      toast: { ...props, title: indonesianMessage(props.title) as any, description: indonesianMessage(props.description) as any, id },
     });
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
@@ -149,8 +149,8 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
-      title: indonesianMessage(props.title) as React.ReactNode,
-      description: indonesianMessage(props.description) as React.ReactNode,
+      title: indonesianMessage(props.title) as any,
+      description: indonesianMessage(props.description) as any,
       id,
       open: true,
       onOpenChange: (open) => {

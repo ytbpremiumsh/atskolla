@@ -320,11 +320,11 @@ export function StatCard({ label, value, icon: Icon, gradient = "from-emerald-50
           <div className={`h-9 w-9 shrink-0 rounded-xl ${tone.bg} flex items-center justify-center`}>
             <Icon className={`h-4 w-4 ${tone.text}`} />
           </div>
-          <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-muted-foreground font-semibold leading-tight">{label}</p>
+          <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-muted-foreground font-semibold leading-tight line-clamp-2 min-w-0">{label}</p>
         </div>
         <div className="min-w-0">
-          <p className={`text-base sm:text-lg font-extrabold break-words leading-tight ${tone.text}`}>{value}</p>
-          {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
+          <p className={`text-[15px] sm:text-lg font-extrabold leading-tight tabular-nums truncate ${tone.text}`}>{value}</p>
+          {sub && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{sub}</p>}
         </div>
       </CardContent>
     </Card>
@@ -709,7 +709,7 @@ export function BendaharaDashboard() {
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Pembayaran Bulanan */}
         <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-indigo-900/5 ring-1 ring-indigo-100 dark:ring-indigo-900/30">
-          <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-4 sm:px-5 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/25">
                 <TrendingUp className="h-4 w-4 text-white" />
@@ -742,7 +742,7 @@ export function BendaharaDashboard() {
 
         {/* Pembayaran per Kelas */}
         <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-indigo-900/5 ring-1 ring-indigo-100 dark:ring-indigo-900/30">
-          <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-4 sm:px-5 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/25">
                 <BarChart3 className="h-4 w-4 text-white" />
@@ -777,7 +777,7 @@ export function BendaharaDashboard() {
 
       {/* RIWAYAT SISWA MEMBAYAR */}
       <div className="rounded-2xl overflow-hidden bg-white dark:bg-card shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100 dark:ring-emerald-900/30">
-        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-5 py-3.5 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#5B6CF9] to-[#4c5ded] px-4 sm:px-5 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/25">
               <CheckCircle2 className="h-4 w-4 text-white" />

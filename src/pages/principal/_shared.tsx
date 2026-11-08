@@ -14,12 +14,12 @@ export function StatCard({ icon: Icon, label, value, tone }: { icon: any; label:
   };
   return (
     <Card className={`rounded-2xl bg-gradient-to-br ${tones[tone] || tones.primary} border-border/50`}>
-      <CardContent className="p-4">
+      <CardContent className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-2">
           <Icon className="h-5 w-5" />
         </div>
-        <div className="text-2xl font-bold text-foreground">{value}</div>
-        <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
+        <div className="text-xl sm:text-2xl font-bold text-foreground leading-tight truncate">{value}</div>
+        <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{label}</div>
       </CardContent>
     </Card>
   );

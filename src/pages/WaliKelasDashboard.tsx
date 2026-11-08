@@ -232,7 +232,7 @@ const WaliKelasDashboard = () => {
         {/* ===== DASHBOARD TAB ===== */}
         <TabsContent value="dashboard" className="space-y-6 mt-4">
           {/* Stats */}
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             {[
               { icon: Users, value: stats.total, label: "Total Siswa", color: "text-primary", bg: "bg-primary/10" },
               { icon: UserCheck, value: stats.hadir, label: "Hadir", color: "text-success", bg: "bg-success/10" },
@@ -248,7 +248,7 @@ const WaliKelasDashboard = () => {
                       <stat.icon className={`h-5 w-5 ${stat.color}`} />
                     </div>
                     <div>
-                      <p className={`text-2xl font-extrabold ${stat.color}`}>{stat.value}</p>
+                      <p className={`text-xl sm:text-2xl font-extrabold leading-tight ${stat.color}`}>{stat.value}</p>
                       <p className="text-[10px] text-muted-foreground font-medium">{stat.label}</p>
                     </div>
                   </CardContent>
@@ -556,7 +556,7 @@ function WaliKelasMobileDashboard({
         </div>
 
         {/* Stats grid — ringkas 4 status inti */}
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 min-[400px]:grid-cols-4 gap-2.5">
           <MiniStat icon={UserCheck} label="Hadir" value={stats.hadir} gradient="from-emerald-500 to-teal-600" />
           <MiniStat icon={FileText} label="Izin" value={stats.izin} gradient="from-amber-500 to-orange-600" />
           <MiniStat icon={Thermometer} label="Sakit" value={stats.sakit} gradient="from-sky-500 to-blue-600" />
