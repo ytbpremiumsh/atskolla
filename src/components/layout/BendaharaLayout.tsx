@@ -1,3 +1,4 @@
+import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -128,7 +129,7 @@ export function BendaharaLayout() {
           <main className="no-motion flex-1 p-4 md:p-6 w-full pb-28 md:pb-6">
             <Suspense fallback={<div className="h-32" />}>
               <SchoolAccessGate>
-                <Outlet />
+                <SoftOutlet />
               </SchoolAccessGate>
             </Suspense>
           </main>

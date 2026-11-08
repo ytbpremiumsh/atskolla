@@ -1,3 +1,4 @@
+import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -39,7 +40,7 @@ function HeaderInner() {
 function PrincipalContent(){
   const {error,refresh}=usePrincipalData();
   if(error)return <div role="alert" className="rounded-xl border border-destructive/40 bg-destructive/5 p-5 space-y-3"><p>{error}</p><Button variant="outline" onClick={()=>refresh()}>Coba lagi</Button></div>;
-  return <Outlet />;
+  return <SoftOutlet />;
 }
 
 export function PrincipalLayout() {

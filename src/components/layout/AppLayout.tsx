@@ -1,3 +1,4 @@
+import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
@@ -211,7 +212,7 @@ function AppContent() {
         <main className={cn("no-motion flex-1 overflow-auto p-3 sm:p-5 md:p-6", isMobileDevice && "pb-24")}>
           <Suspense fallback={<div className="h-32" />}>
             <SchoolAccessGate>
-              <Outlet />
+              <SoftOutlet />
             </SchoolAccessGate>
           </Suspense>
         </main>
