@@ -6,6 +6,11 @@ import {
   Circle,
   RefreshCw,
   School,
+  Wallet,
+  UserPlus,
+  LogIn,
+  Landmark,
+  ArrowRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/lib/toast";
@@ -192,35 +197,56 @@ export function SchoolSetupPanel({
             {guides[next.id]}
           </p>
           {next.id === "team" && data?.treasurers === 0 && admin && (
-            <Link to="/bendahara-manage" className="shrink-0 rounded font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+            <Link to="/staff" className="shrink-0 rounded font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               Tambah Bendahara
             </Link>
           )}
         </div>
       )}
       <Dialog open={bankGuideOpen} onOpenChange={setBankGuideOpen}>
-        <DialogContent className="max-w-md rounded-2xl border-primary/15 p-5 sm:p-6">
-          <DialogHeader className="text-left">
-            <DialogTitle className="text-lg text-primary">
+        <DialogContent className="max-h-[85dvh] w-[calc(100%-2rem)] max-w-lg gap-0 overflow-y-auto rounded-2xl border-primary/15 p-0 [&>button]:right-4 [&>button]:top-4 [&>button]:rounded-full [&>button]:bg-white/10 [&>button]:p-1 [&>button]:text-white [&>button]:opacity-100 [&>button]:hover:bg-white/20 [&>button]:focus:ring-white">
+          <DialogHeader className="relative isolate overflow-hidden bg-gradient-to-br from-indigo-600 via-primary to-violet-600 px-6 pb-6 pt-6 text-left text-white">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 opacity-25 [background-image:radial-gradient(white_0.75px,transparent_0.75px)] [background-size:12px_12px]" />
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-16 -right-10 -z-10 h-48 w-48 rounded-full border-[24px] border-white/10" />
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/25 bg-white/15"><Wallet className="h-5 w-5" aria-hidden="true" /></span>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/80">Panduan rekening sekolah</span>
+            </div>
+            <DialogTitle className="pr-3 text-xl font-bold leading-snug text-white">
               {!treasurerKnown ? "Periksa akun Bendahara" : needsTreasurer ? "Tambahkan Bendahara terlebih dahulu" : "Ajukan melalui akun Bendahara"}
             </DialogTitle>
-            <DialogDescription className="pt-2 leading-relaxed">
+          </DialogHeader>
+          <div className="space-y-5 bg-gradient-to-b from-primary/[0.035] to-card px-5 py-5 sm:px-6">
+            <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
               Pengajuan rekening pencairan dilakukan melalui Dasbor Bendahara menggunakan akun dengan peran Bendahara.
             </DialogDescription>
-          </DialogHeader>
-          {!treasurerKnown ? (
-            <p className="text-sm text-muted-foreground">Status akun Bendahara belum dapat dipastikan. Tutup panduan ini dan klik Periksa ulang.</p>
-          ) : (
-            <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
-              {needsTreasurer && <li>Tambahkan akun Bendahara atau berikan peran Bendahara kepada guru/staf yang ditunjuk.</li>}
-              <li>Simpan pekerjaan Anda, lalu keluar dari akun Admin dan masuk menggunakan akun Bendahara.</li>
-              <li>Buka Dasbor Bendahara, pilih menu rekening pencairan, lalu lengkapi data dan ajukan rekening sekolah.</li>
-            </ol>
-          )}
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="outline" onClick={() => setBankGuideOpen(false)}>Mengerti</Button>
+            {!treasurerKnown ? (
+              <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Status akun Bendahara belum dapat dipastikan. Tutup panduan ini dan klik Periksa ulang.</p>
+            ) : (
+              <ol className="divide-y divide-primary/10">
+                {[
+                  ...(needsTreasurer ? [{ title: "Siapkan akun Bendahara", body: "Tambahkan akun Bendahara atau berikan peran Bendahara kepada guru/staf yang ditunjuk.", icon: UserPlus }] : []),
+                  { title: "Masuk sebagai Bendahara", body: "Simpan pekerjaan Anda, lalu keluar dari akun Admin dan masuk menggunakan akun Bendahara.", icon: LogIn },
+                  { title: "Ajukan rekening sekolah", body: "Buka Dasbor Bendahara, pilih menu rekening pencairan, lalu lengkapi data dan ajukan rekening sekolah.", icon: Landmark },
+                ].map((step, index) => (
+                  <li key={step.title} className="flex gap-3 py-4 first:pt-0 last:pb-0">
+                    <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/10 text-primary">
+                      <step.icon className="h-[18px] w-[18px]" aria-hidden="true" />
+                      <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">{index + 1}</span>
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="mb-1 text-sm font-semibold text-foreground">{step.title}</h3>
+                      <p className="text-xs leading-relaxed text-muted-foreground">{step.body}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+          <DialogFooter className="gap-2 border-t border-primary/10 bg-primary/[0.035] px-5 py-4 sm:gap-2 sm:px-6">
+            <Button variant={treasurerKnown && needsTreasurer && admin ? "outline" : "default"} className="h-9 rounded-xl px-5 text-sm shadow-none" onClick={() => setBankGuideOpen(false)}>Mengerti</Button>
             {treasurerKnown && needsTreasurer && admin && (
-              <Button asChild><Link to="/bendahara-manage" onClick={() => setBankGuideOpen(false)}>Tambah Bendahara</Link></Button>
+              <Button className="h-9 gap-2 rounded-xl px-4 text-sm shadow-none" asChild><Link to="/staff" onClick={() => setBankGuideOpen(false)}>Tambah Bendahara<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></Button>
             )}
           </DialogFooter>
         </DialogContent>

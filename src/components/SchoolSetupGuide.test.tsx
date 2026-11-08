@@ -48,7 +48,7 @@ it("shows only the first incomplete stage guidance and merges treasurer into Gur
   );
   expect(screen.getByRole("link", { name: /^Guru \/ Staff:/ })).toHaveAttribute("aria-current", "step");
   expect(screen.getByText(/Tambahkan guru dan staff sesuai tugas/)).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/bendahara-manage");
+  expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/staff");
   expect(screen.queryByText("Atur mapel, guru, dan jam per kelas.")).not.toBeInTheDocument();
   rerender(<MemoryRouter><SchoolSetupPanel admin data={{ ...data, team: 1 }} onRefresh={() => {}} /></MemoryRouter>);
   expect(screen.getByRole("link", { name: /^Jadwal pelajaran:/ })).toHaveAttribute("aria-current", "step");
@@ -71,7 +71,7 @@ it.each([0, 1])("guides admins through the treasurer role instead of opening ban
   expect(screen.getByRole("dialog")).toHaveAccessibleName(treasurers === 0 ? "Tambahkan Bendahara terlebih dahulu" : "Ajukan melalui akun Bendahara");
   expect(screen.getByText(/keluar dari akun Admin dan masuk menggunakan akun Bendahara/)).toBeInTheDocument();
   if (treasurers === 0) {
-    expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/bendahara-manage");
+    expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/staff");
   } else {
     expect(screen.queryByRole("link", { name: "Tambah Bendahara" })).not.toBeInTheDocument();
   }
