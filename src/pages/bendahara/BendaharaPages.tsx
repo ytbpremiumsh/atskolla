@@ -967,7 +967,7 @@ function BendaharaMobileDashboard({
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Saldo Tersedia</p>
-              <p className="text-[11px] text-white/80 truncate">Bisa dicairkan ke rekening</p>
+              <p className="text-[11px] text-white/80 truncate">Ditransfer otomatis ke rekening sekolah</p>
             </div>
           </div>
 
@@ -984,7 +984,7 @@ function BendaharaMobileDashboard({
               <div className="h-11 w-11 rounded-full bg-white/15 backdrop-blur ring-1 ring-white/30 flex items-center justify-center group-hover:bg-white/25 transition-all group-active:scale-95">
                 <ArrowDownToLine className="h-4 w-4" />
               </div>
-              <span className="text-[10px] font-medium text-white/90">Cairkan</span>
+              <span className="text-[10px] font-medium text-white/90">Settlement</span>
             </button>
             <button onClick={() => navigate("/bendahara/transaksi")} className="flex flex-col items-center gap-1.5 group">
               <div className="h-11 w-11 rounded-full bg-white/15 backdrop-blur ring-1 ring-white/30 flex items-center justify-center group-hover:bg-white/25 transition-all group-active:scale-95">
@@ -1046,7 +1046,7 @@ function BendaharaMobileDashboard({
           <BendServiceIcon icon={HandCoins} label="Pembayaran" gradient="from-emerald-500 to-teal-600" onClick={() => navigate("/bendahara/transaksi")} />
           <BendServiceIcon icon={FileUp} label="Import" gradient="from-violet-500 to-purple-600" onClick={() => navigate("/bendahara/import-export")} />
           <BendServiceIcon icon={Wallet} label="Saldo" gradient="from-cyan-500 to-sky-600" onClick={() => navigate("/bendahara/saldo")} />
-          <BendServiceIcon icon={Landmark} label="Pencairan" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/pencairan")} />
+          <BendServiceIcon icon={Landmark} label="Settlement" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/pencairan")} />
           <BendServiceIcon icon={PieChart} label="Laporan" gradient="from-blue-500 to-indigo-600" onClick={() => navigate("/bendahara/laporan")} />
         </div>
 
