@@ -62,6 +62,8 @@ const SuperAdminSplitSettlement = () => {
   const [loading, setLoading] = useState(true);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
   const verificationBusy = useRef(false);
+  const [verifyTarget, setVerifyTarget] = useState<Bank | null>(null);
+  const [verifySettlementId, setVerifySettlementId] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [regs, setRegs] = useState<Reg[]>([]);
@@ -168,7 +170,7 @@ const SuperAdminSplitSettlement = () => {
 
   const pendingBanks = Object.values(banks).flat().filter((b) => b.is_active !== false && b.verification_status === "pending");
 
-  const setVerification = async (b: Bank, status: "verified" | "rejected") => {
+  const setVerification = async (b: Bank, status: "verified" | "rejected", settlementId?: string) => {
     if (verificationBusy.current) return;
     let reason: string | null = null;
     if (status === "rejected") {
@@ -179,9 +181,29 @@ const SuperAdminSplitSettlement = () => {
     verificationBusy.current = true;setVerifyingId(b.id);
     try {
       if (status === "verified") {
+        const sid = (settlementId || "").trim().toUpperCase();
+        if (!ID_PATTERN.test(sid)) throw new Error("Settlement ID wajib diisi dengan format BNK-...");
         const { error } = await supabase.rpc("verify_and_register_bank_account", { p_account_id: b.id });
         if (error) throw error;
-        toast.success("Rekening disetujui dan masuk ke registri internal ATSkolla. Lengkapi ID resmi penyedia pembayaran untuk pengaturan Split Settlement.");
+        // Isi otomatis Settlement ID pada Registri Rekening ATSkolla untuk rekening yang sama
+        const { data: regRows, error: regErr } = await supabase.from("doku_registered_accounts").select("id,bank_name,account_number");
+        if (regErr) throw regErr;
+        const norm = (v: string | null | undefined) => (v || "").replace(/\D/g, "");
+        const bankKey = (v: string | null | undefined) => (v || "").replace(/\s/g, "").toUpperCase();
+        const match = (regRows || []).find((r: any) => norm(r.account_number) === norm(b.account_number) && bankKey(r.bank_name) === bankKey(b.bank_name))
+          || (regRows || []).find((r: any) => norm(r.account_number) === norm(b.account_number));
+        if (match) {
+          const { error: upErr } = await supabase.from("doku_registered_accounts").update({ settlement_id: sid }).eq("id", match.id);
+          if (upErr) throw upErr;
+        } else {
+          const { error: insErr } = await supabase.from("doku_registered_accounts").insert({
+            bank_name: (b.bank_name || "").trim(), account_number: norm(b.account_number), account_holder: b.account_holder || null, settlement_id: sid,
+          } as any);
+          if (insErr) throw insErr;
+        }
+        setDraft(prev => ({ ...prev, [b.school_id]: sid }));
+        setVerifyTarget(null);
+        toast.success("Rekening terverifikasi dan Settlement ID otomatis tersimpan di Registri Rekening ATSkolla.");
       } else {
         const { data: u, error: authError } = await supabase.auth.getUser();
         if (authError || !u.user) throw new Error("Sesi berakhir. Silakan masuk kembali.");
@@ -261,7 +283,7 @@ const SuperAdminSplitSettlement = () => {
 
       <Step n={1} icon={ShieldCheck} title="Verifikasi Pengajuan Rekening" count={pendingBanks.length}
         tone={pendingBanks.length ? "bg-amber-500" : "bg-muted"}
-        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui dan menambahkannya ke registri internal ATSkolla. Langkah ini tidak mendaftarkan rekening ke penyedia pembayaran.">
+        desc="Periksa rekening dan lampirannya. Klik Verifikasi, lalu masukkan Settlement ID (BNK-...) dari penyedia pembayaran. ID akan otomatis tersimpan di Registri Rekening ATSkolla.">
         {pendingBanks.length === 0 ? (
           <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">Tidak ada pengajuan baru.</div>
         ) : (
@@ -278,7 +300,7 @@ const SuperAdminSplitSettlement = () => {
                   <BankBookAttachment path={b.bank_book_path} bank={b.bank_name} holder={b.account_holder} />
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" disabled={verifyingId !== null} onClick={() => setVerification(b, "verified")}>{verifyingId === b.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />} {verifyingId === b.id ? "Memproses…" : "Verifikasi"}</Button>
+                  <Button size="sm" disabled={verifyingId !== null} onClick={() => { setVerifyTarget(b); setVerifySettlementId(""); }}>{verifyingId === b.id ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-1" />} {verifyingId === b.id ? "Memproses…" : "Verifikasi"}</Button>
                   <Button size="sm" variant="outline" disabled={verifyingId !== null} onClick={() => setVerification(b, "rejected")}><XCircle className="h-4 w-4 mr-1" /> Tolak</Button>
                 </div>
               </div>
@@ -316,6 +338,32 @@ const SuperAdminSplitSettlement = () => {
           </div>
         )}
       </Step>
+
+      <Dialog open={!!verifyTarget} onOpenChange={open => { if (!open && !verificationBusy.current) setVerifyTarget(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Verifikasi Rekening</DialogTitle><DialogDescription>Masukkan Settlement ID (BNK-...) dari penyedia pembayaran untuk rekening ini. ID akan otomatis tersimpan di Registri Rekening ATSkolla.</DialogDescription></DialogHeader>
+          <div className="space-y-1 rounded-xl border bg-muted/40 p-3 text-sm">
+            <p className="font-semibold">{verifyTarget ? schoolName(verifyTarget.school_id) : ""}</p>
+            <p><span className="font-medium">{verifyTarget?.bank_name}</span> <span className="font-mono">{verifyTarget?.account_number}</span></p>
+            <p className="text-muted-foreground">a.n. {verifyTarget?.account_holder || "-"}</p>
+          </div>
+          <form className="space-y-4" onSubmit={event => { event.preventDefault(); if (verifyTarget) setVerification(verifyTarget, "verified", verifySettlementId); }}>
+            <div className="space-y-2">
+              <Label htmlFor="verify-settlement-id">Settlement ID <span className="text-destructive">*</span></Label>
+              <Input id="verify-settlement-id" autoFocus autoComplete="off" placeholder="BNK-xxxx-xxxxxxxxxxxxx" value={verifySettlementId} disabled={verifyingId !== null} onChange={e => setVerifySettlementId(e.target.value)} className="font-mono" />
+              {verifySettlementId.trim() && !ID_PATTERN.test(verifySettlementId.trim().toUpperCase()) && (
+                <p className="text-xs text-destructive">Format tidak valid. Contoh: BNK-0308-1793845037429</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" disabled={verifyingId !== null} onClick={() => setVerifyTarget(null)}>Batal</Button>
+              <Button type="submit" disabled={verifyingId !== null || !ID_PATTERN.test(verifySettlementId.trim().toUpperCase())}>
+                {verifyingId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}Verifikasi
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editingRegistry} onOpenChange={open => { if (!open && !registrySaveBusy.current) setEditingRegistry(null); }}>
         <DialogContent className="max-w-md">
