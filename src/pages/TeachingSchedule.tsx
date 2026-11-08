@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +14,11 @@ import { toast } from "@/components/ui/sonner";
 import { Plus, Pencil, Trash2, BookOpen, Clock, Users as UsersIcon, Calendar, Search, GraduationCap, CalendarDays } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/utils";
+import { ClassScheduleBoard } from "@/components/schedule/ClassScheduleBoard";
+import { ScheduleEditor } from "@/components/schedule/ScheduleEditor";
+import { SCHEDULE_DAYS, conflictsFor, validRange, type ScheduleForm } from "@/lib/classSchedule";
 
-const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+const DAYS = SCHEDULE_DAYS;
 
 interface Subject {
   id: string;
@@ -49,7 +52,7 @@ interface ClassData {
   name: string;
 }
 
-export default function TeachingSchedule() {
+export default function TeachingSchedule({ view = "full" }: { view?: "class" | "full" }) {
   const { user, profile, roles } = useAuth();
   const isAdmin = roles.includes("school_admin") || roles.includes("super_admin");
   const schoolId = profile?.school_id;
@@ -59,6 +62,9 @@ export default function TeachingSchedule() {
   const [teachers, setTeachers] = useState<TeacherProfile[]>([]);
   const [classes, setClasses] = useState<ClassData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [savingSchedule, setSavingSchedule] = useState(false);
+  const loadVersion = useRef(0);
   const [activeTab, setActiveTab] = useState("schedules");
   const [selectedDay, setSelectedDay] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,7 +72,7 @@ export default function TeachingSchedule() {
   // Schedule form
   const [scheduleDialog, setScheduleDialog] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ScheduleForm>({
     teacher_id: "",
     subject_id: "",
     class_id: "",
@@ -82,9 +88,11 @@ export default function TeachingSchedule() {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
   const [subjectForm, setSubjectForm] = useState({ name: "", code: "", color: "#3B82F6" });
 
-  const fetchData = async () => {
-    if (!schoolId) return;
+  const fetchData = useCallback(async () => {
+    const version = ++loadVersion.current;
+    if (!schoolId) { setLoading(false); return; }
     setLoading(true);
+    setLoadError("");
     try {
       const [subjectsRes, schedulesRes, classesRes, teachersRes] = await Promise.all([
         supabase.from("subjects").select("*").eq("school_id", schoolId).order("name"),
@@ -92,16 +100,25 @@ export default function TeachingSchedule() {
         supabase.from("classes").select("id, name").eq("school_id", schoolId).order("name"),
         supabase.from("profiles").select("user_id, full_name, avatar_url").eq("school_id", schoolId),
       ]);
+      if (version !== loadVersion.current) return;
+      const error = subjectsRes.error || schedulesRes.error || classesRes.error || teachersRes.error;
+      if (error) throw error;
       if (subjectsRes.data) setSubjects(subjectsRes.data);
       if (schedulesRes.data) setSchedules(schedulesRes.data);
       if (classesRes.data) setClasses(classesRes.data);
       if (teachersRes.data) setTeachers(teachersRes.data);
+    } catch (error) {
+      if (version === loadVersion.current) setLoadError(error instanceof Error ? error.message : "Data jadwal belum dapat dimuat. Silakan coba kembali.");
     } finally {
-      setLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
-  };
+  }, [schoolId]);
 
-  useEffect(() => { fetchData(); }, [schoolId]);
+  useEffect(() => {
+    fetchData();
+    // This ref is a request counter, not a DOM node; invalidate in-flight responses on cleanup.
+    return () => { loadVersion.current++; }; // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchData]);
 
   // Subject CRUD
   const saveSubject = async () => {
@@ -131,33 +148,35 @@ export default function TeachingSchedule() {
 
   // Schedule CRUD
   const saveSchedule = async () => {
+    if (savingSchedule || !isAdmin) return;
     if (!schoolId || !formData.teacher_id || !formData.subject_id || !formData.class_id) {
-      toast.error("Lengkapi semua field wajib");
-      return;
+      toast.error("Lengkapi semua field wajib"); return;
     }
-    const payload = {
-      school_id: schoolId,
-      teacher_id: formData.teacher_id,
-      subject_id: formData.subject_id,
-      class_id: formData.class_id,
-      day_of_week: formData.day_of_week,
-      start_time: formData.start_time,
-      end_time: formData.end_time,
-      room: formData.room || null,
-      notes: formData.notes || null,
-    };
-    let error;
-    if (editingSchedule) {
-      ({ error } = await supabase.from("teaching_schedules").update(payload).eq("id", editingSchedule.id));
-    } else {
-      ({ error } = await supabase.from("teaching_schedules").insert(payload));
+    if (!validRange(formData)) { toast.error("Jam selesai harus setelah jam mulai, pada hari yang sama."); return; }
+    if (!classes.some((item) => item.id === formData.class_id) || !teachers.some((item) => item.user_id === formData.teacher_id) ||
+      !subjects.some((item) => item.id === formData.subject_id) || !Number.isInteger(formData.day_of_week) || formData.day_of_week < 0 || formData.day_of_week > 6) {
+      toast.error("Periksa kembali kelas, guru, mata pelajaran, dan hari yang dipilih."); return;
     }
-    if (error) { toast.error("Gagal menyimpan jadwal: " + error.message); return; }
-    toast.success(editingSchedule ? "Jadwal diperbarui" : "Jadwal ditambahkan");
-    setScheduleDialog(false);
-    setEditingSchedule(null);
-    resetForm();
-    fetchData();
+    setSavingSchedule(true);
+    try {
+      const { data: latest, error: checkError } = await supabase.from("teaching_schedules").select("*").eq("school_id", schoolId).eq("is_active", true);
+      if (checkError) throw checkError;
+      const conflicts = conflictsFor(formData, latest || [], editingSchedule?.id);
+      if (conflicts.length > 0) {
+        toast.error(`Guru atau kelas sudah memiliki jadwal pada ${DAYS[formData.day_of_week]}, ${conflicts[0].start_time.slice(0, 5)}–${conflicts[0].end_time.slice(0, 5)}.`); return;
+      }
+      const payload = { ...formData, school_id: schoolId, room: formData.room.trim() || null, notes: formData.notes.trim() || null };
+      const result = editingSchedule
+        ? await supabase.from("teaching_schedules").update(payload).eq("id", editingSchedule.id).eq("school_id", schoolId).select("id")
+        : await supabase.from("teaching_schedules").insert(payload).select("id");
+      if (result.error) throw result.error;
+      if (result.data?.length !== 1) throw new Error("Jadwal belum tersimpan. Periksa hak akses akun Anda.");
+      toast.success(editingSchedule ? "Jadwal diperbarui" : "Jadwal ditambahkan");
+      setScheduleDialog(false); setEditingSchedule(null); resetForm(); fetchData();
+    } catch (error) {
+      const message = error && typeof error === "object" && "message" in error ? String(error.message) : "Periksa koneksi dan coba kembali.";
+      toast.error("Gagal menyimpan jadwal: " + message);
+    } finally { setSavingSchedule(false); }
   };
 
   const deleteSchedule = async (id: string) => {
@@ -187,11 +206,11 @@ export default function TeachingSchedule() {
     setScheduleDialog(true);
   };
 
-  const getTeacher = (id: string) => teachers.find((t) => t.user_id === id);
-  const getTeacherName = (id: string) => getTeacher(id)?.full_name || "—";
-  const getSubjectName = (id: string) => subjects.find((s) => s.id === id)?.name || "—";
+  const getTeacher = useCallback((id: string) => teachers.find((t) => t.user_id === id), [teachers]);
+  const getTeacherName = useCallback((id: string) => getTeacher(id)?.full_name || "—", [getTeacher]);
+  const getSubjectName = useCallback((id: string) => subjects.find((s) => s.id === id)?.name || "—", [subjects]);
   const getSubjectColor = (id: string) => subjects.find((s) => s.id === id)?.color || "#5B6CF9";
-  const getClassName = (id: string) => classes.find((c) => c.id === id)?.name || "—";
+  const getClassName = useCallback((id: string) => classes.find((c) => c.id === id)?.name || "—", [classes]);
   const getInitials = (name: string) => name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
   // Tailwind-friendly readable text on colored bg: convert hex to rgba helpers
@@ -215,7 +234,7 @@ export default function TeachingSchedule() {
       );
     }
     return filtered;
-  }, [schedules, selectedDay, searchQuery, teachers, subjects, classes]);
+  }, [schedules, selectedDay, searchQuery, getTeacherName, getSubjectName, getClassName]);
 
   // Group by day
   const groupedByDay = useMemo(() => {
@@ -226,6 +245,8 @@ export default function TeachingSchedule() {
     });
     return groups;
   }, [filteredSchedules]);
+
+  const scheduleEditor = isAdmin && <ScheduleEditor open={scheduleDialog} onOpenChange={(open) => { setScheduleDialog(open); if (!open) { setEditingSchedule(null); resetForm(); } }} editing={!!editingSchedule} saving={savingSchedule} value={formData} onChange={setFormData} onSave={saveSchedule} teachers={teachers} subjects={subjects} classes={classes} />;
 
   if (loading) {
     return (
@@ -238,12 +259,17 @@ export default function TeachingSchedule() {
     );
   }
 
+  if (loadError) return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">{loadError}</p><Button variant="outline" className="mt-4" onClick={fetchData}>Coba lagi</Button></Card>;
+
+  if (view === "class") return <><ClassScheduleBoard classes={classes} schedules={schedules} subjects={subjects} teachers={teachers} isAdmin={isAdmin} onAdd={(defaults) => { setEditingSchedule(null); setFormData({ teacher_id: "", subject_id: "", class_id: "", day_of_week: 0, start_time: "07:00", end_time: "08:00", room: "", notes: "", ...defaults }); setScheduleDialog(true); }} onEdit={openEditSchedule} onDelete={deleteSchedule} />{scheduleEditor}</>;
+
   return (
-    <div className="p-4 md:p-6 space-y-4">
-      <PageHeader icon={CalendarDays} title="Jadwal Mengajar" subtitle="Kelola jadwal mengajar guru dan mata pelajaran" />
+    <div className="space-y-4">
+      {scheduleEditor}
+      <PageHeader icon={CalendarDays} title="Jadwal Lengkap" subtitle="Seluruh jadwal mengajar sekolah, dikelompokkan berdasarkan hari." />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
+        <TabsList className={cn("grid w-full max-w-md", isAdmin ? "grid-cols-2" : "grid-cols-1")}>
           <TabsTrigger value="schedules" className="gap-1.5"><Calendar className="h-4 w-4" />Jadwal</TabsTrigger>
           {isAdmin && <TabsTrigger value="subjects" className="gap-1.5"><BookOpen className="h-4 w-4" />Mata Pelajaran</TabsTrigger>}
         </TabsList>
@@ -262,67 +288,8 @@ export default function TeachingSchedule() {
                 {DAYS.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
-            {isAdmin && (
-              <Dialog open={scheduleDialog} onOpenChange={(o) => { setScheduleDialog(o); if (!o) { setEditingSchedule(null); resetForm(); } }}>
-                <DialogTrigger asChild>
-                  <Button className="gap-1.5"><Plus className="h-4 w-4" />Tambah Jadwal</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>{editingSchedule ? "Edit Jadwal" : "Tambah Jadwal Baru"}</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-2">
-                    <div>
-                      <Label>Guru *</Label>
-                      <Select value={formData.teacher_id} onValueChange={(v) => setFormData({ ...formData, teacher_id: v })}>
-                        <SelectTrigger><SelectValue placeholder="Pilih guru" /></SelectTrigger>
-                        <SelectContent>{teachers.map((t) => <SelectItem key={t.user_id} value={t.user_id}>{t.full_name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Mata Pelajaran *</Label>
-                      <Select value={formData.subject_id} onValueChange={(v) => setFormData({ ...formData, subject_id: v })}>
-                        <SelectTrigger><SelectValue placeholder="Pilih mapel" /></SelectTrigger>
-                        <SelectContent>{subjects.filter((s) => s.is_active).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Kelas *</Label>
-                      <Select value={formData.class_id} onValueChange={(v) => setFormData({ ...formData, class_id: v })}>
-                        <SelectTrigger><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
-                        <SelectContent>{classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Hari *</Label>
-                      <Select value={String(formData.day_of_week)} onValueChange={(v) => setFormData({ ...formData, day_of_week: parseInt(v) })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{DAYS.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label>Jam Mulai *</Label>
-                        <Input type="time" value={formData.start_time} onChange={(e) => setFormData({ ...formData, start_time: e.target.value })} />
-                      </div>
-                      <div>
-                        <Label>Jam Selesai *</Label>
-                        <Input type="time" value={formData.end_time} onChange={(e) => setFormData({ ...formData, end_time: e.target.value })} />
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Ruangan</Label>
-                      <Input placeholder="Contoh: Lab IPA, R. 201" value={formData.room} onChange={(e) => setFormData({ ...formData, room: e.target.value })} />
-                    </div>
-                    <div>
-                      <Label>Catatan</Label>
-                      <Input placeholder="Catatan tambahan" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-                    </div>
-                    <Button onClick={saveSchedule} className="w-full">{editingSchedule ? "Simpan Perubahan" : "Tambah Jadwal"}</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+            {isAdmin && <Button className="gap-1.5" onClick={() => { setEditingSchedule(null); resetForm(); setScheduleDialog(true); }}><Plus className="h-4 w-4" />Tambah Jadwal</Button>}
+
           </div>
 
           {/* Stats cards */}

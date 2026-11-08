@@ -2,9 +2,9 @@ name: Web quality checks
 on:
   push:
     branches: [main]
-    paths: ['src/**', 'package*.json', '.github/workflows/web-quality.yml']
+    paths: ['src/**', 'tests/ui/**', 'package*.json', '.github/workflows/web-quality.yml']
   pull_request:
-    paths: ['src/**', 'package*.json', '.github/workflows/web-quality.yml']
+    paths: ['src/**', 'tests/ui/**', 'package*.json', '.github/workflows/web-quality.yml']
 permissions:
   contents: read
 jobs:
@@ -20,3 +20,14 @@ jobs:
       - run: npx tsc --noEmit -p tsconfig.app.json
       - run: npm test
       - run: npm run build
+      - name: Install browser for schedule layout checks
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Check class timetable interactions and responsive layouts
+        run: node tests/ui/schedule-check.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: schedule-ui-previews
+          path: ui-previews
