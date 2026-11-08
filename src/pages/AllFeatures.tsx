@@ -1,77 +1,124 @@
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  ScanLine, Users, ClipboardCheck, MessageCircle, ScanFace, BarChart3, Calendar,
-  CreditCard, Building2, Shield, Sparkles, FileSpreadsheet, Camera, Palette,
-  Wallet, UserCheck, Bell, MapPin, Bot,
+  Activity, Bell, BookOpen, CalendarDays, ClipboardCheck, CreditCard,
+  FileSpreadsheet, GraduationCap, LayoutGrid, MessageCircle, ScanFace,
+  ScanLine, Send, Users, UserCheck, Wallet, type LucideIcon,
 } from "lucide-react";
 
-const FEATURES: Array<{ icon: any; title: string; desc: string; group: string }> = [
-  { icon: ScanLine, title: "Absensi Barcode / QR", desc: "Scan cepat via kartu siswa atau QR code", group: "Absensi" },
-  { icon: ScanFace, title: "Face Recognition", desc: "Absen otomatis dengan pengenalan wajah", group: "Absensi" },
-  { icon: ClipboardCheck, title: "Absensi Guru & Staff", desc: "Log kehadiran guru harian & rekap", group: "Absensi" },
-  { icon: Users, title: "Manajemen Siswa Unlimited", desc: "Tanpa batas kelas & siswa", group: "Manajemen" },
-  { icon: UserCheck, title: "Multi Staff & Wali Kelas", desc: "Akses berjenjang untuk seluruh tim sekolah", group: "Manajemen" },
-  { icon: Building2, title: "Multi Cabang", desc: "Kelola beberapa sekolah dalam satu akun", group: "Manajemen" },
-  { icon: MessageCircle, title: "Notifikasi WhatsApp Otomatis", desc: "Info kehadiran & tagihan ke wali murid", group: "Komunikasi" },
-  { icon: Bell, title: "Pengumuman Sekolah", desc: "Broadcast ke wali murid dalam satu klik", group: "Komunikasi" },
-  { icon: Bot, title: "Portal Wali Murid", desc: "Login via WA atau Nomor Kartu Identitas, riwayat lengkap", group: "Komunikasi" },
-  { icon: BarChart3, title: "Analitik & Laporan", desc: "Rekap harian/bulanan, export Excel & PDF", group: "Laporan" },
-  { icon: FileSpreadsheet, title: "Import / Export Data", desc: "Backup & migrasi data siswa cepat", group: "Laporan" },
-  { icon: Calendar, title: "Jadwal Pelajaran", desc: "Sinkron jadwal mengajar & absensi mapel", group: "Laporan" },
-  { icon: Wallet, title: "Manajemen Keuangan SPP", desc: "Tagihan otomatis, pembayaran online", group: "Keuangan" },
-  { icon: CreditCard, title: "Payment Gateway", desc: "Terima pembayaran QRIS/VA/e-wallet", group: "Keuangan" },
-  { icon: Palette, title: "Custom Logo & Branding", desc: "Tampil dengan identitas sekolah sendiri", group: "Branding" },
-  { icon: Camera, title: "Upload Foto Siswa", desc: "Foto profil siswa untuk identifikasi", group: "Branding" },
-  { icon: MapPin, title: "Monitoring Realtime", desc: "Pantau kehadiran langsung di layar", group: "Monitoring" },
-  { icon: Shield, title: "Keamanan Data", desc: "Enkripsi & backup harian otomatis", group: "Keamanan" },
+type Feature = { icon: LucideIcon; title: string; description: string };
+type Category = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  accent: string;
+  features: Feature[];
+};
+
+// Only include implemented workflows. This catalogue is not an activation or entitlement check.
+const CATEGORIES: Category[] = [
+  {
+    title: "Absensi & Kehadiran",
+    description: "Pencatatan dan pemantauan aktivitas sekolah.",
+    icon: ClipboardCheck,
+    accent: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300",
+    features: [
+      { icon: ScanLine, title: "Scan QR & kartu RFID", description: "Catat kehadiran menggunakan QR, barcode, atau kartu RFID yang terdaftar." },
+      { icon: ScanFace, title: "Pengenalan wajah", description: "Metode absensi wajah melalui layanan pengenalan yang terhubung." },
+      { icon: UserCheck, title: "Absensi guru & staff", description: "Catat kehadiran datang dan pulang guru serta staff sekolah." },
+      { icon: ClipboardCheck, title: "Absensi manual", description: "Pencatatan hadir, sakit, izin, dan alfa sesuai hak akses petugas." },
+      { icon: Activity, title: "Monitoring kehadiran", description: "Pantau status dan riwayat kehadiran siswa pada dashboard." },
+    ],
+  },
+  {
+    title: "Data & Akademik",
+    description: "Data sekolah dan kegiatan belajar dalam satu tempat.",
+    icon: GraduationCap,
+    accent: "bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-300",
+    features: [
+      { icon: Users, title: "Data siswa & kelas", description: "Kelola identitas, foto, kartu pelajar, serta import dan export data siswa." },
+      { icon: UserCheck, title: "Guru, staff & wali kelas", description: "Atur data pengguna, peran akun, dan penugasan wali kelas." },
+      { icon: BookOpen, title: "Jadwal & absensi mapel", description: "Lihat jadwal mengajar, jadwal live, dan catat kehadiran per mata pelajaran." },
+      { icon: CalendarDays, title: "Kalender & hari libur", description: "Kelola agenda akademik, tanggal libur, dan mode libur sekolah." },
+    ],
+  },
+  {
+    title: "Komunikasi & Wali Murid",
+    description: "Hubungkan sekolah dengan orang tua siswa.",
+    icon: MessageCircle,
+    accent: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300",
+    features: [
+      { icon: Users, title: "Portal wali murid", description: "Akses melalui WhatsApp atau nomor kartu untuk melihat informasi ananda." },
+      { icon: MessageCircle, title: "Integrasi WhatsApp", description: "Kirim informasi absensi dan tagihan sesuai konfigurasi integrasi sekolah." },
+      { icon: Bell, title: "Pengumuman sekolah", description: "Bagikan informasi sekolah melalui dashboard dan portal wali murid." },
+      { icon: Send, title: "Pengajuan izin & sakit", description: "Terima pengajuan wali murid beserta lampiran dan proses peninjauannya." },
+    ],
+  },
+  {
+    title: "Keuangan & Laporan",
+    description: "Pengelolaan pembayaran dan rekap administrasi.",
+    icon: Wallet,
+    accent: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300",
+    features: [
+      { icon: Wallet, title: "SPP & tagihan sekolah", description: "Kelola tagihan, tunggakan, dan status pembayaran siswa." },
+      { icon: CreditCard, title: "Pembayaran online", description: "Metode QRIS, virtual account bank, dan retail melalui gateway yang dikonfigurasi." },
+      { icon: CreditCard, title: "Cicilan tagihan", description: "Pembayaran bertahap untuk tagihan yang diizinkan, lengkap dengan riwayat transaksi." },
+      { icon: FileSpreadsheet, title: "Rekap & export laporan", description: "Lihat rekap dan analitik kehadiran, lalu export laporan ke Excel atau PDF." },
+    ],
+  },
 ];
 
 export default function AllFeatures() {
-  const groups = Array.from(new Set(FEATURES.map((f) => f.group)));
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        icon={Sparkles}
-        title="Semua Fitur Aktif"
-        subtitle="Seluruh fitur ATSkolla tersedia untuk sekolah Anda tanpa batasan."
+        icon={LayoutGrid}
+        title="Fitur ATSkolla"
+        subtitle="Ringkasan fitur sekolah, dikelompokkan agar lebih mudah ditemukan."
       />
 
-      <Card className="border-0 bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] text-white shadow-lg">
-        <CardContent className="p-5 flex items-center gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center">
-            <Sparkles className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="font-semibold text-lg">Akses Penuh Aktif</p>
-            <p className="text-white/80 text-sm">Nikmati semua fitur premium tanpa pembatasan paket.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-3 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Satu platform untuk kehadiran, akademik, komunikasi, dan administrasi sekolah.
+        </p>
+        <span className="shrink-0 self-start rounded-full bg-background px-3 py-1 text-xs font-medium text-primary sm:self-auto">
+          {CATEGORIES.length} kategori
+        </span>
+      </div>
 
-      {groups.map((g) => (
-        <div key={g} className="space-y-2">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">{g}</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {FEATURES.filter((f) => f.group === g).map((f) => (
-              <Card key={f.title} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-4 flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <f.icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-sm">{f.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{f.desc}</p>
-                  </div>
-                  <div className="ml-auto shrink-0">
-                    <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full">Aktif</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ))}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {CATEGORIES.map((category) => (
+          <Card key={category.title} className="overflow-hidden rounded-2xl border-border/70 shadow-none">
+            <div className="flex items-start gap-3 border-b border-border/60 bg-muted/25 p-4 sm:px-5">
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${category.accent}`}>
+                <category.icon className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-semibold leading-6 tracking-tight">{category.title}</h2>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{category.description}</p>
+              </div>
+            </div>
+            <CardContent className="px-4 py-1 sm:px-5">
+              <ul className="divide-y divide-border/50">
+                {category.features.map((feature) => (
+                  <li key={feature.title} className="flex items-start gap-3 py-3.5">
+                    <feature.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium leading-5">{feature.title}</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{feature.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <p className="px-1 text-xs leading-relaxed text-muted-foreground">
+        Menu yang dapat digunakan mengikuti peran akun. Layanan terhubung seperti WhatsApp,
+        pengenalan wajah, dan pembayaran memerlukan konfigurasi sekolah yang sesuai.
+      </p>
     </div>
   );
 }
