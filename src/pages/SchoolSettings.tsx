@@ -318,7 +318,7 @@ const SchoolSettings = () => {
                   .{getRootDomain()}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">Tautan login menggunakan subdomain sekolah. Pastikan DNS wildcard, HTTPS, dan virtual host VPS sudah dikonfigurasi.</p>
+              <p className="text-xs text-muted-foreground">Alamat ini digunakan untuk mengakses halaman login sekolah.</p>
               {initialSlug && (
                 <>
                   <Button
