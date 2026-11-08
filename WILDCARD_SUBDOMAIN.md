@@ -1,3 +1,5 @@
+> **Deployment hybrid:** domain utama tetap di Lovable dan hanya subdomain sekolah di VPS. Ikuti [panduan khusus sekolah](deploy/schools/README.md). Jangan gunakan konfigurasi yang memindahkan domain utama atau `update.sh` lama untuk skema ini.
+
 # Subdomain sekolah ATSkolla untuk VPS
 
 Tautan utama sekolah menggunakan `https://{slug}.atskolla.com/admin` untuk petugas,

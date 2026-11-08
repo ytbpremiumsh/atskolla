@@ -1,0 +1,63 @@
+name: Build school frontend for VPS
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'packages/**'
+      - 'index.html'
+      - '.env'
+      - 'package*.json'
+      - '*config*'
+      - 'deploy/schools/**'
+      - '.github/workflows/schools-vps.yml'
+permissions:
+  contents: read
+concurrency:
+  group: schools-vps-main
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: python3 -m unittest discover -s deploy/schools -p 'test_*.py'
+      - name: Verify isolated Nginx school routing
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y nginx
+          python3 deploy/schools/nginx_smoke.py
+      - run: npm ci
+      - run: npm run build
+      - name: Package verified school release
+        env:
+          RELEASE_COMMIT: ${{ github.sha }}
+          RELEASE_RUN: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os
+          from pathlib import Path
+          Path('dist/atskolla-release.json').write_text(json.dumps({
+              'site': 'atskolla-schools', 'commit': os.environ['RELEASE_COMMIT'],
+              'run_id': os.environ['RELEASE_RUN'],
+              'built_at': datetime.datetime.now(datetime.timezone.utc).isoformat()
+          }))
+          PY
+          mkdir -p school-package
+          tar -czf school-package/atskolla-schools.tar.gz -C dist .
+          cd school-package
+          sha256sum atskolla-schools.tar.gz > SHA256SUMS
+          cp ../deploy/schools/{install_release.py,update.py,nginx-schools.conf,README.md} .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atskolla-schools-vps
+          path: school-package/
+          retention-days: 90
+          if-no-files-found: error

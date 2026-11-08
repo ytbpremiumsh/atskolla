@@ -1,3 +1,5 @@
+> **Deployment hybrid:** domain utama tetap di Lovable dan hanya subdomain sekolah di VPS. Ikuti [panduan khusus sekolah](deploy/schools/README.md). Jangan gunakan konfigurasi yang memindahkan domain utama atau `update.sh` lama untuk skema ini.
+
 # Self-Hosting ATSkolla di VPS
 
 Panduan singkat untuk deploy ATSkolla di server pribadi (VPS Linux) dengan auto-update dari GitHub menggunakan `update.sh`.
