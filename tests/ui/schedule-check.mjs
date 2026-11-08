@@ -24,6 +24,17 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.screenshot({ path: 'ui-previews/class-desktop.png', fullPage: true });
 
+  await page.getByRole('button', {name:'Tambah massal',exact:true}).click();
+  await page.getByLabel('Mapel baris 1').selectOption('s1');
+  await page.getByLabel('Guru baris 1').selectOption('t1');
+  await page.getByRole('button',{name:'Duplikat baris 1'}).click();
+  assert.equal(await page.getByLabel('Mapel baris 2').inputValue(),'s1');
+  await page.getByLabel('Mulai baris 2').fill('08:00');
+  await page.getByLabel('Selesai baris 2').fill('09:00');
+  await page.screenshot({path:'ui-previews/class-bulk-dialog.png',fullPage:true});
+  await page.getByRole('button',{name:'Simpan 2 jadwal',exact:true}).click();
+  await page.getByRole('dialog').waitFor({state:'hidden'});
+
   await page.getByRole('button', { name: 'Tambah jadwal 7A Selasa 07:40 – 08:20', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.waitFor();

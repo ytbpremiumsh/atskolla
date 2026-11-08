@@ -291,7 +291,7 @@ const Dashboard = () => {
                 <CalendarOff className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-amber-800 dark:text-amber-200">Sedang dalam Mode Libur — Absensi Ditangguhkan</p>
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-200">Hari Libur — Absensi Ditangguhkan</p>
                 <p className="text-[11px] sm:text-xs text-amber-700/90 dark:text-amber-300/80 mt-0.5">{holidayStatus.reason}</p>
               </div>
               <Button size="sm" variant="outline" onClick={() => navigate("/holidays")} className="hidden sm:inline-flex h-7 text-xs rounded-lg border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300">

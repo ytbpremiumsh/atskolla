@@ -15,6 +15,7 @@ import { Plus, Pencil, Trash2, BookOpen, Clock, Users as UsersIcon, Calendar, Se
 import { PageHeader } from "@/components/PageHeader";
 import { cn } from "@/lib/utils";
 import { ClassScheduleBoard } from "@/components/schedule/ClassScheduleBoard";
+import { BulkScheduleEditor } from "@/components/schedule/BulkScheduleEditor";
 import { ScheduleEditor } from "@/components/schedule/ScheduleEditor";
 import { SCHEDULE_DAYS, conflictsFor, validRange, type ScheduleForm } from "@/lib/classSchedule";
 
@@ -70,6 +71,7 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
   const [searchQuery, setSearchQuery] = useState("");
 
   // Schedule form
+  const [bulkDialog, setBulkDialog] = useState(false);
   const [scheduleDialog, setScheduleDialog] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
   const [formData, setFormData] = useState<ScheduleForm>({
@@ -179,6 +181,42 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
     } finally { setSavingSchedule(false); }
   };
 
+  const createSubjectInline = async (name: string): Promise<string | null> => {
+    if (!isAdmin || !schoolId || !name.trim()) return null;
+    const existing = subjects.find(s => s.name.trim().toLocaleLowerCase() === name.trim().toLocaleLowerCase());
+    if (existing?.is_active) return existing.id;
+    if (existing) { toast.error("Mapel ini nonaktif. Aktifkan melalui tab Mata Pelajaran pada Jadwal Lengkap."); return null; }
+    try {
+      const {data,error} = await supabase.from("subjects").insert({school_id:schoolId,name:name.trim(),color:"#5B6CF9"}).select("*").single();
+      if(error) throw error;
+      setSubjects(prev=>[...prev,data].sort((a,b)=>a.name.localeCompare(b.name))); toast.success("Mata pelajaran ditambahkan"); return data.id;
+    } catch(error) { toast.error("Gagal menambah mapel: " + (error && typeof error === "object" && "message" in error ? String(error.message) : "Periksa koneksi.")); return null; }
+  };
+
+  const saveBulk = async (rows: ScheduleForm[]): Promise<boolean> => {
+    if (!isAdmin || !schoolId || savingSchedule) return false;
+    if (!rows.length || rows.length > 100) { toast.error("Isi 1–100 baris jadwal."); return false; }
+    setSavingSchedule(true);
+    try {
+      const {data:latest,error} = await supabase.from("teaching_schedules").select("*").eq("school_id",schoolId).eq("is_active",true);
+      if(error) throw error;
+      const checked = [...(latest || [])];
+      for (const [i,row] of rows.entries()) {
+        if (!validRange(row) || !Number.isInteger(row.day_of_week) || row.day_of_week < 0 || row.day_of_week > 6 ||
+            !classes.some(c=>c.id===row.class_id) || !teachers.some(t=>t.user_id===row.teacher_id) || !subjects.some(s=>s.id===row.subject_id && s.is_active)) {
+          throw new Error(`Baris ${i+1}: lengkapi kelas, mapel, guru, hari, dan jam yang valid.`);
+        }
+        if(conflictsFor(row,checked).length) throw new Error(`Baris ${i+1}: jadwal guru atau kelas bentrok pada ${DAYS[row.day_of_week]}, ${row.start_time}–${row.end_time}. Periksa juga baris lain dalam pengajuan ini.`);
+        checked.push({...row,id:`bulk-${i}`,school_id:schoolId,is_active:true,created_at:"",updated_at:""});
+      }
+      const result = await supabase.from("teaching_schedules").insert(rows.map(row=>({...row,school_id:schoolId,room:row.room.trim()||null,notes:row.notes.trim()||null}))).select("id");
+      if(result.error) throw result.error;
+      if(result.data?.length!==rows.length) throw new Error("Jumlah jadwal tersimpan belum sesuai. Muat ulang sebelum mencoba kembali.");
+      toast.success(`${rows.length} jadwal berhasil ditambahkan`); setBulkDialog(false); fetchData(); return true;
+    } catch(error) { toast.error(error && typeof error === "object" && "message" in error ? String(error.message) : "Gagal menyimpan jadwal massal."); return false; }
+    finally { setSavingSchedule(false); }
+  };
+
   const deleteSchedule = async (id: string) => {
     if (!confirm("Hapus jadwal ini?")) return;
     const { error } = await supabase.from("teaching_schedules").delete().eq("id", id);
@@ -246,7 +284,9 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
     return groups;
   }, [filteredSchedules]);
 
-  const scheduleEditor = isAdmin && <ScheduleEditor open={scheduleDialog} onOpenChange={(open) => { setScheduleDialog(open); if (!open) { setEditingSchedule(null); resetForm(); } }} editing={!!editingSchedule} saving={savingSchedule} value={formData} onChange={setFormData} onSave={saveSchedule} teachers={teachers} subjects={subjects} classes={classes} />;
+  const scheduleEditor = isAdmin && <ScheduleEditor onCreateSubject={createSubjectInline} open={scheduleDialog} onOpenChange={(open) => { setScheduleDialog(open); if (!open) { setEditingSchedule(null); resetForm(); } }} editing={!!editingSchedule} saving={savingSchedule} value={formData} onChange={setFormData} onSave={saveSchedule} teachers={teachers} subjects={subjects} classes={classes} />;
+
+  const bulkEditor = isAdmin && <BulkScheduleEditor onCreateSubject={createSubjectInline} open={bulkDialog} onOpenChange={setBulkDialog} saving={savingSchedule} classes={classes} teachers={teachers} subjects={subjects} onSave={saveBulk} />;
 
   if (loading) {
     return (
@@ -261,11 +301,11 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
 
   if (loadError) return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">{loadError}</p><Button variant="outline" className="mt-4" onClick={fetchData}>Coba lagi</Button></Card>;
 
-  if (view === "class") return <><ClassScheduleBoard classes={classes} schedules={schedules} subjects={subjects} teachers={teachers} isAdmin={isAdmin} onAdd={(defaults) => { setEditingSchedule(null); setFormData({ teacher_id: "", subject_id: "", class_id: "", day_of_week: 0, start_time: "07:00", end_time: "08:00", room: "", notes: "", ...defaults }); setScheduleDialog(true); }} onEdit={openEditSchedule} onDelete={deleteSchedule} />{scheduleEditor}</>;
+  if (view === "class") return <><ClassScheduleBoard classes={classes} schedules={schedules} subjects={subjects} teachers={teachers} isAdmin={isAdmin} onAdd={(defaults) => { setEditingSchedule(null); setFormData({ teacher_id: "", subject_id: "", class_id: "", day_of_week: 0, start_time: "07:00", end_time: "08:00", room: "", notes: "", ...defaults }); setScheduleDialog(true); }} onEdit={openEditSchedule} onDelete={deleteSchedule} onBulk={() => setBulkDialog(true)} />{scheduleEditor}{bulkEditor}</>;
 
   return (
     <div className="space-y-4">
-      {scheduleEditor}
+      {scheduleEditor}{bulkEditor}
       <PageHeader icon={CalendarDays} title="Jadwal Lengkap" subtitle="Seluruh jadwal mengajar sekolah, dikelompokkan berdasarkan hari." />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -277,6 +317,7 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
         {/* ===== SCHEDULES TAB ===== */}
         <TabsContent value="schedules" className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
+            {isAdmin && <Button variant="outline" onClick={()=>setBulkDialog(true)}>Tambah massal</Button>}
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Cari guru, mapel, kelas..." className="pl-9" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />

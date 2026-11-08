@@ -16,12 +16,13 @@ interface Props {
   subjects: { id: string; name: string; color: string | null }[];
   teachers: { user_id: string; full_name: string }[];
   isAdmin: boolean;
+  onBulk?: () => void;
   onAdd: (defaults: Partial<ScheduleForm>) => void;
   onEdit: (entry: ScheduleEntry) => void;
   onDelete: (id: string) => void;
 }
 
-export function ClassScheduleBoard({ classes, schedules, subjects, teachers, isAdmin, onAdd, onEdit, onDelete }: Props) {
+export function ClassScheduleBoard({ classes, schedules, subjects, teachers, isAdmin, onAdd, onEdit, onDelete, onBulk }: Props) {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -51,7 +52,7 @@ export function ClassScheduleBoard({ classes, schedules, subjects, teachers, isA
 
   return (
     <div className="min-w-0 space-y-4">
-      <PageHeader icon={CalendarDays} title="Jadwal Pelajaran" subtitle="Pantau pembagian waktu, mata pelajaran, dan guru untuk setiap kelas." actions={isAdmin && <Button className="bg-white text-primary hover:bg-white/90" onClick={() => onAdd({ class_id: selected?.id || "" })}><Plus className="mr-1.5 h-4 w-4" />Tambah jadwal</Button>} />
+      <PageHeader icon={CalendarDays} title="Jadwal Pelajaran" subtitle="Pantau pembagian waktu, mata pelajaran, dan guru untuk setiap kelas." actions={isAdmin && <div className="flex flex-wrap gap-2">{onBulk && <Button variant="outline" className="bg-white text-primary" onClick={onBulk}>Tambah massal</Button>}<Button className="bg-white text-primary hover:bg-white/90" onClick={() => onAdd({ class_id: selected?.id || "" })}><Plus className="mr-1.5 h-4 w-4" />Tambah jadwal</Button></div>} />
 
       {!selected ? (
         <Card className="p-8 text-center"><GraduationCap className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" /><h2 className="font-semibold">Belum ada kelas</h2><p className="mt-1 text-sm text-muted-foreground">Data kelas akan muncul di sini setelah ditambahkan ke sekolah.</p>{isAdmin && <Button className="mt-4" onClick={() => navigate("/classes")}>Kelola kelas</Button>}</Card>

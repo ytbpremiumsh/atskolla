@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/PageHeader";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { CalendarOff, PowerOff, Info, Clock, Save, Loader2 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { fetchSchoolHolidayStatus, saveSchoolHolidaySettings, type HolidayStatus } from "@/lib/schoolHoliday";
 
 const HolidayManagement = () => {
   const { profile, roles } = useAuth();
@@ -21,6 +22,9 @@ const HolidayManagement = () => {
   const [saving, setSaving] = useState(false);
   const [savingDays, setSavingDays] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [status, setStatus] = useState<HolidayStatus | null>(null);
+  const refreshStatus = useCallback(() => profile?.school_id && fetchSchoolHolidayStatus(profile.school_id).then(setStatus).catch(() => setStatus(null)), [profile?.school_id]);
 
   // Attendance time state
   const [attStartTime, setAttStartTime] = useState("06:00");
@@ -31,50 +35,64 @@ const HolidayManagement = () => {
 
   useEffect(() => {
     if (!profile?.school_id) { setLoading(false); return; }
+    setLoading(true); setLoadError("");
     Promise.all([
       supabase.from("schools").select("holiday_mode, holiday_mode_label, holiday_days").eq("id", profile.school_id).single(),
       supabase.from("dismissal_settings")
         .select("attendance_start_time, attendance_end_time, departure_start_time, departure_end_time")
         .eq("school_id", profile.school_id).maybeSingle(),
     ]).then(([sRes, dRes]) => {
+      if (sRes.error) setLoadError("Pengaturan libur gagal dimuat. Muat ulang halaman sebelum mengubahnya.");
       if (sRes.data) {
-        setHolidayMode(!!(sRes.data as any).holiday_mode);
-        setHolidayModeLabel((sRes.data as any).holiday_mode_label || "");
-        const hd = (sRes.data as any).holiday_days;
+        setHolidayMode(!!sRes.data.holiday_mode);
+        setHolidayModeLabel(sRes.data.holiday_mode_label || "");
+        const hd = sRes.data.holiday_days;
         setHolidayDays(Array.isArray(hd) ? hd : [0, 6]);
       }
       if (dRes.data) {
-        setAttStartTime((dRes.data as any).attendance_start_time?.slice(0, 5) || "06:00");
-        setAttEndTime((dRes.data as any).attendance_end_time?.slice(0, 5) || "12:00");
-        setDepStartTime((dRes.data as any).departure_start_time?.slice(0, 5) || "12:00");
-        setDepEndTime((dRes.data as any).departure_end_time?.slice(0, 5) || "17:00");
+        setAttStartTime(dRes.data.attendance_start_time?.slice(0, 5) || "06:00");
+        setAttEndTime(dRes.data.attendance_end_time?.slice(0, 5) || "12:00");
+        setDepStartTime(dRes.data.departure_start_time?.slice(0, 5) || "12:00");
+        setDepEndTime(dRes.data.departure_end_time?.slice(0, 5) || "17:00");
       }
+      refreshStatus();
       setLoading(false);
-    });
-  }, [profile?.school_id]);
+    }).catch(() => { setLoadError("Koneksi terputus. Muat ulang halaman untuk mencoba kembali."); setLoading(false); });
+  }, [profile?.school_id, refreshStatus]);
 
   const toggleHolidayDay = async (day: number) => {
-    if (!profile?.school_id || !canEdit) return;
+    if (!profile?.school_id || !canEdit || savingDays || loading || loadError) return;
     const next = holidayDays.includes(day) ? holidayDays.filter((x) => x !== day) : [...holidayDays, day];
-    setHolidayDays(next);
     setSavingDays(true);
-    const { error } = await supabase.from("schools").update({ holiday_days: next } as any).eq("id", profile.school_id);
-    setSavingDays(false);
-    if (error) { toast.error("Gagal: " + error.message); return; }
-    toast.success("Hari libur mingguan diperbarui");
+    try {
+      const saved = await saveSchoolHolidaySettings(profile.school_id, { holiday_days: next });
+      setHolidayDays(saved.holiday_days || []); refreshStatus();
+      toast.success("Hari libur mingguan diperbarui");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Gagal menyimpan hari libur."); }
+    finally { setSavingDays(false); }
   };
 
   const handleToggle = async (val: boolean) => {
-    if (!profile?.school_id || !canEdit) return;
+    if (!profile?.school_id || !canEdit || saving || loading || loadError) return;
     setSaving(true);
-    const { error } = await supabase.from("schools").update({
-      holiday_mode: val,
-      holiday_mode_label: val ? (holidayModeLabel || "Hari Libur") : null,
-    } as any).eq("id", profile.school_id);
-    setSaving(false);
-    if (error) { toast.error("Gagal: " + error.message); return; }
-    setHolidayMode(val);
-    toast.success(val ? "Mode libur diaktifkan — absensi ditangguhkan" : "Mode libur dinonaktifkan");
+    try {
+      const saved = await saveSchoolHolidaySettings(profile.school_id, {
+        holiday_mode: val, holiday_mode_label: val ? (holidayModeLabel.trim() || "Hari Libur") : null,
+      });
+      setHolidayMode(saved.holiday_mode); setHolidayModeLabel(saved.holiday_mode_label || ""); refreshStatus();
+      toast.success(val ? "Mode libur cepat diaktifkan" : "Mode libur cepat dinonaktifkan. Hari libur mingguan dan kalender tetap berlaku.");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Gagal menyimpan mode libur."); }
+    finally { setSaving(false); }
+  };
+
+  const saveLabel = async () => {
+    if (!profile?.school_id || !canEdit || saving || !holidayMode) return;
+    setSaving(true);
+    try {
+      const saved = await saveSchoolHolidaySettings(profile.school_id, { holiday_mode_label: holidayModeLabel.trim() || "Hari Libur" });
+      setHolidayModeLabel(saved.holiday_mode_label || ""); refreshStatus(); toast.success("Alasan libur disimpan");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Gagal menyimpan alasan libur."); }
+    finally { setSaving(false); }
   };
 
   const handleSaveTime = async () => {
@@ -89,11 +107,11 @@ const HolidayManagement = () => {
     const { data: existing } = await supabase.from("dismissal_settings").select("id").eq("school_id", profile.school_id).maybeSingle();
     let error;
     if (existing) {
-      ({ error } = await supabase.from("dismissal_settings").update(payload as any).eq("school_id", profile.school_id));
+      ({ error } = await supabase.from("dismissal_settings").update(payload).eq("school_id", profile.school_id));
     } else {
       ({ error } = await supabase.from("dismissal_settings").insert({
         school_id: profile.school_id, is_active: false, ...payload,
-      } as any));
+      }));
     }
     setSavingTime(false);
     if (error) toast.error("Gagal menyimpan: " + error.message);
@@ -121,6 +139,12 @@ const HolidayManagement = () => {
         </CardContent>
       </Card>
 
+      {loadError && <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">{loadError}</div>}
+      {!loading && !loadError && status && <Card className="p-4 space-y-2">
+        <p className="text-sm font-semibold">Status absensi hari ini: {status.isHoliday ? "Libur" : "Hari aktif"}</p>
+        <p className="text-sm text-muted-foreground">{status.reason || "Absensi mengikuti jam operasional sekolah."}</p>
+        <p className="text-xs text-muted-foreground">Mode libur cepat, hari libur mingguan, dan tanggal libur pada Kalender Akademik adalah pengaturan terpisah. Mematikan satu pengaturan tidak menghapus pengaturan lainnya.</p>
+      </Card>}
       {/* Toggle Mode Libur */}
       {canEdit && (
         <Card className="border-0 shadow-card">
@@ -142,7 +166,7 @@ const HolidayManagement = () => {
                     Aktifkan bila hari ini libur mendadak (cuaca ekstrem, event khusus, dll).
                   </p>
                 </div>
-                <Switch checked={holidayMode} disabled={saving || loading} onCheckedChange={handleToggle} />
+                <Switch aria-label="Mode libur cepat" checked={holidayMode} disabled={saving || loading || !!loadError} onCheckedChange={handleToggle} />
               </div>
               {holidayMode && (
                 <div className="mt-3">
@@ -150,10 +174,11 @@ const HolidayManagement = () => {
                   <Input
                     value={holidayModeLabel}
                     onChange={(e) => setHolidayModeLabel(e.target.value)}
-                    onBlur={() => holidayMode && supabase.from("schools").update({ holiday_mode_label: holidayModeLabel } as any).eq("id", profile?.school_id || "").then(() => {})}
+                    disabled={saving || loading || !!loadError}
                     placeholder="Contoh: Cuaca ekstrem, Ujian nasional, dll"
                     className="mt-1 h-9 text-sm"
                   />
+                  <Button size="sm" variant="outline" className="mt-2" disabled={saving || !!loadError} onClick={saveLabel}>Simpan alasan</Button>
                 </div>
               )}
             </div>
@@ -186,7 +211,7 @@ const HolidayManagement = () => {
                 <button
                   key={d.v}
                   type="button"
-                  disabled={savingDays || loading || !canEdit}
+                  disabled={savingDays || loading || !canEdit || !!loadError}
                   onClick={() => toggleHolidayDay(d.v)}
                   className={`px-2 py-2 rounded-lg text-xs font-medium border transition disabled:opacity-60 disabled:cursor-not-allowed ${
                     active
@@ -202,7 +227,7 @@ const HolidayManagement = () => {
           <div className="bg-secondary/50 rounded-lg p-3 text-xs text-muted-foreground">
             Hari aktif: <strong className="text-foreground">{
               [1,2,3,4,5,6,0].filter(d => !holidayDays.includes(d))
-                .map(d => ({1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu",0:"Minggu"} as any)[d])
+                .map(d => ({1:"Senin",2:"Selasa",3:"Rabu",4:"Kamis",5:"Jumat",6:"Sabtu",0:"Minggu"} as Record<number, string>)[d])
                 .join(", ") || "(tidak ada)"
             }</strong>
           </div>
