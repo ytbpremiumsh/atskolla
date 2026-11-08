@@ -96,8 +96,7 @@ serve(async (req) => {
     };
 
     const isConnected = (data: any) =>
-      data?.msg === 'Device already connected!' ||
-      data?.msg === 'Perangkat sudah terhubung!';
+      /already connected|sudah terhubung|art\u0131q qo\u015fulub|artiq qosulub/i.test(String(data?.msg || data?.message || ''));
 
     const markConnected = async (connected: boolean) => {
       if (isPlatform) {
