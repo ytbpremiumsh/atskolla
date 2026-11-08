@@ -1132,20 +1132,17 @@ function BendaharaMobileDashboard({
   );
 }
 
-function BendServiceIcon({ icon: Icon, label, gradient, onClick }: { icon: any; label: string; gradient: string; onClick: () => void }) {
-  // Premium tile: soft tinted card + gradient glyph badge, lift & glow on interaction.
+function BendServiceIcon({ icon: Icon, label, onClick }: { icon: any; label: string; gradient?: string; onClick: () => void }) {
+  // Two-tone tile: solid brand purple button with white icon, no animation.
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 group rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-95 transition-transform duration-150"
+      className="flex flex-col items-center gap-2 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
     >
-      <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-card ring-1 ring-border/60 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:ring-primary/30">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.08] group-hover:opacity-[0.16] transition-opacity duration-300`} />
-        <div className={`relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-4deg]`}>
-          <Icon className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
-        </div>
+      <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-primary flex items-center justify-center shadow-sm">
+        <Icon className="h-6 w-6 text-primary-foreground" strokeWidth={2} />
       </div>
-      <span className="text-[11px] font-semibold text-foreground/85 text-center leading-tight group-hover:text-primary transition-colors">{label}</span>
+      <span className="text-[11px] font-semibold text-foreground/85 text-center leading-tight">{label}</span>
     </button>
   );
 }
