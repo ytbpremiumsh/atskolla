@@ -1,3 +1,4 @@
+import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet, Navigate, useNavigate, useLocation } from "react-router-dom";
@@ -201,7 +202,7 @@ export function SuperAdminLayout() {
           </header>
           <main className={cn("no-motion flex-1 p-4 md:p-6 overflow-auto", isMobileDevice && "pb-24")}>
             <Suspense fallback={<div className="h-32" />}>
-              <Outlet />
+              <SoftOutlet />
             </Suspense>
           </main>
           {isMobileDevice && (

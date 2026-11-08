@@ -23,7 +23,7 @@ import {
   Receipt, ArrowDownToLine, Banknote, RefreshCw, FileText, MessageCircle, Mail, Copy,
   Download, Upload, ArrowLeft, User, Users, ChevronRight, ChevronDown, Eye, GraduationCap, Send, BarChart3, Landmark,
   Home, LayoutGrid, Grid3x3, CreditCard, ArrowUpRight, X, Pencil, Trash2, Percent, AlertTriangle,
-  Lock,
+  Lock, ReceiptText, FilePlus2, HandCoins, FileUp, PieChart,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
@@ -1040,14 +1040,14 @@ function BendaharaMobileDashboard({
 
         {/* Service grid 4x2 — professional gradient tiles */}
         <div className="grid grid-cols-4 gap-3">
-          <BendServiceIcon icon={Users} label="Siswa" gradient="from-indigo-500 to-violet-600" onClick={() => navigate("/bendahara/siswa")} />
-          <BendServiceIcon icon={Receipt} label="Tarif SPP" gradient="from-indigo-500 to-violet-600" onClick={() => navigate("/bendahara/tarif")} />
-          <BendServiceIcon icon={FileText} label="Generate" gradient="from-amber-500 to-orange-600" onClick={() => navigate("/bendahara/generate")} />
-          <BendServiceIcon icon={CreditCard} label="Pembayaran" gradient="from-pink-500 to-rose-600" onClick={() => navigate("/bendahara/transaksi")} />
-          <BendServiceIcon icon={Upload} label="Import" gradient="from-violet-500 to-purple-600" onClick={() => navigate("/bendahara/import-export")} />
-          <BendServiceIcon icon={Wallet} label="Saldo" gradient="from-sky-500 to-blue-600" onClick={() => navigate("/bendahara/saldo")} />
-          <BendServiceIcon icon={ArrowDownToLine} label="Pencairan" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/pencairan")} />
-          <BendServiceIcon icon={BarChart3} label="Laporan" gradient="from-slate-600 to-slate-800" onClick={() => navigate("/bendahara/laporan")} />
+          <BendServiceIcon icon={GraduationCap} label="Siswa" gradient="from-indigo-500 to-violet-600" onClick={() => navigate("/bendahara/siswa")} />
+          <BendServiceIcon icon={ReceiptText} label="Tarif SPP" gradient="from-sky-500 to-blue-600" onClick={() => navigate("/bendahara/tarif")} />
+          <BendServiceIcon icon={FilePlus2} label="Generate" gradient="from-amber-500 to-orange-600" onClick={() => navigate("/bendahara/generate")} />
+          <BendServiceIcon icon={HandCoins} label="Pembayaran" gradient="from-emerald-500 to-teal-600" onClick={() => navigate("/bendahara/transaksi")} />
+          <BendServiceIcon icon={FileUp} label="Import" gradient="from-violet-500 to-purple-600" onClick={() => navigate("/bendahara/import-export")} />
+          <BendServiceIcon icon={Wallet} label="Saldo" gradient="from-cyan-500 to-sky-600" onClick={() => navigate("/bendahara/saldo")} />
+          <BendServiceIcon icon={Landmark} label="Pencairan" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/pencairan")} />
+          <BendServiceIcon icon={PieChart} label="Laporan" gradient="from-blue-500 to-indigo-600" onClick={() => navigate("/bendahara/laporan")} />
         </div>
 
         {/* Persentase pelunasan */}
@@ -1133,15 +1133,19 @@ function BendaharaMobileDashboard({
 }
 
 function BendServiceIcon({ icon: Icon, label, gradient, onClick }: { icon: any; label: string; gradient: string; onClick: () => void }) {
-  // Outline 1-line style with green accent dot — inspired by modern fintech iconography.
+  // Premium tile: soft tinted card + gradient glyph badge, lift & glow on interaction.
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5 group active:scale-95 transition-transform">
-      <div className="relative h-14 w-14 rounded-2xl bg-white dark:bg-card flex items-center justify-center ring-1 ring-border/60 shadow-[0_4px_14px_-6px_rgba(15,23,42,0.18)] group-hover:shadow-[0_10px_24px_-8px_rgba(15,23,42,0.25)] group-hover:-translate-y-0.5 transition-all">
-        <Icon className="h-6 w-6 text-[#3D4FE0]" strokeWidth={1.75} />
-        {/* brand accent dot */}
-        <span className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-[#5B6CF9] ring-2 ring-white dark:ring-card shadow-sm" />
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center gap-2 group rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/50 active:scale-95 transition-transform duration-150"
+    >
+      <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-card ring-1 ring-border/60 shadow-sm flex items-center justify-center overflow-hidden transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-lg group-hover:ring-primary/30">
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-[0.08] group-hover:opacity-[0.16] transition-opacity duration-300`} />
+        <div className={`relative h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-[-4deg]`}>
+          <Icon className="h-5 w-5 text-primary-foreground" strokeWidth={2} />
+        </div>
       </div>
-      <span className="text-[10px] font-semibold text-foreground/80 text-center leading-tight">{label}</span>
+      <span className="text-[11px] font-semibold text-foreground/85 text-center leading-tight group-hover:text-primary transition-colors">{label}</span>
     </button>
   );
 }
