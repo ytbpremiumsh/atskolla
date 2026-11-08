@@ -96,8 +96,7 @@ serve(async (req) => {
     };
 
     const isConnected = (data: any) =>
-      data?.msg === 'Device already connected!' ||
-      data?.msg === 'Perangkat sudah terhubung!';
+      /already connected|sudah terhubung|art\u0131q qo\u015fulub|artiq qosulub/i.test(String(data?.msg || data?.message || ''));
 
     const markConnected = async (connected: boolean) => {
       if (isPlatform) {
@@ -212,24 +211,15 @@ serve(async (req) => {
         });
       }
 
-      // Try logout-device via GET as well (MPWA may support both)
-      const logoutUrl = `${MPWA_BASE}/logout-device?api_key=${encodeURIComponent(apiKey)}&sender=${encodeURIComponent(cleanNumber)}`;
-      console.log(`[mpwa-proxy] Disconnecting: ${logoutUrl.replace(apiKey, '***')}`);
-
-      let data: any;
-      try {
-        const res = await fetch(logoutUrl);
-        data = await safeJson(res);
-      } catch (e) {
-        // Fallback to POST if GET doesn't work
-        console.log('[mpwa-proxy] GET logout failed, trying POST');
-        const res = await fetch(`${MPWA_BASE}/logout-device`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ api_key: apiKey, sender: cleanNumber }),
-        });
-        data = await safeJson(res);
-      }
+      // Gateway only accepts POST for logout-device (GET returns 405)
+      console.log(`[mpwa-proxy] POST ${MPWA_BASE}/logout-device sender=${cleanNumber}`);
+      const res = await fetch(`${MPWA_BASE}/logout-device`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey, sender: cleanNumber }),
+      });
+      console.log(`[mpwa-proxy] logout-device HTTP ${res.status}`);
+      const data: any = await safeJson(res);
 
       await markConnected(false);
 

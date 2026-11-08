@@ -282,9 +282,9 @@ export type Database = {
           account_number: string
           account_type: string
           archived_at: string | null
-          bank_name: string
-          bank_branch: string | null
           bank_book_path: string | null
+          bank_branch: string | null
+          bank_name: string
           created_at: string
           created_by: string | null
           doku_bank_account_settlement_id: string | null
@@ -295,8 +295,8 @@ export type Database = {
           is_active: boolean
           is_default: boolean
           notes: string | null
-          requires_review: boolean
           rejection_reason: string | null
+          requires_review: boolean
           responsible_user_id: string | null
           school_id: string
           updated_at: string
@@ -309,9 +309,9 @@ export type Database = {
           account_number: string
           account_type?: string
           archived_at?: string | null
+          bank_book_path?: string | null
+          bank_branch?: string | null
           bank_name: string
-          bank_branch: string | null
-          bank_book_path: string | null
           created_at?: string
           created_by?: string | null
           doku_bank_account_settlement_id?: string | null
@@ -322,8 +322,8 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
-          requires_review?: boolean
           rejection_reason?: string | null
+          requires_review?: boolean
           responsible_user_id?: string | null
           school_id: string
           updated_at?: string
@@ -336,9 +336,9 @@ export type Database = {
           account_number?: string
           account_type?: string
           archived_at?: string | null
-          bank_name?: string
-          bank_branch?: string | null
           bank_book_path?: string | null
+          bank_branch?: string | null
+          bank_name?: string
           created_at?: string
           created_by?: string | null
           doku_bank_account_settlement_id?: string | null
@@ -349,8 +349,8 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           notes?: string | null
-          requires_review?: boolean
           rejection_reason?: string | null
+          requires_review?: boolean
           responsible_user_id?: string | null
           school_id?: string
           updated_at?: string
@@ -3635,17 +3635,15 @@ export type Database = {
       }
     }
     Functions: {
-      resubmit_bank_account: {
-        Args: { p_account_id: string; p_bank_name: string; p_bank_branch: string; p_account_number: string; p_account_holder: string; p_responsible_user_id: string; p_bank_book_path: string; p_notes?: string | null }
-        Returns: Json
-      }
-      verify_and_register_bank_account: {
-        Args: { p_account_id: string }
-        Returns: Json
-      }
-      principal_finance_summary: { Args: { p_school_id: string }; Returns: Json }
-      operations_health: { Args: Record<PropertyKey, never>; Returns: Json }
       _fmt_idr: { Args: { amt: number }; Returns: string }
+      backup_table_manifest: {
+        Args: never
+        Returns: {
+          dependencies: string[]
+          key_columns: string[]
+          table_name: string
+        }[]
+      }
       check_package_status: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
       delete_email: {
@@ -3682,6 +3680,11 @@ export type Database = {
         Args: { _event_type: string; _payload: Json }
         Returns: undefined
       }
+      operations_health: { Args: never; Returns: Json }
+      principal_finance_summary: {
+        Args: { p_school_id: string }
+        Returns: Json
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -3702,6 +3705,19 @@ export type Database = {
           target_url: string
         }[]
       }
+      resubmit_bank_account: {
+        Args: {
+          p_account_holder: string
+          p_account_id: string
+          p_account_number: string
+          p_bank_book_path: string
+          p_bank_branch: string
+          p_bank_name: string
+          p_notes?: string
+          p_responsible_user_id: string
+        }
+        Returns: Json
+      }
       rfid_required_min_devices: {
         Args: { _school_id: string }
         Returns: number
@@ -3711,6 +3727,10 @@ export type Database = {
         Returns: Json
       }
       slugify: { Args: { _input: string }; Returns: string }
+      verify_and_register_bank_account: {
+        Args: { p_account_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role:
