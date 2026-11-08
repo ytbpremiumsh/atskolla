@@ -284,7 +284,8 @@ serve(async (req) => {
             .replace(/{site_url}/g, siteUrl)
             .replace(/{admin_url}/g, adminUrl)
             .replace(/{parent_url}/g, parentUrl)
-            .replace(/https?:\/\/(?:www\.)?absenpintar\.online(?:\/login)?/gi, adminUrl);
+            .replace(/https?:\/\/(?:www\.)?absenpintar\.online\/login\b/gi, adminUrl)
+            .replace(/https?:\/\/(?:www\.)?absenpintar\.online/gi, siteUrl);
 
           // Append link info if template did not include it
           const domainRe = new RegExp(baseDomain.replace(/\./g, '\\.'), 'i');
