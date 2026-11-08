@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_SEND_URL = 'https://atskollagateway.my.id/send-message';
 
 const formatPhone = (v: string) => {
   let p = (v || '').replace(/\D/g, '');
@@ -126,7 +126,7 @@ serve(async (req) => {
     let lastResp: any = null;
     if (ps.mpwa_platform_api_key && ps.mpwa_platform_sender) {
       try {
-        const r = await fetch(MPWA_SEND_URL, {
+        const r = await fetch(`${await getMpwaBase()}/send-message`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
