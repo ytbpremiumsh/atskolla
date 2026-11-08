@@ -18,7 +18,7 @@ import XLSXStyle from "xlsx-js-style";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 import { Link } from "react-router-dom";
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 const OUT_CATEGORIES = ["Operasional", "Gaji", "Perlengkapan", "Perawatan", "Utilitas", "Kegiatan", "Lainnya"];
 const IN_CATEGORIES = ["Donasi", "Hibah", "Kas Manual", "Bunga Bank", "Lainnya"];
 

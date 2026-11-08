@@ -21,7 +21,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 export default function BendaharaTunggakan() {

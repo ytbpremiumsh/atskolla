@@ -112,5 +112,5 @@ export function computeChannelFee(
 }
 
 export function formatIDR(n: number): string {
-  return "Rp " + (Number(n) || 0).toLocaleString("id-ID");
+  return "Rp\u00A0" + (Number(n) || 0).toLocaleString("id-ID");
 }

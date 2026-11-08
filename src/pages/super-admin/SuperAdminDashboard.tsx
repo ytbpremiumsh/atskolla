@@ -43,7 +43,7 @@ interface DashboardStats {
   expiringSoon: { school_id: string; school_name: string; plan_name: string; status: string; expires_at: string; days_left: number }[];
 }
 
-const fmtIDR = (n: number) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${Number(n || 0).toLocaleString("id-ID")}`;
 const timeAgo = (iso: string) => {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return `${s}d lalu`;

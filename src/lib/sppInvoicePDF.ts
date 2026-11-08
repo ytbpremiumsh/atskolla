@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 const fmtDate = (d?: string | null) =>
   d ? new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-";
 
