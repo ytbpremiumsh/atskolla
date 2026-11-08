@@ -40,7 +40,7 @@ import { brandPaymentUrl } from "@/lib/utils";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 import { InstallmentDialog } from "@/components/bendahara/InstallmentDialog";
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 // Helper: format payment_method jadi label rapi
@@ -243,13 +243,13 @@ function buildStyledPdf(opts: {
     head: [opts.columns.map((c) => c.header)],
     body: opts.rows.map((r) => opts.columns.map((c) => {
       const v = r[c.dataKey];
-      if (c.isCurrency) return `Rp ${Number(v || 0).toLocaleString("id-ID")}`;
+      if (c.isCurrency) return `Rp\u00A0${Number(v || 0).toLocaleString("id-ID")}`;
       return v == null ? "" : String(v);
     })),
     foot: currencyCols.length
       ? [opts.columns.map((c, i) => {
           if (i === 0) return "TOTAL";
-          if (c.isCurrency) return `Rp ${(totals[c.dataKey] || 0).toLocaleString("id-ID")}`;
+          if (c.isCurrency) return `Rp\u00A0${(totals[c.dataKey] || 0).toLocaleString("id-ID")}`;
           return "";
         })]
       : undefined,

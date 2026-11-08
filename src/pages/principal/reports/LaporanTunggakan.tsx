@@ -77,7 +77,7 @@ export default function LaporanTunggakan() {
         <StatsRow items={[
           { label: "Siswa Menunggak", value: summary.total, tone: "rose" },
           { label: "Jumlah Invoice", value: summary.invoices, tone: "amber" },
-          { label: "Total Nominal", value: `Rp ${summary.nominal.toLocaleString("id-ID")}`, tone: "indigo" },
+          { label: "Total Nominal", value: `Rp\u00A0${summary.nominal.toLocaleString("id-ID")}`, tone: "indigo" },
           { label: "> 90 hari", value: summary.kritis, tone: "rose" },
           { label: "30-90 hari", value: summary.sedang, tone: "amber" },
           { label: "< 30 hari", value: summary.ringan, tone: "sky" },

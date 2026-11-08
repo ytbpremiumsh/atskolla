@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Wallet, CheckCircle2, Clock, Loader2, ArrowRight, Coins, ExternalLink } from "lucide-react";
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 
 export type InstallmentSummary = {
   invoice: any;

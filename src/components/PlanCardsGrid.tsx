@@ -30,7 +30,7 @@ interface Props {
   gridClassName?: string;
 }
 
-const formatRupiah = (n: number) => (n === 0 ? "Gratis" : `Rp ${n.toLocaleString("id-ID")}`);
+const formatRupiah = (n: number) => (n === 0 ? "Gratis" : `Rp\u00A0${n.toLocaleString("id-ID")}`);
 const isLimitFeature = (f: string) => /^(Maks|Kelas unlimited|Siswa unlimited)/i.test(f);
 
 export function PlanCardsGrid({

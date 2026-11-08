@@ -68,7 +68,7 @@ const SuperAdminPayments = () => {
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  const formatRupiah = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
+  const formatRupiah = (n: number) => `Rp\u00A0${n.toLocaleString("id-ID")}`;
   const statusMap: Record<string, { label: string; cls: string }> = {
     paid: { label: "Lunas", cls: "bg-success/10 text-success border-success/20" },
     pending: { label: "Pending", cls: "bg-warning/10 text-warning border-warning/20" },

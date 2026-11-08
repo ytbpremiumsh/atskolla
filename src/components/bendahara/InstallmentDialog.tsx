@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/lib/toast";
 import { Loader2, Plus, Trash2, Wallet, Banknote, CheckCircle2, AlertCircle } from "lucide-react";
 
-const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 
 export type InstallmentInvoice = {
   id: string;

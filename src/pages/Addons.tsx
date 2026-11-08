@@ -92,7 +92,7 @@ const Addons = () => {
       icon: MessageSquare,
       title: "Kredit Pesan WhatsApp",
       description: "Top-up kredit pesan WhatsApp untuk notifikasi absensi dan broadcast ke wali murid.",
-      price: `Rp ${waCreditPrice.toLocaleString("id-ID")}`,
+      price: `Rp\u00A0${waCreditPrice.toLocaleString("id-ID")}`,
       priceNote: `${waCreditPerPack.toLocaleString("id-ID")} pesan`,
       status: waCredits ? "active" : null,
       statusLabel: waCredits ? `${waCredits.balance.toLocaleString("id-ID")} sisa` : null,

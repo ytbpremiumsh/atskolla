@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 
-export const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;
+export const fmtIDR = (n: number) => `Rp\u00A0${(n || 0).toLocaleString("id-ID")}`;
 
 export function StatCard({ icon: Icon, label, value, tone }: { icon: any; label: string; value: any; tone: string }) {
   const tones: Record<string, string> = {
