@@ -165,9 +165,9 @@ export function setupSteps(data: SetupSnapshot, admin: boolean) {
     },
     {
       id: "team",
-      title: "Akun tim sekolah",
+      title: "Guru / Staff",
       body: admin
-        ? `${data.team ?? "—"} akun tim selain akun Anda. Tambahkan operator, guru, dan bendahara sesuai tugas.`
+        ? `${data.team ?? "—"} akun tim selain akun Anda. Tambahkan guru dan staff sesuai tugas. Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.`
         : "Akun tim dan pembagian peran dikelola Admin Sekolah.",
       url: "/staff",
       done: data.team === null ? null : data.team > 0,
@@ -196,19 +196,6 @@ export function setupSteps(data: SetupSnapshot, admin: boolean) {
           ? null
           : data.whatsapp === "connected" || data.whatsapp === "configured",
       allowed: true,
-    },
-    {
-      id: "payments",
-      title: "Bendahara & pembayaran",
-      body: data.treasurers === null
-        ? "Periksa akun Bendahara untuk menyiapkan pembayaran SPP dan Tagihan."
-        : data.treasurers > 0
-          ? "Bendahara tersedia. Lanjutkan pengaturan tagihan, rekening, dan penyedia pembayaran."
-          : "Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
-      url: "/bendahara-manage",
-      done: data.treasurers === null ? null : data.treasurers > 0,
-      allowed: admin,
-      optional: true,
     },
     {
       id: "bank",

@@ -58,19 +58,19 @@ export function SchoolSetupPanel({
   const steps = data ? setupSteps(data, admin) : [];
   const measured = steps.filter((s) => s.allowed && !s.optional);
   const complete = measured.filter((s) => s.done === true).length;
-  const next = measured.find((step) => step.done !== true);
+  const next = measured.find((step) => step.done !== true)
+    ?? steps.find((step) => step.allowed && step.done !== true);
   const labels: Record<string, string> = {
     identity: "Identitas", classes: "Kelas", students: "Siswa",
-    team: "Tim", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening", payments: "Bendahara",
+    team: "Guru / Staff", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening",
   };
   const guides: Record<string, string> = {
     identity: "Lengkapi kontak dan zona waktu sekolah.",
     classes: "Tambahkan kelas sebelum mengisi siswa.",
     students: "Isi siswa, nomor kartu, dan WhatsApp wali.",
-    team: "Tambahkan guru dan operator sesuai tugas.",
+    team: "Tambahkan guru dan staff sesuai tugas. Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
     schedules: "Atur mapel, guru, dan jam per kelas.",
     whatsapp: "Hubungkan perangkat untuk notifikasi wali.",
-    payments: data?.treasurers ? "Bendahara tersedia; atur pembayaran SPP dan Tagihan." : "Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
     bank: "Ajukan rekening dan lengkapi ID DOKU.",
   };
   return (
@@ -123,20 +123,18 @@ export function SchoolSetupPanel({
               );
               const style = "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium";
               return (
-                <li key={step.id} className="w-40 shrink-0">
+                <li key={step.id} className="shrink-0">
                   {step.allowed ? (
                     <Link to={step.url} title={description} aria-label={`${step.title}: ${description}`}
-                      className={`${style} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
+                      aria-current={next?.id === step.id ? "step" : undefined}
+                      className={`${style} ${next?.id === step.id ? "bg-primary/10 text-primary" : ""} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
                       {content}
                     </Link>
                   ) : (
                     <span title={description} aria-label={`${step.title}: ${description}`}
                       className={`${style} text-muted-foreground`}>{content}</span>
                   )}
-                  <p className="px-2 pb-1 text-[11px] leading-relaxed text-muted-foreground">
-                    {guides[step.id]}
-                    {!step.allowed && <span className="block">Dikelola Admin Sekolah.</span>}
-                  </p>
+
                 </li>
               );
             })}
@@ -164,6 +162,19 @@ export function SchoolSetupPanel({
           </Button>
         </div>
       </div>
+      {schoolAvailable && !pending && !error && next && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-primary/10 px-3 py-2 text-xs">
+          <p className="text-muted-foreground">
+            <span className="font-semibold text-foreground">{labels[next.id] ?? next.title}: </span>
+            {guides[next.id]}
+          </p>
+          {next.id === "team" && data?.treasurers === 0 && admin && (
+            <Link to="/bendahara-manage" className="shrink-0 rounded font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+              Tambah Bendahara
+            </Link>
+          )}
+        </div>
+      )}
     </section>
   );
 }

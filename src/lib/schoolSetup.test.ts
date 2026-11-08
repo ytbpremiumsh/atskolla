@@ -66,7 +66,6 @@ describe("school preparation guidance", () => {
     expect(steps.filter((s) => !s.allowed).map((s) => s.id)).toEqual([
       "identity",
       "team",
-      "payments",
       "bank",
     ]);
     expect(steps.find((s) => s.id === "bank")?.done).toBe(false);
@@ -79,7 +78,7 @@ describe("school preparation guidance", () => {
     const snapshot = await fetchSchoolSetup("school", "user", true);
     expect(snapshot.team).toBe(0);
     expect(snapshot.treasurers).toBe(1);
-    expect(setupSteps(snapshot, true).find((step) => step.id === "payments")?.done).toBe(true);
+    expect(setupSteps(snapshot, true).some((step) => step.id === "payments")).toBe(false);
   });
   it("keeps a failed count unknown while completing independent reads and skips privileged operator queries", async () => {
     mock.failed = "classes";
