@@ -44,7 +44,7 @@ export function BendaharaFloatingNav() {
               <SheetItem icon={AlertTriangle} label="Tunggakan" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/tunggakan")} />
               <SheetItem icon={BookOpen} label="Buku Kas" gradient="from-emerald-500 to-teal-600" onClick={() => navigate("/bendahara/buku-kas")} />
               <SheetItem icon={Upload} label="Import" gradient="from-violet-500 to-purple-600" onClick={() => navigate("/bendahara/import-export")} />
-              <SheetItem icon={Wallet} label="Saldo & Penarikan" gradient="from-sky-500 to-blue-600" onClick={() => navigate("/bendahara/withdraw")} />
+              <SheetItem icon={Wallet} label="Saldo & Settlement" gradient="from-sky-500 to-blue-600" onClick={() => navigate("/bendahara/withdraw")} />
               <SheetItem icon={ArrowDownToLine} label="Pencairan" gradient="from-rose-500 to-red-600" onClick={() => navigate("/bendahara/withdraw?tab=pencairan")} />
             </div>
           </SheetContent>
