@@ -10,6 +10,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   fetchSchoolSetup,
   setupSteps,
@@ -63,6 +64,9 @@ export function SchoolSetupPanel({
     try { return !!dismissalKey && localStorage.getItem(dismissalKey) === "true"; }
     catch { return false; }
   });
+  const [bankGuideOpen, setBankGuideOpen] = useState(false);
+  const needsTreasurer = data?.treasurers === 0;
+  const treasurerKnown = typeof data?.treasurers === "number";
   const steps = data ? setupSteps(data, admin) : [];
   const measured = steps.filter((s) => s.allowed && !s.optional);
   const complete = measured.filter((s) => s.done === true).length;
@@ -83,7 +87,9 @@ export function SchoolSetupPanel({
     whatsapp: "Hubungkan perangkat untuk notifikasi wali.",
     bank: bankSubmitted
       ? "Rekening sudah diajukan. Verifikasi rekening diproses terpisah."
-      : "Tambahkan rekening pencairan sekolah.",
+      : needsTreasurer
+        ? "Tambahkan Bendahara terlebih dahulu, lalu masuk dengan akun Bendahara untuk mengajukan rekening."
+        : "Masuk menggunakan akun Bendahara, lalu ajukan rekening dari Dasbor Bendahara.",
   };
   if (dismissed) return null;
   return (
@@ -133,7 +139,14 @@ export function SchoolSetupPanel({
               const style = "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium";
               return (
                 <li key={step.id} className="shrink-0">
-                  {step.allowed ? (
+                  {step.allowed && step.id === "bank" ? (
+                    <button type="button" onClick={() => setBankGuideOpen(true)}
+                      title={description} aria-label={`${step.title}: ${description}`}
+                      aria-current={next?.id === step.id ? "step" : undefined}
+                      className={`${style} ${next?.id === step.id ? "bg-primary/10 text-primary" : ""} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
+                      {content}
+                    </button>
+                  ) : step.allowed ? (
                     <Link to={step.url} title={description} aria-label={`${step.title}: ${description}`}
                       aria-current={next?.id === step.id ? "step" : undefined}
                       className={`${style} ${next?.id === step.id ? "bg-primary/10 text-primary" : ""} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
@@ -158,6 +171,8 @@ export function SchoolSetupPanel({
                 setDismissed(true);
                 toast.success("Tahapan persiapan selesai.");
               }}>Selesai</Button>
+            ) : next?.id === "bank" ? (
+              <Button size="sm" className="h-8 px-3 text-xs" onClick={() => setBankGuideOpen(true)}>Lanjutkan: Rekening</Button>
             ) : next ? (
               <Button size="sm" className="h-8 px-3 text-xs" asChild>
                 <Link to={next.url}>Lanjutkan: {labels[next.id] ?? next.title}</Link>
@@ -183,6 +198,33 @@ export function SchoolSetupPanel({
           )}
         </div>
       )}
+      <Dialog open={bankGuideOpen} onOpenChange={setBankGuideOpen}>
+        <DialogContent className="max-w-md rounded-2xl border-primary/15 p-5 sm:p-6">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-lg text-primary">
+              {!treasurerKnown ? "Periksa akun Bendahara" : needsTreasurer ? "Tambahkan Bendahara terlebih dahulu" : "Ajukan melalui akun Bendahara"}
+            </DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              Pengajuan rekening pencairan dilakukan melalui Dasbor Bendahara menggunakan akun dengan peran Bendahara.
+            </DialogDescription>
+          </DialogHeader>
+          {!treasurerKnown ? (
+            <p className="text-sm text-muted-foreground">Status akun Bendahara belum dapat dipastikan. Tutup panduan ini dan klik Periksa ulang.</p>
+          ) : (
+            <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+              {needsTreasurer && <li>Tambahkan akun Bendahara atau berikan peran Bendahara kepada guru/staf yang ditunjuk.</li>}
+              <li>Simpan pekerjaan Anda, lalu keluar dari akun Admin dan masuk menggunakan akun Bendahara.</li>
+              <li>Buka Dasbor Bendahara, pilih menu rekening pencairan, lalu lengkapi data dan ajukan rekening sekolah.</li>
+            </ol>
+          )}
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setBankGuideOpen(false)}>Mengerti</Button>
+            {treasurerKnown && needsTreasurer && admin && (
+              <Button asChild><Link to="/bendahara-manage" onClick={() => setBankGuideOpen(false)}>Tambah Bendahara</Link></Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -64,3 +64,16 @@ it("allows finishing after account submission without claiming provider verifica
   fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
   expect(screen.queryByRole("region", { name: "Persiapan sekolah" })).not.toBeInTheDocument();
 });
+it.each([0, 1])("guides admins through the treasurer role instead of opening bank entry (treasurers=%s)", (treasurers) => {
+  const data = { ...emptySetup, identity: true, classes: 1, students: 1, team: 1, schedules: 1, whatsapp: "connected" as const, bank: "missing" as const, treasurers };
+  render(<MemoryRouter><SchoolSetupPanel admin data={data} onRefresh={() => {}} /></MemoryRouter>);
+  fireEvent.click(screen.getByRole("button", { name: "Lanjutkan: Rekening" }));
+  expect(screen.getByRole("dialog")).toHaveAccessibleName(treasurers === 0 ? "Tambahkan Bendahara terlebih dahulu" : "Ajukan melalui akun Bendahara");
+  expect(screen.getByText(/keluar dari akun Admin dan masuk menggunakan akun Bendahara/)).toBeInTheDocument();
+  if (treasurers === 0) {
+    expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/bendahara-manage");
+  } else {
+    expect(screen.queryByRole("link", { name: "Tambah Bendahara" })).not.toBeInTheDocument();
+  }
+  expect(screen.queryByRole("link", { name: /Lanjutkan: Rekening/ })).not.toBeInTheDocument();
+});
