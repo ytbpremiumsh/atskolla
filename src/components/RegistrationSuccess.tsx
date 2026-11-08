@@ -23,7 +23,7 @@ export function RegistrationSuccess({
           </p>
           <a
             href={loginUrl}
-            className="mt-2 block break-all text-sm font-semibold underline"
+            className="mt-2 block break-words text-sm font-semibold underline"
           >
             {loginUrl}
           </a>
