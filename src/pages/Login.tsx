@@ -376,7 +376,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                 </div>
               )}
               <h2 className="font-bold text-[#0b1020] text-2xl sm:text-3xl">
-                {mode === "school" ? "Login Sekolah & Petugas" : "Portal Wali Murid"}
+                {mode === "school" ? "Login Sekolah Staff" : "Portal Wali Murid"}
               </h2>
               <p className="text-[#0b1020]/60 text-sm mt-1">
                 {mode === "school" ? "Masuk ke akun Anda untuk melanjutkan" : "Pantau aktivitas ananda dengan mudah"}
@@ -413,7 +413,6 @@ const Login = ({ forcedMode }: LoginProps) => {
                 )}
 
                 {/* Cross-link to the other portal when a forced mode is active */}
-                {mode === "school" && <p className="mb-3 text-xs text-muted-foreground">Admin, Operator, Guru, Kepala Sekolah, dan Bendahara masuk dengan akun yang dibuat sekolah. Pilih dashboard sesuai tugas setelah login jika memiliki beberapa peran. <Link to="/login" className="font-semibold text-primary underline">Untuk Wali Murid</Link>.</p>}
                 {forcedMode && (
                   <div className="mb-5 text-center text-xs text-muted-foreground">
                     {forcedMode === "school" ? (
