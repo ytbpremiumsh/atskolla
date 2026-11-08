@@ -3,8 +3,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { MemoryRouter } from "react-router-dom";
 import TeachingSchedule from "./TeachingSchedule";
 
-const mock=vi.hoisted(()=>({insert:vi.fn(),success:vi.fn(),error:vi.fn(),fail:false,subjects:[] as {id:string;name:string;is_active:boolean}[]}));
-vi.mock("@/hooks/useAuth",()=>({useAuth:()=>({user:{id:"admin"},profile:{school_id:"school"},roles:["school_admin"]})}));
+const mock=vi.hoisted(()=>({insert:vi.fn(),success:vi.fn(),error:vi.fn(),fail:false,roles:["staff"] as string[],subjects:[] as {id:string;name:string;is_active:boolean}[]}));
+vi.mock("@/hooks/useAuth",()=>({useAuth:()=>({user:{id:"admin"},profile:{school_id:"school"},roles:mock.roles})}));
 vi.mock("@/components/ui/sonner",()=>({toast:{success:mock.success,error:mock.error}}));
 vi.mock("@/components/PageHeader",()=>({PageHeader:({title,actions}:{title:string;actions:React.ReactNode})=><header><h1>{title}</h1>{actions}</header>}));
 vi.mock("@/integrations/supabase/client",()=>({supabase:{from:(table:string)=>{
@@ -19,9 +19,13 @@ vi.mock("@/integrations/supabase/client",()=>({supabase:{from:(table:string)=>{
  }};return builder;
 }}}));
 const open=()=>render(<MemoryRouter><TeachingSchedule view="class"/></MemoryRouter>);
-beforeEach(()=>{cleanup();vi.clearAllMocks();mock.fail=false;mock.subjects=[{id:"s1",name:"Matematika",is_active:true}];});
+beforeEach(()=>{cleanup();vi.clearAllMocks();mock.fail=false;mock.roles=["staff"];mock.subjects=[{id:"s1",name:"Matematika",is_active:true}];});
 
 describe("schedule saves from the school page",()=>{
+ it("keeps teacher-only accounts read-only while operators can manage schedules",async()=>{
+  mock.roles=["teacher"];open();await screen.findByRole("heading",{name:"Jadwal 7A"});
+  expect(screen.queryByRole("button",{name:"Tambah jadwal"})).not.toBeInTheDocument();expect(screen.queryByRole("button",{name:"Tambah massal"})).not.toBeInTheDocument();
+ });
  it("opens the actual add form and persists one schedule",async()=>{
   open();fireEvent.click(await screen.findByRole("button",{name:"Tambah jadwal"}));
   const dialog=screen.getByRole("dialog");

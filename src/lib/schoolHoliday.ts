@@ -41,7 +41,7 @@ export async function saveSchoolHolidaySettings(schoolId: string, patch: {
   if (!schoolId) throw new Error("Sekolah belum terhubung ke akun ini.");
   const { data, error } = await supabase.from("schools").update(patch).eq("id", schoolId)
     .select("holiday_mode, holiday_mode_label, holiday_days").single();
-  if (error) throw new Error(error.code === "PGRST116" ? "Perubahan tidak tersimpan. Gunakan akun Admin Sekolah yang sesuai." : error.message);
+  if (error) throw new Error(error.code === "PGRST116" ? "Perubahan tidak tersimpan. Gunakan akun Admin Sekolah atau Operator yang sesuai." : error.message);
   if (!data) throw new Error("Pengaturan belum tersimpan. Silakan coba kembali.");
   return data;
 }

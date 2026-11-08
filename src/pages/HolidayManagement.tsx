@@ -14,7 +14,7 @@ import { fetchSchoolHolidayStatus, saveSchoolHolidaySettings, type HolidayStatus
 
 const HolidayManagement = () => {
   const { profile, roles } = useAuth();
-  const canEdit = roles.includes("school_admin") || roles.includes("super_admin");
+  const canEdit = roles.includes("school_admin") || roles.includes("super_admin") || roles.includes("staff");
 
   const [holidayMode, setHolidayMode] = useState(false);
   const [holidayModeLabel, setHolidayModeLabel] = useState("");

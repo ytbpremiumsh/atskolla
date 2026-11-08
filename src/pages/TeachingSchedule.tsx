@@ -55,7 +55,7 @@ interface ClassData {
 
 export default function TeachingSchedule({ view = "full" }: { view?: "class" | "full" }) {
   const { user, profile, roles } = useAuth();
-  const isAdmin = roles.includes("school_admin") || roles.includes("super_admin");
+  const isAdmin = roles.includes("school_admin") || roles.includes("super_admin") || roles.includes("staff");
   const schoolId = profile?.school_id;
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
