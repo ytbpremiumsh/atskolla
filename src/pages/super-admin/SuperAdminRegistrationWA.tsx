@@ -23,6 +23,7 @@ const SuperAdminRegistrationWA = () => {
     wa_api_url: "",
     wa_api_key: "",
     wa_registration_message: "",
+    mpwa_base_url: "https://atskollagateway.my.id",
     mpwa_platform_api_key: "",
     mpwa_platform_sender: "",
     mpwa_platform_connected: "false",
@@ -62,7 +63,7 @@ const SuperAdminRegistrationWA = () => {
       .select("key, value")
       .in("key", [
         "wa_registration_enabled", "wa_api_url", "wa_api_key", "wa_registration_message",
-        "mpwa_platform_api_key", "mpwa_platform_sender", "mpwa_platform_connected", "onesender_enabled",
+        "mpwa_base_url", "mpwa_platform_api_key", "mpwa_platform_sender", "mpwa_platform_connected", "onesender_enabled",
         "admin_notify_phone", "admin_notify_enabled",
         "admin_notify_ticket_template", "admin_notify_withdrawal_template",
         "admin_notify_bendahara_template",
@@ -111,6 +112,7 @@ const SuperAdminRegistrationWA = () => {
       await supabase.from("platform_settings").upsert([
         { key: "mpwa_platform_sender", value: cleanNumber, updated_at: new Date().toISOString() },
         { key: "mpwa_platform_api_key", value: settings.mpwa_platform_api_key, updated_at: new Date().toISOString() },
+        { key: "mpwa_base_url", value: settings.mpwa_base_url.trim().replace(/\/+$/, ""), updated_at: new Date().toISOString() },
       ], { onConflict: "key" });
       setSettings(prev => ({ ...prev, mpwa_platform_sender: cleanNumber }));
 
@@ -528,12 +530,21 @@ const SuperAdminRegistrationWA = () => {
                 </p>
               </div>
               <div className="space-y-1">
+                <Label className="text-xs">Alamat Gateway MPWA (URL)</Label>
+                <Input
+                  value={settings.mpwa_base_url}
+                  onChange={(e) => setSettings({ ...settings, mpwa_base_url: e.target.value })}
+                  placeholder="https://atskollagateway.my.id"
+                />
+                <p className="text-[10px] text-muted-foreground">Ganti di sini jika domain gateway WhatsApp berubah, lalu klik Simpan. Berlaku untuk semua pengiriman WhatsApp dalam 1 menit.</p>
+              </div>
+              <div className="space-y-1">
                 <Label className="text-xs">MPWA API Key (Global)</Label>
                 <Input
                   type="password"
                   value={settings.mpwa_platform_api_key}
                   onChange={(e) => setSettings({ ...settings, mpwa_platform_api_key: e.target.value })}
-                  placeholder="API Key dari MPWA (atskollagateway.my.id)"
+                  placeholder="API Key dari MPWA"
                 />
               </div>
 

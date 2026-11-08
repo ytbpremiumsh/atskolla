@@ -1,10 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_SEND_URL = 'https://atskollagateway.my.id/send-message';
-const MPWA_BUTTON_URL = 'https://atskollagateway.my.id/send-button';
 
 /**
  * Detect if a message should be sent as a button message.
@@ -69,7 +68,7 @@ const sendMpwaButton = async (
   if (footer) payload.footer = footer;
   console.log(`MPWA send-button | sender:${sender} | to:${recipient} | btns:${buttons.length}`);
   try {
-    const r = await fetch(MPWA_BUTTON_URL, {
+    const r = await fetch(`${await getMpwaBase()}/send-button`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -115,7 +114,7 @@ const sendMpwaMessage = async (
 
   const tryPost = async (payload: Record<string, any>): Promise<{ ok: boolean; data: any; status: number }> => {
     try {
-      const response = await fetch(MPWA_SEND_URL, {
+      const response = await fetch(`${await getMpwaBase()}/send-message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -154,7 +153,7 @@ const sendMpwaMessage = async (
       // GET fallback for individual
       console.log('MPWA: trying GET fallback for individual');
       const params = new URLSearchParams({ api_key: apiKey, sender, number: recipient, message });
-      const getResponse = await fetch(`${MPWA_SEND_URL}?${params.toString()}`);
+      const getResponse = await fetch(`${await getMpwaBase()}/send-message?${params.toString()}`);
       const getText = await getResponse.text();
       const getParsed = parseJsonSafely(getText);
       console.log(`MPWA GET response: status=${getResponse.status} body=${getText.substring(0, 300)}`);
@@ -235,7 +234,7 @@ serve(async (req) => {
           });
         }
 
-        finalApiUrl = MPWA_SEND_URL;
+        finalApiUrl = `${await getMpwaBase()}/send-message`;
       } else {
         finalApiUrl = integration.api_url;
         finalApiKey = integration.api_key;

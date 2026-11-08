@@ -9,7 +9,7 @@
 //
 // Returns { ok, gateway, raw } for logging/diagnostics.
 
-const MPWA_URL = "https://atskollagateway.my.id/send-message";
+import { getMpwaBase } from "./mpwaBase.ts";
 
 export type OtpSendResult = {
   ok: boolean;
@@ -26,7 +26,7 @@ function formatPhone(phone: string): string {
 
 async function tryMpwa(apiKey: string, sender: string, phone: string, message: string): Promise<OtpSendResult> {
   try {
-    const res = await fetch(MPWA_URL, {
+    const res = await fetch(`${await getMpwaBase()}/send-message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ api_key: apiKey, sender, number: phone, message }),

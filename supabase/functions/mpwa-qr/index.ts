@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
 
-const MPWA_BASE = 'https://atskollagateway.my.id';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
@@ -84,7 +84,7 @@ serve(async (req) => {
       console.log(`Connecting device: ${finalSender}`);
 
       // Generate QR — MPWA auto-registers the device when generating QR
-      const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
+      const qrUrl = `${await getMpwaBase()}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
       const res = await fetch(qrUrl);
       const data = await safeJson(res);
       console.log('Generate QR result:', JSON.stringify(data).substring(0, 200));
@@ -106,7 +106,7 @@ serve(async (req) => {
         });
       }
 
-      const qrUrl = `${MPWA_BASE}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
+      const qrUrl = `${await getMpwaBase()}/generate-qr?api_key=${encodeURIComponent(finalApiKey)}&device=${encodeURIComponent(finalSender)}`;
       const res = await fetch(qrUrl);
       const data = await safeJson(res);
 
@@ -127,7 +127,7 @@ serve(async (req) => {
         });
       }
 
-      const res = await fetch(`${MPWA_BASE}/logout-device`, {
+      const res = await fetch(`${await getMpwaBase()}/logout-device`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ api_key: finalApiKey, sender: finalSender }),

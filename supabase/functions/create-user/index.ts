@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
 import { getAdminClient } from "../_shared/supabaseAdmin.ts";
 
@@ -309,7 +310,7 @@ serve(async (req) => {
           if (ps.mpwa_platform_connected === 'true' && ps.mpwa_platform_api_key && ps.mpwa_platform_sender) {
             try {
               console.log('[create-user] Sending via MPWA, sender:', ps.mpwa_platform_sender);
-              const res = await fetch('https://atskollagateway.my.id/send-message', {
+              const res = await fetch(`${await getMpwaBase()}/send-message`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
