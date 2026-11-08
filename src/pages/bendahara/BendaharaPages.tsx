@@ -4938,7 +4938,7 @@ export function BendaharaPencairan() {
       />
 
       {/* KPI ringkas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <StatCard label="Transaksi Otomatis Sistem" value={String(splitPaid.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
         <StatCard label="Total Dana Masuk Otomatis" value={fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
       </div>
@@ -4947,19 +4947,20 @@ export function BendaharaPencairan() {
       {(
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-start justify-between gap-3 flex-wrap">
-              <div>
-                <p className="text-sm font-semibold">Ditransfer Otomatis oleh Sistem</p>
-                <p className="text-xs text-muted-foreground">
-                  Pembayaran ini sudah langsung dikirim sistem ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-lg font-extrabold text-emerald-600">{fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))}</p>
-                <p className="text-xs text-muted-foreground">{splitPaid.length} transaksi</p>
-              </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold">Ditransfer Otomatis oleh Sistem</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Pembayaran ini sudah langsung dikirim sistem ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
+              </p>
             </div>
-            <Button size="sm" variant="outline" onClick={() => setSplitOpen((v) => !v)}>
+            <div className="flex items-center justify-between gap-3 rounded-xl bg-emerald-500/10 px-3 py-2.5">
+              <div className="min-w-0">
+                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Total diterima</p>
+                <p className="text-lg font-extrabold text-emerald-600 tabular-nums leading-tight">{fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))}</p>
+              </div>
+              <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-foreground ring-1 ring-border/60">{splitPaid.length} transaksi</span>
+            </div>
+            <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setSplitOpen((v) => !v)}>
               {splitOpen ? "Sembunyikan rincian" : "Lihat rincian"}
             </Button>
             {splitOpen && (
