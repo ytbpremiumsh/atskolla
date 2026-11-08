@@ -300,3 +300,8 @@
 @media (max-width: 639px) {
   .tabular-nums, td, th { white-space: nowrap; }
 }
+
+/* Keep small pill labels (e.g. "17 tagihan", "3 Lunas") on one line on mobile */
+@media (max-width: 639px) {
+  span[class*="rounded-full"][class*="px-"] { white-space: nowrap; flex-shrink: 0; }
+}
