@@ -269,11 +269,10 @@ serve(async (req) => {
             const { data: sd } = await supabaseAdmin.from('schools').select('slug').eq('id', resolvedSchoolId).maybeSingle();
             slug = sd?.slug || null;
           }
-          const baseDomain = 'www.atskolla.com';
-          const siteUrl = 'https://www.atskolla.com';
-          const schoolPath = slug ? `/t/${encodeURIComponent(slug)}` : '';
-          const adminUrl = `${siteUrl}${schoolPath}/admin`;
-          const parentUrl = `${siteUrl}${schoolPath}/login`;
+          const baseDomain = 'atskolla.com';
+          const siteUrl = slug ? `https://${slug}.${baseDomain}` : 'https://www.atskolla.com';
+          const adminUrl = `${siteUrl}/admin`;
+          const parentUrl = `${siteUrl}/login`;
 
           const template = ps.wa_registration_message || 'Selamat datang, {name}!';
           let message = template

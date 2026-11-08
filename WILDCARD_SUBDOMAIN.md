@@ -1,32 +1,28 @@
-# Alamat sekolah ATSkolla
+# Subdomain sekolah ATSkolla untuk VPS
 
-Link sekolah yang langsung bekerja pada hosting yang sudah dipublikasikan:
-`https://www.atskolla.com/t/{slug}/admin` untuk petugas dan
-`https://www.atskolla.com/t/{slug}/login` untuk wali murid.
-TenantProvider membaca slug dari path dan tidak memaksa pengalihan ke hostname yang belum aktif.
+Tautan utama sekolah menggunakan `https://{slug}.atskolla.com/admin` untuk petugas,
+`https://{slug}.atskolla.com/login` untuk wali murid, dan `https://{slug}.atskolla.com/`
+untuk halaman sekolah. Pendaftaran, pengaturan sekolah, dan tautan berbagi memakai format ini.
 
-## Subdomain asli pada Lovable
+## Aktivasi sekali pada VPS
 
-Dokumentasi Lovable mengharuskan setiap subdomain ditambahkan dan dikonfigurasi secara individual:
-https://docs.lovable.dev/features/custom-domain
+Ikuti `VPS_WILDCARD_SETUP.md`:
 
-1. Project → Settings → Domains → Connect domain.
-2. Masukkan `{slug}.atskolla.com`.
-3. Ikuti record DNS yang ditampilkan Lovable, bukan IP yang ditebak dari panduan lama.
-4. Tunggu status Active dan sertifikat HTTPS tersedia.
-5. Periksa pengaturan Primary domain. Jika primary aktif, domain lain dapat diarahkan ke primary dan identitas hostname sekolah hilang. Unset as primary membuat domain tersambung melayani proyek secara setara; pertimbangkan dampaknya terhadap domain pemasaran.
-6. Uji `/admin`, refresh URL tersebut, login, dan pemisahan data antarsekolah.
+1. Siapkan virtual host frontend ATSkolla dengan `server_name atskolla.com *.atskolla.com`.
+2. Arahkan DNS wildcard `*` ke origin VPS frontend. Jangan mengubah DNS situs gateway WhatsApp.
+3. Pasang TLS yang mencakup `atskolla.com` dan `*.atskolla.com`.
+4. Gunakan SPA fallback `try_files $uri $uri/ /index.html;` agar `/admin` dan `/login` dapat dibuka langsung.
+5. Deploy frontend dari GitHub. Backend tetap dapat memakai Lovable Cloud.
+6. Uji subdomain sekolah yang sudah terdaftar, refresh `/admin`, login wali, dan pemisahan sekolah.
 
-Record wildcard Cloudflare `*` saja tidak menjamin origin hosting menerima semua hostname.
-DNS, TLS, dan routing aplikasi harus semuanya benar. Panduan lama yang menjanjikan
-cukup memverifikasi domain root untuk seluruh subdomain tidak dapat dijadikan jaminan.
+Sesudah wildcard DNS, TLS, dan virtual host bekerja, sekolah baru tidak memerlukan
+penambahan record DNS satu per satu. Menyimpan nama sekolah saja tidak mengaktifkan
+infrastruktur tersebut.
 
-## Otomatis untuk setiap sekolah baru
+Domain utama dan tautan pemasaran tetap `https://www.atskolla.com`.
+Domain lama hanya dikenali untuk kompatibilitas; tautan baru tidak menggunakannya.
+Rute `/t/{slug}/...` masih dapat membaca identitas sekolah untuk kompatibilitas link lama,
+tetapi bukan format tautan utama yang dibagikan.
 
-Gunakan origin/frontend yang menerima wildcard host dan wildcard TLS, misalnya VPS
-sesuai `VPS_WILDCARD_SETUP.md`, atau reverse proxy yang dikonfigurasi dan diuji di Cloudflare.
-Frontend dapat tetap dikembangkan di Lovable/GitHub; backend Lovable Cloud tidak perlu
-ikut dipindahkan. Jangan arahkan wildcard ke VPS gateway WhatsApp tanpa menyiapkan
-virtual host frontend ATSkolla yang terpisah.
-
-Sampai konfigurasi infrastruktur itu selesai, bagikan link `/t/{slug}/...` yang stabil.
+Pada hosting Lovable tanpa VPS/wildcard origin, setiap subdomain perlu dikonfigurasi
+sesuai https://docs.lovable.dev/features/custom-domain.

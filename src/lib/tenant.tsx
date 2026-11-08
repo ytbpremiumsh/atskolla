@@ -176,9 +176,9 @@ export function isRootHost(): boolean {
   return parseSubdomain() === null;
 }
 
-/** Stable school links work without per-school DNS or custom-domain setup. */
+/** School links use subdomains served by the VPS wildcard virtual host and TLS. */
 export function buildTenantUrl(slug: string, path: string = "/"): string {
-  return buildTenantPathUrl(slug, path);
+  return buildTenantSubdomainUrl(slug, path);
 }
 
 export function buildTenantPathUrl(slug: string, path: string = "/"): string {

@@ -318,7 +318,7 @@ const SchoolSettings = () => {
                   .{getRootDomain()}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">Nama alamat ini menjadi identitas sekolah. Tautan login yang disalin menggunakan /t/nama-sekolah/admin. Subdomain asli memerlukan aktivasi DNS dan hosting terpisah.</p>
+              <p className="text-xs text-muted-foreground">Tautan login menggunakan subdomain sekolah. Pastikan DNS wildcard, HTTPS, dan virtual host VPS sudah dikonfigurasi.</p>
               {initialSlug && (
                 <>
                   <Button

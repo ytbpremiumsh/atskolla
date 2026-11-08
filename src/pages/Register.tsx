@@ -520,10 +520,10 @@ const Register = () => {
                       </motion.div>
                     )}
 
-                    {/* Subdomain / Nama Alamat Sekolah — shown once schoolData is ready */}
+                    {/* Subdomain / Alamat Website Sekolah — shown once schoolData is ready */}
                     {schoolData && (
                       <motion.div variants={itemVariants} className="space-y-2">
-                        <Label htmlFor="schoolSlug">Nama Alamat Sekolah <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="schoolSlug">Alamat Website Sekolah <span className="text-red-500">*</span></Label>
                         <div className="flex items-stretch rounded-xl overflow-hidden border border-input focus-within:ring-2 focus-within:ring-ring">
                           <Input
                             id="schoolSlug"
@@ -538,12 +538,12 @@ const Register = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5 min-h-[16px]">
-                          <p className="text-[11px] text-muted-foreground">Nama ini menjadi identitas sekolah. Link login langsung menggunakan www.atskolla.com/t/nama-sekolah/admin. Subdomain memerlukan aktivasi DNS dan hosting terpisah.</p>
+                          <p className="text-[11px] text-muted-foreground">Alamat sekolah menggunakan subdomain. Akses tersedia setelah DNS wildcard, HTTPS, dan hosting VPS dikonfigurasi.</p>
                           {slugStatus === "checking" && (
                             <><Loader2 className="h-3 w-3 animate-spin text-muted-foreground" /><span className="text-[11px] text-muted-foreground">Mengecek ketersediaan…</span></>
                           )}
                           {slugStatus === "available" && (
-                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Nama tersedia — calon subdomain: <span className="font-mono">{slug}.{rootDomain}</span></span></>
+                            <><CheckCircle2 className="h-3 w-3 text-emerald-600" /><span className="text-[11px] text-emerald-600 font-medium">Tersedia — alamat sekolah: <span className="font-mono">{slug}.{rootDomain}</span></span></>
                           )}
                           {slugStatus === "taken" && (
                             <span className="text-[11px] text-red-600 font-medium">✗ Sudah dipakai sekolah lain</span>

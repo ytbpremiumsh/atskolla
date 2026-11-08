@@ -2,8 +2,9 @@ import {it,expect,vi} from "vitest";
 import {render,screen,waitFor} from "@testing-library/react";
 import {buildTenantUrl,buildTenantSubdomainUrl,parseTenantPath,getTenantBasename,TenantProvider,useTenant} from "./tenant";
 vi.mock("@/integrations/supabase/client",()=>({supabase:{from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:"school",name:"Sekolah Contoh",slug:"smanegeri1",logo:null},error:null})})})})}}));
-it("builds working school paths instead of promising unconfigured subdomains",()=>{
- expect(buildTenantUrl("smanegeri1","/admin")).toContain("/t/smanegeri1/admin");
+it("builds canonical VPS school subdomains and validates reserved names",()=>{
+ expect(buildTenantUrl("smanegeri1","/admin")).toBe("https://smanegeri1.atskolla.com/admin");
+ expect(buildTenantUrl("smanegeri1","/login")).toBe("https://smanegeri1.atskolla.com/login");
  expect(parseTenantPath('/t/smanegeri1/admin')).toBe('smanegeri1');expect(getTenantBasename('/t/smanegeri1/admin')).toBe('/t/smanegeri1');
  expect(buildTenantSubdomainUrl('smanegeri1','/admin')).toBe('https://smanegeri1.atskolla.com/admin');
  expect(()=>buildTenantUrl('www','/admin')).toThrow();expect(()=>buildTenantUrl('../wrong','/admin')).toThrow();
