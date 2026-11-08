@@ -392,7 +392,7 @@ const Dashboard = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground tracking-wider uppercase">{s.label}</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{loading ? "..." : s.value}</p>
+                    <p className="text-xl sm:text-3xl font-bold text-foreground mt-1 truncate">{loading ? "..." : s.value}</p>
                     <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">{s.desc}</p>
                   </div>
                   <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl ${s.iconBg} flex items-center justify-center shrink-0`}>

@@ -39,7 +39,7 @@ export default function PrincipalOverview() {
   const liveNow = liveClasses.filter(c => c.status === "live");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title="Ringkasan Kepala Sekolah"
         subtitle={`${schoolName || "Sekolah"} • ${format(now, "EEEE, d MMMM yyyy • HH:mm", { locale: idLocale })} WIB`}
@@ -77,10 +77,10 @@ export default function PrincipalOverview() {
                 {liveNow.slice(0, 4).map(c => (
                   <div key={c.id} className="p-4 rounded-xl border border-border/60 bg-card space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-sm">{c.subject}</span>
+                      <span className="font-semibold text-sm truncate min-w-0">{c.subject}</span>
                       <Badge variant="secondary" className="text-[10px]">{c.startTime}-{c.endTime}</Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground">{c.className} • {c.teacher}</div>
+                    <div className="text-xs text-muted-foreground truncate">{c.className} • {c.teacher}</div>
                     <Progress value={c.progress} className="h-1.5" />
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">Hadir</span>
@@ -108,7 +108,7 @@ export default function PrincipalOverview() {
         </Card>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <QuickTile icon={ClipboardList} label="Persetujuan" value={totalApprovals} onClick={() => navigate("/kepsek/agenda")} tone="indigo" />
         <QuickTile icon={BookOpen} label="Pembelajaran" value={`${liveClasses.length} jadwal`} onClick={() => navigate("/kepsek/pembelajaran")} tone="violet" />
         <QuickTile icon={CalendarDays} label="Agenda & Aktivitas" value={`${timeline.length} aktivitas`} onClick={() => navigate("/kepsek/agenda")} tone="emerald" />
@@ -142,9 +142,9 @@ export default function PrincipalOverview() {
 function Row({ label, value, tone }: { label: string; value: string; tone?: string }) {
   const t = tone === "emerald" ? "text-emerald-600" : tone === "rose" ? "text-rose-600" : tone === "sky" ? "text-sky-600" : tone === "amber" ? "text-amber-600" : "text-foreground";
   return (
-    <div className="flex items-center justify-between py-1 border-b border-border/40 last:border-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className={`font-semibold ${t}`}>{value}</span>
+    <div className="flex items-center justify-between gap-3 py-1 border-b border-border/40 last:border-0">
+      <span className="text-muted-foreground min-w-0 truncate">{label}</span>
+      <span className={`font-semibold shrink-0 tabular-nums ${t}`}>{value}</span>
     </div>
   );
 }
@@ -157,7 +157,7 @@ function QuickTile({ icon: Icon, label, value, tone, onClick }: { icon: any; lab
     amber: "from-amber-500 to-orange-600",
   };
   return (
-    <button onClick={onClick} className="text-left p-4 rounded-2xl border border-border/50 bg-card hover:shadow-md transition-shadow group">
+    <button onClick={onClick} className="text-left p-3 sm:p-4 rounded-2xl border min-w-0 border-border/50 bg-card hover:shadow-md transition-shadow group">
       <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${tones[tone]} text-white flex items-center justify-center mb-2 shadow-sm`}>
         <Icon className="h-4 w-4" />
       </div>
