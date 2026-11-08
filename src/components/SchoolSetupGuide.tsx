@@ -1,13 +1,10 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowRight,
   CheckCircle2,
   Circle,
   RefreshCw,
   School,
-  Info,
 } from "lucide-react";
 import { buildTenantUrl, parseSubdomain } from "@/lib/tenant";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,195 +55,87 @@ export function SchoolSetupPanel({
   busy?: boolean;
   onRefresh: () => void;
 }) {
-  const [expanded, setExpanded] = useState(true);
   const steps = data ? setupSteps(data, admin) : [];
   const measured = steps.filter((s) => s.allowed && !s.optional);
   const complete = measured.filter((s) => s.done === true).length;
-  const next = measured.find((s) => s.done !== true);
+  const labels: Record<string, string> = {
+    identity: "Identitas", classes: "Kelas", students: "Siswa",
+    team: "Tim", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening",
+  };
   return (
     <section
       aria-label="Persiapan sekolah"
-      className="overflow-hidden rounded-2xl border border-primary/20 bg-card"
+      className="flex min-w-0 items-center gap-3 rounded-xl border border-primary/15 bg-card px-3 py-2"
     >
-      <div className="flex flex-wrap items-start justify-between gap-3 bg-primary/5 p-4 sm:p-5">
-        <div>
-          <h2 className="flex items-center gap-2 font-bold">
-            <School className="h-5 w-5 text-primary" />
-            Persiapan sekolah
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ikuti langkah berikut sebelum digunakan bersama guru dan wali murid.
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" disabled={busy} onClick={onRefresh}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
-          Periksa ulang
-        </Button>
+      <div className="flex shrink-0 items-center gap-2 text-xs font-semibold">
+        <School className="h-4 w-4 text-primary" aria-hidden="true" />
+        <h2>Persiapan</h2>
+        {schoolAvailable && !pending && !error && (
+          <span className="text-muted-foreground">{complete}/{measured.length}</span>
+        )}
       </div>
-      <div className="space-y-4 p-4 sm:p-5">
-        {!schoolAvailable ? (
-          <p role="alert" className="text-sm">
-            Akun belum terhubung ke sekolah. Hubungi Admin Sekolah.
-          </p>
-        ) : pending ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            Memeriksa data persiapan sekolah…
-          </p>
-        ) : error ? (
-          <p role="alert" className="text-sm text-destructive">
-            Status belum dapat dimuat. Klik Periksa ulang.
-          </p>
-        ) : (
-          <>
-            <div>
-              <div className="mb-2 flex justify-between text-xs">
-                <span>
-                  {complete} dari {measured.length} langkah memiliki data
-                  persiapan
-                </span>
-                <button
-                  className="font-semibold text-primary"
-                  aria-expanded={expanded}
-                  onClick={() => setExpanded(!expanded)}
-                >
-                  {expanded ? "Ringkas" : "Lihat langkah"}
-                </button>
-              </div>
-              <div
-                role="progressbar"
-                aria-label="Progres persiapan sekolah"
-                aria-valuenow={complete}
-                aria-valuemin={0}
-                aria-valuemax={measured.length}
-                className="h-2 overflow-hidden rounded-full bg-secondary"
-              >
-                <div
-                  className="h-full rounded-full bg-primary transition-[width]"
-                  style={{
-                    width: `${measured.length ? (complete / measured.length) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-            </div>
-            {next && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/15 bg-primary/5 p-3">
-                <div>
-                  <p className="text-xs font-semibold text-primary">
-                    LANGKAH BERIKUTNYA
-                  </p>
-                  <p className="mt-1 text-sm font-semibold">{next.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {next.done === null
-                      ? "Status belum terkonfirmasi. Buka menu untuk memeriksa datanya."
-                      : next.body}
-                  </p>
-                </div>
-                <Button size="sm" asChild>
-                  <Link to={next.url}>
-                    Lanjutkan
-                    <ArrowRight className="ml-2 h-4 w-4" />
+      {!schoolAvailable ? (
+        <p role="alert" className="text-xs">Akun belum terhubung ke sekolah.</p>
+      ) : pending ? (
+        <p role="status" className="text-xs text-muted-foreground">Memeriksa…</p>
+      ) : error ? (
+        <p role="alert" className="text-xs text-destructive">Gagal memuat. Periksa ulang.</p>
+      ) : (
+        <ol aria-label="Tahapan persiapan" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          {steps.map((step, index) => {
+            const status = !step.allowed
+              ? (step.id === "bank" ? "Dikelola Admin/Bendahara" : "Dikelola Admin Sekolah")
+              : step.done === true ? "Data tersedia"
+              : step.done === null ? "Belum terkonfirmasi" : "Belum lengkap";
+            const description = `${status}${step.optional ? " · Opsional" : ""}. ${step.body}`;
+            const content = (
+              <>
+                {step.done === true ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                ) : (
+                  <Circle className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                )}
+                <span>{index + 1}. {labels[step.id] ?? step.title}</span>
+                {step.optional && <span className="text-muted-foreground">*</span>}
+              </>
+            );
+            const style = "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium";
+            return (
+              <li key={step.id} className="shrink-0">
+                {step.allowed ? (
+                  <Link to={step.url} title={description} aria-label={`${step.title}: ${description}`}
+                    className={`${style} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
+                    {content}
                   </Link>
-                </Button>
-              </div>
-            )}
-            {expanded && (
-              <ol className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {steps.map((s, i) => (
-                  <li
-                    key={s.id}
-                    className="rounded-xl border bg-background p-3"
-                  >
-                    <div className="flex items-start gap-2">
-                      {s.done === true ? (
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                      ) : (
-                        <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                      )}
-                      <div>
-                        <h3 className="text-sm font-semibold">
-                          {i + 1}. {s.title}
-                        </h3>
-                        <p className="mt-1 text-[11px] font-medium text-primary">
-                          {!s.allowed
-                            ? (s.id === "bank" ? "Dikelola Admin/Bendahara" : "Dikelola Admin Sekolah")
-                            : s.done === true
-                              ? "Data tersedia"
-                              : s.done === null
-                                ? "Belum terkonfirmasi"
-                                : "Perlu ditindaklanjuti"}
-                          {s.optional && " · Jika digunakan"}
-                        </p>
-                        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                          {s.body}
-                        </p>
-                        {s.allowed && (
-                          <Link
-                            to={s.url}
-                            className="mt-2 inline-block text-xs font-semibold text-primary underline underline-offset-4"
-                          >
-                            Buka {s.title.toLowerCase()}
-                          </Link>
-                        )}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </>
-        )}
+                ) : (
+                  <span title={description} aria-label={`${step.title}: ${description}`}
+                    className={`${style} text-muted-foreground`}>{content}</span>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <div className="ml-auto flex shrink-0 items-center gap-1">
         {!!data?.students && (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3">
-            <div>
-              <p className="text-sm font-semibold">
-                Bagikan akses wali murid setelah data diperiksa
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Wali masuk melalui nomor kartu siswa atau WhatsApp yang
-                didaftarkan sekolah. Jangan bagikan akun Admin.
-              </p>
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(
-                    parseSubdomain() ? buildTenantUrl(parseSubdomain()!, "/login") : `${window.location.origin}/login`,
-                  );
-                  toast.success("Alamat Portal Wali Murid disalin");
-                } catch {
-                  toast.error(
-                    "Gunakan alamat website sekolah, lalu buka /login.",
-                  );
-                }
-              }}
-            >
-              Salin link wali murid
-            </Button>
-          </div>
+          <Button size="sm" variant="ghost" className="h-8 px-2 text-xs"
+            title="Salin alamat portal wali murid"
+            onClick={async () => {
+              try {
+                const slug = parseSubdomain();
+                await navigator.clipboard.writeText(slug ? buildTenantUrl(slug, "/login") : `${window.location.origin}/login`);
+                toast.success("Alamat Portal Wali Murid disalin");
+              } catch {
+                toast.error("Gunakan alamat website sekolah, lalu buka /login.");
+              }
+            }}>
+            Link wali
+          </Button>
         )}
-        <div className="flex gap-2 rounded-xl bg-secondary/50 p-3 text-xs leading-relaxed text-muted-foreground">
-          <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          <div>
-            Data tersedia belum berarti seluruh alur telah diuji. Tinjau{" "}
-            <Link
-              className="font-semibold text-primary underline"
-              to="/holidays"
-            >
-              jam absensi dan hari libur
-            </Link>
-            , lalu gunakan{" "}
-            <Link
-              className="font-semibold text-primary underline"
-              to="/panduan"
-            >
-              panduan wali murid
-            </Link>{" "}
-            untuk membagikan akses. Pembayaran online memerlukan konfigurasi
-            penyedia yang sesuai.
-          </div>
-        </div>
+        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={busy}
+          aria-label="Periksa ulang" title="Periksa ulang" onClick={onRefresh}>
+          <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} />
+        </Button>
       </div>
     </section>
   );
