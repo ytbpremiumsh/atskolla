@@ -50,7 +50,7 @@ export function getAvailableDashboards(roles: string[]): DashboardOption[] {
     out.push({
       key: "staff",
       label: "Operator",
-      description: "Operasional absensi & data",
+      description: "Data, jadwal, absensi, dan hari libur sekolah",
       path: "/dashboard",
       icon: Shield,
       gradient: "from-sky-500 to-blue-600",

@@ -158,7 +158,7 @@ function AppContent() {
                   <>
                     <DropdownMenuItem onClick={() => navigate("/select-role")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
                       <Repeat className="h-4 w-4 mr-2.5 text-muted-foreground" />
-                      Switch Dashboard
+                      Ganti dashboard
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                   </>

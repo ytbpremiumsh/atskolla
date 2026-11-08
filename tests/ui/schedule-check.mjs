@@ -24,6 +24,29 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.screenshot({ path: 'ui-previews/class-desktop.png', fullPage: true });
 
+  await page.goto(url+'?onboarding=1');
+  await page.getByRole('heading',{name:'Persiapan sekolah',exact:true}).waitFor();
+  assert.equal(await page.getByRole('link',{name:'Lanjutkan',exact:true}).getAttribute('href'),'/school-settings');
+  await page.screenshot({path:'ui-previews/setup-desktop.png',fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await page.screenshot({path:'ui-previews/setup-mobile.png',fullPage:true});
+  await page.goto(url+'?onboarding=1&operator=1');
+  assert.equal(await page.getByRole('link',{name:'Lanjutkan',exact:true}).getAttribute('href'),'/classes');
+  assert.equal(await page.getByRole('link',{name:'Buka rekening pencairan',exact:true}).count(),0);
+  await page.goto(url+'?registration=1');
+  await page.getByRole('heading',{name:'Sekolah berhasil didaftarkan',exact:true}).waitFor();
+  assert.equal(await page.getByRole('link',{name:'Masuk dan siapkan sekolah',exact:true}).getAttribute('href'),'https://contoh.atskolla.com/admin');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await page.screenshot({path:'ui-previews/registration-mobile.png',fullPage:true});
+  await page.goto(url+'?gateway=1');
+  await page.getByRole('heading',{name:'Tahapan aktivasi WhatsApp sekolah',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await page.screenshot({path:'ui-previews/gateway-mobile.png',fullPage:true});
+  await page.setViewportSize({width:1440,height:1100});
+  await page.goto(url);
+  await page.getByRole('heading', { name: 'Jadwal 7A', exact: true }).waitFor();
+
   await page.getByRole('button', {name:'Tambah massal',exact:true}).click();
   await page.getByLabel('Mapel baris 1').selectOption('s1');
   await page.getByLabel('Guru baris 1').selectOption('t1');

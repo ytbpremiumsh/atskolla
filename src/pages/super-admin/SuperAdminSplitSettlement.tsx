@@ -122,7 +122,7 @@ const SuperAdminSplitSettlement = () => {
   };
 
   const delReg = async (id: string) => {
-    if (!confirm("Hapus dari daftar rekening DOKU?")) return;
+    if (!confirm("Hapus dari registri rekening ATSkolla?")) return;
     const { error } = await supabase.from("doku_registered_accounts").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     loadRegs();
@@ -181,7 +181,7 @@ const SuperAdminSplitSettlement = () => {
       if (status === "verified") {
         const { error } = await supabase.rpc("verify_and_register_bank_account", { p_account_id: b.id });
         if (error) throw error;
-        toast.success("Rekening terverifikasi dan otomatis ditambahkan ke daftar rekening DOKU di ATSkolla.");
+        toast.success("Rekening disetujui dan masuk ke registri internal ATSkolla. Lengkapi ID resmi DOKU untuk pengaturan Split Settlement.");
       } else {
         const { data: u, error: authError } = await supabase.auth.getUser();
         if (authError || !u.user) throw new Error("Sesi berakhir. Silakan masuk kembali.");
@@ -236,7 +236,7 @@ const SuperAdminSplitSettlement = () => {
   const stats = [
     { label: "Split aktif", value: activeCount, sub: "sekolah", cls: "bg-emerald-500/10 text-emerald-600" , icon: CheckCircle2 },
     { label: "Menunggu verifikasi", value: pendingBanks.length, sub: "rekening", cls: "bg-amber-500/10 text-amber-600", icon: ShieldCheck },
-    { label: "Terdaftar di DOKU", value: regs.length, sub: "rekening", cls: "bg-primary/10 text-primary", icon: Landmark },
+    { label: "Registri Rekening ATSkolla", value: regs.length, sub: "rekening", cls: "bg-primary/10 text-primary", icon: Landmark },
     { label: "Punya rekening", value: withBankCount, sub: "sekolah", cls: "bg-sky-500/10 text-sky-600", icon: Split },
   ];
 
@@ -261,7 +261,7 @@ const SuperAdminSplitSettlement = () => {
 
       <Step n={1} icon={ShieldCheck} title="Verifikasi Pengajuan Rekening" count={pendingBanks.length}
         tone={pendingBanks.length ? "bg-amber-500" : "bg-muted"}
-        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui sekaligus menambahkannya ke daftar rekening DOKU di ATSkolla.">
+        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui dan menambahkannya ke registri internal ATSkolla. Langkah ini tidak mendaftarkan rekening ke DOKU.">
         {pendingBanks.length === 0 ? (
           <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">Tidak ada pengajuan baru.</div>
         ) : (
@@ -287,8 +287,8 @@ const SuperAdminSplitSettlement = () => {
         )}
       </Step>
 
-      <Step n={2} icon={Landmark} title="Rekening Terdaftar di DOKU" count={regs.length} tone="bg-primary"
-        desc="Rekening yang Anda verifikasi otomatis masuk ke daftar ini. Penambahan manual tetap tersedia untuk rekening lain.">
+      <Step n={2} icon={Landmark} title="Rekening Registri Rekening ATSkolla" count={regs.length} tone="bg-primary"
+        desc="Rekening yang disetujui masuk ke registri internal ATSkolla. Isi ID resmi dari DOKU setelah rekening terdaftar pada penyedia.">
         <p className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">Daftar ini tersimpan di ATSkolla. Penambahan ke daftar tidak mendaftarkan rekening ke layanan DOKU dan tidak otomatis mengaktifkan Split Settlement. Settlement ID tetap menggunakan ID resmi dari DOKU.</p>
         <div className="rounded-xl bg-muted/40 p-3 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2">
           <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />

@@ -5244,7 +5244,7 @@ export function BendaharaPencairan() {
         <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Ganti / Tambah Rekening Pencairan</DialogTitle>
-            <DialogDescription>Simpan rekening bank sekolah beserta penanggung jawab OTP.</DialogDescription>
+            <DialogDescription>Ajukan data rekening dan dokumen untuk diperiksa ATSkolla. Setelah disetujui, tetapkan rekening utama. Verifikasi ini tidak otomatis mendaftarkan rekening atau mengaktifkan Split Settlement di DOKU.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">

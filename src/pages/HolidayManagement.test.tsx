@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router-dom";
 import {beforeEach,describe,expect,it,vi} from "vitest";
 import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import HolidayManagement from "./HolidayManagement";
@@ -14,13 +15,13 @@ vi.mock("@/integrations/supabase/client",()=>({supabase:{from:(table:string)=>{
 beforeEach(()=>{cleanup();vi.clearAllMocks();mock.roles=["staff"];mock.school={holiday_mode:false,holiday_mode_label:null,holiday_days:[0],timezone:"Asia/Jakarta"};});
 describe("Operator holiday controls",()=>{
  it("shows the manual switch and saves on/off and weekly days for an operator",async()=>{
-  render(<HolidayManagement/>);const toggle=screen.getByRole("switch",{name:"Mode libur cepat"});await waitFor(()=>expect(toggle).toBeEnabled());
+  render(<MemoryRouter><HolidayManagement/></MemoryRouter>);const toggle=screen.getByRole("switch",{name:"Mode libur cepat"});await waitFor(()=>expect(toggle).toBeEnabled());
   fireEvent.click(toggle);await waitFor(()=>expect(toggle).toBeChecked());expect(mock.saved).toHaveBeenCalledWith({holiday_mode:true,holiday_mode_label:"Hari Libur"});
   fireEvent.click(toggle);await waitFor(()=>expect(toggle).not.toBeChecked());expect(mock.saved).toHaveBeenCalledWith({holiday_mode:false,holiday_mode_label:null});
   fireEvent.click(screen.getByRole("button",{name:"Minggu"}));await waitFor(()=>expect(mock.saved).toHaveBeenCalledWith({holiday_days:[]}));
  });
  it("does not allow a teacher-only account to edit",async()=>{
-  mock.roles=["teacher"];render(<HolidayManagement/>);await screen.findByText("Status absensi hari ini: Libur");
+  mock.roles=["teacher"];render(<MemoryRouter><HolidayManagement/></MemoryRouter>);await screen.findByText("Status absensi hari ini: Libur");
   expect(screen.queryByRole("switch")).not.toBeInTheDocument();expect(screen.getByRole("button",{name:"Minggu"})).toBeDisabled();
  });
 });

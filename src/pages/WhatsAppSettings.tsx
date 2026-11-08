@@ -1,3 +1,4 @@
+import { GatewaySetupStatus } from "@/components/GatewaySetupStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -114,7 +115,7 @@ const ConnectedDeviceCard = ({
         </Badge>
         <p className="font-mono text-base font-semibold text-foreground tracking-wide mt-2">{mpwaSenderNumber}</p>
         <p className="text-xs text-muted-foreground mt-1.5">
-          WhatsApp terhubung dan siap mengirim pesan otomatis
+          Perangkat tercatat terhubung. Periksa riwayat pengiriman untuk memastikan pesan diterima.
         </p>
       </div>
 
@@ -545,6 +546,7 @@ const WhatsAppSettings = () => {
       <div className="mx-auto max-w-4xl space-y-6">
         <PageHeader icon={MessageSquare} title="WhatsApp" subtitle="Gateway, template pesan, broadcast group, dan riwayat pengiriman" />
 
+        <GatewaySetupStatus method={gatewayType} configured={!!integrationId} connected={gatewayType === "mpwa" && mpwaConnected} enabled={waEnabled}/>
         {/* Status Card */}
         <Card className="border-0 shadow-card overflow-hidden">
           <CardContent className="p-4">

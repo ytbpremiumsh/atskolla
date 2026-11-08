@@ -1,3 +1,4 @@
+import { ReadOnlyAccessNotice } from "@/components/ReadOnlyAccessNotice";
 import { PageHeader } from "@/components/PageHeader";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,7 +53,7 @@ const toDateKey = (d: Date) =>
 
 const KalenderAkademik = () => {
   const { profile, roles } = useAuth();
-  const canEdit = roles.includes("school_admin") || roles.includes("super_admin");
+  const canEdit = roles.includes("school_admin") || roles.includes("super_admin") || roles.includes("staff");
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,6 +245,7 @@ const KalenderAkademik = () => {
 
   return (
     <div className="space-y-6">
+      <ReadOnlyAccessNotice canEdit={canEdit}/>
       <PageHeader
         icon={BookOpen}
         title="Kalender Akademik Sekolah"
@@ -273,7 +275,7 @@ const KalenderAkademik = () => {
               </>
             ) : (
               <>
-                Penambahan atau perubahan kalender akademik hanya bisa dilakukan oleh <span className="font-semibold text-foreground">Operator Sekolah</span>.
+                Penambahan atau perubahan kalender akademik hanya bisa dilakukan oleh <span className="font-semibold text-foreground">Admin Sekolah atau Operator</span>.
               </>
             )}
           </p>

@@ -1,3 +1,4 @@
+import { RegistrationSuccess } from "@/components/RegistrationSuccess";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref') || '';
+  const [registeredUrl, setRegisteredUrl] = useState<string | null>(null);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -272,15 +274,10 @@ const Register = () => {
         return;
       }
 
-      if (data.school_slug) {
-        // Use the school's own subdomain URL (wildcard SSL is provisioned on the root domain).
-        const targetUrl = `${window.location.protocol}//${data.school_slug}.${rootDomain}/admin`;
-        toast.success(`Registrasi berhasil! Login di ${data.school_slug}.${rootDomain}/admin`, { duration: 10000 });
-        setTimeout(() => { window.location.href = targetUrl; }, 2500);
-      } else {
-        toast.success("Registrasi berhasil! Silakan login.");
-        navigate("/admin");
-      }
+      const loginUrl = data.school_slug
+        ? `${window.location.protocol}//${data.school_slug}.${rootDomain}/admin`
+        : "/admin";
+      setRegisteredUrl(loginUrl); setRegistering(false);
 
     } catch (err: any) {
       toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
@@ -296,6 +293,8 @@ const Register = () => {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as Easing } },
   };
+
+  if (registeredUrl) return <RegistrationSuccess loginUrl={registeredUrl} schoolName={schoolData?.name || "Sekolah Anda"} />;
 
   return (
     <div className="min-h-screen flex relative overflow-hidden bg-white text-[#0b1020]">
@@ -330,9 +329,10 @@ const Register = () => {
         {/* Title */}
         <div className="text-center mb-5">
           <h1 className="text-2xl sm:text-3xl font-bold text-[#0b1020]">Daftar Sekolah Baru</h1>
-          <p className="text-[#0b1020]/60 text-sm mt-1.5">Mulai digitalisasi sekolah Anda dalam hitungan menit</p>
+          <p className="text-[#0b1020]/60 text-sm mt-1.5">Buat akun pengelola utama, lalu siapkan data sekolah melalui panduan di dashboard.</p>
         </div>
 
+        <div className="mb-5 rounded-xl border border-indigo-100 bg-indigo-50 p-3 text-xs leading-relaxed text-indigo-900">Pendaftaran ini untuk <strong>sekolah baru</strong>. Akun pertama menjadi Admin Sekolah, apa pun jabatan Anda. Jika sekolah sudah terdaftar, minta akun kepada pengelola sekolah. Wali murid menggunakan <Link to="/login" className="font-semibold underline">Portal Wali Murid</Link>.</div>
         {/* Step Indicator */}
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-5 flex-wrap">
           {[

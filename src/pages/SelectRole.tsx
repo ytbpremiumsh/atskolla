@@ -81,7 +81,7 @@ export default function SelectRole() {
               Pilih Dashboard
             </h1>
             <p className="text-xs text-muted-foreground mt-2 text-center">
-              Halo, <span className="font-medium text-foreground">{profile?.full_name || "User"}</span> — pilih dashboard yang ingin Anda buka.
+              Halo, <span className="font-medium text-foreground">{profile?.full_name || "User"}</span> — pilih dashboard sesuai tugas saat ini. Satu akun dapat memiliki beberapa peran; berpindah dashboard tidak membuat akun atau sekolah baru.
             </p>
           </div>
 

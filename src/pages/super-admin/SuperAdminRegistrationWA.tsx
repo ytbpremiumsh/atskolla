@@ -1,3 +1,4 @@
+import { GatewaySetupStatus } from "@/components/GatewaySetupStatus";
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -524,6 +525,7 @@ const SuperAdminRegistrationWA = () => {
             </TabsContent>
 
             <TabsContent value="mpwa" className="mt-4 space-y-4">
+              <GatewaySetupStatus configured={!!settings.mpwa_platform_api_key} connected={isConnected} enabled={true} platform/>
               <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
                 <p className="text-[11px] text-muted-foreground">
                   MPWA digunakan untuk mengirim pesan platform (registrasi, OTP) dan juga sebagai fallback global untuk sekolah. Hubungkan nomor WhatsApp di bawah ini agar bisa mengirim pesan.

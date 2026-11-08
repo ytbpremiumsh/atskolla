@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { ReadOnlyAccessNotice } from "@/components/ReadOnlyAccessNotice";
 import { PageHeader } from "@/components/PageHeader";
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -145,13 +147,16 @@ const HolidayManagement = () => {
         <p className="text-sm text-muted-foreground">{status.reason || "Absensi mengikuti jam operasional sekolah."}</p>
         <p className="text-xs text-muted-foreground">Mode libur cepat, hari libur mingguan, dan tanggal libur pada Kalender Akademik adalah pengaturan terpisah. Mematikan satu pengaturan tidak menghapus pengaturan lainnya.</p>
       </Card>}
+      <ReadOnlyAccessNotice canEdit={canEdit}/>
+      <div className="grid gap-3 sm:grid-cols-3 text-xs"><div className="rounded-xl border bg-card p-3"><p className="font-semibold">Libur manual</p><p className="mt-1 text-muted-foreground">ON/OFF pada Mode Libur Cepat di bawah ini. Berlaku sampai dinonaktifkan.</p></div><div className="rounded-xl border bg-card p-3"><p className="font-semibold">Libur mingguan</p><p className="mt-1 text-muted-foreground">Klik hari pada Hari Libur Sekolah. Pilihan berlaku setiap minggu.</p></div><div className="rounded-xl border bg-card p-3"><p className="font-semibold">Libur pada tanggal tertentu</p><p className="mt-1 text-muted-foreground">Ubah tanggal atau rentang libur di <Link to="/kalender-akademik" className="font-semibold text-primary underline">Kalender Akademik</Link>.</p></div></div>
+      {status?.isHoliday&&!status.mode&&<p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Mode manual sudah OFF. Status hari ini tetap libur karena pengaturan mingguan atau kalender. {status.reason} Ubah sumber pengaturan tersebut bila hari ini seharusnya aktif.</p>}
       {/* Toggle Mode Libur */}
       {canEdit && (
         <Card className="border-0 shadow-card">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
               <PowerOff className="h-4 w-4 text-primary" />
-              Toggle Mode Libur Cepat
+              Mode Libur Cepat — ON / OFF manual
             </CardTitle>
           </CardHeader>
           <CardContent>

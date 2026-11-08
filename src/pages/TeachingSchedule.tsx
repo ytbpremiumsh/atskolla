@@ -1,3 +1,4 @@
+import { ReadOnlyAccessNotice } from "@/components/ReadOnlyAccessNotice";
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -301,11 +302,11 @@ export default function TeachingSchedule({ view = "full" }: { view?: "class" | "
 
   if (loadError) return <Card className="p-8 text-center"><p className="text-sm text-muted-foreground">{loadError}</p><Button variant="outline" className="mt-4" onClick={fetchData}>Coba lagi</Button></Card>;
 
-  if (view === "class") return <><ClassScheduleBoard classes={classes} schedules={schedules} subjects={subjects} teachers={teachers} isAdmin={isAdmin} onAdd={(defaults) => { setEditingSchedule(null); setFormData({ teacher_id: "", subject_id: "", class_id: "", day_of_week: 0, start_time: "07:00", end_time: "08:00", room: "", notes: "", ...defaults }); setScheduleDialog(true); }} onEdit={openEditSchedule} onDelete={deleteSchedule} onBulk={() => setBulkDialog(true)} />{scheduleEditor}{bulkEditor}</>;
+  if (view === "class") return <><ReadOnlyAccessNotice canEdit={isAdmin}/><ClassScheduleBoard classes={classes} schedules={schedules} subjects={subjects} teachers={teachers} isAdmin={isAdmin} onAdd={(defaults) => { setEditingSchedule(null); setFormData({ teacher_id: "", subject_id: "", class_id: "", day_of_week: 0, start_time: "07:00", end_time: "08:00", room: "", notes: "", ...defaults }); setScheduleDialog(true); }} onEdit={openEditSchedule} onDelete={deleteSchedule} onBulk={() => setBulkDialog(true)} />{scheduleEditor}{bulkEditor}</>;
 
   return (
     <div className="space-y-4">
-      {scheduleEditor}{bulkEditor}
+      <ReadOnlyAccessNotice canEdit={isAdmin}/>{scheduleEditor}{bulkEditor}
       <PageHeader icon={CalendarDays} title="Jadwal Lengkap" subtitle="Seluruh jadwal mengajar sekolah, dikelompokkan berdasarkan hari." />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

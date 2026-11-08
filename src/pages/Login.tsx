@@ -376,7 +376,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                 </div>
               )}
               <h2 className="font-bold text-[#0b1020] text-2xl sm:text-3xl">
-                {mode === "school" ? "Selamat Datang" : "Portal Wali Murid"}
+                {mode === "school" ? "Login Sekolah & Petugas" : "Portal Wali Murid"}
               </h2>
               <p className="text-[#0b1020]/60 text-sm mt-1">
                 {mode === "school" ? "Masuk ke akun Anda untuk melanjutkan" : "Pantau aktivitas ananda dengan mudah"}
@@ -413,12 +413,13 @@ const Login = ({ forcedMode }: LoginProps) => {
                 )}
 
                 {/* Cross-link to the other portal when a forced mode is active */}
+                {mode === "school" && <p className="mb-3 text-xs text-muted-foreground">Admin, Operator, Guru, Kepala Sekolah, dan Bendahara masuk dengan akun yang dibuat sekolah. Pilih dashboard sesuai tugas setelah login jika memiliki beberapa peran. <Link to="/login" className="font-semibold text-primary underline">Untuk Wali Murid</Link>.</p>}
                 {forcedMode && (
                   <div className="mb-5 text-center text-xs text-muted-foreground">
                     {forcedMode === "school" ? (
                       <>Orang tua / wali murid? <Link to={tenantSlug ? "/login" : "/login"} className="text-primary font-semibold hover:underline">Masuk di sini</Link></>
                     ) : (
-                      <>Admin sekolah / Guru? <Link to="/admin" className="text-primary font-semibold hover:underline">Masuk di sini</Link></>
+                      <>Admin / Operator / Guru / Bendahara? <Link to="/admin" className="text-primary font-semibold hover:underline">Masuk di sini</Link></>
                     )}
                   </div>
                 )}
@@ -428,7 +429,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                   <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1">
                     <Shield className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
-                      {mode === "school" ? "Koneksi Aman" : "Login via WhatsApp"}
+                      {mode === "school" ? "Koneksi Aman" : parentMethod === "card" ? "Login dengan nomor kartu" : "Login WhatsApp + OTP"}
                     </span>
                   </div>
                 </div>
@@ -530,7 +531,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                                     className="h-12 pl-10 bg-secondary/50 border-border focus:bg-background focus:border-primary focus:ring-primary/20 rounded-xl" />
                                 </div>
                                 <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                  <Sparkles className="h-3 w-3" /> Gunakan nomor yang terdaftar di sekolah ananda.
+                                  <Sparkles className="h-3 w-3" /> Gunakan nomor WhatsApp wali yang didaftarkan sekolah. Jika belum terdaftar atau berganti nomor, minta Operator memperbarui data wali.
                                 </p>
                               </div>
                             ) : (
@@ -544,7 +545,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                                     className="h-12 pl-10 font-mono tracking-wider bg-secondary/50 border-border focus:bg-background focus:border-primary focus:ring-primary/20 rounded-xl" />
                                 </div>
                                 <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                                  <Sparkles className="h-3 w-3" /> Nomor Kartu Identitas yang terdapat pada halaman kartu pelajar
+                                  <Sparkles className="h-3 w-3" /> Gunakan 16 digit nomor kartu pada Kartu Pelajar Digital, bukan NIS/NISN. Jika belum punya, minta nomor kartu kepada Operator sekolah.
                                 </p>
                               </div>
                             )}
