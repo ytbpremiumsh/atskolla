@@ -61,7 +61,17 @@ export function SchoolSetupPanel({
   const next = measured.find((step) => step.done !== true);
   const labels: Record<string, string> = {
     identity: "Identitas", classes: "Kelas", students: "Siswa",
-    team: "Tim", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening",
+    team: "Tim", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening", payments: "Bendahara",
+  };
+  const guides: Record<string, string> = {
+    identity: "Lengkapi kontak dan zona waktu sekolah.",
+    classes: "Tambahkan kelas sebelum mengisi siswa.",
+    students: "Isi siswa, nomor kartu, dan WhatsApp wali.",
+    team: "Tambahkan guru dan operator sesuai tugas.",
+    schedules: "Atur mapel, guru, dan jam per kelas.",
+    whatsapp: "Hubungkan perangkat untuk notifikasi wali.",
+    payments: data?.treasurers ? "Bendahara tersedia; atur pembayaran SPP dan Tagihan." : "Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
+    bank: "Ajukan rekening dan lengkapi ID DOKU.",
   };
   return (
     <section
@@ -78,8 +88,8 @@ export function SchoolSetupPanel({
           </Link>
         )}
       </div>
-      <div className="flex min-w-0 items-center gap-3 px-3 py-2">
-        <div className="flex shrink-0 items-center gap-2 text-xs font-semibold">
+      <div className="flex min-w-0 items-start gap-3 px-3 py-2">
+        <div className="flex min-h-9 shrink-0 items-center gap-2 text-xs font-semibold">
           <School className="h-4 w-4 text-primary" aria-hidden="true" />
           <h2>Persiapan</h2>
           {schoolAvailable && !pending && !error && (
@@ -93,7 +103,7 @@ export function SchoolSetupPanel({
         ) : error ? (
           <p role="alert" className="text-xs text-destructive">Gagal memuat. Periksa ulang.</p>
         ) : (
-          <ol aria-label="Tahapan persiapan" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+          <ol aria-label="Tahapan persiapan" className="flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto">
             {steps.map((step, index) => {
               const status = !step.allowed
                 ? (step.id === "bank" ? "Dikelola Admin/Bendahara" : "Dikelola Admin Sekolah")
@@ -113,7 +123,7 @@ export function SchoolSetupPanel({
               );
               const style = "inline-flex min-h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium";
               return (
-                <li key={step.id} className="shrink-0">
+                <li key={step.id} className="w-40 shrink-0">
                   {step.allowed ? (
                     <Link to={step.url} title={description} aria-label={`${step.title}: ${description}`}
                       className={`${style} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
@@ -123,6 +133,10 @@ export function SchoolSetupPanel({
                     <span title={description} aria-label={`${step.title}: ${description}`}
                       className={`${style} text-muted-foreground`}>{content}</span>
                   )}
+                  <p className="px-2 pb-1 text-[11px] leading-relaxed text-muted-foreground">
+                    {guides[step.id]}
+                    {!step.allowed && <span className="block">Dikelola Admin Sekolah.</span>}
+                  </p>
                 </li>
               );
             })}

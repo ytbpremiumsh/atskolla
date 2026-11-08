@@ -4,6 +4,7 @@ export interface SetupSnapshot {
   classes: number | null;
   students: number | null;
   team: number | null;
+  treasurers: number | null;
   schedules: number | null;
   whatsapp: "connected" | "configured" | "missing" | null;
   bank: "linked" | "verified" | "pending" | "missing" | null;
@@ -13,6 +14,7 @@ export const emptySetup: SetupSnapshot = {
   classes: null,
   students: null,
   team: null,
+  treasurers: null,
   schedules: null,
   whatsapp: null,
   bank: null,
@@ -55,11 +57,11 @@ export async function fetchSchoolSetup(
       const p = await supabase
         .from("profiles")
         .select("user_id")
-        .eq("school_id", schoolId)
-        .neq("user_id", userId);
+        .eq("school_id", schoolId);
       if (p.error) throw p.error;
       if (!p.data?.length) {
         result.team = 0;
+        result.treasurers = 0;
         return;
       }
       const r = await supabase
@@ -70,9 +72,13 @@ export async function fetchSchoolSetup(
           p.data.map((x) => x.user_id),
         );
       if (r.error) throw r.error;
+      result.treasurers = new Set(
+        r.data?.filter((x) => x.role === "bendahara").map((x) => x.user_id),
+      ).size;
       result.team = new Set(
         r.data
-          ?.filter((x) =>
+          ?.filter((x) => x.user_id !== userId)
+          .filter((x) =>
             [
               "staff",
               "teacher",
@@ -190,6 +196,19 @@ export function setupSteps(data: SetupSnapshot, admin: boolean) {
           ? null
           : data.whatsapp === "connected" || data.whatsapp === "configured",
       allowed: true,
+    },
+    {
+      id: "payments",
+      title: "Bendahara & pembayaran",
+      body: data.treasurers === null
+        ? "Periksa akun Bendahara untuk menyiapkan pembayaran SPP dan Tagihan."
+        : data.treasurers > 0
+          ? "Bendahara tersedia. Lanjutkan pengaturan tagihan, rekening, dan penyedia pembayaran."
+          : "Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
+      url: "/bendahara-manage",
+      done: data.treasurers === null ? null : data.treasurers > 0,
+      allowed: admin,
+      optional: true,
     },
     {
       id: "bank",

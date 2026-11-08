@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { emptySetup, setupSteps, fetchSchoolSetup } from "./schoolSetup";
-const mock = vi.hoisted(() => ({ failed: "", calls: [] as string[] }));
+const mock = vi.hoisted(() => ({ failed: "", calls: [] as string[], treasurer: false }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (table: string) => {
@@ -28,6 +28,10 @@ vi.mock("@/integrations/supabase/client", () => ({
                             whatsapp: "",
                             email: "",
                           }
+                        : table === "profiles" && mock.treasurer
+                          ? [{ user_id: "user" }]
+                        : table === "user_roles" && mock.treasurer
+                          ? [{ user_id: "user", role: "bendahara" }]
                         : table === "school_integrations"
                           ? {
                               gateway_type: "mpwa",
@@ -45,6 +49,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 beforeEach(() => {
   mock.failed = "";
+  mock.treasurer = false;
   mock.calls = [];
 });
 describe("school preparation guidance", () => {
@@ -61,12 +66,20 @@ describe("school preparation guidance", () => {
     expect(steps.filter((s) => !s.allowed).map((s) => s.id)).toEqual([
       "identity",
       "team",
+      "payments",
       "bank",
     ]);
     expect(steps.find((s) => s.id === "bank")?.done).toBe(false);
     expect(steps.find((s) => s.id === "whatsapp")?.body).toContain(
       "belum dikonfirmasi",
     );
+  });
+  it("counts a current-user treasurer without counting them as an additional team member", async () => {
+    mock.treasurer = true;
+    const snapshot = await fetchSchoolSetup("school", "user", true);
+    expect(snapshot.team).toBe(0);
+    expect(snapshot.treasurers).toBe(1);
+    expect(setupSteps(snapshot, true).find((step) => step.id === "payments")?.done).toBe(true);
   });
   it("keeps a failed count unknown while completing independent reads and skips privileged operator queries", async () => {
     mock.failed = "classes";
