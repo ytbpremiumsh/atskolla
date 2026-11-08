@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Radio, Plus, Copy, RefreshCw, Trash2, ShieldOff, Building2, Users, Cpu, AlertTriangle, Activity,
   Nfc, CheckCircle2, XCircle, Search, User as UserIcon, Loader2, School as SchoolIcon,

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Loader2, Mail, Save, Eye, Send } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -21,7 +21,7 @@ type Tpl = {
 
 const TYPES: { key: string; label: string; hint: string }[] = [
   { key: "signup", label: "Konfirmasi Pendaftaran", hint: "Dikirim saat user mendaftar — email wajib divalidasi sebelum akun bisa dipakai." },
-  { key: "recovery", label: "Reset Password", hint: "Dikirim ketika user meminta reset password." },
+  { key: "recovery", label: "atur ulang kata sandi", hint: "Dikirim ketika user meminta reset password." },
   { key: "magiclink", label: "Magic Link Login", hint: "Login tanpa password via tautan email." },
   { key: "invite", label: "Undangan", hint: "Dikirim ketika mengundang user baru." },
   { key: "email_change", label: "Perubahan Email", hint: "Konfirmasi saat user mengubah alamat email." },

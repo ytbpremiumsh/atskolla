@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Nfc, Loader2, Smartphone } from "lucide-react";
 import { useNfcScanner } from "@/hooks/useNfcScanner";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 
 interface Props {

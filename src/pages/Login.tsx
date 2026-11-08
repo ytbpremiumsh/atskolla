@@ -9,7 +9,7 @@ import {
   Eye, EyeOff, Loader2, ArrowRight, Lock, Mail, Shield, QrCode, Scan, ArrowLeft,
   Phone, MessageSquare, Sparkles, Users, Calendar, ScanFace, Wallet, BarChart3, MessageCircle, LogIn,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import BackendStatusBanner, { isBackendNetworkError } from "@/components/BackendStatusBanner";
 import { useTenant, buildTenantUrl, getRootDomain } from "@/lib/tenant";
@@ -114,7 +114,7 @@ const Login = ({ forcedMode }: LoginProps) => {
           setRecheckKey((k) => k + 1);
           toast.error("Server backend sedang gangguan/timeout. Silakan coba lagi sebentar.");
         } else if (error.includes("Invalid login credentials")) {
-          toast.error("Email atau password salah. Pastikan email sudah terverifikasi.");
+          toast.error("Email atau kata sandi salah. Pastikan email sudah terverifikasi.");
         } else if (error.includes("Email not confirmed")) {
           toast.error("Email belum diverifikasi. Silakan cek inbox email Anda.");
         } else {
@@ -299,7 +299,7 @@ const Login = ({ forcedMode }: LoginProps) => {
         >
           <ArrowLeft className="h-4 w-4" /> Kembali
         </button>
-        
+
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
@@ -454,7 +454,7 @@ const Login = ({ forcedMode }: LoginProps) => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</Label>
+                        <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Kata sandi</Label>
                         <div className="relative group">
                           <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                           <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password}
@@ -477,7 +477,8 @@ const Login = ({ forcedMode }: LoginProps) => {
                           <span className="text-xs font-medium text-muted-foreground">Ingat Saya</span>
                         </label>
                         <Link to="/forgot-password" className="text-xs text-primary hover:underline font-medium">
-                          Lupa Password?
+
+                          Lupa Kata sandi?
                         </Link>
                       </div>
                       <Button type="submit" disabled={loading}

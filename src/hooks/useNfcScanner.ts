@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 /**
  * Web NFC scanner hook (Android Chrome). iOS Safari tidak mendukung Web NFC.

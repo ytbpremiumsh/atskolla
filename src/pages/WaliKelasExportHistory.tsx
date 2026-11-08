@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { PremiumGate } from "@/components/PremiumGate";
@@ -36,7 +36,7 @@ const STATUS_EXCEL_COLORS: Record<string, { bg: string; fg: string }> = {
 const WaliKelasExportHistory = () => {
   const { user, profile } = useAuth();
   const features = useSubscriptionFeatures();
-  
+
 
   const [assignments, setAssignments] = useState<{ class_name: string; school_id: string }[]>([]);
   const [selectedClass, setSelectedClass] = useState<string>("");

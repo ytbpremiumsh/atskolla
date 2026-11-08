@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Save, Split, Search, Landmark, AlertTriangle, CheckCircle2, ShieldCheck, XCircle, Plus, Trash2, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 type Bank = {
   id: string;
@@ -73,7 +73,7 @@ const SuperAdminSplitSettlement = () => {
   const saveRegistry = async () => {
     if (!editingRegistry || registrySaveBusy.current) return;
     const value = registrySettlementId.trim().toUpperCase();
-    if (!value || !ID_PATTERN.test(value)) { toast.error("Masukkan Settlement ID resmi dari DOKU dengan format BNK-..."); return; }
+    if (!value || !ID_PATTERN.test(value)) { toast.error("Masukkan Settlement ID resmi dari penyedia pembayaran dengan format BNK-..."); return; }
     registrySaveBusy.current = true;setRegistrySaving(true);
     try {
       let update = supabase.from("doku_registered_accounts").update({ settlement_id: value }).eq("id", editingRegistry.id);
@@ -181,7 +181,7 @@ const SuperAdminSplitSettlement = () => {
       if (status === "verified") {
         const { error } = await supabase.rpc("verify_and_register_bank_account", { p_account_id: b.id });
         if (error) throw error;
-        toast.success("Rekening disetujui dan masuk ke registri internal ATSkolla. Lengkapi ID resmi DOKU untuk pengaturan Split Settlement.");
+        toast.success("Rekening disetujui dan masuk ke registri internal ATSkolla. Lengkapi ID resmi penyedia pembayaran untuk pengaturan Split Settlement.");
       } else {
         const { data: u, error: authError } = await supabase.auth.getUser();
         if (authError || !u.user) throw new Error("Sesi berakhir. Silakan masuk kembali.");
@@ -244,7 +244,7 @@ const SuperAdminSplitSettlement = () => {
     <div className="space-y-5">
       <div className="rounded-2xl bg-primary/5 border border-primary/10 p-4 text-sm text-muted-foreground">
         <span className="font-semibold text-foreground">Cara kerja: </span>
-        nominal SPP dikirim otomatis ke rekening sekolah, biaya admin masuk ke rekening utama ATSkolla di DOKU.
+        nominal SPP dikirim otomatis ke rekening sekolah, biaya admin masuk ke rekening utama ATSkolla di penyedia pembayaran.
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -261,7 +261,7 @@ const SuperAdminSplitSettlement = () => {
 
       <Step n={1} icon={ShieldCheck} title="Verifikasi Pengajuan Rekening" count={pendingBanks.length}
         tone={pendingBanks.length ? "bg-amber-500" : "bg-muted"}
-        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui dan menambahkannya ke registri internal ATSkolla. Langkah ini tidak mendaftarkan rekening ke DOKU.">
+        desc="Periksa rekening dan lampirannya. Klik Verifikasi untuk menyetujui dan menambahkannya ke registri internal ATSkolla. Langkah ini tidak mendaftarkan rekening ke penyedia pembayaran.">
         {pendingBanks.length === 0 ? (
           <div className="rounded-xl border border-dashed p-4 text-center text-sm text-muted-foreground">Tidak ada pengajuan baru.</div>
         ) : (
@@ -288,8 +288,8 @@ const SuperAdminSplitSettlement = () => {
       </Step>
 
       <Step n={2} icon={Landmark} title="Rekening Registri Rekening ATSkolla" count={regs.length} tone="bg-primary"
-        desc="Rekening yang disetujui masuk ke registri internal ATSkolla. Isi ID resmi dari DOKU setelah rekening terdaftar pada penyedia.">
-        <p className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">Daftar ini tersimpan di ATSkolla. Penambahan ke daftar tidak mendaftarkan rekening ke layanan DOKU dan tidak otomatis mengaktifkan Split Settlement. Settlement ID tetap menggunakan ID resmi dari DOKU.</p>
+        desc="Rekening yang disetujui masuk ke registri internal ATSkolla. Isi ID resmi dari penyedia pembayaran setelah rekening terdaftar pada penyedia.">
+        <p className="rounded-xl border border-primary/15 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">Daftar ini tersimpan di ATSkolla. Penambahan ke daftar tidak mendaftarkan rekening ke layanan penyedia pembayaran dan tidak otomatis mengaktifkan Split Settlement. Settlement ID tetap menggunakan ID resmi dari penyedia pembayaran.</p>
         <div className="rounded-xl bg-muted/40 p-3 grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1.2fr_auto] gap-2">
           <Input placeholder="Nama bank (mis. BSI)" value={reg.bank_name} onChange={(e) => setReg({ ...reg, bank_name: e.target.value })} />
           <Input placeholder="Nomor rekening" inputMode="numeric" value={reg.account_number} onChange={(e) => setReg({ ...reg, account_number: e.target.value })} />
@@ -305,7 +305,7 @@ const SuperAdminSplitSettlement = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{r.bank_name} <span className="font-mono font-normal">{r.account_number}</span></p>
                   <p className="text-xs text-muted-foreground truncate">a.n. {r.account_holder || "-"}</p>
-                  {r.settlement_id ? <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p> : <p className="text-[11px] text-amber-700 dark:text-amber-400">Settlement ID DOKU belum diisi</p>}
+                  {r.settlement_id ? <p className="text-[11px] font-mono text-muted-foreground">{r.settlement_id}</p> : <p className="text-[11px] text-amber-700 dark:text-amber-400">Settlement ID penyedia pembayaran belum diisi</p>}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
                   <Button type="button" size="sm" variant="outline" onClick={() => editRegistry(r)} disabled={registrySaving} className="gap-1.5"><Pencil className="h-3.5 w-3.5" />Edit</Button>
@@ -319,10 +319,10 @@ const SuperAdminSplitSettlement = () => {
 
       <Dialog open={!!editingRegistry} onOpenChange={open => { if (!open && !registrySaveBusy.current) setEditingRegistry(null); }}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>Edit Settlement ID DOKU</DialogTitle><DialogDescription>Isi ID resmi dari dashboard DOKU untuk rekening berikut.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Edit Settlement ID penyedia pembayaran</DialogTitle><DialogDescription>Isi ID resmi dari dashboard penyedia pembayaran untuk rekening berikut.</DialogDescription></DialogHeader>
           <div className="space-y-1 rounded-xl border bg-muted/40 p-3 text-sm"><p className="font-semibold">{editingRegistry?.bank_name} <span className="font-mono">{editingRegistry?.account_number}</span></p><p className="text-muted-foreground">a.n. {editingRegistry?.account_holder || "-"}</p></div>
           <form className="space-y-4" onSubmit={event => { event.preventDefault();saveRegistry(); }}>
-            <div className="space-y-2"><Label htmlFor="registry-settlement-id">Settlement ID</Label><Input id="registry-settlement-id" autoFocus autoComplete="off" placeholder="BNK-xxxx-xxxxxxxxxxxxx" value={registrySettlementId} disabled={registrySaving} onChange={event => setRegistrySettlementId(event.target.value)} className="font-mono" /><p className="text-xs text-muted-foreground">ID ini tidak dibuat oleh tombol Verifikasi. Salin ID milik rekening yang sama dari DOKU.</p></div>
+            <div className="space-y-2"><Label htmlFor="registry-settlement-id">Settlement ID</Label><Input id="registry-settlement-id" autoFocus autoComplete="off" placeholder="BNK-xxxx-xxxxxxxxxxxxx" value={registrySettlementId} disabled={registrySaving} onChange={event => setRegistrySettlementId(event.target.value)} className="font-mono" /><p className="text-xs text-muted-foreground">ID ini tidak dibuat oleh tombol Verifikasi. Salin ID milik rekening yang sama dari penyedia pembayaran.</p></div>
             <p className="rounded-lg bg-primary/5 p-3 text-xs text-muted-foreground">Setelah tersimpan, ID tersedia di Langkah 3. Untuk mengaktifkan atau mengganti Split Settlement sekolah, periksa nilainya lalu klik Simpan di Langkah 3.</p>
             <div className="flex justify-end gap-2"><Button type="button" variant="outline" disabled={registrySaving} onClick={() => setEditingRegistry(null)}>Batal</Button><Button type="submit" disabled={registrySaving || !registrySettlementId.trim()}>{registrySaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Simpan ID</Button></div>
           </form>
@@ -330,7 +330,7 @@ const SuperAdminSplitSettlement = () => {
       </Dialog>
 
       <Step n={3} icon={Split} title="Aktifkan Split per Sekolah" tone="bg-emerald-500"
-        desc="Tempel Settlement ID (BNK-...) dari DOKU untuk rekening sekolah, lalu simpan. Rekening harus sudah terverifikasi.">
+        desc="Tempel Settlement ID (BNK-...) dari penyedia pembayaran untuk rekening sekolah, lalu simpan. Rekening harus sudah terverifikasi.">
         <div className="relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari sekolah..." className="pl-9" />

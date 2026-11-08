@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { PremiumGate } from "@/components/PremiumGate";
 import * as XLSX from "xlsx";
@@ -166,9 +166,9 @@ const ManageStaff = () => {
   }, [schoolId]);
 
   const handleCreate = async () => {
-    if (!formName || !formEmail || !formPassword) { toast.error("Nama, email, dan password harus diisi"); return; }
+    if (!formName || !formEmail || !formPassword) { toast.error("Nama, email, dan kata sandi harus diisi"); return; }
     if (!schoolId) { toast.error("Data sekolah belum dimuat, silakan tunggu sebentar"); return; }
-    if (formPassword.length < 6) { toast.error("Password minimal 6 karakter"); return; }
+    if (formPassword.length < 6) { toast.error("Kata sandi minimal 6 karakter"); return; }
     const selectedRoles: string[] = [];
     if (formRoles.staff) selectedRoles.push("staff");
     if (formRoles.teacher) selectedRoles.push("teacher");
@@ -708,7 +708,7 @@ const ManageStaff = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Password</Label>
+              <Label>Kata sandi</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Minimal 6 karakter" type="password" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} className="pl-9" />
@@ -775,7 +775,7 @@ const ManageStaff = () => {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
                     className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-[#5B6CF9] text-white flex items-center justify-center shadow-lg border-2 border-background hover:bg-[#4c5ded] transition disabled:opacity-50"
-                    title="Upload foto untuk Face Recognition"
+                    title="Unggah foto untuk Pengenalan wajah"
                   >
                     {uploadingPhoto ? <Loader2 className="h-3 w-3 animate-spin" /> : <Camera className="h-3 w-3" />}
                   </button>
@@ -790,7 +790,7 @@ const ManageStaff = () => {
                     <>
                       <h3 className="font-bold text-lg">{selectedStaff.full_name}</h3>
                       {getRoleBadges(selectedStaff.roles)}
-                      <p className="text-[10px] text-muted-foreground mt-1">Klik ikon kamera untuk upload foto Face Recognition</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">Klik ikon kamera untuk unggah foto Pengenalan wajah</p>
                     </>
                   )}
                 </div>
@@ -859,7 +859,7 @@ const ManageStaff = () => {
                     )}
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Password Baru</Label>
+                    <Label className="text-xs">Kata sandi Baru</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Kosongkan jika tidak diubah" type="password" className="pl-9" />
@@ -926,7 +926,7 @@ const ManageStaff = () => {
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><FileSpreadsheet className="h-5 w-5 text-primary" /> Import Massal</DialogTitle>
-            <DialogDescription>Unduh template, isi data, lalu upload untuk membuat banyak akun sekaligus.</DialogDescription>
+            <DialogDescription>Unduh template, isi data, lalu unggah untuk membuat banyak akun sekaligus.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2">
@@ -935,7 +935,7 @@ const ManageStaff = () => {
                 <li>Unduh template Excel di bawah ini</li>
                 <li>Isi kolom: <span className="font-mono">full_name, email, password, role, phone</span></li>
                 <li>Kolom <span className="font-mono">role</span>: <span className="font-mono">teacher</span>, <span className="font-mono">staff</span>, atau <span className="font-mono">bendahara</span></li>
-                <li>Hapus baris contoh, lalu upload file</li>
+                <li>Hapus baris contoh, lalu unggah file</li>
               </ol>
               <Button variant="outline" size="sm" className="w-full mt-2" onClick={downloadTemplate}>
                 <Download className="h-4 w-4 mr-2" /> Unduh Template Excel
@@ -943,7 +943,7 @@ const ManageStaff = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold">Upload File (.xlsx / .csv)</Label>
+              <Label className="text-xs font-semibold">Unggah File (.xlsx / .csv)</Label>
               <Input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileSelect} disabled={importing} />
             </div>
 

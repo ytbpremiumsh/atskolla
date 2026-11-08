@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, GraduationCap, TrendingUp, AlertTriangle, ChevronRight, QrCode, School, BarChart3, Zap, Users, Crown, X, Sparkles, CalendarOff, Copy, Info, LogIn } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { LiveScheduleWidget } from "@/components/dashboard/LiveScheduleWidget";
 // SchoolAnnouncementsWidget removed from main attendance dashboard
 import { Progress } from "@/components/ui/progress";
@@ -324,7 +324,7 @@ const Dashboard = () => {
         }
       />
 
-      
+
 
 
 

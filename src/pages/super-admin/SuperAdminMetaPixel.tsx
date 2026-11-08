@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, Activity, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 const KEYS = [
   "meta_pixel_enabled",
@@ -57,7 +57,7 @@ export default function SuperAdminMetaPixel() {
       .from("platform_settings")
       .upsert(rows, { onConflict: "key" });
     if (error) toast.error("Gagal menyimpan: " + error.message);
-    else toast.success("Konfigurasi Meta Pixel disimpan. Refresh landing page untuk efek.");
+    else toast.success("Konfigurasi Meta Pixel disimpan. Muat ulang landing page untuk efek.");
     setSaving(false);
   };
 

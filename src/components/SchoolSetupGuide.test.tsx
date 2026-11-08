@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, it, expect, vi } from "vitest";
 import { SchoolSetupPanel } from "./SchoolSetupGuide";
@@ -54,4 +54,13 @@ it("shows only the first incomplete stage guidance and merges treasurer into Gur
   expect(screen.getByRole("link", { name: /^Jadwal pelajaran:/ })).toHaveAttribute("aria-current", "step");
   expect(screen.getByText("Atur mapel, guru, dan jam per kelas.")).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Tambah Bendahara" })).not.toBeInTheDocument();
+});
+it("allows finishing after account submission without claiming provider verification, and hides the card", () => {
+  const data = { ...emptySetup, identity: true, classes: 1, students: 1, team: 1, schedules: 1, whatsapp: "connected" as const, bank: "pending" as const };
+  render(<MemoryRouter><SchoolSetupPanel admin data={data} onRefresh={() => {}} /></MemoryRouter>);
+  expect(screen.queryByText("Link wali")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Selesai" })).toBeInTheDocument();
+  expect(screen.getByText(/Verifikasi rekening diproses terpisah/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
+  expect(screen.queryByRole("region", { name: "Persiapan sekolah" })).not.toBeInTheDocument();
 });

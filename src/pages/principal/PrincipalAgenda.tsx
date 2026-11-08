@@ -12,7 +12,7 @@ import { id as idLocale } from "date-fns/locale";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 
 const TYPE_STYLES: Record<string, { icon: any; badge: string; ring: string }> = {

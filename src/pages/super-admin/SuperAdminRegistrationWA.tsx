@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Save, Send, MessageSquare, Info, Smartphone, Settings2, Power, QrCode, Wifi, WifiOff, RefreshCw, Unplug, BellRing, Wallet, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 
@@ -559,7 +559,7 @@ const SuperAdminRegistrationWA = () => {
                       <h4 className="font-bold text-sm text-foreground">Hubungkan WhatsApp Platform</h4>
                     </div>
                     <Badge className={`text-[10px] gap-1 ${isConnected ? "bg-success/10 text-success border-success/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"}`}>
-                      {isConnected ? <><Wifi className="h-2.5 w-2.5" /> Connected</> : <><WifiOff className="h-2.5 w-2.5" /> Disconnected</>}
+                      {isConnected ? <><Wifi className="h-2.5 w-2.5" />  Terhubung</> : <><WifiOff className="h-2.5 w-2.5" />  Terputus</>}
                     </Badge>
                   </div>
 

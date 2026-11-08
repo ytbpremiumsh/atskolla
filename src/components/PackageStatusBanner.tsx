@@ -21,8 +21,8 @@ export function PackageStatusBanner() {
             Status Paket: Menunggu Aktivasi
           </div>
           <p className="text-[12.5px] text-amber-800/90 dark:text-amber-200/80 mt-1 leading-relaxed">
-            Paket <b>ATSkolla Payment (Gratis)</b> mengharuskan penggunaan modul Pembayaran Online ATSkolla.
-            Fitur absensi (Scan QR, Face Recognition, RFID) dinonaktifkan sementara sampai aktivitas pembayaran kembali digunakan,
+            Paket <b>ATSkolla Payment (Gratis)</b>  mengharuskan penggunaan modul Pembayaran Online ATSkolla.
+            Fitur absensi (Scan QR, Pengenalan wajah, RFID) dinonaktifkan sementara sampai aktivitas pembayaran kembali digunakan,
             atau Anda beralih ke Paket Mandiri.
           </p>
           <div className="flex flex-wrap gap-2 mt-3">

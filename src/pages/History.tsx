@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import * as XLSX from "xlsx";
 import {
   PieChart, Pie, Cell, LineChart, Line, BarChart, Bar,

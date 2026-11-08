@@ -5,7 +5,7 @@ import { format, startOfMonth, subMonths, endOfMonth } from "date-fns";
 import { loadPrincipalSummary } from "@/lib/principalSummary";
 import { fetchAllPages } from "@/lib/pagedQuery";
 import { getLocalDateString, getLocalTimeString } from "@/lib/dateLocal";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export interface PrincipalStats {
   totalStudents: number;

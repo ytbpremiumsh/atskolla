@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CreditCard, KeyRound, Loader2, Save, ShieldCheck, Webhook, Copy, Check, Eye, EyeOff, Zap, RefreshCw, QrCode, Store, Banknote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 type GatewayId = "mayar" | "doku" | "ipaymu";
 
@@ -30,7 +30,7 @@ const SuperAdminPaymentGateway = () => {
   const [mayarInput, setMayarInput] = useState("");
   const [showMayarKey, setShowMayarKey] = useState(false);
 
-  // Doku
+  // Penyedia Utama
   const [dokuEnv, setDokuEnv] = useState<"production" | "sandbox">("production");
   const [dokuClientId, setDokuClientId] = useState("");
   const [dokuSecretKey, setDokuSecretKey] = useState("");
@@ -162,7 +162,7 @@ const SuperAdminPaymentGateway = () => {
         body: { action: "set", updates },
       });
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message);
-      toast.success("Kredensial Doku tersimpan");
+      toast.success("Kredensial Penyedia Utama tersimpan");
       setDokuClientId("");
       setDokuSecretKey("");
       fetchAll();
@@ -231,7 +231,7 @@ const SuperAdminPaymentGateway = () => {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Payment Gateway</h1>
         <p className="text-muted-foreground text-sm">
-          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail). Tersedia 3 gateway: Mayar, Doku, iPaymu.
+          Kelola gateway pembayaran SPP wali murid per metode (VA, QRIS, Retail). Tersedia 3 gateway: Mayar, Penyedia Utama, iPaymu.
         </p>
       </div>
 
@@ -278,7 +278,7 @@ const SuperAdminPaymentGateway = () => {
                     </SelectItem>
                     <SelectItem value="doku">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">Doku</span>
+                        <span className="font-medium">Penyedia Utama</span>
                         {!(hasDokuClient && hasDokuSecret) && <span className="text-[9px] text-amber-600">(belum lengkap)</span>}
                       </div>
                     </SelectItem>
@@ -376,7 +376,7 @@ const SuperAdminPaymentGateway = () => {
         </CardContent>
       </Card>
 
-      {/* DOKU CONFIG */}
+      {/* penyedia pembayaran CONFIG */}
       <Card className="border-0 shadow-card">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-3">
@@ -384,8 +384,8 @@ const SuperAdminPaymentGateway = () => {
               <CreditCard className="h-5 w-5 text-orange-600" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-foreground">Konfigurasi Doku Jokul</h3>
-              <p className="text-xs text-muted-foreground">Kredensial dari dashboard Doku → Integrasi → API</p>
+              <h3 className="font-semibold text-foreground">Konfigurasi Penyedia Utama</h3>
+              <p className="text-xs text-muted-foreground">Kredensial dari dashboard Penyedia Utama → Integrasi → API</p>
             </div>
             <Button size="sm" variant="outline" onClick={() => handleTest("doku")} disabled={testing === "doku"}>
               {testing === "doku" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
@@ -445,7 +445,7 @@ const SuperAdminPaymentGateway = () => {
           </div>
 
           <div className="rounded-lg bg-secondary/40 p-3">
-            <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"><Webhook className="h-3 w-3" /> Webhook URL Doku (WAJIB didaftarkan)</p>
+            <p className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1.5"><Webhook className="h-3 w-3" /> Webhook URL Penyedia Utama (WAJIB didaftarkan)</p>
             <div className="flex items-center gap-2 mt-1.5">
               <code className="text-[11px] bg-background px-2 py-1 rounded border truncate flex-1">{dokuNotifyUrl}</code>
               <Button size="sm" variant="outline" className="h-7" onClick={() => copyUrl(dokuNotifyUrl, "doku")}>
@@ -453,7 +453,7 @@ const SuperAdminPaymentGateway = () => {
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground mt-2">
-              Pasang di Doku Dashboard → Configurations → Notification URL.
+              Pasang di Penyedia Utama Dashboard → Configurations → Notification URL.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <Label className="text-[10px]">Verifikasi signature webhook:</Label>
@@ -473,7 +473,7 @@ const SuperAdminPaymentGateway = () => {
             </Button>
             <Button onClick={handleSaveDoku} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-              Simpan Doku
+              Simpan Penyedia Utama
             </Button>
           </div>
         </CardContent>

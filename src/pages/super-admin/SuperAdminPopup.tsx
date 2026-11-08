@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Save, Upload, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   DEFAULT_POPUP,
   POPUP_SETTING_KEY,
@@ -101,7 +101,7 @@ export default function SuperAdminPopup() {
           <div className="space-y-1.5">
             <Label>Gambar (opsional)</Label>
             <div className="flex items-center gap-2">
-              <Input value={cfg.image_url} onChange={(e) => set("image_url", e.target.value)} placeholder="https://… atau upload" />
+              <Input value={cfg.image_url} onChange={(e) => set("image_url", e.target.value)} placeholder="https://… atau unggah" />
               <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => fileRef.current?.click()}>
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               </Button>

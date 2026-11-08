@@ -14,7 +14,7 @@ import { Megaphone, Plus, Pin, AlertTriangle, Info, Sparkles, Loader2, Pencil, T
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Navigate } from "react-router-dom";

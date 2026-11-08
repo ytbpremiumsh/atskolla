@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { CalendarOff, PowerOff, Info, Clock, Save, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { fetchSchoolHolidayStatus, saveSchoolHolidaySettings, type HolidayStatus } from "@/lib/schoolHoliday";
 
 const HolidayManagement = () => {

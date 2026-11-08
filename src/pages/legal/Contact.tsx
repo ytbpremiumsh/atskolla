@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Mail, Phone, MapPin, Clock, MessageCircle, Send, Building2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import LegalLayout from "./LegalLayout";
 import { cn } from "@/lib/utils";
 
@@ -95,7 +95,7 @@ export default function Contact() {
           <Building2 className="h-6 w-6 text-[#5B6CF9]" />
         </div>
         <div>
-          
+
           <h2 className="font-display text-xl font-bold text-slate-900 mt-0.5">ATSkolla</h2>
           <p className="text-sm text-slate-600 mt-1">Platform Digital Sekolah Terintegrasi untuk sekolah di seluruh Indonesia.</p>
         </div>

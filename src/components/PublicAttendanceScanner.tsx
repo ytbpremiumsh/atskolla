@@ -8,7 +8,7 @@ import {
   Loader2, AlertTriangle, CreditCard, LogIn, LogOut, Lock,
   SwitchCamera, Nfc,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import jsQR from "jsqr";
 import { useNfcScanner } from "@/hooks/useNfcScanner";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -335,8 +335,8 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
       <Card className="border-0 shadow-card overflow-hidden sticky top-24">
         {/* Mode indicator */}
         <div className={`px-3 py-2 flex items-center justify-center gap-2 text-sm font-bold ${
-          currentMode === "pulang" 
-            ? "bg-warning/15 text-warning" 
+          currentMode === "pulang"
+            ? "bg-warning/15 text-warning"
             : "bg-success/15 text-success"
         }`}>
           <ModeIcon className="h-4 w-4" />
@@ -373,7 +373,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
               <div className="relative bg-black" style={{ minHeight: 320 }}>
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
                   style={{ minHeight: 320, WebkitTransform: "scaleX(1)" }} />
-                
+
                 {/* Scanner Overlay - Premium viewfinder */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Corner brackets */}
@@ -409,7 +409,7 @@ const PublicAttendanceScanner = ({ schoolId, onAttendanceRecorded, currentMode =
                   <div className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg">
                     <ScanLine className="h-3 w-3 text-white/70" />
                     {canFaceRecognition && <UserCheck className="h-3 w-3 text-white/70 ml-0.5" />}
-                    
+
                   </div>
                 </div>
 

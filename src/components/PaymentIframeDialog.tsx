@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, X, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface PaymentIframeDialogProps {
   open: boolean;

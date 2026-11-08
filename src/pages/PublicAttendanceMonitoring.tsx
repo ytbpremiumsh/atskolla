@@ -279,7 +279,7 @@ const PublicAttendanceMonitoring = () => {
                 <p className={`text-xl lg:text-2xl font-mono font-bold tabular-nums ${theme.text}`}>{currentTime}</p>
                 <div className="flex items-center justify-end gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className={`text-[9px] ${theme.textMuted}`}>Auto-refresh 5s</span>
+                  <span className={`text-[9px] ${theme.textMuted}`}>Pembaruan otomatis 5 detik</span>
                 </div>
               </div>
             </div>
@@ -572,7 +572,7 @@ const PublicAttendanceMonitoring = () => {
         <div className={`text-center py-4 border-t ${theme.footerBorder}`}>
           <div className={`flex items-center justify-center gap-2 text-xs ${theme.textMuted}`}>
             <LiveDot />
-            <span>ATSkolla — Absensi Digital Sekolah • Auto-refresh setiap 5 detik</span>
+            <span>ATSkolla — Absensi Digital Sekolah • Pembaruan otomatis setiap 5 detik</span>
           </div>
         </div>
       </div>

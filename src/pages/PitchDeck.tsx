@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  Download, Presentation, Lightbulb, AlertTriangle, Rocket, Clock, 
-  TrendingUp, Shield, Package, CheckCircle2, Users, BarChart3, 
+import {
+  Download, Presentation, Lightbulb, AlertTriangle, Rocket, Clock,
+  TrendingUp, Shield, Package, CheckCircle2, Users, BarChart3,
   ChevronDown, ChevronUp, ArrowLeft, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -429,7 +429,8 @@ const PitchDeck = () => {
             <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/30 mb-4">Pitch Deck 2026</Badge>
             <h1 className="text-3xl md:text-5xl font-bold mb-3">ATSkolla</h1>
             <p className="text-lg text-blue-200/80 max-w-2xl mx-auto">
-              Sistem Absensi Digital Sekolah Berbasis Barcode, Face Recognition & WhatsApp Notification
+
+              Sistem Absensi Digital Sekolah Berbasis Barcode, Pengenalan wajah & WhatsApp Notification
             </p>
           </motion.div>
         </div>
@@ -532,7 +533,7 @@ const PitchDeck = () => {
           <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 border-0 text-white">
             <CardContent className="p-8 text-center">
               <h3 className="text-2xl font-bold mb-2">Siap Presentasi?</h3>
-              <p className="text-blue-100 mb-6">Download Pitch Deck dalam format PowerPoint (.pptx)</p>
+              <p className="text-blue-100 mb-6">Unduh Pitch Deck dalam format PowerPoint (.pptx)</p>
               <Button size="lg" variant="secondary" className="gap-2" onClick={handleDownloadPPT} disabled={downloading}>
                 <Download className="w-5 h-5" />
                 {downloading ? "Membuat file..." : "Download Pitch Deck (.pptx)"}

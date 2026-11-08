@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Mail, Send, Loader2, Server, FileText, Megaphone, History } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -166,7 +166,7 @@ export default function SuperAdminEmail() {
               <div><Label>SMTP Host</Label><Input value={s.smtp_host} onChange={e => setS({ ...s, smtp_host: e.target.value })} placeholder="smtp.gmail.com" /></div>
               <div><Label>Port</Label><Input type="number" value={s.smtp_port} onChange={e => setS({ ...s, smtp_port: parseInt(e.target.value) || 587 })} /></div>
               <div><Label>Username</Label><Input value={s.smtp_username} onChange={e => setS({ ...s, smtp_username: e.target.value })} /></div>
-              <div><Label>Password</Label><Input type="password" value={s.smtp_password} onChange={e => setS({ ...s, smtp_password: e.target.value })} placeholder="App password" /></div>
+              <div><Label>Kata sandi</Label><Input type="password" value={s.smtp_password} onChange={e => setS({ ...s, smtp_password: e.target.value })} placeholder="Kata sandi aplikasi" /></div>
               <div><Label>From Email</Label><Input value={s.from_email} onChange={e => setS({ ...s, from_email: e.target.value })} placeholder="noreply@domain.com" /></div>
               <div><Label>From Name</Label><Input value={s.from_name} onChange={e => setS({ ...s, from_name: e.target.value })} /></div>
               <div className="flex items-center gap-2"><Switch checked={s.smtp_secure} onCheckedChange={v => setS({ ...s, smtp_secure: v })} /> <Label>TLS/STARTTLS</Label></div>

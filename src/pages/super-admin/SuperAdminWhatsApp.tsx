@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Save, Loader2, Send, School, Pencil, Plus, Smartphone, Wifi, WifiOff, ArrowDownToLine, ArrowUpFromLine, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 
 interface IntegrationData {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Loader2, Save, Plus, Trash2, ChevronDown, ChevronUp, Upload, ArrowLeft, ImagePlus, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -430,7 +430,7 @@ function ImagePicker({
     setBusy(false);
     if (newUrl) {
       onChange(newUrl);
-      toast.success("Gambar di-upload");
+      toast.success("Gambar di-unggah");
     }
     e.target.value = "";
   }
@@ -476,7 +476,7 @@ function ImagePicker({
             <input type="file" accept="image/*" className="hidden" onChange={handleFile} disabled={busy} />
             <div className="flex flex-col items-center justify-center py-8 gap-2 cursor-pointer text-slate-400 hover:text-[#5B6CF9]">
               {busy ? <Loader2 className="h-6 w-6 animate-spin" /> : <ImagePlus className="h-8 w-8" />}
-              <span className="text-sm font-semibold">Klik untuk upload gambar</span>
+              <span className="text-sm font-semibold">Klik untuk unggah gambar</span>
               <span className="text-xs">Maks 5MB · JPG/PNG/WEBP</span>
             </div>
           </label>

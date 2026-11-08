@@ -20,7 +20,7 @@ const WHY_CHOOSE = [
   { icon: Monitor, title: "Dashboard Real-Time", desc: "Pantau kehadiran seluruh siswa secara live dari satu layar." },
   { icon: Bell, title: "Notifikasi WhatsApp", desc: "Wali murid otomatis ternotifikasi saat anak hadir di sekolah." },
   { icon: BarChart3, title: "Rekap Otomatis", desc: "Laporan harian, mingguan, bulanan otomatis siap export Excel & PDF." },
-  { icon: Shield, title: "Face Recognition AI", desc: "Teknologi pengenalan wajah untuk keamanan dan kemudahan absensi." },
+  { icon: Shield, title: "Pengenalan wajah AI", desc: "Teknologi pengenalan wajah untuk keamanan dan kemudahan absensi." },
   { icon: Smartphone, title: "Responsif & Mudah", desc: "Akses dari HP, tablet, atau komputer tanpa install aplikasi." },
 ];
 

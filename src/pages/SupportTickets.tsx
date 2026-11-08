@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { TicketPlus, Loader2, MessageSquare, Clock, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import TicketThread from "@/components/tickets/TicketThread";
 

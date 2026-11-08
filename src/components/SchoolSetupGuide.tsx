@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -6,9 +7,8 @@ import {
   RefreshCw,
   School,
 } from "lucide-react";
-import { buildTenantUrl, parseSubdomain } from "@/lib/tenant";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Button } from "@/components/ui/button";
 import {
   fetchSchoolSetup,
@@ -28,6 +28,8 @@ export function SchoolSetupGuide() {
   if (!allowed) return null;
   return (
     <SchoolSetupPanel
+      key={`${profile?.school_id}:${user?.id}`}
+      dismissalKey={`atskolla:setup-complete:${profile?.school_id}:${user?.id}`}
       data={query.data}
       admin={admin}
       schoolAvailable={!!profile?.school_id}
@@ -40,6 +42,7 @@ export function SchoolSetupGuide() {
 }
 export function SchoolSetupPanel({
   data,
+  dismissalKey,
   admin,
   schoolAvailable = true,
   pending = false,
@@ -48,6 +51,7 @@ export function SchoolSetupPanel({
   onRefresh,
 }: {
   data?: SetupSnapshot;
+  dismissalKey?: string;
   admin: boolean;
   schoolAvailable?: boolean;
   pending?: boolean;
@@ -55,9 +59,15 @@ export function SchoolSetupPanel({
   busy?: boolean;
   onRefresh: () => void;
 }) {
+  const [dismissed, setDismissed] = useState(() => {
+    try { return !!dismissalKey && localStorage.getItem(dismissalKey) === "true"; }
+    catch { return false; }
+  });
   const steps = data ? setupSteps(data, admin) : [];
   const measured = steps.filter((s) => s.allowed && !s.optional);
   const complete = measured.filter((s) => s.done === true).length;
+  const bankSubmitted = !!data && ["pending", "verified", "linked"].includes(data.bank ?? "");
+  const canFinish = !!data && measured.length > 0 && complete === measured.length && (!admin || bankSubmitted);
   const next = measured.find((step) => step.done !== true)
     ?? steps.find((step) => step.allowed && step.done !== true);
   const labels: Record<string, string> = {
@@ -71,8 +81,11 @@ export function SchoolSetupPanel({
     team: "Tambahkan guru dan staff sesuai tugas. Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
     schedules: "Atur mapel, guru, dan jam per kelas.",
     whatsapp: "Hubungkan perangkat untuk notifikasi wali.",
-    bank: "Ajukan rekening dan lengkapi ID DOKU.",
+    bank: bankSubmitted
+      ? "Rekening sudah diajukan. Verifikasi rekening diproses terpisah."
+      : "Tambahkan rekening pencairan sekolah.",
   };
+  if (dismissed) return null;
   return (
     <section
       aria-label="Persiapan sekolah"
@@ -80,13 +93,9 @@ export function SchoolSetupPanel({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-primary/10 bg-primary/5 px-3 py-2">
         <p className="text-xs font-medium">
-          Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem.
+          {canFinish ? "Tahapan persiapan selesai. Klik Selesai untuk menutup panduan ini." : "Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem."}
         </p>
-        {schoolAvailable && !pending && !error && next && (
-          <Link to={next.url} className="rounded text-xs font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-            Lanjutkan: {labels[next.id] ?? next.title}
-          </Link>
-        )}
+
       </div>
       <div className="flex min-w-0 items-start gap-3 px-3 py-2">
         <div className="flex min-h-9 shrink-0 items-center gap-2 text-xs font-semibold">
@@ -141,20 +150,19 @@ export function SchoolSetupPanel({
           </ol>
         )}
         <div className="ml-auto flex shrink-0 items-center gap-1">
-          {!!data?.students && (
-            <Button size="sm" variant="ghost" className="h-8 px-2 text-xs"
-              title="Salin alamat portal wali murid"
-              onClick={async () => {
-                try {
-                  const slug = parseSubdomain();
-                  await navigator.clipboard.writeText(slug ? buildTenantUrl(slug, "/login") : `${window.location.origin}/login`);
-                  toast.success("Alamat Portal Wali Murid disalin");
-                } catch {
-                  toast.error("Gunakan alamat website sekolah, lalu buka /login.");
-                }
-              }}>
-              Link wali
-            </Button>
+          {schoolAvailable && !pending && !error && (
+            canFinish ? (
+              <Button size="sm" className="h-8 px-3 text-xs" onClick={() => {
+                try { if (dismissalKey) localStorage.setItem(dismissalKey, "true"); }
+                catch { /* Still allow dismissing for this visit. */ }
+                setDismissed(true);
+                toast.success("Tahapan persiapan selesai.");
+              }}>Selesai</Button>
+            ) : next ? (
+              <Button size="sm" className="h-8 px-3 text-xs" asChild>
+                <Link to={next.url}>Lanjutkan: {labels[next.id] ?? next.title}</Link>
+              </Button>
+            ) : null
           )}
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={busy}
             aria-label="Periksa ulang" title="Periksa ulang" onClick={onRefresh}>

@@ -55,11 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="text-sm text-muted-foreground mt-1">
               Ada masalah saat menampilkan halaman ini. Coba muat ulang atau kembali ke beranda.
             </p>
-            {this.state.error?.message && (
-              <p className="text-xs text-muted-foreground/70 mt-3 font-mono break-all">
-                {this.state.error.message}
-              </p>
-            )}
+
           </div>
           <div className="flex gap-2 justify-center">
             <Button onClick={this.reload} className="gap-2">

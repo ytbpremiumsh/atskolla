@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PageHeader } from "@/components/PageHeader";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Package, RefreshCw, Settings2, Search } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -20,7 +20,7 @@ interface SchoolRow {
 const FEATURE_OPTIONS = [
   { key: "attendance_create", label: "Buat Absensi Baru" },
   { key: "scan_qr", label: "Scan QR/Barcode" },
-  { key: "face_recognition", label: "Face Recognition" },
+  { key: "face_recognition", label: "Pengenalan wajah" },
   { key: "rfid", label: "RFID Attendance" },
 ];
 

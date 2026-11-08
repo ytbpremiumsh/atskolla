@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 const SchoolSettings = () => {
   const { profile } = useAuth();
@@ -408,8 +408,8 @@ const SchoolSettings = () => {
                 </div>
               ) : (
                 <Button variant="outline" size="sm" className="opacity-60 cursor-not-allowed"
-                  onClick={() => toast.error("Fitur Upload Logo tersedia di paket School ke atas. Silakan upgrade langganan.")}>
-                  <Upload className="h-4 w-4 mr-1" /> Upload Logo
+                  onClick={() => toast.error("Fitur Unggah Logo tersedia di paket School ke atas. Silakan upgrade langganan.")}>
+                  <Upload className="h-4 w-4 mr-1" />  Unggah Logo
                   <Lock className="h-3 w-3 ml-1 text-warning" />
                 </Button>
               )}

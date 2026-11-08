@@ -16,7 +16,7 @@ import { groupSplitByDay, payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { computeAvailableSaldo, sumDisbursed, sumPendingPayout, countPendingPayout, isOfflinePayment, DEFAULT_WITHDRAW_FEE } from "@/lib/bendaharaSaldo";
 import {
   TrendingUp, Wallet, AlertCircle, CheckCircle2, Loader2, Plus, Search, Link as LinkIcon,
@@ -2782,7 +2782,7 @@ export function BendaharaTransaksi() {
   };
   useEffect(load, [profile?.school_id]);
 
-  
+
 
   const enriched = useMemo(() => {
     return students.map(s => {
@@ -3773,7 +3773,7 @@ export function BendaharaSPPDetail() {
                           </div>
                         ) : dStatus === "paid" ? (
                           <div className="flex flex-nowrap gap-1 justify-end">
-                            <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
+                            <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Unduh Invoice">
                               {busy === `pdf-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Invoice</span></>}
                             </Button>
                             {flags.wa && formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).isOffline && inv.parent_phone && (
@@ -3915,7 +3915,7 @@ export function BendaharaSPPDetail() {
                             </div>
                           ) : dStatus === "paid" ? (
                             <div className="flex flex-nowrap gap-1 justify-end">
-                              <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Download Invoice">
+                              <Button size="sm" variant="outline" className="h-8 px-2.5" disabled={busy === `pdf-${inv.id}`} onClick={() => downloadPdf(inv)} title="Unduh Invoice">
                                 {busy === `pdf-${inv.id}` ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">Invoice</span></>}
                               </Button>
                               {flags.wa && formatPaymentMethod(inv.payment_method, (inv as any).payment_channel).isOffline && inv.parent_phone && (
@@ -4331,11 +4331,11 @@ export function BendaharaImportExport() {
                 <p className="text-sm font-semibold">Langkah 1 — Unduh Template</p>
                 <p className="text-xs text-muted-foreground">Template berisi sheet Referensi (daftar siswa & kelas Anda)</p>
               </div>
-              <Button variant="outline" onClick={downloadTemplate}><FileText className="h-4 w-4 mr-2" /> Download Template</Button>
+              <Button variant="outline" onClick={downloadTemplate}><FileText className="h-4 w-4 mr-2" />  Unduh Template</Button>
             </div>
           </div>
           <div className="rounded-lg border-2 border-dashed border-muted-foreground/30 p-4">
-            <p className="text-sm font-semibold mb-2">Langkah 2 — Upload File</p>
+            <p className="text-sm font-semibold mb-2">Langkah 2 — Unggah File</p>
             <Input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="max-w-sm" />
             <p className="text-[11px] text-muted-foreground mt-2">Format: <code className="bg-muted px-1 rounded">nis, nama_siswa, kelas, tahun_ajaran, bulan, tahun, nominal, tanggal_jatuh_tempo, denda</code></p>
           </div>
@@ -4392,7 +4392,7 @@ export function BendaharaSaldo() {
   const { profile } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [settlements, setSettlements] = useState<any[]>([]);
-  
+
   const [loading, setLoading] = useState(true);
   const syncingRef = useRef(false);
 
@@ -5244,7 +5244,7 @@ export function BendaharaPencairan() {
         <DialogContent className="w-[95vw] max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Ganti / Tambah Rekening Pencairan</DialogTitle>
-            <DialogDescription>Ajukan data rekening dan dokumen untuk diperiksa ATSkolla. Setelah disetujui, tetapkan rekening utama. Verifikasi ini tidak otomatis mendaftarkan rekening atau mengaktifkan Split Settlement di DOKU.</DialogDescription>
+            <DialogDescription>Ajukan data rekening dan dokumen untuk diperiksa ATSkolla. Setelah disetujui, tetapkan rekening utama. Pengajuan akan diperiksa sebelum rekening dapat digunakan untuk pencairan.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">

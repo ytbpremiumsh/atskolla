@@ -20,7 +20,7 @@ import {
   CheckCircle2, Clock, XCircle, Loader2, Eye, RefreshCcw, AlertCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";
 import {
@@ -365,7 +365,8 @@ export default function SuperAdminBendahara() {
             className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-xl text-xs"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCcw className="h-4 w-4 mr-2" />}
-            Refresh
+
+            Muat ulang
           </Button>
         }
       />

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import atskollaLogo from "@/assets/Logo_atskolla.png";
 import { downloadCardAsJpg } from "@/lib/downloadCard";
 

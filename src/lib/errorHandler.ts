@@ -1,4 +1,5 @@
-import { toast } from "sonner";
+import { indonesianMessage } from "./indonesianMessages";
+import { toast } from "@/lib/toast";
 
 /**
  * Central error normalization + user-facing toast.
@@ -42,7 +43,7 @@ export function normalizeError(err: unknown): NormalizedError {
     message = "Anda tidak memiliki izin untuk aksi ini.";
   }
 
-  return { message, code, original: err };
+  return { message: indonesianMessage(message) as string, code, original: err };
 }
 
 /**

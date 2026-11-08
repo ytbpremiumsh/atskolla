@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { PremiumGate } from "@/components/PremiumGate";
 
@@ -387,7 +387,7 @@ const ManageWaliKelas = () => {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs">Password Baru</Label>
+                    <Label className="text-xs">Kata sandi Baru</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input value={editPassword} onChange={(e) => setEditPassword(e.target.value)} placeholder="Kosongkan jika tidak diubah" type="password" className="pl-9" />

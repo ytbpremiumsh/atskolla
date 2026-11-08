@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, Upload, X, Globe, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 /* ── Landing Theme Selector ── */
 function LandingThemeSelector() {
@@ -116,7 +116,7 @@ function BrandingSettings() {
     const ext = file.name.split(".").pop();
     const path = `branding/${key}-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("landing-assets").upload(path, file);
-    if (error) { toast.error("Gagal upload"); setUploading(null); return; }
+    if (error) { toast.error("Gagal unggah"); setUploading(null); return; }
     const { data: urlData } = supabase.storage.from("landing-assets").getPublicUrl(path);
     const url = urlData.publicUrl;
     if (key === "favicon_url") setFaviconUrl(url);
@@ -137,7 +137,7 @@ function BrandingSettings() {
     const { error } = await supabase.from("platform_settings").upsert(rows, { onConflict: "key" });
     if (error) toast.error("Gagal menyimpan: " + error.message);
     else {
-      toast.success("Branding berhasil disimpan! Refresh halaman untuk melihat perubahan.");
+      toast.success("Branding berhasil disimpan! Muat ulang halaman untuk melihat perubahan.");
       // Update favicon immediately
       let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
       if (!link) { link = document.createElement("link"); link.rel = "icon"; document.head.appendChild(link); }
@@ -158,7 +158,7 @@ function BrandingSettings() {
         </div>
       )}
       <div className="flex gap-2 items-center">
-        <Input value={value} onChange={(e) => setter(e.target.value)} placeholder="URL gambar atau upload" className="text-xs" />
+        <Input value={value} onChange={(e) => setter(e.target.value)} placeholder="URL gambar atau unggah" className="text-xs" />
         <input type="file" accept="image/*" id={`branding-${key}`} className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(key, f); }} />
         <Button type="button" variant="outline" size="sm" disabled={uploading === key} onClick={() => document.getElementById(`branding-${key}`)?.click()}>
           {uploading === key ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
@@ -421,7 +421,8 @@ const SuperAdminLanding = () => {
                         ) : (
                           <Upload className="h-3 w-3 mr-1" />
                         )}
-                        Upload Gambar
+
+                        Unggah Gambar
                       </Button>
                     </div>
                   </div>

@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { BookOpen, Plus, TrendingUp, TrendingDown, Wallet, Loader2, Download, Trash2, Zap, Receipt, Landmark, ArrowRight } from "lucide-react";
 import XLSXStyle from "xlsx-js-style";
 import { formatPaymentMethodLabel } from "@/lib/paymentMethod";

@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Loader2, Plus, Trash2, Wallet, Banknote, CheckCircle2, AlertCircle } from "lucide-react";
 
 const fmtIDR = (n: number) => `Rp ${(n || 0).toLocaleString("id-ID")}`;

@@ -11,7 +11,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { PaymentIframeDialog } from "@/components/PaymentIframeDialog";
 import { PageHeader } from "@/components/PageHeader";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useWaCreditEnabled } from "@/hooks/useWaCreditEnabled";
 
 const WaCredit = () => {

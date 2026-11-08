@@ -177,7 +177,8 @@ function AppContent() {
                 )}
                 <DropdownMenuItem onClick={() => navigate("/account-settings")} className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">
                   <KeyRound className="h-4 w-4 mr-2.5 text-muted-foreground" />
-                  Ganti Password
+
+                  Ganti Kata sandi
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="rounded-xl mx-1 px-3 py-2.5 cursor-pointer">

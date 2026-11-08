@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { AlertTriangle, Users, GraduationCap, Loader2, Send } from "lucide-react";
 import { StatCard } from "./BendaharaPages";
 
@@ -275,7 +275,7 @@ export default function BendaharaTunggakan() {
       <Card className="border-0 shadow-sm overflow-hidden">
         <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">
           <h3 className="text-sm font-bold">Daftar Siswa Menunggak</h3>
-          
+
         </div>
         <div className="overflow-x-auto">
           <Table>

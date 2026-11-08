@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import TicketThread from "@/components/tickets/TicketThread";
 
@@ -54,7 +54,7 @@ const SuperAdminTickets = () => {
   const handleStatusChange = async (status: string) => {
     if (!selectedTicket || !user) return;
     setNewStatus(status);
-    
+
     await supabase.from("support_tickets").update({
       status,
       updated_at: new Date().toISOString(),

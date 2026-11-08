@@ -17,7 +17,7 @@ import {
   PlayCircle, Timer, Activity, ClipboardCheck, Bell, MapPin,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { WeekScheduleCard } from "@/components/dashboard/WeekScheduleCard";

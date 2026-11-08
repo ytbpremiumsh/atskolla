@@ -11,7 +11,7 @@ import { CreditCard, Users, Image, ShoppingCart, CheckCircle2, Clock, Truck, Pri
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { PaymentIframeDialog } from "@/components/PaymentIframeDialog";
@@ -88,7 +88,7 @@ const OrderIdCard = () => {
   const filteredStudents = (selectedClass && selectedClass !== "all"
     ? students.filter((s) => s.class === selectedClass)
     : students
-  ).filter((s) => 
+  ).filter((s) =>
     !studentSearch || s.name.toLowerCase().includes(studentSearch.toLowerCase()) || s.student_id.toLowerCase().includes(studentSearch.toLowerCase())
   );
 

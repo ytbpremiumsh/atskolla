@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { School, CheckCircle2, Webhook, Copy, Check, Key, Eye, EyeOff, Loader2, AlertTriangle, Pencil, Sparkles, Infinity as InfinityIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 
 interface SchoolRow {

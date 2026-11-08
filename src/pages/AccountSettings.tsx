@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { KeyRound, Save, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 const AccountSettings = () => {
   const { user, profile } = useAuth();
@@ -46,11 +46,11 @@ const AccountSettings = () => {
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
-      toast.error("Password minimal 6 karakter");
+      toast.error("Kata sandi minimal 6 karakter");
       return;
     }
     if (newPassword !== confirmPassword) {
-      toast.error("Password tidak cocok");
+      toast.error("Kata sandi tidak cocok");
       return;
     }
     setSavingPassword(true);
@@ -59,7 +59,7 @@ const AccountSettings = () => {
     if (error) {
       toast.error("Gagal mengganti password: " + error.message);
     } else {
-      toast.success("Password berhasil diperbarui!");
+      toast.success("Kata sandi berhasil diperbarui!");
       setNewPassword("");
       setConfirmPassword("");
     }
@@ -102,7 +102,7 @@ const AccountSettings = () => {
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
               placeholder="08xxxxxxxxxx"
             />
-            <p className="text-[11px] text-muted-foreground">Nomor ini digunakan untuk menerima kode OTP saat reset password</p>
+            <p className="text-[11px] text-muted-foreground">Nomor ini digunakan untuk menerima kode OTP saat atur ulang kata sandi</p>
           </div>
           <Button onClick={handleUpdateProfile} disabled={savingProfile} className="gradient-primary hover:opacity-90">
             <Save className="h-4 w-4 mr-2" />
@@ -115,17 +115,17 @@ const AccountSettings = () => {
       <Card className="border-0 shadow-card">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <KeyRound className="h-4 w-4" /> Ganti Password
+            <KeyRound className="h-4 w-4" />  Ganti Kata sandi
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="new-password">Password Baru</Label>
+            <Label htmlFor="new-password">Kata sandi Baru</Label>
             <Input id="new-password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimal 6 karakter" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Konfirmasi Password</Label>
-            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ketik ulang password baru" />
+            <Label htmlFor="confirm-password">Konfirmasi Kata sandi</Label>
+            <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Ketik ulang kata sandi baru" />
           </div>
           <Button onClick={handleChangePassword} disabled={savingPassword} variant="outline">
             <KeyRound className="h-4 w-4 mr-2" />

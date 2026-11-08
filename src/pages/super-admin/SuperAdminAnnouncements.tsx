@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Megaphone, Send, Loader2, Info, CreditCard, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 
 const typeOptions = [

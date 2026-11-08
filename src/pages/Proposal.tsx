@@ -143,15 +143,15 @@ const Proposal = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5">
-                <Download className="h-3.5 w-3.5" /> Download
+                <Download className="h-3.5 w-3.5" />  Unduh
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={downloadAsPDF} className="gap-2 cursor-pointer">
-                <Download className="h-4 w-4" /> Download PDF
+                <Download className="h-4 w-4" />  Unduh PDF
               </DropdownMenuItem>
               <DropdownMenuItem onClick={downloadAsWord} className="gap-2 cursor-pointer">
-                <Download className="h-4 w-4" /> Download Word (.doc)
+                <Download className="h-4 w-4" />  Unduh Word (.doc)
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -190,22 +190,23 @@ const Proposal = () => {
                   ATSkolla
                 </h1>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                  Sistem Absensi Digital Sekolah Berbasis Barcode dan Face Recognition
+
+                  Sistem Absensi Digital Sekolah Berbasis Barcode dan Pengenalan wajah
                   dengan Notifikasi WhatsApp Secara Real-time
                 </p>
                 <div className="mt-6">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button className="gap-2 gradient-primary hover:opacity-90">
-                        <Download className="h-4 w-4" /> Download Proposal Lengkap
+                        <Download className="h-4 w-4" />  Unduh Proposal Lengkap
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={downloadAsPDF} className="gap-2 cursor-pointer">
-                        <Download className="h-4 w-4" /> Download PDF
+                        <Download className="h-4 w-4" />  Unduh PDF
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={downloadAsWord} className="gap-2 cursor-pointer">
-                        <Download className="h-4 w-4" /> Download Word (.doc)
+                        <Download className="h-4 w-4" />  Unduh Word (.doc)
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -231,27 +232,27 @@ const Proposal = () => {
               </h3>
               <div className="prose prose-sm max-w-none text-muted-foreground leading-relaxed space-y-3">
                 <p>
-                  Pada saat ini, sebagian besar sekolah di Indonesia masih menerapkan metode konvensional 
-                  dalam pencatatan kehadiran siswa, yakni melalui buku absensi, lembar kertas, dan tanda 
-                  tangan manual. Metode tersebut memerlukan waktu yang cukup lama, yaitu sekitar 15 hingga 
-                  30 menit untuk setiap kelas dalam satu hari. Selain itu, metode manual sangat rentan 
+                  Pada saat ini, sebagian besar sekolah di Indonesia masih menerapkan metode konvensional
+                  dalam pencatatan kehadiran siswa, yakni melalui buku absensi, lembar kertas, dan tanda
+                  tangan manual. Metode tersebut memerlukan waktu yang cukup lama, yaitu sekitar 15 hingga
+                  30 menit untuk setiap kelas dalam satu hari. Selain itu, metode manual sangat rentan
                   terhadap kesalahan pencatatan, kehilangan data, serta potensi manipulasi kehadiran oleh siswa.
                 </p>
                 <p>
-                  Di sisi lain, para orang tua dan wali murid memiliki kekhawatiran yang cukup tinggi 
-                  terhadap kehadiran dan keselamatan anak mereka selama berada di lingkungan sekolah. 
-                  Berdasarkan data yang dirilis oleh Kementerian Pendidikan dan Kebudayaan pada tahun 2024, 
-                  lebih dari 72% wali murid menghendaki adanya sistem pemberitahuan secara langsung 
-                  (real-time) mengenai status kehadiran anak mereka. Namun demikian, sebagian besar sekolah 
+                  Di sisi lain, para orang tua dan wali murid memiliki kekhawatiran yang cukup tinggi
+                  terhadap kehadiran dan keselamatan anak mereka selama berada di lingkungan sekolah.
+                  Berdasarkan data yang dirilis oleh Kementerian Pendidikan dan Kebudayaan pada tahun 2024,
+                  lebih dari 72% wali murid menghendaki adanya sistem pemberitahuan secara langsung
+                  (real-time) mengenai status kehadiran anak mereka. Namun demikian, sebagian besar sekolah
                   belum memiliki infrastruktur digital yang memadai untuk mewujudkan hal tersebut.
                 </p>
                 <p>
-                  Bertolak dari permasalahan tersebut, ATSkolla hadir sebagai solusi yang bersifat menyeluruh 
-                  dan terintegrasi. ATSkolla merupakan platform digital yang memadukan teknologi pemindaian 
-                  barcode, pengenalan wajah (face recognition) berbasis kecerdasan buatan, notifikasi otomatis 
-                  melalui WhatsApp, serta dashboard pemantauan kehadiran secara langsung. Melalui ATSkolla, 
-                  proses pencatatan kehadiran yang sebelumnya dilakukan secara manual dapat bertransformasi 
-                  menjadi sistem yang sepenuhnya digital dan otomatis, sehingga meningkatkan efisiensi, 
+                  Bertolak dari permasalahan tersebut, ATSkolla hadir sebagai solusi yang bersifat menyeluruh
+                  dan terintegrasi. ATSkolla merupakan platform digital yang memadukan teknologi pemindaian
+                  barcode, pengenalan wajah (face recognition) berbasis kecerdasan buatan, notifikasi otomatis
+                  melalui WhatsApp, serta dashboard pemantauan kehadiran secara langsung. Melalui ATSkolla,
+                  proses pencatatan kehadiran yang sebelumnya dilakukan secara manual dapat bertransformasi
+                  menjadi sistem yang sepenuhnya digital dan otomatis, sehingga meningkatkan efisiensi,
                   akurasi, dan transparansi dalam pengelolaan kehadiran siswa.
                 </p>
               </div>
@@ -264,12 +265,12 @@ const Proposal = () => {
               <Card className="border-0 shadow-sm bg-card/50">
                 <CardContent className="p-5 space-y-3 text-sm text-muted-foreground">
                   <p>
-                    ATSkolla merupakan platform berbasis Software-as-a-Service (SaaS) yang menyediakan 
-                    sistem pencatatan kehadiran digital dan pemantauan secara real-time bagi institusi 
-                    pendidikan di Indonesia. Platform ini bergerak di sektor EdTech (Education Technology) 
-                    dengan mengadopsi model bisnis berlangganan yang bersifat Business-to-Business (B2B). 
-                    Sasaran utama layanan ATSkolla meliputi sekolah pada berbagai jenjang pendidikan, 
-                    pondok pesantren, serta lembaga pendidikan lainnya yang memerlukan sistem pencatatan 
+                    ATSkolla merupakan platform berbasis Software-as-a-Service (SaaS) yang menyediakan
+                    sistem pencatatan kehadiran digital dan pemantauan secara real-time bagi institusi
+                    pendidikan di Indonesia. Platform ini bergerak di sektor EdTech (Education Technology)
+                    dengan mengadopsi model bisnis berlangganan yang bersifat Business-to-Business (B2B).
+                    Sasaran utama layanan ATSkolla meliputi sekolah pada berbagai jenjang pendidikan,
+                    pondok pesantren, serta lembaga pendidikan lainnya yang memerlukan sistem pencatatan
                     kehadiran yang modern dan efisien.
                   </p>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -301,9 +302,9 @@ const Proposal = () => {
                       <h4 className="font-bold text-foreground">Visi</h4>
                     </div>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Menjadi platform pencatatan kehadiran digital terdepan yang digunakan secara luas 
-                      oleh institusi pendidikan di Indonesia, sehingga mampu mendorong modernisasi 
-                      administrasi sekolah, memberikan ketenangan bagi orang tua, serta meningkatkan 
+                      Menjadi platform pencatatan kehadiran digital terdepan yang digunakan secara luas
+                      oleh institusi pendidikan di Indonesia, sehingga mampu mendorong modernisasi
+                      administrasi sekolah, memberikan ketenangan bagi orang tua, serta meningkatkan
                       keamanan bagi siswa.
                     </p>
                   </CardContent>
@@ -338,10 +339,10 @@ const Proposal = () => {
               </h3>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Indonesia memiliki lebih dari <strong className="text-foreground">436.000 sekolah</strong> dengan 
-                  jumlah siswa mencapai sekitar <strong className="text-foreground">50 juta</strong> yang tersebar di 
-                  34 provinsi. Dari jumlah tersebut, diperkirakan sekitar 85% sekolah masih menggunakan metode 
-                  pencatatan kehadiran secara manual. Kondisi ini menunjukkan bahwa peluang pasar untuk sistem 
+                  Indonesia memiliki lebih dari <strong className="text-foreground">436.000 sekolah</strong> dengan
+                  jumlah siswa mencapai sekitar <strong className="text-foreground">50 juta</strong> yang tersebar di
+                  34 provinsi. Dari jumlah tersebut, diperkirakan sekitar 85% sekolah masih menggunakan metode
+                  pencatatan kehadiran secara manual. Kondisi ini menunjukkan bahwa peluang pasar untuk sistem
                   pencatatan kehadiran digital di Indonesia sangatlah besar dan masih terbuka lebar untuk digarap.
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -418,10 +419,10 @@ const Proposal = () => {
                 <CardContent className="p-4">
                   <p className="text-xs font-bold text-foreground mb-1">Keunggulan Kompetitif (Unique Selling Point)</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    ATSkolla merupakan satu-satunya platform yang mengintegrasikan teknologi pemindaian barcode, 
-                    pengenalan wajah berbasis kecerdasan buatan, serta notifikasi WhatsApp otomatis dalam satu 
-                    sistem yang terpadu. Dengan harga berlangganan mulai dari Rp 99.000 per bulan, ATSkolla 
-                    menjadi solusi yang paling komprehensif sekaligus paling terjangkau di segmen pasar 
+                    ATSkolla merupakan satu-satunya platform yang mengintegrasikan teknologi pemindaian barcode,
+                    pengenalan wajah berbasis kecerdasan buatan, serta notifikasi WhatsApp otomatis dalam satu
+                    sistem yang terpadu. Dengan harga berlangganan mulai dari Rp 99.000 per bulan, ATSkolla
+                    menjadi solusi yang paling komprehensif sekaligus paling terjangkau di segmen pasar
                     EdTech Indonesia saat ini.
                   </p>
                 </CardContent>
@@ -457,30 +458,30 @@ const Proposal = () => {
                 <Card className="border-0 shadow-sm">
                   <CardContent className="p-5 space-y-3 text-sm text-muted-foreground leading-relaxed">
                     <p>
-                      <strong className="text-foreground">Keterkaitan Antar-Elemen BMC:</strong> Model bisnis 
-                      ATSkolla dirancang dengan pendekatan sistematis di mana setiap elemen saling mendukung 
-                      dan berkaitan. Mitra utama (Key Partners) yang terdiri dari sekolah, yayasan pendidikan, 
-                      dan penyedia layanan API WhatsApp menyediakan jaringan distribusi dan infrastruktur 
-                      teknologi yang diperlukan. Aktivitas utama (Key Activities) mencakup pengembangan platform, 
-                      integrasi teknologi, serta pelaksanaan strategi pemasaran. Keseluruhan aktivitas tersebut 
-                      menghasilkan proposisi nilai (Value Proposition) berupa sistem pencatatan kehadiran digital 
-                      yang komprehensif, akurat, dan mudah digunakan. Proposisi nilai ini disampaikan kepada 
-                      pelanggan melalui berbagai kanal (Channels) seperti situs web, media sosial, dan 
+                      <strong className="text-foreground">Keterkaitan Antar-Elemen BMC:</strong> Model bisnis
+                      ATSkolla dirancang dengan pendekatan sistematis di mana setiap elemen saling mendukung
+                      dan berkaitan. Mitra utama (Key Partners) yang terdiri dari sekolah, yayasan pendidikan,
+                      dan penyedia layanan API WhatsApp menyediakan jaringan distribusi dan infrastruktur
+                      teknologi yang diperlukan. Aktivitas utama (Key Activities) mencakup pengembangan platform,
+                      integrasi teknologi, serta pelaksanaan strategi pemasaran. Keseluruhan aktivitas tersebut
+                      menghasilkan proposisi nilai (Value Proposition) berupa sistem pencatatan kehadiran digital
+                      yang komprehensif, akurat, dan mudah digunakan. Proposisi nilai ini disampaikan kepada
+                      pelanggan melalui berbagai kanal (Channels) seperti situs web, media sosial, dan
                       kunjungan langsung ke institusi pendidikan.
                     </p>
                     <p>
-                      <strong className="text-foreground">Arus Pendapatan (Revenue Streams):</strong> Pendapatan 
-                      utama bersumber dari tiga pilihan paket berlangganan bulanan: Basic (Rp 99.000), School 
-                      (Rp 249.000), dan Premium (Rp 399.000). Pendapatan tambahan dari jasa enterprise meliputi 
-                      setup & konfigurasi sekolah baru, pelatihan & onboarding intensif, dan kustomisasi yayasan 
-                      multi-cabang. Layanan add-on mencakup kuota tambahan WhatsApp broadcast, kartu pelajar 
+                      <strong className="text-foreground">Arus Pendapatan (Revenue Streams):</strong> Pendapatan
+                      utama bersumber dari tiga pilihan paket berlangganan bulanan: Basic (Rp 99.000), School
+                      (Rp 249.000), dan Premium (Rp 399.000). Pendapatan tambahan dari jasa enterprise meliputi
+                      setup & konfigurasi sekolah baru, pelatihan & onboarding intensif, dan kustomisasi yayasan
+                      multi-cabang. Layanan add-on mencakup kuota tambahan WhatsApp broadcast, kartu pelajar
                       digital (cetak QR), dan white-label branding bagi yayasan.
                     </p>
                     <p>
-                      <strong className="text-foreground">Struktur Biaya (Cost Structure):</strong> Biaya 
-                      operasional terdiri dari server cloud Supabase Pro (≈ Rp 400.000/bulan), WhatsApp API MPWA 
-                      (≈ Rp 150.000/bulan/device), kompensasi tim freelance (developer dan CS part-time), serta 
-                      biaya pemasaran digital. Total pengeluaran tahun pertama diproyeksikan hanya Rp 46,7 juta, 
+                      <strong className="text-foreground">Struktur Biaya (Cost Structure):</strong> Biaya
+                      operasional terdiri dari server cloud Supabase Pro (≈ Rp 400.000/bulan), WhatsApp API MPWA
+                      (≈ Rp 150.000/bulan/device), kompensasi tim freelance (developer dan CS part-time), serta
+                      biaya pemasaran digital. Total pengeluaran tahun pertama diproyeksikan hanya Rp 46,7 juta,
                       sehingga margin keuntungan dapat mencapai 40-70% sejak tahun pertama.
                     </p>
                   </CardContent>
@@ -545,14 +546,14 @@ const Proposal = () => {
                 <span className="text-primary">3.1</span> Deskripsi Produk
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                ATSkolla menawarkan sejumlah fitur unggulan yang saling terintegrasi dan melengkapi 
-                satu sama lain. Setiap fitur dirancang agar mudah dioperasikan oleh tenaga pendidik, 
+                ATSkolla menawarkan sejumlah fitur unggulan yang saling terintegrasi dan melengkapi
+                satu sama lain. Setiap fitur dirancang agar mudah dioperasikan oleh tenaga pendidik,
                 staf sekolah, maupun orang tua tanpa memerlukan keahlian teknis khusus.
               </p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
                   { icon: QrCode, title: "Pemindaian Barcode", desc: "Siswa cukup menunjukkan kartu pelajar digital, kemudian petugas melakukan pemindaian. Proses pencatatan kehadiran berlangsung kurang dari 2 detik per siswa, sehingga meniadakan antrian saat jam masuk sekolah." },
-                  { icon: UserCheck, title: "Pengenalan Wajah (Face Recognition AI)", desc: "Bagi sekolah yang menghendaki tingkat keamanan yang lebih tinggi, tersedia fitur pengenalan wajah otomatis yang mampu memverifikasi identitas siswa secara akurat tanpa memerlukan kartu fisik." },
+                  { icon: UserCheck, title: "Pengenalan Wajah (Pengenalan wajah AI)", desc: "Bagi sekolah yang menghendaki tingkat keamanan yang lebih tinggi, tersedia fitur pengenalan wajah otomatis yang mampu memverifikasi identitas siswa secara akurat tanpa memerlukan kartu fisik." },
                   { icon: Bell, title: "Notifikasi WhatsApp Otomatis", desc: "Setiap kali siswa melakukan pemindaian kehadiran, orang tua atau wali murid akan menerima pemberitahuan secara langsung melalui WhatsApp secara otomatis." },
                   { icon: BarChart3, title: "Dashboard Pemantauan Real-time", desc: "Kepala sekolah dan tenaga pendidik dapat memantau kehadiran seluruh siswa dalam satu tampilan yang informatif. Data selalu diperbarui secara langsung tanpa perlu menunggu rekapitulasi manual." },
                   { icon: FileCheck, title: "Laporan dan Rekapitulasi Otomatis", desc: "Sistem secara otomatis menghasilkan rekapitulasi kehadiran (harian, mingguan, dan bulanan) yang siap dicetak atau diekspor ke dalam format Excel kapan saja diperlukan." },
@@ -574,7 +575,7 @@ const Proposal = () => {
                 <span className="text-primary">3.2</span> Proses Pemberian Layanan
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Proses pemberian layanan ATSkolla kepada institusi pendidikan dilaksanakan 
+                Proses pemberian layanan ATSkolla kepada institusi pendidikan dilaksanakan
                 melalui tahapan-tahapan berikut:
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -605,7 +606,7 @@ const Proposal = () => {
                 <span className="text-primary">3.3</span> Kualitas dan Pengendalian Kualitas
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                ATSkolla menerapkan standar kualitas yang ketat guna memastikan pengalaman 
+                ATSkolla menerapkan standar kualitas yang ketat guna memastikan pengalaman
                 pengguna yang optimal. Berikut adalah standar kualitas yang senantiasa dijaga:
               </p>
               <Card className="border-0 shadow-sm">
@@ -642,9 +643,9 @@ const Proposal = () => {
                 <span className="text-primary">4.1</span> Struktur Organisasi
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Struktur organisasi ATSkolla dirancang secara efisien dan fungsional. Pada posisi 
-                puncak terdapat CEO/Founder yang bertanggung jawab atas perumusan strategi bisnis 
-                dan penentuan arah pengembangan produk. Di bawahnya terdapat tiga divisi utama 
+                Struktur organisasi ATSkolla dirancang secara efisien dan fungsional. Pada posisi
+                puncak terdapat CEO/Founder yang bertanggung jawab atas perumusan strategi bisnis
+                dan penentuan arah pengembangan produk. Di bawahnya terdapat tiga divisi utama
                 yang masing-masing memiliki peran dan tanggung jawab yang spesifik:
               </p>
               <div className="flex flex-col items-center">
@@ -665,10 +666,10 @@ const Proposal = () => {
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-5">
                   <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                    Tim ATSkolla terdiri dari individu-individu muda yang memiliki dedikasi tinggi di 
-                    bidang teknologi dan pendidikan. Setiap anggota tim memiliki kompetensi yang saling 
-                    melengkapi, sehingga mampu menghadirkan produk dan layanan berkualitas tinggi bagi 
-                    institusi pendidikan di Indonesia. Berikut adalah komposisi tim beserta bidang 
+                    Tim ATSkolla terdiri dari individu-individu muda yang memiliki dedikasi tinggi di
+                    bidang teknologi dan pendidikan. Setiap anggota tim memiliki kompetensi yang saling
+                    melengkapi, sehingga mampu menghadirkan produk dan layanan berkualitas tinggi bagi
+                    institusi pendidikan di Indonesia. Berikut adalah komposisi tim beserta bidang
                     keahlian masing-masing:
                   </p>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -699,8 +700,8 @@ const Proposal = () => {
                 <span className="text-primary">5.1</span> Proyeksi Pendapatan dan Pengeluaran (2 Tahun)
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Proyeksi disusun berdasarkan target realistis: <strong className="text-foreground">50 sekolah</strong> di tahun pertama 
-                dan <strong className="text-foreground">200 sekolah</strong> di tahun kedua, dengan komposisi 65% paket Premium. 
+                Proyeksi disusun berdasarkan target realistis: <strong className="text-foreground">50 sekolah</strong> di tahun pertama
+                dan <strong className="text-foreground">200 sekolah</strong> di tahun kedua, dengan komposisi 65% paket Premium.
                 Biaya operasional dihitung berdasarkan harga aktual layanan yang digunakan.
               </p>
 
@@ -790,8 +791,8 @@ const Proposal = () => {
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-5 space-y-4">
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar 
-                    <strong className="text-foreground"> Rp 15.000.000</strong>. Dana tersebut akan 
+                    Modal awal yang dibutuhkan untuk memulai operasional bisnis adalah sebesar
+                    <strong className="text-foreground"> Rp 15.000.000</strong>. Dana tersebut akan
                     dialokasikan ke beberapa pos kebutuhan utama sebagai berikut:
                   </p>
                   <div className="space-y-2">
@@ -822,8 +823,8 @@ const Proposal = () => {
                 <span className="text-primary">5.3</span> Analisis Risiko
               </h3>
               <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                Setiap kegiatan usaha tidak terlepas dari potensi risiko. Oleh karena itu, diperlukan 
-                identifikasi risiko sedini mungkin beserta strategi mitigasi yang tepat. Berikut adalah 
+                Setiap kegiatan usaha tidak terlepas dari potensi risiko. Oleh karena itu, diperlukan
+                identifikasi risiko sedini mungkin beserta strategi mitigasi yang tepat. Berikut adalah
                 risiko-risiko yang mungkin dihadapi beserta rencana penanganannya:
               </p>
               <div className="space-y-3">
@@ -877,26 +878,26 @@ const Proposal = () => {
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-6 space-y-4 text-sm text-muted-foreground leading-relaxed">
                   <p>
-                    ATSkolla merupakan solusi pencatatan kehadiran digital yang dikembangkan untuk menjawab 
-                    permasalahan nyata yang dihadapi oleh institusi pendidikan di Indonesia. Dengan 
-                    mengintegrasikan teknologi pemindaian barcode, pengenalan wajah berbasis kecerdasan 
-                    buatan, notifikasi WhatsApp otomatis, dan dashboard pemantauan secara langsung, ATSkolla 
-                    menawarkan sistem yang komprehensif, akurat, dan mudah digunakan oleh berbagai jenjang 
+                    ATSkolla merupakan solusi pencatatan kehadiran digital yang dikembangkan untuk menjawab
+                    permasalahan nyata yang dihadapi oleh institusi pendidikan di Indonesia. Dengan
+                    mengintegrasikan teknologi pemindaian barcode, pengenalan wajah berbasis kecerdasan
+                    buatan, notifikasi WhatsApp otomatis, dan dashboard pemantauan secara langsung, ATSkolla
+                    menawarkan sistem yang komprehensif, akurat, dan mudah digunakan oleh berbagai jenjang
                     pendidikan.
                   </p>
                   <p>
-                    Melihat potensi pasar yang sangat besar -- lebih dari 436.000 sekolah dengan 85% di 
-                    antaranya masih menggunakan metode manual -- serta didukung oleh model bisnis SaaS yang 
-                    telah terbukti keberlanjutannya dan keunggulan produk yang nyata dibandingkan kompetitor, 
-                    terdapat keyakinan kuat bahwa ATSkolla memiliki prospek untuk menjadi salah satu pemain 
+                    Melihat potensi pasar yang sangat besar -- lebih dari 436.000 sekolah dengan 85% di
+                    antaranya masih menggunakan metode manual -- serta didukung oleh model bisnis SaaS yang
+                    telah terbukti keberlanjutannya dan keunggulan produk yang nyata dibandingkan kompetitor,
+                    terdapat keyakinan kuat bahwa ATSkolla memiliki prospek untuk menjadi salah satu pemain
                     utama di industri EdTech Indonesia.
                   </p>
                   <p>
-                    Harapan yang ingin diwujudkan melalui ATSkolla bukan sekadar menyediakan alat pencatatan 
-                    kehadiran, melainkan turut berkontribusi dalam transformasi digital di dunia pendidikan 
-                    Indonesia. Sekolah menjadi lebih efisien dalam pengelolaan administrasi, orang tua 
-                    memperoleh ketenangan karena senantiasa mendapatkan informasi terkini mengenai kehadiran 
-                    anak mereka, dan siswa memperoleh perlindungan yang lebih baik melalui sistem pencatatan 
+                    Harapan yang ingin diwujudkan melalui ATSkolla bukan sekadar menyediakan alat pencatatan
+                    kehadiran, melainkan turut berkontribusi dalam transformasi digital di dunia pendidikan
+                    Indonesia. Sekolah menjadi lebih efisien dalam pengelolaan administrasi, orang tua
+                    memperoleh ketenangan karena senantiasa mendapatkan informasi terkini mengenai kehadiran
+                    anak mereka, dan siswa memperoleh perlindungan yang lebih baik melalui sistem pencatatan
                     yang terdigitalisasi.
                   </p>
                 </CardContent>

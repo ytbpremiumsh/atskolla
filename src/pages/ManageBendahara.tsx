@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge as Badge2 } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface BendaharaUser { user_id: string; full_name: string; extra_roles?: string[]; }
 interface AssignableUser { user_id: string; full_name: string; roles: string[]; }
@@ -76,7 +76,7 @@ export default function ManageBendahara() {
 
   const create = async () => {
     if (!form.full_name || !form.email || !form.password) { toast.error("Lengkapi data"); return; }
-    if (form.password.length < 6) { toast.error("Password minimal 6 karakter"); return; }
+    if (form.password.length < 6) { toast.error("Kata sandi minimal 6 karakter"); return; }
     setCreating(true);
     const res = await supabase.functions.invoke("create-user", {
       body: { ...form, role: "bendahara", school_id: profile!.school_id },
@@ -95,7 +95,7 @@ export default function ManageBendahara() {
 
   const saveEdit = async () => {
     if (!editTarget) return;
-    if (editForm.password && editForm.password.length < 6) { toast.error("Password minimal 6 karakter"); return; }
+    if (editForm.password && editForm.password.length < 6) { toast.error("Kata sandi minimal 6 karakter"); return; }
     setSavingEdit(true);
     const payload: any = { user_id: editTarget.user_id };
     if (editForm.full_name && editForm.full_name !== editTarget.full_name) payload.full_name = editForm.full_name;
@@ -217,7 +217,7 @@ export default function ManageBendahara() {
           <div className="space-y-3">
             <div><Label>Nama Lengkap</Label><Input value={form.full_name} onChange={e => setForm({ ...form, full_name: e.target.value })} /></div>
             <div><Label>Email</Label><div className="relative"><Mail className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="pl-9" /></div></div>
-            <div><Label>Password</Label><div className="relative"><Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><Input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="pl-9" /></div></div>
+            <div><Label>Kata sandi</Label><div className="relative"><Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><Input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="pl-9" /></div></div>
             <div><Label>WhatsApp</Label><div className="relative"><Phone className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="pl-9" /></div></div>
             <Button onClick={create} disabled={creating} className="w-full bg-[#5B6CF9] hover:bg-[#4c5ded]">
               {creating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />} Buat Akun
@@ -246,7 +246,7 @@ export default function ManageBendahara() {
               </div>
             </div>
             <div>
-              <Label>Password Baru</Label>
+              <Label>Kata sandi Baru</Label>
               <div className="relative">
                 <Lock className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input type="password" value={editForm.password} onChange={e => setEditForm({ ...editForm, password: e.target.value })} placeholder="Kosongkan jika tidak diubah" className="pl-9" />

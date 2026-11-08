@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Gift, Copy, Share2, Star, TrendingUp, Users, Award,
   ArrowUpRight, ArrowDownLeft, Clock, CheckCircle2, Loader2,

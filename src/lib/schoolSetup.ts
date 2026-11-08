@@ -124,7 +124,7 @@ export async function fetchSchoolSetup(
         ? "linked"
         : r.data?.some((x) => x.verification_status === "verified")
           ? "verified"
-          : r.data?.length
+          : r.data?.some((x) => x.verification_status === "pending")
             ? "pending"
             : "missing";
     })(),
@@ -202,9 +202,9 @@ export function setupSteps(data: SetupSnapshot, admin: boolean) {
       title: "Rekening pencairan",
       body:
         data.bank === "linked"
-          ? "Rekening disetujui dan ID DOKU terisi. Status ini bukan bukti pembayaran atau pencairan berhasil."
+          ? "Rekening pencairan sekolah sudah siap digunakan. Status ini bukan bukti dana telah diterima."
           : data.bank === "verified"
-            ? "Rekening disetujui ATSkolla; ID resmi DOKU masih perlu dilengkapi."
+            ? "Rekening disetujui ATSkolla; pengaturan pencairan masih diproses."
             : "Dikelola Admin/Bendahara jika sekolah menggunakan pembayaran online.",
       url: "/bendahara/withdraw?tab=pencairan",
       done: data.bank === null ? null : data.bank === "linked",

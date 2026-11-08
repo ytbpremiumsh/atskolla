@@ -97,7 +97,7 @@ export const GUIDES: RoleGuide[] = [
       {
         title: "3. Scan Absensi",
         description:
-          "Buka menu Scan Absensi untuk melakukan absensi via Barcode/QR atau Face Recognition. Bisa juga input NIS manual jika kamera bermasalah.",
+          "Buka menu Scan Absensi untuk melakukan absensi via Barcode/QR atau Pengenalan wajah. Bisa juga input NIS manual jika kamera bermasalah.",
         image: "/panduan/school-scan.jpg",
         bullets: [
           "Klik 'Aktifkan Kamera' lalu arahkan ke QR Code siswa.",
@@ -122,7 +122,7 @@ export const GUIDES: RoleGuide[] = [
       {
         title: "5. Data Siswa",
         description:
-          "Kelola data siswa termasuk QR Code, foto wajah untuk Face Recognition, NIS, gender, dan kontak wali murid.",
+          "Kelola data siswa termasuk QR Code, foto wajah untuk Pengenalan wajah, NIS, gender, dan kontak wali murid.",
         image: "/panduan/school-students.jpg",
         bullets: [
           "Tombol 'Tambah Siswa' untuk input manual satu per satu.",
@@ -508,7 +508,7 @@ export const GUIDES: RoleGuide[] = [
       {
         title: "1. Login Portal Wali Murid",
         description:
-          "Buka halaman Portal Wali Murid lalu masukkan nomor WhatsApp yang terdaftar di sekolah ananda. Tidak perlu password.",
+          "Buka halaman Portal Wali Murid lalu masukkan nomor WhatsApp yang terdaftar di sekolah ananda. Tidak perlu kata sandi.",
         image: "/panduan/parent-login.jpg",
         bullets: [
           "Pastikan nomor WA sudah didaftarkan oleh sekolah/wali kelas.",

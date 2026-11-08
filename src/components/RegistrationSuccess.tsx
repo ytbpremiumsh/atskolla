@@ -1,6 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 export function RegistrationSuccess({
   loginUrl,
   schoolName,
@@ -14,8 +14,8 @@ export function RegistrationSuccess({
         <CheckCircle2 className="h-12 w-12 text-emerald-600" />
         <h1 className="text-2xl font-bold">Sekolah berhasil didaftarkan</h1>
         <p className="text-sm text-muted-foreground">
-          {schoolName} sudah memiliki akun pengelola utama. Masuk menggunakan
-          email dan password yang baru Anda buat.
+          {schoolName}  sudah memiliki akun pengelola utama. Masuk menggunakan
+          email dan kata sandi yang baru Anda buat.
         </p>
         <div className="rounded-xl bg-primary/5 p-4">
           <p className="text-xs font-semibold text-primary">

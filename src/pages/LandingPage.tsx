@@ -28,7 +28,7 @@ import {
 const NAV = [
   { label: "Platform", href: "#ekosistem" },
   { label: "Fitur", href: "#modul" },
-  
+
   { label: "FAQ", href: "#faq" },
   { label: "Tentang", href: "/tentang" },
   { label: "Kontak", href: "/kontak" },
@@ -101,10 +101,10 @@ const MODULES = [
     icon: Cpu,
     items: [
       { icon: Radio, title: "RFID Reader", desc: "Perangkat scan kartu pelajar" },
-      { icon: ScanFace, title: "Face Recognition", desc: "Verifikasi wajah realtime" },
+      { icon: ScanFace, title: "Pengenalan wajah", desc: "Verifikasi wajah realtime" },
       { icon: QrCode, title: "QR Code", desc: "Scan cepat dari HP" },
       { icon: IdCard, title: "Kartu Pelajar", desc: "Cetak resmi terintegrasi" },
-      
+
     ],
   },
 ];
@@ -129,7 +129,7 @@ const ROLES = [
   { key: "bendahara", label: "Bendahara", metric: { top: "SPP Bulan Ini", val: "Rp 312 Jt", sub: "87% terkumpul • 42 tunggakan" }, blocks: ["Tagihan aktif", "Cash flow harian", "Laporan periode"] },
   { key: "guru", label: "Guru", metric: { top: "Kelas hari ini", val: "5 sesi", sub: "3 selesai • 2 mendatang" }, blocks: ["Jadwal mengajar", "Rekap kehadiran kelas", "Leaderboard kelas"] },
   { key: "ortu", label: "Orang Tua", metric: { top: "Status anak", val: "Hadir 07:12", sub: "Kelas 6B • SDN 1 Cendikia" }, blocks: ["Absensi anak", "Tagihan SPP", "Pengumuman sekolah"] },
-  
+
 ];
 
 const FAQ = [
@@ -965,7 +965,7 @@ function Footer() {
           <div className="inline-flex items-center justify-center rounded-xl bg-white/95 backdrop-blur px-3 py-2 mb-5 shadow-sm">
             <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" width={140} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
           </div>
-          
+
           <p className="text-sm leading-relaxed text-white/75 mb-4">
             Platform Digital Sekolah Terintegrasi<br />
             untuk sekolah di seluruh Indonesia.

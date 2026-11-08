@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { DateRange } from "react-day-picker";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 type EventType = "holiday" | "exam" | "event" | "meeting" | "announcement" | "other";
 

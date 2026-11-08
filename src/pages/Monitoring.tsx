@@ -11,7 +11,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
@@ -179,7 +179,7 @@ const Monitoring = () => {
       return;
     }
 
-    
+
     if (editStatus === "belum") {
       // Cancel attendance — delete the log
       if (editStudent.log_id) {

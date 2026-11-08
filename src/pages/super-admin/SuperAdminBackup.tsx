@@ -9,7 +9,7 @@ import {
   BookOpen, ExternalLink, Key, FolderOpen, Folder, FileText, Check,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface BackupStats {
   tables: number;
@@ -43,7 +43,7 @@ const SuperAdminBackup = () => {
         supabase.functions.invoke("gdrive-backup", { body: { action: "check-gdrive-status" } }),
         supabase.from("platform_settings").select("value").eq("key", "google_client_id").maybeSingle(),
       ]);
-      
+
       if (statsRes.data?.success) {
         setCurrentStats(statsRes.data.current);
         setLastBackupAt(statsRes.data.last_backup_at);
@@ -117,10 +117,10 @@ const SuperAdminBackup = () => {
       const redirectUri = window.location.origin + "/super-admin/backup";
       const scope = "https://www.googleapis.com/auth/drive.file";
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(googleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
-      
+
       // Open popup for auth
       const popup = window.open(authUrl, "google_auth", "width=500,height=600,scrollbars=yes");
-      
+
       if (!popup) {
         toast.error("Popup diblokir browser. Izinkan popup untuk situs ini.");
         setGdriveBackingUp(false);
@@ -312,7 +312,8 @@ const SuperAdminBackup = () => {
         <div className="px-4 py-3 border-b border-border bg-muted/20">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Download className="h-4 w-4 text-primary" />
-            Backup Manual (Download JSON)
+
+            Backup Manual (Unduh JSON)
           </h3>
         </div>
         <CardContent className="p-4 space-y-4">
@@ -337,7 +338,8 @@ const SuperAdminBackup = () => {
             </Button>
             <Button variant="outline" onClick={fetchStats} disabled={loading} className="h-10 gap-2">
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+
+              Muat ulang
             </Button>
           </div>
 
@@ -532,7 +534,7 @@ const SuperAdminBackup = () => {
           {showTutorial && (
             <div className="rounded-xl border border-border bg-muted/10 p-5 space-y-4">
               <h4 className="text-sm font-bold text-foreground">Tutorial: Menghubungkan Google Drive</h4>
-              
+
               <div className="space-y-4">
                 <div className="flex gap-3">
                   <div className="h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</div>
@@ -583,7 +585,7 @@ const SuperAdminBackup = () => {
                   <div>
                     <p className="text-xs font-bold text-foreground">Buat OAuth Client ID</p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Buka "APIs & Services" → "Credentials" → "Create Credentials" → "OAuth client ID" → pilih "Web application" → 
+                      Buka "APIs & Services" → "Credentials" → "Create Credentials" → "OAuth client ID" → pilih "Web application" →
                       tambahkan Authorized redirect URIs:
                     </p>
                     <div className="bg-muted/50 rounded-lg p-2 mt-1.5">
@@ -610,7 +612,7 @@ const SuperAdminBackup = () => {
                   <div>
                     <p className="text-xs font-bold text-foreground">Selesai!</p>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Backup akan otomatis tersimpan di folder <strong>"ATSkolla Backup"</strong> di Google Drive Anda, 
+                      Backup akan otomatis tersimpan di folder <strong>"ATSkolla Backup"</strong> di Google Drive Anda,
                       terorganisir per tanggal (misal: ATSkolla Backup/2026-04-11/backup_xxx.json).
                     </p>
                   </div>

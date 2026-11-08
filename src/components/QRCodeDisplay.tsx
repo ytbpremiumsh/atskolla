@@ -193,11 +193,12 @@ const QRCodeDisplay = ({ data, size = 200, studentName, studentClass, schoolName
       <div className="flex gap-2">
         {autoFrame && (studentName || schoolName) ? (
           <Button variant="outline" size="sm" onClick={downloadWithFrame} className="text-xs">
-            <Download className="h-3.5 w-3.5 mr-1" /> Download QR Code
+            <Download className="h-3.5 w-3.5 mr-1" />  Unduh QR Code
           </Button>
         ) : (
           <button onClick={handleSimpleDownload} className="text-xs text-primary hover:underline font-medium">
-            Download QR Code
+
+            Unduh QR Code
           </button>
         )}
       </div>

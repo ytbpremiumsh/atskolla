@@ -1,3 +1,4 @@
+import { indonesianMessage } from "@/lib/indonesianMessages";
 import * as React from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
@@ -140,7 +141,7 @@ function toast({ ...props }: Toast) {
   const update = (props: ToasterToast) =>
     dispatch({
       type: "UPDATE_TOAST",
-      toast: { ...props, id },
+      toast: { ...props, title: indonesianMessage(props.title) as React.ReactNode, description: indonesianMessage(props.description) as React.ReactNode, id },
     });
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
@@ -148,6 +149,8 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      title: indonesianMessage(props.title) as React.ReactNode,
+      description: indonesianMessage(props.description) as React.ReactNode,
       id,
       open: true,
       onOpenChange: (open) => {

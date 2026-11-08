@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Loader2, LogOut, GraduationCap, CalendarDays, Megaphone, FileText,
   Phone, ClipboardList, BookOpen, CheckCircle2, XCircle, Clock,
@@ -1455,7 +1455,7 @@ export default function ParentDashboard() {
 
         {tab === "card" && (
           <>
-            
+
             {current ? (
               <div className="space-y-4">
                 <StudentIdCard student={current as any} hideQrDownload watermark={false} />

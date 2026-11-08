@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { StudentIdCard } from "@/components/StudentIdCard";
 import jsPDF from "jspdf";

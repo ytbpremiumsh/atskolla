@@ -1,3 +1,4 @@
+import { schoolRootRedirect } from "./lib/schoolRootRedirect";
 import { createRoot } from "react-dom/client";
 // Trim font weights to only what the landing/app actually renders above the fold.
 // Additional weights can be added later per-page if needed.
@@ -75,4 +76,9 @@ if (typeof window !== "undefined") {
 }
 
 
-createRoot(document.getElementById("root")!).render(<App />);
+const redirect = schoolRootRedirect(window.location.hostname, window.location.pathname);
+if (redirect) {
+  window.location.replace(redirect);
+} else {
+  createRoot(document.getElementById("root")!).render(<App />);
+}

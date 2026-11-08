@@ -1,3 +1,4 @@
+import { useGatewayStatusPolling } from "@/hooks/useGatewayStatusPolling";
 import { GatewaySetupStatus } from "@/components/GatewaySetupStatus";
 import { PageHeader } from "@/components/PageHeader";
 import { useState, useEffect, useCallback } from "react";
@@ -17,7 +18,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { PremiumGate } from "@/components/PremiumGate";
 
 const PLACEHOLDERS = [
@@ -111,7 +112,8 @@ const ConnectedDeviceCard = ({
       <div>
         <p className="text-lg font-bold text-foreground">Perangkat Aktif</p>
         <Badge className="bg-success/10 text-success border-success/20 text-[9px] px-2 py-0.5 font-bold uppercase tracking-widest mt-1">
-          Connected
+
+          Terhubung
         </Badge>
         <p className="font-mono text-base font-semibold text-foreground tracking-wide mt-2">{mpwaSenderNumber}</p>
         <p className="text-xs text-muted-foreground mt-1.5">
@@ -170,6 +172,7 @@ const WhatsAppSettings = () => {
   const [deliveryTarget, setDeliveryTarget] = useState("parent_only");
   const [gatewayType, setGatewayType] = useState("mpwa");
   const [mpwaConnected, setMpwaConnected] = useState(false);
+  const [autoCheckPaused, setAutoCheckPaused] = useState(false);
   const [mpwaSenderNumber, setMpwaSenderNumber] = useState("");
   const [onesenderEnabled, setOnesenderEnabled] = useState(true);
   const [teachingReminderEnabled, setTeachingReminderEnabled] = useState(false);
@@ -320,6 +323,26 @@ const WhatsAppSettings = () => {
     };
   }, [authLoading, schoolId]);
 
+  useGatewayStatusPolling(
+    !loading && !!schoolId && gatewayType === "mpwa" && !!mpwaSenderNumber.trim() && !qrLoading && !disconnecting && !autoCheckPaused,
+    `${schoolId}:${mpwaSenderNumber.replace(/\D/g, "")}`,
+    !!qrData,
+    async () => {
+      const { data, error } = await supabase.functions.invoke("mpwa-proxy", {
+        body: { action: "check-status", school_id: schoolId, number: mpwaSenderNumber.replace(/\D/g, "") },
+      });
+      if (error || data?.error || typeof data?.connected !== "boolean") return null;
+      return data.connected;
+    },
+    (connected) => {
+      setMpwaConnected(connected);
+      if (connected) {
+        if (qrData) toast.success("WhatsApp berhasil terhubung!");
+        setQrData(null);
+      }
+    },
+  );
+
   const fetchLogs = useCallback(async () => {
     if (!schoolId) return;
     setLogsLoading(true);
@@ -382,11 +405,11 @@ const WhatsAppSettings = () => {
       if (data?.connected) {
         setMpwaConnected(true);
         setQrData(null);
-        toast.success("Device berhasil terhubung!");
+        toast.success("Perangkat berhasil terhubung!");
       } else if (data?.error) {
         toast.error(data.error);
       } else {
-        toast("QR belum terhubung. Scan dulu lalu klik Cek Status lagi.");
+        toast("WhatsApp belum terhubung. Pindai kode QR; status diperiksa otomatis.");
       }
     } catch (err: any) {
       toast.error("Gagal cek status: " + err.message);
@@ -399,6 +422,7 @@ const WhatsAppSettings = () => {
     if (!schoolId) return;
     const cleanNumber = mpwaSenderNumber.replace(/\D/g, "");
     if (!cleanNumber) { toast.error("Masukkan nomor WhatsApp terlebih dahulu"); return; }
+    setAutoCheckPaused(false);
     setQrLoading(true); setQrData(null); setMpwaConnected(false);
     try {
       const res = await supabase.functions.invoke("mpwa-proxy", {
@@ -410,12 +434,12 @@ const WhatsAppSettings = () => {
       } else if (data?.connected) {
         setMpwaConnected(true);
         setQrData(null);
-        toast.success("Device sudah terhubung!");
+        toast.success("Perangkat sudah terhubung!");
       } else if (data?.qrcode) {
         setQrData(data.qrcode);
-        toast.success("QR Code berhasil dibuat! Scan di WhatsApp lalu klik Cek Status.");
+        toast.success("Kode QR berhasil dibuat! Pindai melalui WhatsApp; status akan diperbarui otomatis.");
       } else {
-        toast.error(data?.error || data?.msg || data?.message || "Gagal generate QR code. Coba lagi.");
+        toast.error(data?.error || data?.msg || data?.message || "Gagal membuat kode QR. Silakan coba lagi.");
       }
     } catch (err: any) { toast.error("Gagal: " + err.message); }
     setQrLoading(false);
@@ -423,15 +447,16 @@ const WhatsAppSettings = () => {
 
   const handleDisconnect = async () => {
     if (!schoolId) return;
+    setAutoCheckPaused(true);
     setDisconnecting(true);
     try {
       const res = await supabase.functions.invoke("mpwa-proxy", {
         body: { action: "disconnect", school_id: schoolId, number: mpwaSenderNumber.replace(/\D/g, "") },
       });
       const data = res.data as any;
-      if (data?.success) { setMpwaConnected(false); setQrData(null); toast.success("Device berhasil di-disconnect"); }
-      else toast.error(data?.error || data?.message || "Gagal disconnect");
-    } catch (err: any) { toast.error("Gagal: " + err.message); }
+      if (data?.success) { setMpwaConnected(false); setQrData(null); toast.success("Koneksi perangkat berhasil diputus"); }
+      else { setAutoCheckPaused(false); toast.error(data?.error || data?.message || "Gagal memutuskan koneksi"); }
+    } catch (err: any) { setAutoCheckPaused(false); toast.error("Gagal: " + err.message); }
     setDisconnecting(false);
   };
 
@@ -647,7 +672,7 @@ const WhatsAppSettings = () => {
                             { step: "2", text: 'Klik "Hubungkan" untuk membuat QR code WhatsApp' },
                             { step: "3", text: "Buka WhatsApp di HP → Menu (⋮) → Perangkat Tertaut" },
                             { step: "4", text: "Ketuk Tautkan Perangkat → Scan QR code yang tampil" },
-                            { step: "5", text: 'Setelah selesai scan, klik "Cek Status Koneksi"' },
+                            { step: "5", text: 'Setelah dipindai, status terhubung muncul otomatis' },
                           ].map((s) => (
                             <div key={s.step} className="flex items-start gap-2.5">
                               <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -813,7 +838,8 @@ const WhatsAppSettings = () => {
                               className="h-8 px-4 gap-1.5 w-full text-xs"
                             >
                               {qrLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
-                              Refresh QR
+
+                              Muat ulang QR
                             </Button>
                           </div>
                         )}

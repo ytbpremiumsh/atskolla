@@ -9,7 +9,7 @@ import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { useNfcScanner } from "@/hooks/useNfcScanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import jsQR from "jsqr";
 import {
   Dialog, DialogContent, DialogTitle, DialogDescription,
@@ -99,7 +99,7 @@ const ConfirmationPopup = ({ open, scannedStudent, alreadyRecorded, processing, 
               )}
               {scanMethod === "face" && (
                 <span className="inline-flex items-center gap-1 text-xs text-success font-medium mt-1">
-                  <UserCheck className="h-3 w-3" /> Dikenali via Face Recognition
+                  <UserCheck className="h-3 w-3" />  Dikenali via Pengenalan wajah
                 </span>
               )}
             </div>
@@ -647,7 +647,7 @@ const ScanQR = () => {
               <div className="relative bg-black" style={{ minHeight: 320 }}>
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted
                   style={{ minHeight: 320, WebkitTransform: "scaleX(1)" }} />
-                
+
                 {/* Scanner Overlay */}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Corner brackets */}
@@ -667,7 +667,7 @@ const ScanQR = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Dark overlay outside scan area */}
                   <div className="absolute inset-0 bg-black/30" style={{
                     maskImage: "radial-gradient(ellipse 120px 120px at center, transparent 80%, black 100%)",
@@ -741,7 +741,7 @@ const ScanQR = () => {
                 </div>
                 {canFace ? (
                   <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg">
-                    <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" /> Face Recognition
+                    <UserCheck className="h-3.5 w-3.5 text-[#5B6CF9]" />  Pengenalan wajah
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-lg opacity-60">

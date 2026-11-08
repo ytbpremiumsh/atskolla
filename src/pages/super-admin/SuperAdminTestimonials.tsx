@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Plus, Trash2, Save, Upload, X, Star, Building2, MessageSquareQuote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface TrustedSchool {
@@ -72,7 +72,7 @@ const SuperAdminTestimonials = () => {
     const ext = file.name.split(".").pop();
     const path = `trusted-school-${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("landing-assets").upload(path, file);
-    if (error) { toast.error("Gagal upload"); setUploading(null); return; }
+    if (error) { toast.error("Gagal unggah"); setUploading(null); return; }
     const { data: urlData } = supabase.storage.from("landing-assets").getPublicUrl(path);
     updateSchool(idx, "logo_url", urlData.publicUrl);
     setUploading(null);
@@ -204,7 +204,8 @@ const SuperAdminTestimonials = () => {
                         <Button type="button" variant="outline" size="sm" disabled={uploading === `school-${idx}`}
                           onClick={() => document.getElementById(`school-logo-${idx}`)?.click()}>
                           {uploading === `school-${idx}` ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Upload className="h-3 w-3 mr-1" />}
-                          Upload
+
+                          Unggah
                         </Button>
                       </div>
                     </div>

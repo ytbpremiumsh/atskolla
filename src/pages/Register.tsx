@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { School, Eye, EyeOff, Loader2, Search, CheckCircle2, MapPin, GraduationCap, PenLine, ArrowLeft, Sparkles, ShieldCheck, Zap, User, Mail, Phone, Building2, Globe2, Briefcase } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -236,8 +236,8 @@ const Register = () => {
       toast.error("Email login tidak valid"); return;
     }
 
-    if (!passwordValid) { toast.error("Password harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
-    if (password !== confirmPassword) { toast.error("Password tidak cocok"); return; }
+    if (!passwordValid) { toast.error("Kata sandi harus minimal 8 karakter, mengandung huruf besar, angka, dan simbol"); return; }
+    if (password !== confirmPassword) { toast.error("Kata sandi tidak cocok"); return; }
     if (!slug || slugStatus !== "available") {
       toast.error("Silakan pilih alamat website sekolah (subdomain) yang tersedia");
       return;
@@ -278,7 +278,7 @@ const Register = () => {
       setRegisteredUrl(loginUrl); setRegistering(false);
 
     } catch (err: any) {
-      toast.error("Registrasi gagal: " + (err.message || "Unknown error"));
+      toast.error("Registrasi gagal: " + (err.message || "Terjadi kesalahan yang belum diketahui"));
     }
     setRegistering(false);
   };
@@ -638,7 +638,7 @@ const Register = () => {
                       <motion.div variants={itemVariants} className="space-y-2">
                         <Label htmlFor="personalWa">No. WhatsApp Pribadi <span className="text-red-500">*</span></Label>
                         <Input id="personalWa" type="tel" inputMode="numeric" placeholder="08xxxxxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))} maxLength={16} className="h-11 rounded-xl" required />
-                        <p className="text-[11px] text-muted-foreground">Untuk verifikasi akun & pemulihan password via OTP</p>
+                        <p className="text-[11px] text-muted-foreground">Untuk verifikasi akun & pemulihan kata sandi via OTP</p>
                       </motion.div>
 
                       <motion.div variants={itemVariants} className="space-y-2">
@@ -657,7 +657,7 @@ const Register = () => {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-foreground">Keamanan Akun</p>
-                            <p className="text-[11px] text-muted-foreground">Buat password yang kuat untuk melindungi data sekolah</p>
+                            <p className="text-[11px] text-muted-foreground">Buat kata sandi yang kuat untuk melindungi data sekolah</p>
                           </div>
                         </div>
                       </motion.div>
@@ -667,7 +667,7 @@ const Register = () => {
 
 
                       <motion.div variants={itemVariants} className="space-y-2">
-                        <Label htmlFor="regPassword">Password</Label>
+                        <Label htmlFor="regPassword">Kata sandi</Label>
                         <div className="relative">
                           <Input
                             id="regPassword"
@@ -703,11 +703,11 @@ const Register = () => {
                       </motion.div>
 
                       <motion.div variants={itemVariants} className="space-y-2">
-                        <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
+                        <Label htmlFor="confirmPassword">Konfirmasi Kata sandi</Label>
                         <Input
                           id="confirmPassword"
                           type="password"
-                          placeholder="Ulangi password"
+                          placeholder="Ulangi kata sandi"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="h-11 rounded-xl"

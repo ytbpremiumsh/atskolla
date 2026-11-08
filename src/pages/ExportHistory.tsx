@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import "jspdf-autotable";
 import { motion } from "framer-motion";
 import { PremiumGate } from "@/components/PremiumGate";

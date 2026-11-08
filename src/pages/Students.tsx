@@ -17,7 +17,7 @@ import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import QRCodeDisplay from "@/components/QRCodeDisplay";
 import { StudentIdCard } from "@/components/StudentIdCard";
 import { NfcScanButton } from "@/components/NfcScanButton";
@@ -223,14 +223,14 @@ const Students = () => {
 
   const handlePhotoUpload = async (studentId: string, file: File) => {
     if (!features.canUploadPhoto) {
-      toast.error("Fitur upload foto tersedia di paket Basic ke atas");
+      toast.error("Fitur unggah foto tersedia di paket Basic ke atas");
       return;
     }
     setPhotoUploading(studentId);
     const ext = file.name.split(".").pop();
     const path = `${profile?.school_id}/${studentId}.${ext}`;
     const { error: uploadError } = await supabase.storage.from("student-photos").upload(path, file, { upsert: true });
-    if (uploadError) { toast.error("Gagal upload foto"); setPhotoUploading(null); return; }
+    if (uploadError) { toast.error("Gagal unggah foto"); setPhotoUploading(null); return; }
     const { data: urlData } = supabase.storage.from("student-photos").getPublicUrl(path);
     const newUrl = `${urlData.publicUrl}?t=${Date.now()}`;
     await supabase.from("students").update({ photo_url: newUrl }).eq("id", studentId);
@@ -622,7 +622,7 @@ const Students = () => {
                 <ArrowRightLeft className="h-4 w-4 mr-2" /> Naik Kelas
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleDownloadTemplate}>
-                <FileSpreadsheet className="h-4 w-4 mr-2" /> Download Template
+                <FileSpreadsheet className="h-4 w-4 mr-2" />  Unduh Template
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
@@ -749,7 +749,7 @@ const Students = () => {
             }}>
               <SelectTrigger className="w-auto gap-1.5" disabled={downloadingQr}>
                 {downloadingQr ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <QrCode className="h-3.5 w-3.5" />}
-                <span className="text-xs font-medium">Download QR</span>
+                <span className="text-xs font-medium">Unduh QR</span>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Kelas</SelectItem>
@@ -890,7 +890,7 @@ const Students = () => {
                                           </>
                                         ) : (
                                           <Button variant="ghost" size="icon" className="h-8 w-8 opacity-50"
-                                            onClick={() => toast.error("Fitur Upload Foto tersedia di paket Basic ke atas")}>
+                                            onClick={() => toast.error("Fitur Unggah Foto tersedia di paket Basic ke atas")}>
                                             <div className="relative">
                                               <Camera className="h-4 w-4 text-muted-foreground" />
                                               <Lock className="h-2.5 w-2.5 text-warning absolute -top-1 -right-1" />

@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Gift, Settings, Users, Trophy, Star, Save, Loader2 } from "lucide-react";
 
@@ -23,7 +23,7 @@ const SuperAdminReferral = () => {
 
   // Rewards
   const [rewards, setRewards] = useState<any[]>([]);
-  
+
   // Leaderboard
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
 

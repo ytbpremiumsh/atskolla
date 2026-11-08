@@ -166,7 +166,7 @@ export default function SuperAdminShortlinks() {
       .upsert({ key: "ga_measurement_id", value: trimmed }, { onConflict: "key" });
     setSavingGa(false);
     if (error) return toast({ title: "Gagal", description: error.message, variant: "destructive" });
-    toast({ title: "Tersimpan", description: "Refresh halaman untuk memuat tracker." });
+    toast({ title: "Tersimpan", description: "Muat ulang halaman untuk memuat tracker." });
   };
 
   // Aggregate clicks by day for the analytics dialog

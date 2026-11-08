@@ -1,3 +1,4 @@
+import { indonesianMessage } from "@/lib/indonesianMessages";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ArrowLeft, Loader2, Mail, Lock, ShieldCheck, KeyRound, MessageCircle, CheckCircle2, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -119,11 +120,11 @@ const ForgotPassword = () => {
         body: { email, otp_code: otp, verify_only: true },
       });
       if (error) throw error;
-      if (data.error) { setOtpError(data.error); toast.error(data.error); return; }
+      if (data.error) { setOtpError(indonesianMessage(data.error) as string); toast.error(data.error); return; }
       toast.success("OTP terverifikasi!");
       setStep("new-password");
     } catch (err: any) {
-      setOtpError(err.message || "OTP tidak valid");
+      setOtpError(indonesianMessage(err.message || "OTP tidak valid") as string);
       toast.error(err.message || "OTP tidak valid");
     } finally {
       setLoading(false);
@@ -132,8 +133,8 @@ const ForgotPassword = () => {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPassword.length < 6) { toast.error("Password minimal 6 karakter"); return; }
-    if (newPassword !== confirmPassword) { toast.error("Password tidak cocok"); return; }
+    if (newPassword.length < 6) { toast.error("Kata sandi minimal 6 karakter"); return; }
+    if (newPassword !== confirmPassword) { toast.error("Kata sandi tidak cocok"); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("verify-otp-reset", {
@@ -141,7 +142,7 @@ const ForgotPassword = () => {
       });
       if (error) throw error;
       if (data.error) { toast.error(data.error); return; }
-      toast.success("Password berhasil diubah!");
+      toast.success("Kata sandi berhasil diubah!");
       setStep("done");
     } catch (err: any) {
       toast.error(err.message || "Gagal reset password");
@@ -151,7 +152,7 @@ const ForgotPassword = () => {
   };
   const stepConfig: Record<Step, { title: string; subtitle: string; icon: typeof KeyRound }> = {
     email: {
-      title: "Lupa Password?",
+      title: "Lupa Kata sandi?",
       subtitle: "Tenang, kami bantu pulihkan akses akun Anda.",
       icon: KeyRound,
     },
@@ -161,7 +162,7 @@ const ForgotPassword = () => {
       icon: MessageCircle,
     },
     "new-password": {
-      title: "Buat Password Baru",
+      title: "Buat Kata sandi Baru",
       subtitle: "Buat kata sandi baru yang aman dan mudah diingat.",
       icon: Lock,
     },
@@ -410,7 +411,8 @@ const ForgotPassword = () => {
                   >
                     <div className="space-y-2">
                       <Label htmlFor="new-pw" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Password Baru
+
+                        Kata sandi Baru
                       </Label>
                       <div className="relative group">
                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
@@ -427,14 +429,15 @@ const ForgotPassword = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="confirm-pw" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                        Konfirmasi Password
+
+                        Konfirmasi Kata sandi
                       </Label>
                       <div className="relative group">
                         <ShieldCheck className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input
                           id="confirm-pw"
                           type="password"
-                          placeholder="Ketik ulang password"
+                          placeholder="Ketik ulang kata sandi"
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="h-12 pl-10 bg-secondary/50 border-border focus:bg-background focus:border-primary focus:ring-primary/20 transition-all duration-300 rounded-xl"
@@ -461,7 +464,8 @@ const ForgotPassword = () => {
                     className="space-y-5 text-center"
                   >
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Silakan login menggunakan password baru Anda dan jaga kerahasiaannya.
+
+                      Silakan login menggunakan kata sandi baru Anda dan jaga kerahasiaannya.
                     </p>
                     <Button
                       onClick={() => navigate("/admin")}

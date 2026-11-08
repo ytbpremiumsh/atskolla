@@ -8,7 +8,7 @@ import { Globe, Crown, CheckCircle2, Clock, AlertCircle, ExternalLink, Copy, Che
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionFeatures } from "@/hooks/useSubscriptionFeatures";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { motion } from "framer-motion";
 import { PaymentIframeDialog } from "@/components/PaymentIframeDialog";
 

@@ -101,7 +101,7 @@ export default function SuperAdminServerInfo() {
     try {
       // Get table list to count
       await supabase.from("schools").select("id", { count: "exact", head: true });
-      
+
       // Approximate stats from known tables
       const tableNames = [
         "schools", "students", "classes", "attendance_logs", "profiles",
@@ -188,7 +188,8 @@ export default function SuperAdminServerInfo() {
           </div>
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading} className="gap-2">
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
-            Refresh
+
+            Muat ulang
           </Button>
         </div>
       </div>

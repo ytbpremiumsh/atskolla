@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import {
   Sparkles, Loader2, Copy, Facebook, Instagram, Twitter, MessageCircle, Linkedin,
   Music2, FileText, Wand2, Bold, Italic, Underline, Strikethrough, RefreshCw,
@@ -369,7 +369,7 @@ export default function SuperAdminAutoCaption() {
                 </div>
                 <div>
                   <Label className="text-xs">Topik Konten</Label>
-                  <Textarea value={topic} onChange={(e) => setTopic(e.target.value)} rows={3} placeholder="Misal: Perkenalan fitur Face Recognition AI" />
+                  <Textarea value={topic} onChange={(e) => setTopic(e.target.value)} rows={3} placeholder="Misal: Perkenalan fitur Pengenalan wajah AI" />
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {TOPIC_PRESETS.map((t) => (
                       <button key={t} onClick={() => setTopic(t)} className="text-[10px] px-2 py-1 rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition border">
@@ -463,7 +463,7 @@ export default function SuperAdminAutoCaption() {
                         value={sourceText}
                         onChange={(e) => setSourceText(e.target.value)}
                         rows={3}
-                        placeholder="Misal: highlight Face Recognition & notifikasi WA. Kosongkan untuk auto."
+                        placeholder="Misal: highlight Pengenalan wajah & notifikasi WA. Kosongkan untuk auto."
                       />
                     </div>
                   </>
