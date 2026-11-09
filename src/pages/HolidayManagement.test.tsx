@@ -1,5 +1,5 @@
 import { MemoryRouter } from "react-router-dom";
-import {beforeEach,describe,expect,it,vi} from "vitest";
+import {afterEach,beforeEach,describe,expect,it,vi} from "vitest";
 import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
 import HolidayManagement from "./HolidayManagement";
 const mock=vi.hoisted(()=>({roles:["staff"],saved:vi.fn(),school:{holiday_mode:false,holiday_mode_label:null as string|null,holiday_days:[0],timezone:"Asia/Jakarta"}}));
@@ -12,7 +12,8 @@ vi.mock("@/integrations/supabase/client",()=>({supabase:{from:(table:string)=>{
  single:async()=>{if(patch){mock.saved(patch);Object.assign(mock.school,patch)}return {data:table==="schools"?{...mock.school}:null,error:null}},
  maybeSingle:async()=>({data:table==="schools"?{...mock.school}:null,error:null})};return b;
 }}}));
-beforeEach(()=>{cleanup();vi.clearAllMocks();mock.roles=["staff"];mock.school={holiday_mode:false,holiday_mode_label:null,holiday_days:[0],timezone:"Asia/Jakarta"};});
+afterEach(()=>vi.useRealTimers());
+beforeEach(()=>{vi.useFakeTimers({toFake:["Date"]});vi.setSystemTime(new Date("2026-11-08T03:00:00Z"));cleanup();vi.clearAllMocks();mock.roles=["staff"];mock.school={holiday_mode:false,holiday_mode_label:null,holiday_days:[0],timezone:"Asia/Jakarta"};});
 describe("Operator holiday controls",()=>{
  it("shows the manual switch and saves on/off and weekly days for an operator",async()=>{
   render(<MemoryRouter><HolidayManagement/></MemoryRouter>);const toggle=screen.getByRole("switch",{name:"Mode libur cepat"});await waitFor(()=>expect(toggle).toBeEnabled());

@@ -1,12 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { emptySetup, setupSteps, fetchSchoolSetup } from "./schoolSetup";
-const mock = vi.hoisted(() => ({ failed: "", calls: [] as string[], treasurer: false }));
+const mock = vi.hoisted(() => ({ failed: "", calls: [] as string[], treasurer: false, bankRows: [] as Record<string, unknown>[] }));
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: (table: string) => {
       mock.calls.push(table);
       const b = {
         select: () => b,
+        order: () => b,
+        range: () => b,
         eq: () => b,
         neq: () => b,
         in: () => b,
@@ -24,10 +26,12 @@ vi.mock("@/integrations/supabase/client", () => ({
                       table === "schools"
                         ? {
                             name: "School",
+                            holiday_days: [0, 6],
                             timezone: "Asia/Jakarta",
                             whatsapp: "",
                             email: "",
                           }
+                        : table === "bendahara_bank_accounts" ? mock.bankRows
                         : table === "profiles" && mock.treasurer
                           ? [{ user_id: "user" }]
                         : table === "user_roles" && mock.treasurer
@@ -50,6 +54,7 @@ vi.mock("@/integrations/supabase/client", () => ({
 beforeEach(() => {
   mock.failed = "";
   mock.treasurer = false;
+  mock.bankRows = [];
   mock.calls = [];
 });
 describe("school preparation guidance", () => {
@@ -90,4 +95,26 @@ describe("school preparation guidance", () => {
     expect(mock.calls).not.toContain("user_roles");
     expect(mock.calls).not.toContain("bendahara_bank_accounts");
   });
+  it("does not complete student or teacher steps merely because unrelated records exist", () => {
+    const steps = setupSteps({ ...emptySetup, students: 10, studentIssues: { incomplete: 1, class: 0, card: 0, guardian: 1, identity: 0 }, team: 2, teachers: 0, treasurers: 1 }, true);
+    expect(steps.find((step) => step.id === "students")?.done).toBe(false);
+    expect(steps.find((step) => step.id === "team")?.done).toBe(false);
+  });
+  it("requires configured attendance and coverage of all classes for schedules", () => {
+    const data = { ...emptySetup, schedules: 3, attendanceReady: false, unscheduledClasses: 1, invalidSchedules: 0 };
+    expect(setupSteps(data, true).find((step) => step.id === "schedules")).toMatchObject({ done: false, url: "/holidays" });
+    expect(setupSteps({ ...data, attendanceReady: true }, true).find((step) => step.id === "schedules")?.done).toBe(false);
+    expect(setupSteps({ ...data, attendanceReady: true, unscheduledClasses: 0 }, true).find((step) => step.id === "schedules")?.done).toBe(true);
+  });
+  it("requires an approved primary bank account with no review pending before marking it ready", async () => {
+    mock.bankRows = [{ verification_status: "verified", is_default: false, doku_bank_account_settlement_id: "BNK-example", requires_review: false }];
+    expect((await fetchSchoolSetup("school", "user", true)).bank).toBe("verified");
+    mock.bankRows[0].is_default = true;
+    expect((await fetchSchoolSetup("school", "user", true)).bank).toBe("linked");
+    mock.bankRows[0].requires_review = true;
+    expect((await fetchSchoolSetup("school", "user", true)).bank).toBe("pending");
+    mock.bankRows[0].verification_status = "rejected";
+    expect((await fetchSchoolSetup("school", "user", true)).bank).toBe("missing");
+  });
+
 });

@@ -29,7 +29,7 @@ export function SchoolSetupGuide() {
     queryKey: ["school-setup", profile?.school_id, user?.id, admin],
     queryFn: () => fetchSchoolSetup(profile!.school_id!, user!.id, admin),
     enabled: allowed && !!profile?.school_id && !!user?.id,
-    staleTime: 15000,
+    staleTime: 60000,
   });
   if (!allowed) return null;
   return (
@@ -70,6 +70,7 @@ export function SchoolSetupPanel({
     catch { return false; }
   });
   const [bankGuideOpen, setBankGuideOpen] = useState(false);
+  const [studentGuideOpen, setStudentGuideOpen] = useState(false);
   const needsTreasurer = data?.treasurers === 0;
   const treasurerKnown = typeof data?.treasurers === "number";
   const steps = data ? setupSteps(data, admin) : [];
@@ -83,20 +84,8 @@ export function SchoolSetupPanel({
     identity: "Identitas", classes: "Kelas", students: "Siswa",
     team: "Guru / Staff", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening",
   };
-  const guides: Record<string, string> = {
-    identity: "Lengkapi kontak dan zona waktu sekolah.",
-    classes: "Tambahkan kelas sebelum mengisi siswa.",
-    students: "Isi siswa, nomor kartu, dan WhatsApp wali.",
-    team: "Tambahkan guru dan staff sesuai tugas. Tambahkan Bendahara untuk mengaktifkan pembayaran SPP dan Tagihan.",
-    schedules: "Atur mapel, guru, dan jam per kelas.",
-    whatsapp: "Hubungkan perangkat untuk notifikasi wali.",
-    bank: bankSubmitted
-      ? "Rekening sudah diajukan. Verifikasi rekening diproses terpisah."
-      : needsTreasurer
-        ? "Tambahkan Bendahara terlebih dahulu, lalu masuk dengan akun Bendahara untuk mengajukan rekening."
-        : "Masuk menggunakan akun Bendahara, lalu ajukan rekening dari Dasbor Bendahara.",
-  };
-  if (dismissed) return null;
+  const guides = Object.fromEntries(steps.map((step) => [step.id, step.body]));
+  if (dismissed && canFinish) return null;
   return (
     <section
       aria-label="Persiapan sekolah"
@@ -104,7 +93,11 @@ export function SchoolSetupPanel({
     >
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-primary/10 bg-primary/5 px-3 py-2">
         <p className="text-xs font-medium">
-          {canFinish ? "Tahapan persiapan selesai. Klik Selesai untuk menutup panduan ini." : "Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem."}
+          {canFinish
+            ? data?.bank === "pending" || data?.bank === "verified"
+              ? "Data persiapan selesai. Pembayaran online masih menunggu kesiapan rekening."
+              : "Data persiapan selesai. Lakukan uji penggunaan sebelum dibagikan ke seluruh sekolah."
+            : "Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem."}
         </p>
 
       </div>
@@ -151,6 +144,10 @@ export function SchoolSetupPanel({
                       className={`${style} ${next?.id === step.id ? "bg-primary/10 text-primary" : ""} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>
                       {content}
                     </button>
+                  ) : step.allowed && step.id === "students" ? (
+                    <button type="button" onClick={() => setStudentGuideOpen(true)} title={description}
+                      aria-label={`${step.title}: ${description}`} aria-current={next?.id === step.id ? "step" : undefined}
+                      className={`${style} ${next?.id === step.id ? "bg-primary/10 text-primary" : ""} hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`}>{content}</button>
                   ) : step.allowed ? (
                     <Link to={step.url} title={description} aria-label={`${step.title}: ${description}`}
                       aria-current={next?.id === step.id ? "step" : undefined}
@@ -178,6 +175,8 @@ export function SchoolSetupPanel({
               }}>Selesai</Button>
             ) : next?.id === "bank" ? (
               <Button size="sm" className="h-8 px-3 text-xs" onClick={() => setBankGuideOpen(true)}>Lanjutkan: Rekening</Button>
+            ) : next?.id === "students" ? (
+              <Button size="sm" className="h-8 px-3 text-xs" onClick={() => setStudentGuideOpen(true)}>Lanjutkan: Siswa</Button>
             ) : next ? (
               <Button size="sm" className="h-8 px-3 text-xs" asChild>
                 <Link to={next.url}>Lanjutkan: {labels[next.id] ?? next.title}</Link>
@@ -196,6 +195,12 @@ export function SchoolSetupPanel({
             <span className="font-semibold text-foreground">{labels[next.id] ?? next.title}: </span>
             {guides[next.id]}
           </p>
+          {next.id === "schedules" && data?.attendanceReady !== false && (
+            <Link to="/holidays" className="shrink-0 text-xs font-semibold text-primary underline">Jam absensi & hari libur</Link>
+          )}
+          {next.id === "students" && (
+            <button type="button" onClick={() => setStudentGuideOpen(true)} className="shrink-0 text-xs font-semibold text-primary underline">Panduan akses wali</button>
+          )}
           {next.id === "team" && data?.treasurers === 0 && admin && (
             <Link to="/staff" className="shrink-0 rounded font-semibold text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
               Tambah Bendahara
@@ -203,6 +208,24 @@ export function SchoolSetupPanel({
           )}
         </div>
       )}
+      <Dialog open={studentGuideOpen} onOpenChange={setStudentGuideOpen}>
+        <DialogContent className="max-h-[85dvh] max-w-lg overflow-y-auto rounded-2xl border-primary/15">
+          <DialogHeader className="rounded-xl bg-primary/5 p-4 text-left">
+            <DialogTitle className="text-primary">Data siswa & akses wali</DialogTitle>
+            <DialogDescription>Lengkapi data terlebih dahulu, kemudian uji akses wali sebelum dibagikan.</DialogDescription>
+          </DialogHeader>
+          <ol className="list-decimal space-y-3 pl-5 text-sm leading-relaxed text-muted-foreground">
+            <li>Pastikan nama, NIS, kelas terdaftar, nomor kartu 16 digit, nama wali, dan WhatsApp wali benar. NIS dan kartu harus unik; satu nomor WhatsApp boleh digunakan untuk saudara.</li>
+            <li>Uji masuk melalui portal wali menggunakan nomor kartu siswa yang dimaksud. Pastikan siswa tersebut langsung terpilih dan seluruh anak dengan wali yang sama muncul.</li>
+            <li>Coba berpindah anak dan periksa absensi serta tagihannya. Setelah sesuai, bagikan alamat portal wali; jangan bagikan akun Admin.</li>
+          </ol>
+          <p className="text-xs text-muted-foreground">Centang tahap ini menunjukkan kelengkapan data, bukan bukti bahwa wali sudah mencoba masuk.</p>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" asChild><Link to="/login" target="_blank" rel="noopener noreferrer">Buka portal wali</Link></Button>
+            <Button asChild><Link to="/students" onClick={() => setStudentGuideOpen(false)}>Kelola data siswa</Link></Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={bankGuideOpen} onOpenChange={setBankGuideOpen}>
         <DialogContent className="max-h-[85dvh] w-[calc(100%-2rem)] max-w-lg gap-0 overflow-y-auto rounded-2xl border-primary/15 p-0 [&>button]:right-4 [&>button]:top-4 [&>button]:rounded-full [&>button]:bg-white/10 [&>button]:p-1 [&>button]:text-white [&>button]:opacity-100 [&>button]:hover:bg-white/20 [&>button]:focus:ring-white">
           <DialogHeader className="relative isolate overflow-hidden bg-gradient-to-br from-indigo-600 via-primary to-violet-600 px-6 pb-6 pt-6 text-left text-white">

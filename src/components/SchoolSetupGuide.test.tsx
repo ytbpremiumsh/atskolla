@@ -3,6 +3,12 @@ import { MemoryRouter } from "react-router-dom";
 import { afterEach, it, expect, vi } from "vitest";
 import { SchoolSetupPanel } from "./SchoolSetupGuide";
 import { emptySetup } from "@/lib/schoolSetup";
+const readySetup = {
+  ...emptySetup, identity: true, classes: 1, students: 1, team: 1, teachers: 1,
+  attendanceReady: true, unscheduledClasses: 0, invalidSchedules: 0,
+  studentIssues: { incomplete: 0, class: 0, card: 0, guardian: 0, identity: 0 },
+  schedules: 1, whatsapp: "connected" as const, treasurers: 1,
+};
 vi.mock("@/integrations/supabase/client", () => ({ supabase: {} }));
 afterEach(cleanup);
 it("keeps setup destinations and unknown statuses accessible in the compact checklist", () => {
@@ -42,30 +48,30 @@ it("takes operators to an actionable school menu instead of admin-only settings"
   ).not.toBeInTheDocument();
 });
 it("shows only the first incomplete stage guidance and merges treasurer into Guru / Staff", () => {
-  const data = { ...emptySetup, identity: true, classes: 1, students: 1, team: 0, treasurers: 0 };
+  const data = { ...readySetup, team: 0, teachers: 0, treasurers: 0, schedules: 0, unscheduledClasses: 1 };
   const { rerender } = render(
     <MemoryRouter><SchoolSetupPanel admin data={data} onRefresh={() => {}} /></MemoryRouter>,
   );
   expect(screen.getByRole("link", { name: /^Guru \/ Staff:/ })).toHaveAttribute("aria-current", "step");
   expect(screen.getByText(/Tambahkan guru dan staff sesuai tugas/)).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Tambah Bendahara" })).toHaveAttribute("href", "/staff");
-  expect(screen.queryByText("Atur mapel, guru, dan jam per kelas.")).not.toBeInTheDocument();
-  rerender(<MemoryRouter><SchoolSetupPanel admin data={{ ...data, team: 1 }} onRefresh={() => {}} /></MemoryRouter>);
+  expect(screen.queryByText("1 kelas belum memiliki jadwal aktif. Siapkan mapel dan guru, lalu isi jadwal satuan atau massal.")).not.toBeInTheDocument();
+  rerender(<MemoryRouter><SchoolSetupPanel admin data={{ ...data, team: 1, teachers: 1 }} onRefresh={() => {}} /></MemoryRouter>);
   expect(screen.getByRole("link", { name: /^Jadwal pelajaran:/ })).toHaveAttribute("aria-current", "step");
-  expect(screen.getByText("Atur mapel, guru, dan jam per kelas.")).toBeInTheDocument();
+  expect(screen.getByText("1 kelas belum memiliki jadwal aktif. Siapkan mapel dan guru, lalu isi jadwal satuan atau massal.")).toBeInTheDocument();
   expect(screen.queryByRole("link", { name: "Tambah Bendahara" })).not.toBeInTheDocument();
 });
 it("allows finishing after account submission without claiming provider verification, and hides the card", () => {
-  const data = { ...emptySetup, identity: true, classes: 1, students: 1, team: 1, schedules: 1, whatsapp: "connected" as const, bank: "pending" as const };
+  const data = { ...readySetup, bank: "pending" as const };
   render(<MemoryRouter><SchoolSetupPanel admin data={data} onRefresh={() => {}} /></MemoryRouter>);
   expect(screen.queryByText("Link wali")).not.toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Selesai" })).toBeInTheDocument();
-  expect(screen.getByText(/Verifikasi rekening diproses terpisah/)).toBeInTheDocument();
+  expect(screen.getByText(/Pembayaran online masih menunggu kesiapan rekening/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Selesai" }));
   expect(screen.queryByRole("region", { name: "Persiapan sekolah" })).not.toBeInTheDocument();
 });
 it.each([0, 1])("guides admins through the treasurer role instead of opening bank entry (treasurers=%s)", (treasurers) => {
-  const data = { ...emptySetup, identity: true, classes: 1, students: 1, team: 1, schedules: 1, whatsapp: "connected" as const, bank: "missing" as const, treasurers };
+  const data = { ...readySetup, bank: "missing" as const, treasurers };
   render(<MemoryRouter><SchoolSetupPanel admin data={data} onRefresh={() => {}} /></MemoryRouter>);
   fireEvent.click(screen.getByRole("button", { name: "Lanjutkan: Rekening" }));
   expect(screen.getByRole("dialog")).toHaveAccessibleName(treasurers === 0 ? "Tambahkan Bendahara terlebih dahulu" : "Ajukan melalui akun Bendahara");
@@ -76,4 +82,12 @@ it.each([0, 1])("guides admins through the treasurer role instead of opening ban
     expect(screen.queryByRole("link", { name: "Tambah Bendahara" })).not.toBeInTheDocument();
   }
   expect(screen.queryByRole("link", { name: /Lanjutkan: Rekening/ })).not.toBeInTheDocument();
+});
+
+it("opens practical guardian access guidance within the existing Siswa stage", () => {
+  render(<MemoryRouter><SchoolSetupPanel admin data={{ ...readySetup, studentIssues: { incomplete: 1, class: 0, card: 0, guardian: 1, identity: 0 } }} onRefresh={() => {}} /></MemoryRouter>);
+  fireEvent.click(screen.getByRole("button", { name: "Lanjutkan: Siswa" }));
+  expect(screen.getByRole("dialog")).toHaveAccessibleName("Data siswa & akses wali");
+  expect(screen.getByRole("link", { name: "Kelola data siswa" })).toHaveAttribute("href", "/students");
+  expect(screen.getByText(/bukan bukti bahwa wali sudah mencoba masuk/)).toBeInTheDocument();
 });
