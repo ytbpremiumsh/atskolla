@@ -1,4 +1,3 @@
-import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -73,7 +72,8 @@ export function PaymentMethodPicker({
                 key={c.id}
                 type="button"
                 onClick={() => setSelected(c.id)}
-                className={`w-full text-left rounded-xl border-2 p-3.5 transition-all ${
+                aria-pressed={active}
+                className={`w-full text-left rounded-xl border-2 p-3.5 transition-colors ${
                   active
                     ? "border-[#5B6CF9] bg-[#5B6CF9]/5 shadow-sm"
                     : "border-border/70 hover:border-[#5B6CF9]/40 bg-background"
@@ -100,27 +100,27 @@ export function PaymentMethodPicker({
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{c.id === "qris" ? "Bayar lewat e-wallet atau mobile banking" : c.id === "va" ? "Transfer lewat ATM atau mobile banking" : "Bayar tunai di Alfamart atau Indomaret"}</p>
                     {c.id === "qris" && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p></div>}
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <div className="flex flex-nowrap items-center gap-2 mt-2 overflow-x-auto pb-1">
                       {c.banks.map((b) => (
                         <div
                           key={b.code}
-                          className="h-8 w-16 rounded-md bg-white border border-border/50 flex items-center justify-center p-1 shadow-sm"
+                          className="h-8 w-16 shrink-0 rounded-md bg-white border border-border/50 flex items-center justify-center p-1 shadow-sm"
                         >
-                          <BrandLogo
+                          <img
                             src={b.logo}
                             alt={b.name}
                             loading="lazy"
-                            className="max-h-full max-w-full object-contain"
+                            width={64}
+                            height={32}
+                            className="block h-full w-full object-contain"
                           />
                         </div>
                       ))}
                     </div>
                   </div>
-                  {active && (
-                    <div className="h-5 w-5 rounded-full bg-[#5B6CF9] flex items-center justify-center shrink-0">
+                  <div aria-hidden="true" className={`h-5 w-5 rounded-full bg-[#5B6CF9] flex items-center justify-center shrink-0 ${active ? "visible" : "invisible"}`}>
                       <Check className="h-3 w-3 text-white" />
                     </div>
-                  )}
                 </div>
               </button>
             );
@@ -137,6 +137,9 @@ export function PaymentMethodPicker({
             <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
+          <p className="text-xs leading-relaxed text-muted-foreground" aria-live="polite">
+            {selected === "qris" ? disclosure.calculation : `Biaya tetap ${formatIDR(fee)} per transaksi.`}
+          </p>
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
             <span className="font-semibold text-foreground">Total Bayar</span>
             <span className="font-bold text-[#5B6CF9] text-lg">{formatIDR(total)}</span>
