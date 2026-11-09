@@ -98,8 +98,8 @@ export function PaymentMethodPicker({
                         +{formatIDR(feeFor(c.id))}
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{c.description}</p>
-                    {c.id === "qris" && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p><p>{disclosure.threshold}</p></div>}
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{c.id === "qris" ? "Bayar lewat e-wallet atau mobile banking" : c.id === "va" ? "Transfer lewat ATM atau mobile banking" : "Bayar tunai di Alfamart atau Indomaret"}</p>
+                    {c.id === "qris" && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p></div>}
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       {c.banks.map((b) => (
                         <div
@@ -137,7 +137,6 @@ export function PaymentMethodPicker({
             <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
-          {selected === "qris" && <p className="text-xs leading-relaxed text-muted-foreground" aria-live="polite">{disclosure.calculation}</p>}
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
             <span className="font-semibold text-foreground">Total Bayar</span>
             <span className="font-bold text-[#5B6CF9] text-lg">{formatIDR(total)}</span>

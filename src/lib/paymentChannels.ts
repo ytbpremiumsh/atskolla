@@ -122,7 +122,7 @@ export function qrisFeeDisclosure(amount: number, percent: number = QRIS_PERCENT
   const calculated = Math.round(base * rate);
   const fee = computeQrisFee(base, rate);
   return {
-    policy: `${label} dari nominal pembayaran, minimal ${formatIDR(QRIS_MIN_FEE)}.`,
+    policy: `Biaya ${label} · minimal ${formatIDR(QRIS_MIN_FEE)}`,
     threshold: rate > 0 ? `Ambang nominal ${formatIDR(QRIS_MIN_FEE / rate)}. Di atas ambang, biaya mengikuti persentase (dibulatkan ke rupiah).` : "Biaya minimum berlaku untuk setiap nominal pembayaran.",
     calculation: `${label} × ${formatIDR(base)} = ${formatIDR(calculated)}. ${calculated < QRIS_MIN_FEE ? "Berlaku biaya minimum" : "Biaya layanan"} ${formatIDR(fee)}.`,
   };
