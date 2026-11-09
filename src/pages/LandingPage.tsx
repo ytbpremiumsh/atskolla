@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, MotionConfig } from "framer-motion";
@@ -216,7 +217,7 @@ function Nav({ theme, onToggleTheme }: { theme: "light" | "dark"; onToggleTheme:
     <header className={`fixed top-0 inset-x-0 z-50 transition-all ${scrolled ? "bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_1px_0_0_rgba(15,23,42,0.04)]" : "bg-white border-b border-slate-100"}`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
         <a href="/" className="flex items-center group" aria-label="ATSkolla">
-          <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" width={160} height={40} fetchPriority="high" decoding="async" className="h-9 sm:h-10 w-auto object-contain" />
+          <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" width={160} height={40} fetchPriority="high" decoding="async" className="h-9 sm:h-10 w-auto object-contain" />
         </a>
 
 
@@ -559,7 +560,7 @@ function Ecosystem() {
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-[#5B6CF9]/25 blur-2xl" />
               <div className="relative h-28 w-28 lg:h-36 lg:w-36 rounded-3xl bg-white border border-[#5B6CF9]/40 flex flex-col items-center justify-center shadow-2xl">
-                <img src={atskollaPlatformLogo.url} alt="ATSkolla" className="h-12 w-12 lg:h-14 lg:w-14 object-contain mb-1" />
+                <BrandLogo src={atskollaPlatformLogo.url} alt="ATSkolla" className="h-12 w-12 lg:h-14 lg:w-14 object-contain mb-1" />
 
                 <div className="font-display font-bold text-[#0b1020] text-sm">ATSkolla</div>
                 <div className="text-[9px] text-[#0b1020]/50 uppercase tracking-widest">Core Platform</div>
@@ -963,7 +964,7 @@ function Footer() {
         {/* Brand + Company Info */}
         <div className="md:col-span-4">
           <div className="inline-flex items-center justify-center rounded-xl bg-white/95 backdrop-blur px-3 py-2 mb-5 shadow-sm">
-            <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" width={140} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
+            <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" width={140} height={36} loading="lazy" decoding="async" className="h-9 w-auto object-contain" />
           </div>
 
           <p className="text-sm leading-relaxed text-white/75 mb-4">

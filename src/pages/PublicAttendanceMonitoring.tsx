@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -229,7 +230,7 @@ const PublicAttendanceMonitoring = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 sm:gap-4">
               {data.school.logo ? (
-                <img src={data.school.logo} alt="" className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover ring-2 ring-border/30" />
+                <BrandLogo src={data.school.logo} alt="" className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-cover ring-2 ring-border/30" />
               ) : (
                 <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-lg">
                   <School className="h-5 w-5 sm:h-6 sm:w-6 text-white" />

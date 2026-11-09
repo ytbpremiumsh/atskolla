@@ -1,3 +1,4 @@
+import { StudentIdentitySummary } from "@/components/students/StudentIdentitySummary";
 import { checkInvoiceBank } from "@/lib/invoiceBankVerification";
 import { useInvoiceBankGuard } from "@/components/bendahara/InvoiceBankGuard";
 import { BankBookAttachment, BANK_BOOK_BUCKET, validateBankBook } from "@/components/bank/BankBookAttachment";
@@ -390,13 +391,13 @@ function BankVerificationAlert({ schoolId, context = "dashboard" }: { schoolId?:
       ? "Rekening Pencairan Ditolak"
       : "Rekening Pencairan Belum Didaftarkan";
   const body = state === "unavailable" ? "Periksa koneksi lalu muat ulang halaman. Tagihan belum dapat dibuat sampai status rekening dapat dipastikan." : state === "pending"
-    ? "Pembayaran SPP secara online belum dapat digunakan oleh wali murid sampai rekening sekolah selesai diverifikasi oleh tim ATSkolla. Proses verifikasi biasanya tidak lama, mohon ditunggu."
+    ? "Pembayaran SPP secara online belum dapat digunakan oleh wali murid sampai rekening sekolah selesai diverifikasi Penyedia Layanan Gateway. Silakan periksa kembali status rekening secara berkala."
     : state === "rejected"
       ? "Rekening yang diajukan tidak lolos verifikasi. Pembayaran SPP secara online belum dapat digunakan. Silakan ajukan ulang rekening bank yang valid atas nama sekolah atau penanggung jawab."
       : "Pembayaran SPP secara online belum dapat digunakan oleh wali murid. Segera daftarkan rekening bank sekolah yang valid agar dana SPP dapat ditransfer otomatis ke rekening sekolah.";
   const finalBody = context === "generate"
     ? (state === "unavailable" ? body : state === "pending"
-        ? "Tagihan belum bisa dibuat karena rekening sekolah masih menunggu verifikasi oleh tim ATSkolla. Setelah rekening terverifikasi, halaman ini otomatis terbuka."
+        ? "Tagihan belum bisa dibuat karena rekening sekolah masih menunggu verifikasi Penyedia Layanan Gateway. Setelah rekening terverifikasi, halaman ini otomatis terbuka."
         : state === "rejected"
           ? "Tagihan belum bisa dibuat karena rekening sekolah ditolak saat verifikasi. Ajukan ulang rekening bank yang valid, lalu tunggu hingga terverifikasi."
           : "Tagihan belum bisa dibuat karena rekening sekolah belum didaftarkan. Daftarkan rekening bank sekolah terlebih dahulu agar dana SPP bisa ditransfer otomatis.")
@@ -3627,14 +3628,7 @@ export function BendaharaSPPDetail() {
           </div>
 
           {/* Row 2: Info siswa */}
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
-            <span>NIS: <strong className="text-foreground font-semibold">{student.student_id}</strong></span>
-            {student.nisn && <span>NISN: <strong className="text-foreground font-semibold">{student.nisn}</strong></span>}
-            {student.card_number && <span>No. Kartu: <strong className="text-foreground font-semibold font-mono">{student.card_number}</strong></span>}
-            <span className="inline-flex items-center gap-1">Kelas: <Badge variant="secondary" className="font-semibold">{student.class}</Badge></span>
-            <span>Wali: <strong className="text-foreground font-semibold">{student.parent_name || "-"}</strong></span>
-            {student.parent_phone && <span>WA: <strong className="text-foreground font-semibold">{student.parent_phone}</strong></span>}
-          </div>
+          <StudentIdentitySummary student={student} className="mt-4" />
 
 
           {/* Row 3: Stat cards */}
@@ -5022,7 +5016,7 @@ export function BendaharaPencairan() {
                       <p className="font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
                       <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}</p>
                       {acc.verification_status !== "verified" && (
-                        <p className="text-xs text-amber-600 mt-1">Rekening belum terverifikasi. Pembayaran SPP online belum bisa digunakan sampai diverifikasi admin ATSkolla.</p>
+                        <p className="text-xs text-amber-600 mt-1">Rekening belum terverifikasi. Pembayaran SPP online belum bisa digunakan sampai diverifikasi Penyedia Layanan Gateway.</p>
                       )}
                     </div>
                   </div>
@@ -5297,7 +5291,7 @@ export function BendaharaPencairan() {
                           <p className="mt-2.5 text-[11px] rounded-md bg-destructive/10 text-destructive px-2.5 py-1.5">Alasan ditolak: {a.rejection_reason}</p>
                         )}
                         {st !== "verified" && st !== "rejected" && (
-                          <p className="mt-2.5 text-[11px] rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1.5">Belum bisa dipakai untuk pencairan sampai diverifikasi admin ATSkolla.</p>
+                          <p className="mt-2.5 text-[11px] rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2.5 py-1.5">Belum bisa dipakai untuk pencairan sampai diverifikasi Penyedia Layanan Gateway.</p>
                         )}
                         {st === "rejected" && <div className="mt-3"><Button type="button" size="sm" disabled={accountSaving} onClick={() => editRejectedAccount(a)} className="gap-1.5"><Pencil className="h-3.5 w-3.5" />Perbarui Data</Button></div>}
                         {a.is_default ? (

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -52,7 +53,7 @@ export default function TentangKami() {
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-100">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-9 w-auto object-contain" />
+            <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-9 w-auto object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
             <Link to="/" className="text-[#0b1020] hover:text-[#5B6CF9]">Beranda</Link>
@@ -231,7 +232,7 @@ export default function TentangKami() {
       <footer className="bg-white border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-8 w-auto object-contain" />
+            <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-8 w-auto object-contain" />
             <span className="text-xs text-[#0b1020]/50">© {new Date().getFullYear()} ATSkolla</span>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-[#0b1020]/60">

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -147,7 +148,7 @@ const Penawaran = () => {
             <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={2} className="hidden md:block">
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-blue-500/20 rounded-3xl blur-xl" />
-                <img
+                <BrandLogo
                   src="/images/presentation/ss-dashboard.webp"
                   alt="ATSkolla Dashboard"
                   className="relative rounded-2xl shadow-2xl border border-white/10"

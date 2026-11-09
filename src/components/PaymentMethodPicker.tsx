@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -104,7 +105,7 @@ export function PaymentMethodPicker({
                           key={b.code}
                           className="h-8 w-16 rounded-md bg-white border border-border/50 flex items-center justify-center p-1 shadow-sm"
                         >
-                          <img
+                          <BrandLogo
                             src={b.logo}
                             alt={b.name}
                             loading="lazy"

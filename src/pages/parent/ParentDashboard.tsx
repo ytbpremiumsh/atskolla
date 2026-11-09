@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -401,7 +402,7 @@ export default function ParentDashboard() {
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="h-9 w-9 md:h-10 md:w-10 rounded-2xl bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shrink-0 shadow-[0_8px_20px_-6px_rgba(91,108,249,0.55)]">
-                <img src={headerLogo || atskollaLogo} alt="Logo Sekolah" className="h-5 w-5 md:h-6 md:w-6 object-contain" />
+                <BrandLogo src={headerLogo || atskollaLogo} alt="Logo Sekolah" className="h-5 w-5 md:h-6 md:w-6 object-contain" />
               </div>
               <div className="min-w-0 leading-tight">
                 <h1 className="text-xs sm:text-sm md:text-base font-bold truncate text-foreground">

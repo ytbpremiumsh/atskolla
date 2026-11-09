@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
@@ -177,11 +178,11 @@ export function AppSidebar() {
           <div className="relative z-10 flex items-center gap-2.5">
             <div className="h-10 w-10 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 overflow-hidden">
               {isPremiumBrand && schoolData?.logo ? (
-                <img src={schoolData.logo} alt={schoolData.name} className="h-8 w-8 object-contain" />
+                <BrandLogo src={schoolData.logo} alt={schoolData.name} className="h-8 w-8 object-contain" />
               ) : platformLogo ? (
-                <img src={platformLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
+                <BrandLogo src={platformLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
               ) : (
-                <img src={atskollaLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
+                <BrandLogo src={atskollaLogo} alt="ATSkolla" className="h-8 w-8 object-contain" />
               )}
             </div>
             <div className="flex flex-col min-w-0">

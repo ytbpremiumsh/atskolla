@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -192,7 +193,7 @@ const SuperAdminTestimonials = () => {
                     <div className="flex items-center gap-2">
                       {school.logo_url && (
                         <div className="relative">
-                          <img src={school.logo_url} alt="" className="h-10 w-10 rounded-lg object-contain border" />
+                          <BrandLogo src={school.logo_url} alt="" className="h-10 w-10 rounded-lg object-contain border" />
                           <button onClick={() => updateSchool(idx, "logo_url", null)} className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5">
                             <X className="h-2.5 w-2.5" />
                           </button>

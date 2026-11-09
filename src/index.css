@@ -305,3 +305,8 @@
 @media (max-width: 639px) {
   span[class*="rounded-full"][class*="px-"] { white-space: nowrap; flex-shrink: 0; }
 }
+
+/* Adapt identity details to their card width, including the narrow Admin column. */
+@container student-identity (min-width: 720px) {
+  .student-identity-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}

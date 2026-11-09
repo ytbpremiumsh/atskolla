@@ -1,3 +1,4 @@
+import { StudentIdentitySummary } from "@/components/students/StudentIdentitySummary";
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -468,20 +469,9 @@ const StudentDetail = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <InfoItem icon={User} label="Nama Lengkap" value={student.name} />
-                <InfoItem icon={GraduationCap} label="Kelas" value={student.class} />
-                <InfoItem icon={Hash} label="NIS" value={student.student_id} />
                 <InfoItem icon={Calendar} label="Terdaftar" value={new Date(student.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })} />
               </div>
-              {student.card_number && (
-                <div className="border-t pt-4">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Nomor Kartu Identitas</p>
-                  <div className="rounded-lg bg-gradient-to-r from-[#5B6CF9]/10 to-[#4c5ded]/10 border border-[#5B6CF9]/20 px-3 py-2.5">
-                    <p className="font-mono text-sm font-bold tracking-[0.15em] text-foreground break-all">
-                      {String(student.card_number).replace(/(\d{4})(?=\d)/g, "$1 ")}
-                    </p>
-                  </div>
-                </div>
-              )}
+              <StudentIdentitySummary student={student} />
               {student.rfid_uid && (
                 <div className="border-t pt-4">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1.5"><CreditCard className="h-3 w-3" /> Kartu RFID Terdaftar</p>

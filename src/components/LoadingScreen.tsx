@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 // Lightweight loading screen — pure CSS animations, no framer-motion, no network fetch.
 // Keeps the whole component cheap so it never blocks initial render.
 
@@ -10,7 +11,7 @@ export function LoadingScreen() {
         <div className="relative">
           <div className="absolute -inset-4 rounded-3xl bg-white/15 blur-xl animate-pulse" />
           <div className="relative z-10 h-20 w-20 rounded-2xl bg-white shadow-2xl flex items-center justify-center p-2">
-            <img
+            <BrandLogo
               src={LOGO_SRC}
               alt="ATSkolla"
               className="h-full w-full object-contain"

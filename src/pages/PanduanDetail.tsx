@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,7 +45,7 @@ export default function PanduanDetail() {
           <Link to="/panduan" className="flex items-center gap-2.5 group">
             <ArrowLeft className="h-4 w-4 text-slate-500 group-hover:text-[#5B6CF9] transition-colors" />
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center">
-              <img src={atskollaLogo} alt="ATSkolla" className="h-5 w-5 object-contain" />
+              <BrandLogo src={atskollaLogo} alt="ATSkolla" className="h-5 w-5 object-contain" />
             </div>
             <span className="font-bold text-slate-900 hidden sm:inline">ATSkolla</span>
             <span className="text-sm text-slate-400 hidden sm:inline">/ Panduan</span>

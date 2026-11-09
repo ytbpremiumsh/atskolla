@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ const SchoolCard = ({ school, index, onDetail, onSubscription, onEdit, onSuspend
           <div className="flex items-start gap-3">
             <div className="h-12 w-12 rounded-xl gradient-primary flex items-center justify-center shrink-0">
               {school.logo ? (
-                <img src={school.logo} alt={school.name} className="h-10 w-10 rounded-lg object-cover" />
+                <BrandLogo src={school.logo} alt={school.name} className="h-10 w-10 rounded-lg object-cover" />
               ) : (
                 <School className="h-6 w-6 text-primary-foreground" />
               )}

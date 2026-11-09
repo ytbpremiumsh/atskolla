@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -72,7 +73,7 @@ export default function SelectRole() {
           <div className="flex flex-col items-center mb-8">
             <div className="h-14 w-14 flex items-center justify-center mb-3">
               {school?.logo ? (
-                <img src={school.logo} alt={school.name} className="h-14 w-14 object-contain" />
+                <BrandLogo src={school.logo} alt={school.name} className="h-14 w-14 object-contain" />
               ) : (
                 <SchoolIcon className="h-10 w-10 text-[#5B6CF9]" strokeWidth={1.5} />
               )}

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home, ArrowUp } from "lucide-react";
@@ -110,7 +111,7 @@ export function LegalLayout({
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200/80">
         <div className={cn("mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4", maxW)}>
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-9 w-auto object-contain" />
+            <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-9 w-auto object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-1 text-sm">
             {[
@@ -228,7 +229,7 @@ export function LegalLayout({
         <div className={cn("mx-auto px-4 sm:px-6 lg:px-8 py-10", maxW)}>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <img src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-8 w-auto object-contain" />
+              <BrandLogo src={ATSKOLLA_LOGO_URL} alt="ATSkolla" className="h-8 w-auto object-contain" />
               <div className="text-xs text-slate-500">
                 <p className="font-medium text-slate-700">ATSkolla</p>
                 <p>Platform Digital Sekolah Terintegrasi</p>

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
@@ -121,7 +122,7 @@ function AppContent() {
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <SidebarTrigger className="h-8 w-8 rounded-xl hover:bg-secondary/80 transition-colors shrink-0" />
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-sm shrink-0">
-              <img src={logoSrc} alt="Logo" className="h-5 w-5 object-contain" />
+              <BrandLogo src={logoSrc} alt="Logo" className="h-5 w-5 object-contain" />
             </div>
             <div className="flex flex-col leading-tight min-w-0">
               <span className="text-xs sm:text-sm font-bold text-foreground tracking-tight truncate max-w-[160px] sm:max-w-[280px]">

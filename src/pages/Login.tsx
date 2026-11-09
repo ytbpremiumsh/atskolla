@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -313,9 +314,9 @@ const Login = ({ forcedMode }: LoginProps) => {
               <div className="relative text-[#0b1020]">
                 <div className="flex items-center gap-3 mb-4">
                   {tenantLogo ? (
-                    <img src={tenantLogo} alt={tenantName || "Sekolah"} className="h-10 w-auto object-contain" />
+                    <BrandLogo src={tenantLogo} alt={tenantName || "Sekolah"} className="h-10 w-auto object-contain" />
                   ) : (
-                    <img src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
+                    <BrandLogo src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
                   )}
                   {tenantName && <span className="font-bold text-lg tracking-tight">{tenantName}</span>}
                 </div>
@@ -354,21 +355,21 @@ const Login = ({ forcedMode }: LoginProps) => {
           >
             <div className="flex lg:hidden items-center justify-center gap-3 mb-6">
               {mode === "parent" ? (
-                !tenantLogo && <img src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
+                !tenantLogo && <BrandLogo src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
               ) : tenantLogo ? (
                 <>
-                  <img src={tenantLogo} alt={tenantName || "Sekolah"} className="h-10 w-auto object-contain" />
+                  <BrandLogo src={tenantLogo} alt={tenantName || "Sekolah"} className="h-10 w-auto object-contain" />
                   {tenantName && <span className="font-bold text-xl text-[#0b1020] tracking-tight">{tenantName}</span>}
                 </>
               ) : (
-                <img src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
+                <BrandLogo src={loginLogo} alt="ATSkolla" className="h-10 w-auto object-contain" />
               )}
             </div>
 
             <div className="text-center mb-5">
               {mode === "parent" && tenantLogo && (
                 <div className="flex justify-center mb-4">
-                  <img
+                  <BrandLogo
                     src={tenantLogo}
                     alt={tenantName || "Sekolah"}
                     className="h-16 w-16 rounded-2xl shadow-lg object-contain bg-white border border-slate-200 p-2"

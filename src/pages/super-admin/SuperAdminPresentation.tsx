@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -298,7 +299,7 @@ const SuperAdminPresentation = () => {
               </div>
               {loginLogo && (
                 <div className="mt-1 flex items-center gap-2">
-                  <img src={loginLogo} alt="Logo Preview" className="h-12 w-12 rounded-xl object-contain border border-border" />
+                  <BrandLogo src={loginLogo} alt="Logo Preview" className="h-12 w-12 rounded-xl object-contain border border-border" />
                   <span className="text-xs text-muted-foreground">Preview logo</span>
                 </div>
               )}

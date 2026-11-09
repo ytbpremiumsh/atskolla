@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Shield, QrCode, Monitor, Users, GraduationCap, BarChart3, Clock, Bell, Globe, FileText, Settings, ChevronRight, CheckCircle2, Zap, Smartphone, Sparkles, Sun, Moon, ArrowDown, Star, TrendingUp, UserCheck, ScanLine, BookOpen, AlertTriangle, XCircle, ArrowRight, LayoutDashboard } from "lucide-react";
@@ -420,7 +421,7 @@ const Presentation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-2xl border-b ${navBg} transition-colors duration-300`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={headerLogo} alt="ATSkolla" className="h-9 object-contain" />
+            <BrandLogo src={headerLogo} alt="ATSkolla" className="h-9 object-contain" />
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setDark(!d)} className={`h-9 w-9 rounded-xl flex items-center justify-center transition-all ${d ? "bg-white/10 hover:bg-white/15 text-yellow-300" : "bg-slate-100 hover:bg-slate-200 text-slate-600"}`}>
@@ -755,7 +756,7 @@ const Presentation = () => {
       <footer className={`border-t py-10 ${d ? "border-white/5" : "border-slate-200"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <img src={headerLogo} alt="ATSkolla" className="h-7 object-contain" />
+            <BrandLogo src={headerLogo} alt="ATSkolla" className="h-7 object-contain" />
           </div>
           <p className={`text-xs ${d ? "text-slate-600" : "text-slate-400"}`}>
             © {new Date().getFullYear()} ATSkolla — Absensi Digital Sekolah.

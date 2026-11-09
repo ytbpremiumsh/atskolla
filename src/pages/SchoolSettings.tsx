@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { PageHeader } from "@/components/PageHeader";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -392,7 +393,7 @@ const SchoolSettings = () => {
             </div>
             <div className="flex items-center gap-4">
               {logo ? (
-                <img src={logo} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
+                <BrandLogo src={logo} alt="Logo" className="h-16 w-16 object-contain rounded-lg border border-border" />
               ) : (
                 <div className="h-16 w-16 rounded-lg border-2 border-dashed border-muted-foreground/20 flex items-center justify-center">
                   <Image className="h-6 w-6 text-muted-foreground/30" />

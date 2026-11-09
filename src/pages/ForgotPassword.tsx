@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { indonesianMessage } from "@/lib/indonesianMessages";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -247,7 +248,7 @@ const ForgotPassword = () => {
             transition={{ delay: 0.1 }}
             className="flex items-center justify-center gap-3 mb-6"
           >
-            <img src={logo} alt="ATSkolla" className="h-11 w-11 rounded-xl shadow-lg" />
+            <BrandLogo src={logo} alt="ATSkolla" className="h-11 w-11 rounded-xl shadow-lg" />
             <span className="font-bold text-xl text-white tracking-tight">ATSkolla</span>
           </motion.div>
 

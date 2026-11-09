@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -74,7 +75,7 @@ export function BendaharaSidebar() {
           <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-white/5 blur-2xl" />
           <div className="relative z-10 flex items-center gap-2.5">
             <div className="h-10 w-10 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shrink-0 overflow-hidden">
-              <img src={school?.logo || atskollaLogo} alt="logo" className="h-8 w-8 object-contain" />
+              <BrandLogo src={school?.logo || atskollaLogo} alt="logo" className="h-8 w-8 object-contain" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-[13px] font-extrabold text-white tracking-tight truncate leading-tight">

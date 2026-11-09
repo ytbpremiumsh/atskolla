@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { RegistrationSuccess } from "@/components/RegistrationSuccess";
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -321,7 +322,7 @@ const Register = () => {
         <div className="w-full max-w-lg">
         {/* Brand */}
         <div className="flex items-center justify-center gap-3 mb-5">
-          <img src={logo} alt="ATSkolla" className="h-10 w-auto object-contain" />
+          <BrandLogo src={logo} alt="ATSkolla" className="h-10 w-auto object-contain" />
         </div>
 
         {/* Title */}

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
@@ -70,7 +71,7 @@ export function BendaharaLayout() {
             {/* Logo + nama sekolah */}
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-sm shrink-0">
-                <img src={headerLogo || atskollaLogo} alt="Logo" className="h-5 w-5 object-contain" />
+                <BrandLogo src={headerLogo || atskollaLogo} alt="Logo" className="h-5 w-5 object-contain" />
               </div>
               <div className="flex flex-col leading-tight min-w-0">
                 <span className="text-xs sm:text-sm font-bold tracking-tight truncate max-w-[160px] sm:max-w-[260px]">

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,7 @@ export function StudentIdCard({ student, hideQrDownload = false, watermark = tru
         <div className="absolute inset-0 flex flex-col">
 
           <div className="relative flex items-start gap-2.5 p-5 text-white">
-            <img src={schoolLogo || atskollaLogo} alt="" crossOrigin="anonymous" className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur p-1 object-contain shrink-0" />
+            <BrandLogo src={schoolLogo || atskollaLogo} alt="" crossOrigin="anonymous" className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur p-1 object-contain shrink-0" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Kartu Pelajar</p>
               <p className="text-[12px] font-bold leading-snug break-words">{schoolName}</p>

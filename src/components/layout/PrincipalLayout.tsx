@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import SoftOutlet from "./SoftOutlet";
 import { Suspense } from "react";
 import { Outlet, Navigate, useNavigate } from "react-router-dom";
@@ -78,7 +79,7 @@ export function PrincipalLayout() {
             <header className="h-14 flex items-center border-b border-border/40 bg-background/80 backdrop-blur sticky top-0 z-30 px-3 gap-2">
               <SidebarTrigger />
               <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#5B6CF9] to-[#4c5ded] flex items-center justify-center shadow-sm shrink-0">
-                <img src={headerLogo || atskollaLogo} alt="Logo" className="h-5 w-5 object-contain" />
+                <BrandLogo src={headerLogo || atskollaLogo} alt="Logo" className="h-5 w-5 object-contain" />
               </div>
               <HeaderInner />
               <ThemeToggle />

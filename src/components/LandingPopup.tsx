@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -81,7 +82,7 @@ export default function LandingPopup() {
     <Dialog open={open} onOpenChange={(o) => !o && close()}>
       <DialogContent className="max-w-md overflow-hidden p-0">
         {config.image_url && (
-          <img
+          <BrandLogo
             src={config.image_url}
             alt={config.title || "Informasi ATSkolla"}
             loading="lazy"

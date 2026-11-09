@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { isRootHost } from "@/lib/tenant";
@@ -208,7 +209,7 @@ const LandingThemeB = () => {
       <nav className="fixed top-3 left-3 right-3 z-50 transition-all duration-300 rounded-2xl bg-white dark:bg-slate-900 shadow-lg border border-slate-200/80 dark:border-slate-700/50">
         <div className="relative px-4 sm:px-5 h-14 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center z-10" aria-label="ATSkolla">
-            <img src={headerLogo} alt="ATSkolla" className="h-9 sm:h-10 w-auto object-contain" />
+            <BrandLogo src={headerLogo} alt="ATSkolla" className="h-9 sm:h-10 w-auto object-contain" />
           </button>
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {[
@@ -331,7 +332,7 @@ const LandingThemeB = () => {
         <div className="relative z-30 px-4 sm:px-6 lg:px-8 sm:-mb-28 lg:-mb-40 flex-1 sm:flex-none flex items-center sm:block">
           <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
             className="max-w-5xl mx-auto overflow-visible w-full">
-            <img src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
+            <BrandLogo src={get("hero_image") || heroMockup} alt="Dashboard ATSkolla"
               className="w-full h-auto object-contain" />
           </motion.div>
         </div>
@@ -363,7 +364,7 @@ const LandingThemeB = () => {
             className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 mb-12">
             {trustedSchools.map((school, i) => (
               <div key={i} className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 flex items-center justify-center shadow-sm overflow-hidden">
-                {school.logo_url ? <img src={school.logo_url} alt={school.name} className="h-full w-full object-contain p-2" /> : <span className="text-xs sm:text-sm font-extrabold text-indigo-500/60">{school.initials}</span>}
+                {school.logo_url ? <BrandLogo src={school.logo_url} alt={school.name} className="h-full w-full object-contain p-2" /> : <span className="text-xs sm:text-sm font-extrabold text-indigo-500/60">{school.initials}</span>}
               </div>
             ))}
           </motion.div>
@@ -541,7 +542,7 @@ const LandingThemeB = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
-              <img src={dashboardPreviewStack} alt="Platform ATSkolla" className="w-full h-auto" loading="lazy" width={1280} height={1280} />
+              <BrandLogo src={dashboardPreviewStack} alt="Platform ATSkolla" className="w-full h-auto" loading="lazy" width={1280} height={1280} />
             </motion.div>
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
               <span className="inline-block text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 rounded-full mb-4">Tentang Platform</span>
@@ -647,7 +648,7 @@ const LandingThemeB = () => {
               {/* Brand */}
               <div className="col-span-2 space-y-4">
                 <div className="flex items-center gap-3">
-                  <img src={headerLogo} alt={get("footer_brand_name", "ATSkolla")} className="h-10 w-auto object-contain" />
+                  <BrandLogo src={headerLogo} alt={get("footer_brand_name", "ATSkolla")} className="h-10 w-auto object-contain" />
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
                   {get("footer_description", "Solusi digital terpadu untuk sekolah modern Indonesia — absensi, jadwal mengajar, SPP, dan portal wali murid dalam satu platform.")}

@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useTenant } from "@/lib/tenant";
@@ -337,7 +338,7 @@ const PublicMonitoring = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {data.school?.logo ? (
-                <img src={data.school.logo} alt={data.school.name} className="h-11 w-11 rounded-xl object-cover shadow-md" />
+                <BrandLogo src={data.school.logo} alt={data.school.name} className="h-11 w-11 rounded-xl object-cover shadow-md" />
               ) : (
                 <div className="h-11 w-11 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
                   <School className="h-6 w-6" />
