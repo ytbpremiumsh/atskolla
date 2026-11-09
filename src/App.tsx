@@ -1,3 +1,4 @@
+import { InvoiceBankGuardProvider } from "@/components/bendahara/InvoiceBankGuard";
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -438,11 +439,13 @@ const App = () => (
           <BrowserRouter basename={tenantBasename || undefined}>
             <TenantProvider>
               <AuthProvider>
+                <InvoiceBankGuardProvider>
                 <GoogleAnalytics />
                 <MetaPixel />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>
+                </InvoiceBankGuardProvider>
               </AuthProvider>
             </TenantProvider>
           </BrowserRouter>

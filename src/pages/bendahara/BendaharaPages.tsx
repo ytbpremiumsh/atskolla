@@ -1,3 +1,5 @@
+import { checkInvoiceBank } from "@/lib/invoiceBankVerification";
+import { useInvoiceBankGuard } from "@/components/bendahara/InvoiceBankGuard";
 import { BankBookAttachment, BANK_BOOK_BUCKET, validateBankBook } from "@/components/bank/BankBookAttachment";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -363,18 +365,17 @@ function useBendaharaFlags(schoolId?: string | null) {
 
 // ============ DASHBOARD ============
 function useBankVerificationState(schoolId?: string | null) {
-  const [state, setState] = useState<"none" | "pending" | "rejected" | "ok" | null>(null);
+  const [state, setState] = useState<"none" | "pending" | "rejected" | "ok" | "unavailable" | null>(null);
   useEffect(() => {
-    if (!schoolId) return;
-    (async () => {
-      const { data } = await supabase.from("bendahara_bank_accounts" as any)
-        .select("verification_status, is_active").eq("school_id", schoolId);
-      const rows = ((data as any[]) || []).filter((r) => r.is_active !== false);
-      if (rows.some((r) => r.verification_status === "verified")) setState("ok");
-      else if (rows.some((r) => r.verification_status === "pending")) setState("pending");
-      else if (rows.some((r) => r.verification_status === "rejected")) setState("rejected");
-      else setState("none");
-    })();
+    let alive = true;
+    const check = async () => {
+      const result = await checkInvoiceBank(schoolId);
+      if (alive) setState(result === "verified" ? "ok" : result);
+    };
+    void check();
+    const timer = setInterval(check, 30000);
+    window.addEventListener("focus", check);
+    return () => { alive = false; clearInterval(timer); window.removeEventListener("focus", check); };
   }, [schoolId]);
   return state;
 }
@@ -383,18 +384,18 @@ function BankVerificationAlert({ schoolId, context = "dashboard" }: { schoolId?:
   const navigate = useNavigate();
   const state = useBankVerificationState(schoolId);
   if (!state || state === "ok") return null;
-  const title = state === "pending"
+  const title = state === "unavailable" ? "Status Rekening Belum Dapat Diperiksa" : state === "pending"
     ? "Rekening Pencairan Sedang Menunggu Verifikasi"
     : state === "rejected"
       ? "Rekening Pencairan Ditolak"
       : "Rekening Pencairan Belum Didaftarkan";
-  const body = state === "pending"
+  const body = state === "unavailable" ? "Periksa koneksi lalu muat ulang halaman. Tagihan belum dapat dibuat sampai status rekening dapat dipastikan." : state === "pending"
     ? "Pembayaran SPP secara online belum dapat digunakan oleh wali murid sampai rekening sekolah selesai diverifikasi oleh tim ATSkolla. Proses verifikasi biasanya tidak lama, mohon ditunggu."
     : state === "rejected"
       ? "Rekening yang diajukan tidak lolos verifikasi. Pembayaran SPP secara online belum dapat digunakan. Silakan ajukan ulang rekening bank yang valid atas nama sekolah atau penanggung jawab."
       : "Pembayaran SPP secara online belum dapat digunakan oleh wali murid. Segera daftarkan rekening bank sekolah yang valid agar dana SPP dapat ditransfer otomatis ke rekening sekolah.";
   const finalBody = context === "generate"
-    ? (state === "pending"
+    ? (state === "unavailable" ? body : state === "pending"
         ? "Tagihan belum bisa dibuat karena rekening sekolah masih menunggu verifikasi oleh tim ATSkolla. Setelah rekening terverifikasi, halaman ini otomatis terbuka."
         : state === "rejected"
           ? "Tagihan belum bisa dibuat karena rekening sekolah ditolak saat verifikasi. Ajukan ulang rekening bank yang valid, lalu tunggu hingga terverifikasi."
@@ -1745,6 +1746,7 @@ export function BendaharaTarif() {
 
 // ============ GENERATE TAGIHAN ============
 export function BendaharaGenerate() {
+  const ensureVerifiedBank = useInvoiceBankGuard();
   const { profile } = useAuth();
   const bankState = useBankVerificationState(profile?.school_id);
   const flags = useBendaharaFlags(profile?.school_id);
@@ -1858,6 +1860,7 @@ export function BendaharaGenerate() {
 
   const generate = async () => {
     if (!profile?.school_id) return;
+    if (!await ensureVerifiedBank(profile.school_id)) return;
     if (preview.list.length === 0) { toast.error("Tidak ada tagihan untuk dibuat"); return; }
     setLoading(true);
     try {
@@ -2231,6 +2234,7 @@ export function BendaharaGenerate() {
 
 // ============ GENERATE CUSTOM (Ujian / Praktek / dll) ============
 function BendaharaGenerateCustom() {
+  const ensureVerifiedBank = useInvoiceBankGuard();
   const { profile } = useAuth();
   const flags = useBendaharaFlags(profile?.school_id);
   const [classes, setClasses] = useState<string[]>([]);
@@ -2302,6 +2306,7 @@ function BendaharaGenerateCustom() {
 
   const generate = async () => {
     if (!profile?.school_id) return;
+    if (!await ensureVerifiedBank(profile.school_id)) return;
     if (!billName.trim()) { toast.error("Nama tagihan wajib diisi"); return; }
     if (!amount || amount <= 0) { toast.error("Nominal tagihan harus lebih dari 0"); return; }
     if (preview.list.length === 0) { toast.error("Tidak ada siswa untuk dibuat tagihan"); return; }
@@ -3185,6 +3190,7 @@ function ClassGroupedList({ students, filterAY, filterMonth, navigate, invoices,
 
 // ============ SPP DETAIL PER SISWA ============
 export function BendaharaSPPDetail() {
+  const ensureVerifiedBank = useInvoiceBankGuard();
   const { studentId } = useParams<{ studentId: string }>();
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -3235,6 +3241,7 @@ export function BendaharaSPPDetail() {
 
   const createInvoiceFor = async (month: number, year: number) => {
     if (!student || !profile?.school_id) return;
+    if (!await ensureVerifiedBank(profile.school_id)) return;
     const tariff = tariffs.find(t => t.class_name === student.class);
     if (!tariff) { toast.error("Tarif untuk kelas ini belum diatur"); return; }
     setBusy(`create-${month}-${year}`);
@@ -3280,12 +3287,14 @@ export function BendaharaSPPDetail() {
   const [linkPicker, setLinkPicker] = useState<{ inv: any; regen: boolean } | null>(null);
   const [linkPickerLoading, setLinkPickerLoading] = useState(false);
 
-  const createPaymentLink = (inv: any, regen = false) => {
+  const createPaymentLink = async (inv: any, regen = false) => {
+    if (!await ensureVerifiedBank(profile?.school_id)) return;
     setLinkPicker({ inv, regen });
   };
 
   const confirmCreatePaymentLink = async (channel: PaymentChannelId, _fee: number, _total: number) => {
     if (!linkPicker) return;
+    if (!await ensureVerifiedBank(profile?.school_id)) return;
     const { inv, regen } = linkPicker;
     setLinkPickerLoading(true);
     setBusy(`link-${inv.id}`);
@@ -4060,6 +4069,7 @@ export function BendaharaSPPDetail() {
 
 // ============ IMPORT / EXPORT ============
 export function BendaharaImportExport() {
+  const ensureVerifiedBank = useInvoiceBankGuard();
   const { profile } = useAuth();
   const [previewRows, setPreviewRows] = useState<any[]>([]);
   const [validRows, setValidRows] = useState<any[]>([]);
@@ -4172,6 +4182,7 @@ export function BendaharaImportExport() {
   };
 
   const submitImport = async () => {
+    if (!await ensureVerifiedBank(profile?.school_id)) return;
     if (validRows.length === 0) { toast.error("Tidak ada data valid"); return; }
     setImporting(true);
     const rows = validRows.map(r => {
