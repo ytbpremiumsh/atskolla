@@ -86,7 +86,7 @@ export function getChannel(id: PaymentChannelId | string | null | undefined): Pa
 }
 
 // QRIS: persen dari tagihan (dapat dikonfigurasi di panel Super Admin) dengan
-// minimum Rp 3.000. Sengaja tidak menampilkan persen di UI — hanya "Biaya Layanan".
+// minimum Rp 3.000. Persentase dan nominal ditampilkan sebelum pembayaran.
 export const QRIS_MIN_FEE = 3000;
 export const QRIS_PERCENT_DEFAULT = 0.01; // 1% default
 export function computeQrisFee(amount: number, percent: number = QRIS_PERCENT_DEFAULT): number {
@@ -113,4 +113,17 @@ export function computeChannelFee(
 
 export function formatIDR(n: number): string {
   return "Rp\u00A0" + (Number(n) || 0).toLocaleString("id-ID");
+}
+
+export function qrisFeeDisclosure(amount: number, percent: number = QRIS_PERCENT_DEFAULT) {
+  const base = Math.max(0, Number(amount) || 0);
+  const rate = Number.isFinite(percent) && percent >= 0 ? percent : QRIS_PERCENT_DEFAULT;
+  const label = `${Number((rate * 100).toFixed(8)).toLocaleString("id-ID", { maximumFractionDigits: 8 })}%`;
+  const calculated = Math.round(base * rate);
+  const fee = computeQrisFee(base, rate);
+  return {
+    policy: `${label} dari nominal pembayaran, minimal ${formatIDR(QRIS_MIN_FEE)}.`,
+    threshold: rate > 0 ? `Ambang nominal ${formatIDR(QRIS_MIN_FEE / rate)}. Di atas ambang, biaya mengikuti persentase (dibulatkan ke rupiah).` : "Biaya minimum berlaku untuk setiap nominal pembayaran.",
+    calculation: `${label} × ${formatIDR(base)} = ${formatIDR(calculated)}. ${calculated < QRIS_MIN_FEE ? "Berlaku biaya minimum" : "Biaya layanan"} ${formatIDR(fee)}.`,
+  };
 }

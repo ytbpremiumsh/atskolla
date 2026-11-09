@@ -7,8 +7,8 @@ import {
   PAYMENT_CHANNELS,
   PaymentChannelId,
   formatIDR,
-  getChannel,
   computeChannelFee,
+  qrisFeeDisclosure,
 } from "@/lib/paymentChannels";
 
 type Props = {
@@ -42,7 +42,7 @@ export function PaymentMethodPicker({
 }: Props) {
   const [selected, setSelected] = useState<PaymentChannelId>("qris");
   const feeFor = (id: PaymentChannelId) => computeChannelFee(id, billAmount, feeOverrides, qrisPercent);
-  const chan = getChannel(selected)!;
+  const disclosure = qrisFeeDisclosure(billAmount, qrisPercent);
   const fee = feeFor(selected);
   const total = (billAmount || 0) + fee;
 
@@ -99,6 +99,7 @@ export function PaymentMethodPicker({
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{c.description}</p>
+                    {c.id === "qris" && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p><p>{disclosure.threshold}</p></div>}
                     <div className="flex flex-wrap items-center gap-2 mt-2">
                       {c.banks.map((b) => (
                         <div
@@ -136,6 +137,7 @@ export function PaymentMethodPicker({
             <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
+          {selected === "qris" && <p className="text-xs leading-relaxed text-muted-foreground" aria-live="polite">{disclosure.calculation}</p>}
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
             <span className="font-semibold text-foreground">Total Bayar</span>
             <span className="font-bold text-[#5B6CF9] text-lg">{formatIDR(total)}</span>
