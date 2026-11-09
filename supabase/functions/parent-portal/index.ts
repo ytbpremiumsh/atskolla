@@ -1,3 +1,4 @@
+declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 // Parent Dashboard API — handles login (WA OTP), session validation, and data access.
 // verify_jwt = false because parents do not have Supabase auth users; we use custom session tokens.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -304,7 +305,8 @@ Deno.serve(async (req) => {
         return json({ error: "Nomor tidak terdaftar di sekolah manapun. Hubungi admin sekolah." });
       }
       const otp = genOtp();
-      await supabase.from("parent_otps").insert({ phone, otp_code: otp });
+      const { data: storedOtp, error: otpError } = await supabase.from("parent_otps").insert({ phone, otp_code: otp }).select("id").single();
+      if (otpError || !storedOtp) return json({ error: "Kode belum dapat disiapkan. Silakan coba kembali." });
 
       const schoolId = students[0].school_id;
       const message = `Kode login Wali Murid ATSkolla Anda: *${otp}*\n\nBerlaku 5 menit. Jangan bagikan kode ini kepada siapapun.`;
@@ -321,7 +323,8 @@ Deno.serve(async (req) => {
       } catch { /* ignore */ }
 
       if (!result.ok) {
-        console.error("[parent-portal] OTP send failed:", JSON.stringify(result.raw).substring(0, 500));
+        await supabase.from("parent_otps").delete().eq("id", storedOtp.id);
+        console.error("[parent-portal] OTP delivery not accepted by gateway");
         return json({ error: "Gateway WhatsApp belum aktif. Hubungi admin sekolah." });
       }
       return json({ ok: true, phone, students_count: students.length });
@@ -333,19 +336,20 @@ Deno.serve(async (req) => {
       if (!phone || !code) return json({ error: "Data tidak lengkap" });
       const { data: otps } = await supabase
         .from("parent_otps")
-        .select("id, expires_at, used")
+        .select("id, otp_code, expires_at, used")
         .eq("phone", phone)
-        .eq("otp_code", code)
         .order("created_at", { ascending: false })
         .limit(1);
       const otp = otps?.[0];
-      if (!otp) return json({ error: "Kode salah" });
+      if (!otp || otp.otp_code !== code) return json({ error: "Kode salah. Gunakan kode WhatsApp terbaru." });
       if (otp.used) return json({ error: "Kode sudah digunakan" });
       if (new Date(otp.expires_at).getTime() < Date.now()) return json({ error: "Kode kedaluwarsa" });
-      await supabase.from("parent_otps").update({ used: true }).eq("id", otp.id);
+      const { data: consumed, error: consumeError } = await supabase.from("parent_otps").update({ used: true }).eq("id", otp.id).eq("used", false).gt("expires_at", new Date().toISOString()).select("id").maybeSingle();
+      if (consumeError || !consumed) return json({ error: "Kode sudah digunakan atau kedaluwarsa. Minta kode baru." });
 
       const token = genToken();
-      await supabase.from("parent_sessions").insert({ token, phone });
+      const { error: sessionError } = await supabase.from("parent_sessions").insert({ token, phone });
+      if (sessionError) return json({ error: "Sesi belum dapat disimpan. Silakan minta kode baru." });
       return json({ ok: true, token, phone });
     }
 
@@ -363,6 +367,31 @@ Deno.serve(async (req) => {
       return json({ ok: true, phone: session.phone, students });
     }
 
+    if (action === "register_push" || action === "unregister_push") {
+      if (action === "unregister_push") {
+        const { error } = await supabase.from("parent_push_devices").delete().eq("session_token", session.token);
+        return json(error ? { error: "Pendaftaran notifikasi belum dapat dihapus." } : { ok: true });
+      }
+      const fcmToken = String(body.fcm_token || "");
+      if (body.app_package !== "com.atskolla.parent" || !/^[A-Za-z0-9_:.\-]{20,4096}$/.test(fcmToken))
+        return json({ error: "Perangkat notifikasi tidak valid." });
+      const { error } = await supabase.from("parent_push_devices").upsert({
+        fcm_token: fcmToken, session_token: session.token, app_package: "com.atskolla.parent",
+        app_version: Number.isInteger(body.app_version) ? body.app_version : 0,
+        disabled_at: null, last_seen_at: new Date().toISOString(),
+      }, { onConflict: "fcm_token" });
+      if (error) return json({ error: "Notifikasi perangkat belum dapat didaftarkan." });
+      const configured = !!Deno.env.get("FCM_SERVICE_ACCOUNT_JSON");
+      const { data: runtime } = await supabase.from("parent_push_runtime").select("enabled,last_dispatch_at").eq("id", 1).maybeSingle();
+      if (configured) {
+        const work = fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/parent-push-dispatch`, {
+          method: "POST", headers: { "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`, "Content-Type": "application/json" }, body: "{}",
+        }).then(r => r.body?.cancel()).catch(() => {});
+        if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(work); else await work;
+      }
+      return json({ ok: true, ready: configured && runtime?.enabled === true && Date.now() - new Date(runtime.last_dispatch_at).getTime() < 300000 });
+    }
+
     const studentId: string = body.student_id;
     if (!studentId) return json({ error: "student_id wajib" });
 
@@ -377,6 +406,22 @@ Deno.serve(async (req) => {
       return json({ error: "Akses ditolak untuk siswa ini" });
     }
     const schoolId = studentRow.school_id;
+
+    // Parents use a custom session, not a Supabase Auth JWT. Authorize the
+    // student above, then issue a short-lived upload URL instead of opening
+    // anonymous Storage writes.
+    if (action === "prepare_leave_attachment") {
+      const mime = String(body.mime || "");
+      const extensions: Record<string, string> = { "application/pdf": "pdf", "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+      const size = Number(body.size);
+      if (!extensions[mime] || !Number.isInteger(size) || size < 1 || size > 5 * 1024 * 1024)
+        return json({ error: "Pilih PDF, JPG, PNG, atau WebP dengan ukuran maksimal 5 MB." });
+      const path = `leave/${schoolId}/${studentId}/${crypto.randomUUID()}.${extensions[mime]}`;
+      const { data, error } = await supabase.storage.from("parent-attachments").createSignedUploadUrl(path);
+      if (error || !data?.signedUrl) return json({ error: "Lampiran belum dapat diunggah. Silakan coba kembali." });
+      const { data: publicFile } = supabase.storage.from("parent-attachments").getPublicUrl(path);
+      return json({ ok: true, upload_url: data.signedUrl, attachment_url: publicFile.publicUrl });
+    }
 
     if (action === "attendance") {
       const fromDate = body.from || new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
@@ -394,7 +439,7 @@ Deno.serve(async (req) => {
 
     if (action === "schedule") {
       const today = new Date();
-      const dow = today.getDay();
+      const dow = (today.getDay() + 6) % 7; // Teaching schedules: Monday=0, Sunday=6.
       // Find class id by class name within the student's school
       const { data: classRow } = await supabase
         .from("classes")
@@ -564,12 +609,17 @@ Deno.serve(async (req) => {
     if (action === "spp_list") {
       const { data } = await supabase
         .from("spp_invoices")
-        .select("id, school_id, invoice_number, period_month, period_year, period_label, total_amount, amount, denda, due_date, status, payment_url, paid_at, payment_method, payment_channel, expired_at, mayar_invoice_id, student_name, class_name, parent_name, parent_phone, bill_type, bill_category, allow_installment, installment_paid_amount")
+        .select("id, school_id, invoice_number, created_at, period_month, period_year, period_label, total_amount, amount, denda, due_date, status, payment_url, paid_at, payment_method, payment_channel, expired_at, mayar_invoice_id, student_name, class_name, parent_name, parent_phone, bill_type, bill_category, allow_installment, installment_paid_amount")
         .eq("student_id", studentId)
         .order("period_year", { ascending: false })
         .order("period_month", { ascending: false });
-      let syncedData = await syncSppInvoicesFromMayar(data || []);
-      syncedData = await syncSppInvoicesFromDoku(syncedData);
+      // Background notifications read persisted webhook-confirmed status without
+      // contacting payment providers once per child on each device check.
+      let syncedData = data || [];
+      if (body.notification_only !== true) {
+        syncedData = await syncSppInvoicesFromMayar(syncedData);
+        syncedData = await syncSppInvoicesFromDoku(syncedData);
+      }
       // Auto-mark as expired if past expiry and not paid
       const now = Date.now();
       const list = syncedData.map((i: any) => {

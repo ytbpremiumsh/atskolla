@@ -22,8 +22,7 @@ export function PackageStatusBanner() {
           </div>
           <p className="text-[12.5px] text-amber-800/90 dark:text-amber-200/80 mt-1 leading-relaxed">
             Paket <b>ATSkolla Payment (Gratis)</b>  mengharuskan penggunaan modul Pembayaran Online ATSkolla.
-            Fitur absensi (Scan QR, Pengenalan wajah, RFID) dinonaktifkan sementara sampai aktivitas pembayaran kembali digunakan,
-            atau Anda beralih ke Paket Mandiri.
+            Fitur absensi (Scan QR, Pengenalan wajah, RFID) dinonaktifkan sementara sampai aktivitas pembayaran kembali digunakan. Masa toleransi tanpa aktivitas pembayaran adalah {pkg.gracePeriodDays} hari.
           </p>
           <div className="flex flex-wrap gap-2 mt-3">
             <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5" onClick={() => navigate("/bendahara")}>
@@ -32,7 +31,7 @@ export function PackageStatusBanner() {
             </Button>
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate("/paket-sekolah")}>
               <Package className="h-3.5 w-3.5" />
-              Beralih ke Paket Mandiri
+              Ketentuan Paket Gratis
             </Button>
           </div>
         </div>

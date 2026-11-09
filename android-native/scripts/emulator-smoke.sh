@@ -4,7 +4,7 @@ mkdir -p previews
 adb install build/android-native/app/build/outputs/apk/debug/app-debug.apk
 adb logcat -c
 adb shell pm grant com.atskolla.parent android.permission.POST_NOTIFICATIONS
-for screen in home attendance spp schedule more info leave contact messages grades calendar card account; do
+for screen in home attendance spp schedule more info leave contact calendar card account; do
   adb shell am force-stop com.atskolla.parent
   adb shell am start -W -n com.atskolla.parent/.NativePreviewActivity --es screen "$screen"
   adb shell uiautomator dump /sdcard/window.xml

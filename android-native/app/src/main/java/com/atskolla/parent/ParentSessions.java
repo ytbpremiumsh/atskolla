@@ -17,6 +17,7 @@ final class ParentSessions {
             synchronized(Vault.LOCK){
                 current=vault.get("token");if(!current.equals(expected))return current;
                 vault.put("token",next);
+                ParentPush.sync(context);
             }
             return next;
         }

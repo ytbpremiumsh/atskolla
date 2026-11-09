@@ -1,3 +1,4 @@
+import { scheduleDayIndex } from "@/lib/classSchedule";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,8 +24,8 @@ import { cn } from "@/lib/utils";
 import { WeekScheduleCard } from "@/components/dashboard/WeekScheduleCard";
 import { SchoolAnnouncementsWidget } from "@/components/dashboard/SchoolAnnouncementsWidget";
 
-const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const DAYS_SHORT = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+const DAYS_SHORT = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
 function timeToMinutes(t: string) {
   const [h, m] = t.split(":").map(Number);
@@ -87,7 +88,7 @@ const TeacherDashboard = () => {
 
   const schoolId = profile?.school_id;
   const today = new Date();
-  const todayDay = today.getDay();
+  const todayDay = scheduleDayIndex(today);
   const todayStr = today.toISOString().split("T")[0];
 
   // Live clock
@@ -169,7 +170,7 @@ const TeacherDashboard = () => {
 
   const weekSchedules = useMemo(() => {
     const grouped: Record<number, Schedule[]> = {};
-    for (let d = 1; d <= 6; d++) grouped[d] = [];
+    for (let d = 0; d <= 6; d++) grouped[d] = [];
     schedules.forEach(s => {
       if (grouped[s.day_of_week]) grouped[s.day_of_week].push(s);
     });

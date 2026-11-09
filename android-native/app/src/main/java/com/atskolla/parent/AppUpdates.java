@@ -1,0 +1,45 @@
+package com.atskolla.parent;
+
+import android.app.*;
+import android.content.*;
+import android.content.pm.*;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.*;
+import android.provider.Settings;
+import android.widget.Toast;
+import org.json.JSONObject;
+import java.io.*;
+import java.net.*;
+import java.security.MessageDigest;
+import java.util.*;
+import java.util.concurrent.*;
+
+/** Opt-in APK download; Android always controls permission and final installation. */
+final class AppUpdates {
+    static final String MANIFEST="https://www.atskolla.com/app-updates/parent.json";
+    final Activity activity;final SharedPreferences prefs;final DownloadManager downloads;
+    final ExecutorService io=Executors.newSingleThreadExecutor();final Handler main=new Handler(Looper.getMainLooper());
+    boolean checking,verifying;long promptedVersion=-1;
+    final BroadcastReceiver receiver=new BroadcastReceiver(){public void onReceive(Context c,Intent i){if(i.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID,-1)==prefs.getLong("download",-2))resume();}};
+    @android.annotation.SuppressLint("UnspecifiedRegisterReceiverFlag") // Legacy overload is used only below Android 13.
+    AppUpdates(Activity owner){activity=owner;prefs=owner.getSharedPreferences("app_updates",Context.MODE_PRIVATE);downloads=(DownloadManager)owner.getSystemService(Context.DOWNLOAD_SERVICE);IntentFilter f=new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);if(Build.VERSION.SDK_INT>=33)owner.registerReceiver(receiver,f,Context.RECEIVER_EXPORTED);else owner.registerReceiver(receiver,f);}
+    boolean alive(){return !activity.isFinishing()&&!activity.isDestroyed();}
+    void toast(String value){if(alive())Toast.makeText(activity,value,Toast.LENGTH_LONG).show();}
+    static boolean trustedUrl(String value){try{URI uri=new URI(value);String host=uri.getHost();return "https".equals(uri.getScheme())&&uri.getUserInfo()==null&&uri.getPort()==-1&&("www.atskolla.com".equals(host)||"atskolla.com".equals(host)||"updates.atskolla.com".equals(host)||"github.com".equals(host)||"release-assets.githubusercontent.com".equals(host)||"objects.githubusercontent.com".equals(host));}catch(Exception e){return false;}}
+    void check(boolean manual){resume();if(checking||(!manual&&System.currentTimeMillis()-prefs.getLong("checked",0)<24*60*60*1000L))return;checking=true;
+        io.execute(()->{try{HttpURLConnection c=(HttpURLConnection)new URL(MANIFEST).openConnection();JSONObject data;try{c.setConnectTimeout(10000);c.setReadTimeout(15000);c.setInstanceFollowRedirects(false);if(c.getResponseCode()!=200)throw new IOException();try(InputStream in=c.getInputStream()){ByteArrayOutputStream b=new ByteArrayOutputStream();byte[] part=new byte[2048];int n;while((n=in.read(part))!=-1){if(b.size()+n>32768)throw new IOException();b.write(part,0,n);}data=new JSONObject(b.toString("UTF-8"));}}finally{c.disconnect();}
+            long version=data.getLong("versionCode");String url=data.optString("apkUrl"),hash=data.optString("sha256");
+            main.post(()->{checking=false;if(!alive())return;prefs.edit().putLong("checked",System.currentTimeMillis()).apply();if(version<=BuildConfig.VERSION_CODE){if(manual)toast("Aplikasi sudah menggunakan versi terbaru");return;}if(!trustedUrl(url)||!hash.matches("[a-fA-F0-9]{64}")){if(manual)toast("Pembaruan belum tersedia untuk diunduh");return;}if(!manual&&promptedVersion==version)return;promptedVersion=version;
+                new CardModal(activity).setTitle("Pembaruan aplikasi tersedia").setMessage("Versi "+data.optString("versionName",String.valueOf(version))+"\n\n"+data.optString("notes","Peningkatan aplikasi ATSkolla Parent.")+"\n\nUnduhan dilakukan di aplikasi. Android akan meminta persetujuan pemasangan. Data dan sesi Anda tetap tersimpan.").setNegativeButton("Nanti",null).setPositiveButton("Unduh pembaruan",(d,w)->download(version,url,hash)).show();});
+        }catch(Exception e){main.post(()->{checking=false;if(manual)toast("Belum dapat memeriksa pembaruan. Coba lagi nanti.");});}});
+    }
+    File file(){return new File(activity.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),"parent-update.apk");}
+    void download(long version,String url,String hash){if(prefs.getLong("download",-1)!=-1){resume();toast("Unduhan pembaruan sedang diproses");return;}try{File apk=file();if(apk.exists()&&!apk.delete())throw new IOException();DownloadManager.Request request=new DownloadManager.Request(Uri.parse(url));request.setDestinationInExternalFilesDir(activity,Environment.DIRECTORY_DOWNLOADS,"parent-update.apk");request.setTitle("Pembaruan ATSkolla Parent");request.setDescription("Versi terbaru aplikasi wali murid");request.setMimeType("application/vnd.android.package-archive");request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);request.setAllowedOverMetered(true);long id=downloads.enqueue(request);prefs.edit().putLong("download",id).putLong("version",version).putString("hash",hash.toLowerCase(Locale.ROOT)).apply();toast("Mengunduh pembaruan. Anda tetap dapat menggunakan aplikasi.");}catch(Exception e){toast("Unduhan belum dapat dimulai. Periksa ruang penyimpanan.");}}
+    void resume(){if(prefs.getLong("version",Long.MAX_VALUE)<=BuildConfig.VERSION_CODE){prefs.edit().remove("download").remove("version").apply();return;}long id=prefs.getLong("download",-1);if(id==-1||verifying)return;try(Cursor cursor=downloads.query(new DownloadManager.Query().setFilterById(id))){if(cursor==null||!cursor.moveToFirst()){prefs.edit().remove("download").apply();return;}int status=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));if(status==DownloadManager.STATUS_FAILED){downloads.remove(id);prefs.edit().remove("download").apply();toast("Unduhan gagal. Coba unduh pembaruan kembali.");return;}if(status!=DownloadManager.STATUS_SUCCESSFUL)return;}catch(Exception e){return;}
+        verifying=true;io.execute(()->{try{verify();main.post(()->{verifying=false;if(!alive())return;new CardModal(activity).setTitle("Pembaruan siap dipasang").setMessage("Pasang versi terbaru ATSkolla Parent tanpa menghapus aplikasi lama. Data tetap tersimpan.").setNegativeButton("Nanti",null).setPositiveButton("Pasang pembaruan",(d,w)->install()).show();});}catch(Exception e){main.post(()->{verifying=false;downloads.remove(id);prefs.edit().remove("download").apply();toast("Berkas pembaruan tidak cocok dengan aplikasi terpasang. Unduhan dibatalkan.");});}});
+    }
+    void verify()throws Exception{File apk=file();if(!apk.isFile()||apk.length()<1024||apk.length()>200L*1024*1024)throw new IOException();MessageDigest digest=MessageDigest.getInstance("SHA-256");try(InputStream in=new FileInputStream(apk)){byte[] b=new byte[32768];int n;while((n=in.read(b))!=-1)digest.update(b,0,n);}StringBuilder hex=new StringBuilder();for(byte b:digest.digest())hex.append(String.format(Locale.ROOT,"%02x",b&255));if(!hex.toString().equals(prefs.getString("hash","")))throw new IOException();PackageManager pm=activity.getPackageManager();int flags=Build.VERSION.SDK_INT>=28?PackageManager.GET_SIGNING_CERTIFICATES:PackageManager.GET_SIGNATURES;PackageInfo candidate=pm.getPackageArchiveInfo(apk.getAbsolutePath(),flags),installed=pm.getPackageInfo(activity.getPackageName(),flags);if(candidate==null||!activity.getPackageName().equals(candidate.packageName))throw new IOException();long version=Build.VERSION.SDK_INT>=28?candidate.getLongVersionCode():candidate.versionCode;if(version<=BuildConfig.VERSION_CODE||version!=prefs.getLong("version",-1))throw new IOException();Signature[] a=Build.VERSION.SDK_INT>=28?candidate.signingInfo.getApkContentsSigners():candidate.signatures,b=Build.VERSION.SDK_INT>=28?installed.signingInfo.getApkContentsSigners():installed.signatures;if(a.length!=b.length)throw new IOException();for(Signature signature:b)if(!Arrays.asList(a).contains(signature))throw new IOException();}
+    void install(){if(!alive())return;if(!activity.getPackageManager().canRequestPackageInstalls()){new CardModal(activity).setTitle("Izinkan pembaruan aplikasi").setMessage("Aktifkan izin memasang pembaruan dari ATSkolla Parent pada pengaturan Android, lalu kembali ke aplikasi dan ketuk Pasang pembaruan.").setNegativeButton("Nanti",null).setPositiveButton("Buka pengaturan",(d,w)->{try{activity.startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+activity.getPackageName())));}catch(Exception e){toast("Buka izin pemasangan melalui pengaturan Android.");}}).show();return;}try{Intent intent=new Intent(Intent.ACTION_VIEW);intent.setDataAndType(Uri.parse("content://"+activity.getPackageName()+".updates/parent-update.apk"),"application/vnd.android.package-archive");intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);activity.startActivity(intent);}catch(Exception e){toast("Pemasang Android belum tersedia.");}}
+    void close(){try{activity.unregisterReceiver(receiver);}catch(Exception ignored){}main.removeCallbacksAndMessages(null);io.shutdownNow();}
+}

@@ -1,6 +1,6 @@
 from pathlib import Path
 import xml.etree.ElementTree as ET
-for screen in ['home','attendance','spp','schedule','more','info','leave','contact','messages','grades','calendar','card','account']:
+for screen in ['home','attendance','spp','schedule','more','info','leave','contact','calendar','card','account']:
     path=Path('previews')/(screen+'.xml')
     root=ET.parse(path).getroot()
     nodes=list(root.iter('node'))
@@ -12,7 +12,7 @@ spp=ET.parse('previews/spp.xml').getroot()
 assert any(n.get('text')=='Rp 250.000' for n in spp.iter('node')), 'Bill amount not formatted correctly'
 crash=Path('previews/crash-log.txt').read_text()
 assert 'Process: com.atskolla.parent' not in crash, crash
-print('13 native screens verified; no WebView and no app crash')
+print('11 native screens verified; no WebView and no app crash')
 
 home=ET.parse('previews/home.xml').getroot()
 assert any(n.get('text')=='RINGKASAN BULAN INI' for n in home.iter('node')), 'Home hero missing'

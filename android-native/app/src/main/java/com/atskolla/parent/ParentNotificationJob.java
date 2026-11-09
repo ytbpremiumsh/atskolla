@@ -23,9 +23,9 @@ public final class ParentNotificationJob extends JobService {
         if(old!=null&&old.isPersisted())return;
         scheduler.schedule(new JobInfo.Builder(JOB,new ComponentName(c,ParentNotificationJob.class)).setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY).setPeriodic(15*60*1000L).setPersisted(true).build());
     }
-    static void enable(Context c) throws Exception{Vault v=new Vault(c);v.put("notifications_since",Instant.now().toString());v.put("notifications_enabled","yes");schedule(c);}
-    static void disable(Context c){try{new Vault(c).put("notifications_enabled","no");}catch(Exception ignored){}c.getSystemService(JobScheduler.class).cancel(JOB);c.getSystemService(NotificationManager.class).cancelAll();}
-    @Override public boolean onStartJob(JobParameters params){stopped=false;if(!enabled(this)||!allowed(this))return false;running=executor.submit(()->{boolean retry=false;try{ParentNotifications.check(this,true);}catch(Exception e){retry=true;}finally{if(!stopped)jobFinished(params,retry);}});return true;}
+    static void enable(Context c) throws Exception{Vault v=new Vault(c);v.put("notifications_since",Instant.now().toString());v.put("notifications_enabled","yes");ParentPush.sync(c);schedule(c);}
+    static void disable(Context c){ParentPush.disable(c);try{new Vault(c).put("notifications_enabled","no");}catch(Exception ignored){}c.getSystemService(JobScheduler.class).cancel(JOB);c.getSystemService(NotificationManager.class).cancelAll();}
+    @Override public boolean onStartJob(JobParameters params){stopped=false;if(!enabled(this)||!allowed(this))return false;running=executor.submit(()->{boolean retry=false;try{ParentPush.sync(this);ParentNotifications.check(this,true);}catch(Exception e){retry=true;}finally{if(!stopped)jobFinished(params,retry);}});return true;}
     @Override public boolean onStopJob(JobParameters params){stopped=true;if(running!=null)running.cancel(true);return enabled(this);}
     @Override public void onDestroy(){stopped=true;executor.shutdownNow();super.onDestroy();}
 }

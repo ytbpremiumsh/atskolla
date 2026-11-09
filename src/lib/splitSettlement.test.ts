@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { groupSplitByDay, nextBusinessDay } from "./splitSettlement";
+import { groupSplitByDay, nextBusinessDay, schoolSettlementKey } from "./splitSettlement";
+
+const school = "11111111-1111-4111-8111-111111111111";
 
 describe("split settlement harian", () => {
   it("Jumat dicairkan Senin", () => {
@@ -22,7 +24,7 @@ describe("split settlement harian", () => {
         { paid_at: "2026-11-10T01:00:00Z", total_amount: 2000 },
         { paid_at: "2026-11-09T02:00:00Z", total_amount: 500 },
       ],
-      now,
+      school, now,
     );
     expect(days[0]).toMatchObject({ date: "2026-11-10", count: 2, total: 3000, status: "processing" });
     expect(days[1]).toMatchObject({ date: "2026-11-09", status: "processing" });
@@ -30,9 +32,9 @@ describe("split settlement harian", () => {
 });
 
 describe("kode STL harian", () => {
-  it("memakai singkatan bulan", () => {
-    const [d] = groupSplitByDay([{ paid_at: "2026-11-06T02:00:00Z", total_amount: 1 }], new Date("2026-11-06T03:00:00Z"));
-    expect(d.code).toBe("STL-NOV-20261106");
+  it("memakai identitas sekolah dan tanggal", () => {
+    const [d] = groupSplitByDay([{ paid_at: "2026-11-06T02:00:00Z", total_amount: 1 }], school, new Date("2026-11-06T03:00:00Z"));
+    expect(d.code).toBe(`STL-${schoolSettlementKey(school)}-20261106`);
   });
 });
 
@@ -43,4 +45,21 @@ it("membutuhkan konfirmasi settlement dan waktu konfirmasi", async () => {
  expect(payoutStatus({doku_split:true,settlement_status:"paid",settlement_confirmed_at:"2026-11-07T01:00:00Z"})).toBe("split_paid");
  expect(payoutStatus({settlement_id:"s",settlement_status:"processing"})).toBe("manual_processing");
  expect(payoutStatus({settlement_id:"s",settlement_status:"paid"})).toBe("manual_paid");
+});
+
+it("estimasi berubah pukul 13 WIB tanpa mengubah status transfer", async () => {
+  const { payoutSchedule } = await import("./splitSettlement");
+  expect(payoutSchedule("2026-11-06", new Date("2026-11-09T05:59:59Z"))).toMatchObject({date:"2026-11-09",estimatedSent:false});
+  expect(payoutSchedule("2026-11-06", new Date("2026-11-09T06:00:00Z"))).toMatchObject({estimatedSent:true});
+  expect(payoutSchedule("2026-11-07").date).toBe("2026-11-09");
+  expect(payoutSchedule("2026-11-08").date).toBe("2026-11-09");
+});
+
+it("kode berbeda antar sekolah, stabil dan menolak campuran sekolah", () => {
+ const other = "11111111-1111-4111-8111-111111111112";
+ const rows = [{school_id:school,paid_at:"2026-11-07T02:00:00Z",total_amount:2000},{school_id:other,paid_at:"2026-11-07T02:00:00Z",total_amount:5000}];
+ const [a] = groupSplitByDay(rows,school); const [b] = groupSplitByDay(rows,other);
+ expect(a.code).not.toBe(b.code); expect(a.total).toBe(2000); expect(b.total).toBe(5000);
+ expect(groupSplitByDay(rows,school)[0].code).toBe(a.code);
+ expect(groupSplitByDay(rows,"")).toEqual([]);
 });

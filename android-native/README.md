@@ -1,3 +1,38 @@
+## Perbaikan 2.11.2 (44)
+
+Menu Pesan dan Nilai dihapus dari APK, termasuk pintasan percakapan pada halaman wali kelas. Rute lama pada sesi tersimpan diarahkan ke menu layanan, sehingga kedua fitur tidak dimuat kembali setelah pembaruan.
+
+Pemeriksaan tagihan memasukkan tagihan yang dibuat setelah notifikasi diaktifkan, termasuk pada pemeriksaan pertama. Tagihan lama tidak diputar ulang. Server menyediakan created_at dan jalur baca notifikasi tanpa sinkronisasi gateway untuk mengurangi beban pemeriksaan keluarga. Deploy parent-portal untuk mengaktifkan perubahan server tersebut.
+
+Notifikasi tertutup **belum realtime**: saat ini tetap JobScheduler 15 menit atau lebih. Firebase Messaging/project Android dan pengirim server belum dikonfigurasi. Ini harus disiapkan sebelum menyatakan tagihan/absensi dapat diterima segera tanpa membuka aplikasi. Pengujian unit bukan bukti penerimaan push pada perangkat fisik.
+
+## Perbaikan 2.11.1 (43)
+
+Input kartu menormalkan hasil tempel sebelum batas 16 digit; jarak kelompok empat digit hanya berupa span visual dan tidak mengubah nilai teks. Format WhatsApp 08, 8, atau +62 dinormalkan ke 62. Layar verifikasi memakai ikon WhatsApp, dan logo login tidak memiliki bingkai ungu tambahan. Perubahan OTP memerlukan deployment `parent-portal` dan fungsi lain yang memakai `_shared/sendOtp.ts`; jangan menyatakan pengiriman OTP sudah teruji ke pengguna sebelum deployment dan uji terotorisasi.
+
+## Sertifikat rilis tetap
+
+Mulai APK 2.11.0 (42), sertifikat rilis ATSkolla Parent memakai SHA-256:
+`107b9c17f0e8c89e0c292ef70874241d49ee40ec235d8068dcff82d8e55b3b40`.
+
+Cadangan keystore diberikan privat kepada pemilik. Jangan masukkan kunci atau kata sandi ke GitHub. APK uji 2.10.0 memiliki sertifikat debug berbeda; perpindahan sekali membutuhkan pemasangan ulang dan login kembali. Distribusikan APK baru hanya setelah endpoint unggah lampiran yang baru aktif. Tautan unduhan dan SHA-256 APK final harus dipublikasikan sebelum menawarkan pembaruan berikutnya.
+
+## Pembaruan 2.11.0 (42)
+
+- Jadwal mengikuti dashboard sekolah, Senin=0 hingga Minggu=6.
+- Unggah izin/sakit memakai tautan unggah sementara setelah server memeriksa sesi wali dan kepemilikan siswa. Deploy `parent-portal` sebelum mendistribusikan APK ini.
+- PDF/JPEG/PNG/WebP dibaca maksimal 5 MB; tipe berkas diperiksa dari header, tidak bergantung pada MIME pemilih berkas Android.
+- Pembaruan diperiksa saat aplikasi dibuka (maksimal sekali per 24 jam), juga melalui Akun → Periksa pembaruan aplikasi. Unduhan berlangsung dengan DownloadManager; setelah SHA-256, ID aplikasi, versi dan sertifikat cocok, Android meminta persetujuan pemasangan. Tidak ada pemasangan diam-diam.
+- Terbitkan APK **bertanda tangan sama dengan aplikasi terpasang**, dengan versionCode lebih tinggi. Isi `public/app-updates/parent.json` menggunakan URL HTTPS berkas APK publik dan SHA-256 final. `apkUrl` kosong berarti rilis belum siap, bukan unduhan aktif. Jangan gunakan ZIP artifact GitHub yang memerlukan login sebagai URL APK.
+- APK lama belum memiliki pemeriksa pembaruan: pemasangan versi ini sekali tetap diperlukan. Setelah itu pembaruan berikutnya dapat diunduh dari dalam aplikasi.
+- Build Google Play sebaiknya memakai Play In-App Updates; izin REQUEST_INSTALL_PACKAGES pada jalur distribusi APK langsung perlu ditinjau terhadap kebijakan toko sebelum publikasi Play.
+
+## Perbaikan 2.10.1 (41)
+
+Jadwal memakai pemetaan yang sama dengan dashboard sekolah: Senin=0 hingga Minggu=6.
+Nama hari, urutan mingguan, dan pelajaran berlangsung mengikuti nilai tersebut tanpa mengubah data sekolah.
+Pasang ulang APK hasil build versi ini untuk menerima perbaikan jadwal.
+
 # ATSkolla Parent — Android native 2.8
 
 Layar layanan ditulis dengan Java dan widget Android. Hanya checkout penyedia pembayaran

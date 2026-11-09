@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import { mpwaAccepted, mpwaFailureMessage } from '../_shared/mpwaResponse.ts';
 
 
 
@@ -76,7 +77,7 @@ const sendMpwaButton = async (
     const text = await r.text();
     const parsed = parseJsonSafely(text);
     console.log(`MPWA send-button response: status=${r.status} body=${text.substring(0, 300)}`);
-    return { ok: r.ok && parsed?.status !== false, data: parsed };
+    return { ok: r.ok && mpwaAccepted(parsed), data: parsed };
   } catch (err) {
     return { ok: false, data: { status: false, msg: String(err) } };
   }
@@ -122,7 +123,7 @@ const sendMpwaMessage = async (
       const text = await response.text();
       const parsed = parseJsonSafely(text);
       console.log(`MPWA POST response: status=${response.status} body=${text.substring(0, 300)}`);
-      return { ok: response.ok && parsed?.status !== false, data: parsed, status: response.status };
+      return { ok: response.ok && mpwaAccepted(parsed), data: parsed, status: response.status };
     } catch (err) {
       return { ok: false, data: { status: false, msg: String(err) }, status: 0 };
     }
@@ -150,15 +151,17 @@ const sendMpwaMessage = async (
       const result = await tryPost({ api_key: apiKey, sender, number: recipient, message });
       if (result.ok) return { ok: true, data: result.data };
 
-      // GET fallback for individual
-      console.log('MPWA: trying GET fallback for individual');
+      // Retry only a rejected HTTP method/content type, never a business failure or timeout.
+      // Sending again after an ambiguous result can duplicate a message.
+      if (![404, 405, 415].includes(result.status)) return { ok: false, data: result.data };
+      console.log('MPWA: trying GET fallback for unsupported POST');
       const params = new URLSearchParams({ api_key: apiKey, sender, number: recipient, message });
       const getResponse = await fetch(`${await getMpwaBase()}/send-message?${params.toString()}`);
       const getText = await getResponse.text();
       const getParsed = parseJsonSafely(getText);
       console.log(`MPWA GET response: status=${getResponse.status} body=${getText.substring(0, 300)}`);
 
-      if (getResponse.ok && getParsed?.status !== false) {
+      if (getResponse.ok && mpwaAccepted(getParsed)) {
         return { ok: true, data: getParsed };
       }
 
@@ -242,7 +245,7 @@ serve(async (req) => {
     }
 
     if (!finalApiKey) {
-      return new Response(JSON.stringify({ error: 'API Key is required' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Kunci akses gateway belum dikonfigurasi. Hubungi pengelola sekolah.' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -275,7 +278,8 @@ serve(async (req) => {
     const results: { target: string; ok: boolean; data: any }[] = [];
 
     if (gatewayType === 'mpwa') {
-      const buttonSpec = detectButtons(message, message_type);
+      mpwaSenderNum = formatPhoneNumber(mpwaSenderNum);
+      const buttonSpec = message_type === 'test_template' ? null : detectButtons(message, message_type);
 
       if (phone) {
         const formattedPhone = formatPhoneNumber(phone);
@@ -339,7 +343,7 @@ serve(async (req) => {
 
     // Detect MPWA session disconnected (sender logged out)
     const isSessionLost = gatewayType === 'mpwa' && results.some(r => {
-      const msg = String(r?.data?.msg || r?.data?.raw || '').toLowerCase();
+      const msg = String(r?.data?.msg || r?.data?.message || r?.data?.error || '').toLowerCase();
       return msg.includes('periksa koneksi') || msg.includes('not connected') || msg.includes('disconnect');
     });
 
@@ -355,7 +359,7 @@ serve(async (req) => {
 
     const friendlyError = isSessionLost
       ? 'Sesi WhatsApp terputus. Silakan scan ulang QR di menu Pengaturan WhatsApp → Gateway.'
-      : (hasError ? `${gatewayType} error` : null);
+      : (hasError ? mpwaFailureMessage(results.find(r => !r.ok)?.data) : null);
 
     // Log message to wa_message_logs
     if (school_id) {
@@ -409,7 +413,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Send WhatsApp error:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+    return new Response(JSON.stringify({ success: false, error: 'Layanan pengiriman WhatsApp sedang bermasalah. Silakan coba lagi.' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

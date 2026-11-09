@@ -30,7 +30,7 @@ export default function SuperAdminPaketSekolah() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
-  const [settings, setSettings] = useState({ grace_period_days: 90, disabled_features: FEATURE_OPTIONS.map(f => f.key), mandiri_monthly_rate: 1000 });
+  const [settings, setSettings] = useState({ grace_period_days: 60, disabled_features: FEATURE_OPTIONS.map(f => f.key), mandiri_monthly_rate: 1000 });
   const [audit, setAudit] = useState<any[]>([]);
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -58,7 +58,6 @@ export default function SuperAdminPaketSekolah() {
     const { error } = await supabase.from("package_settings").update({
       grace_period_days: settings.grace_period_days,
       disabled_features: settings.disabled_features,
-      mandiri_monthly_rate: settings.mandiri_monthly_rate,
       updated_at: new Date().toISOString(),
     }).eq("id", 1);
     if (error) toast.error(error.message); else toast.success("Pengaturan tersimpan");
@@ -82,19 +81,6 @@ export default function SuperAdminPaketSekolah() {
     fetchAll();
   };
 
-  const changePackage = async (row: SchoolRow, newType: string) => {
-    const { error } = await supabase.from("schools").update({ package_type: newType }).eq("id", row.id);
-    if (error) { toast.error(error.message); return; }
-    await supabase.from("package_audit_log").insert({
-      school_id: row.id, action: "package_changed",
-      old_value: { package_type: row.package_type },
-      new_value: { package_type: newType },
-      reason: "Diubah oleh Super Admin", actor_user_id: user?.id,
-    });
-    toast.success("Paket diubah");
-    fetchAll();
-  };
-
   const runCheck = async () => {
     const { error } = await supabase.functions.invoke("check-package-status");
     if (error) toast.error(error.message); else { toast.success("Cek status dijalankan"); fetchAll(); }
@@ -103,8 +89,6 @@ export default function SuperAdminPaketSekolah() {
   const filtered = schools.filter(s => {
     if (filter === "pending" && s.package_status !== "pending_activation") return false;
     if (filter === "active" && s.package_status !== "active") return false;
-    if (filter === "mandiri" && s.package_type !== "mandiri") return false;
-    if (filter === "payment" && s.package_type !== "payment") return false;
     if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -113,23 +97,18 @@ export default function SuperAdminPaketSekolah() {
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Manajemen Paket Sekolah" subtitle="Kelola paket ATSkolla Payment / Mandiri dan status aktivasi." icon={Package}
+      <PageHeader title="Manajemen Paket Sekolah" subtitle="Kelola layanan ATSkolla Gratis dan masa toleransi penggunaan SPP Online." icon={Package}
         actions={<Button onClick={runCheck} className="gap-2 bg-white text-slate-900 hover:bg-white/90"><RefreshCw className="h-4 w-4" /> Jalankan Cek Status</Button>} />
 
       <Card className="p-5 rounded-2xl">
         <div className="flex items-center gap-2 mb-3">
           <Settings2 className="h-4 w-4" /> <div className="font-semibold">Pengaturan Global</div>
         </div>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label>Masa Tenggang (hari)</Label>
             <Input type="number" min={1} value={settings.grace_period_days}
-              onChange={e => setSettings({ ...settings, grace_period_days: parseInt(e.target.value) || 90 })} />
-          </div>
-          <div>
-            <Label>Biaya Mandiri / siswa / bulan (Rp)</Label>
-            <Input type="number" min={0} value={settings.mandiri_monthly_rate}
-              onChange={e => setSettings({ ...settings, mandiri_monthly_rate: parseInt(e.target.value) || 0 })} />
+              onChange={e => setSettings({ ...settings, grace_period_days: parseInt(e.target.value) || 60 })} />
           </div>
           <div className="md:col-span-1">
             <Label className="mb-2 block">Fitur yang Dinonaktifkan saat Menunggu Aktivasi</Label>
@@ -169,8 +148,6 @@ export default function SuperAdminPaketSekolah() {
                 <SelectItem value="all">Semua</SelectItem>
                 <SelectItem value="active">Status: Aktif</SelectItem>
                 <SelectItem value="pending">Status: Menunggu Aktivasi</SelectItem>
-                <SelectItem value="payment">Paket: Payment</SelectItem>
-                <SelectItem value="mandiri">Paket: Mandiri</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -194,7 +171,7 @@ export default function SuperAdminPaketSekolah() {
                     <tr key={s.id} className="border-b last:border-0">
                       <td className="py-2.5 px-2 font-medium">{s.name}</td>
                       <td className="py-2.5 px-2">
-                        <Badge variant="outline">{s.package_type === "payment" ? "Payment" : "Mandiri"}</Badge>
+                        <Badge variant="outline">Gratis</Badge>
                       </td>
                       <td className="py-2.5 px-2">
                         <Badge className={s.package_status === "active"
@@ -209,13 +186,7 @@ export default function SuperAdminPaketSekolah() {
                           {s.package_status === "pending_activation" && (
                             <Button size="sm" variant="outline" onClick={() => reactivate(s)}>Aktifkan</Button>
                           )}
-                          <Select value={s.package_type} onValueChange={(v) => changePackage(s, v)}>
-                            <SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="payment">Payment</SelectItem>
-                              <SelectItem value="mandiri">Mandiri</SelectItem>
-                            </SelectContent>
-                          </Select>
+
                         </div>
                       </td>
                     </tr>

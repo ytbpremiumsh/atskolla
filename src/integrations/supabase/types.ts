@@ -2699,6 +2699,9 @@ export type Database = {
           regenerated_from: string | null
           school_id: string
           service_fee: number
+          settlement_status: string | null
+          settlement_confirmed_at: string | null
+          settlement_confirmation_source: string | null
           settlement_id: string | null
           status: string
           student_id: string
@@ -2738,6 +2741,9 @@ export type Database = {
           regenerated_from?: string | null
           school_id: string
           service_fee?: number
+          settlement_status?: string | null
+          settlement_confirmed_at?: string | null
+          settlement_confirmation_source?: string | null
           settlement_id?: string | null
           status?: string
           student_id: string
@@ -2777,6 +2783,9 @@ export type Database = {
           regenerated_from?: string | null
           school_id?: string
           service_fee?: number
+          settlement_status?: string | null
+          settlement_confirmed_at?: string | null
+          settlement_confirmation_source?: string | null
           settlement_id?: string | null
           status?: string
           student_id?: string

@@ -117,7 +117,7 @@ export default function SuperAdminBendahara() {
       const [sR, iR, stR, bR] = await Promise.all([
         supabase.from("schools").select("id,name,npsn,bendahara_wa_enabled,bendahara_offline_enabled,installment_enabled").order("name"),
         supabase.from("spp_invoices")
-          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,payment_channel,paid_at,settlement_id,doku_split,created_at")
+          .select("id,school_id,invoice_number,student_name,class_name,period_label,total_amount,net_amount,gateway_fee,status,payment_method,payment_channel,paid_at,settlement_id,settlement_status,settlement_confirmed_at,settlement_confirmation_source,doku_split,created_at")
           .order("created_at", { ascending: false })
           .limit(5000),
         supabase.from("spp_settlements")
@@ -244,7 +244,7 @@ export default function SuperAdminBendahara() {
     const bySchool = new Map<string, Invoice[]>();
     for (const i of filteredPaidInvoices) bySchool.set(i.school_id, [...(bySchool.get(i.school_id) || []), i]);
     const out: (SplitDay & { school_id: string })[] = [];
-    for (const [school_id, list] of bySchool) for (const g of groupSplitByDay(list)) out.push({ ...g, school_id });
+    for (const [school_id, list] of bySchool) for (const g of groupSplitByDay(list, school_id)) out.push({ ...g, school_id });
     return out.sort((a, b) => b.date.localeCompare(a.date));
   }, [filteredPaidInvoices]);
 

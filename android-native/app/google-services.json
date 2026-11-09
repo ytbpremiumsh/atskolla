@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "978935331020",
+    "project_id": "atskolla-parent",
+    "storage_bucket": "atskolla-parent.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:978935331020:android:da793f2b8511ef9600ea69",
+        "android_client_info": {
+          "package_name": "com.atskolla.parent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkrgLtXgBVxSEt5VuDYiDF7p5vcPfS3iI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

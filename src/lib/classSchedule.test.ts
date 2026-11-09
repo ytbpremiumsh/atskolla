@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { buildDayCells, buildTimeRows, conflictsFor, overlaps, timeMinutes, validRange, type ScheduleEntry, type ScheduleForm } from "./classSchedule";
+import { buildDayCells, buildTimeRows, conflictsFor, overlaps, timeMinutes, validRange, scheduleDayIndex, SCHEDULE_DAYS, type ScheduleEntry, type ScheduleForm } from "./classSchedule";
+import { readFileSync } from 'node:fs';
+
+describe('school and parent schedule weekday contract', () => {
+  it('maps all seven calendar days to the school dashboard numbering', () => {
+    for (let day = 0; day < 7; day++) {
+      const date = new Date(2026, 10, 9 + day, 12);
+      expect(scheduleDayIndex(date)).toBe(day);
+      expect(SCHEDULE_DAYS[scheduleDayIndex(date)]).toBe(['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'][day]);
+    }
+  });
+  it('keeps native APK day labels identical to the school dashboard', () => {
+    const java = readFileSync('android-native/app/src/main/java/com/atskolla/parent/ScheduleDays.java', 'utf8');
+    const names = [...java.matchAll(/"(Senin|Selasa|Rabu|Kamis|Jumat|Sabtu|Minggu)"/g)].map(match => match[1]);
+    expect(names).toEqual(SCHEDULE_DAYS);
+    const activity = readFileSync('android-native/app/src/main/java/com/atskolla/parent/ParentActivity.java', 'utf8');
+    expect(activity).toContain('ScheduleDays.fromIsoDay(day().getDayOfWeek().getValue())');
+    expect(activity).toContain('String[] days=ScheduleDays.NAMES');
+  });
+});
 
 const entry = (overrides: Partial<ScheduleEntry> = {}): ScheduleEntry => ({
   id: "lesson-1", class_id: "class-a", teacher_id: "teacher-1", subject_id: "math", day_of_week: 0,

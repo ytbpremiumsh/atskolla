@@ -10,6 +10,7 @@
 // Returns { ok, gateway, raw } for logging/diagnostics.
 
 import { getMpwaBase } from "./mpwaBase.ts";
+import { mpwaAccepted } from "./mpwaResponse.ts";
 
 export type OtpSendResult = {
   ok: boolean;
@@ -29,12 +30,12 @@ async function tryMpwa(apiKey: string, sender: string, phone: string, message: s
     const res = await fetch(`${await getMpwaBase()}/send-message`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ api_key: apiKey, sender, number: phone, message }),
+      body: JSON.stringify({ api_key: apiKey, sender: formatPhone(sender), number: phone, message }),
     });
     const text = await res.text();
     let data: any;
     try { data = JSON.parse(text); } catch { data = { status: false, raw: text.substring(0, 200) }; }
-    const ok = res.ok && data?.status !== false;
+    const ok = res.ok && mpwaAccepted(data);
     return { ok, gateway: `mpwa:${sender}`, raw: data };
   } catch (e) {
     return { ok: false, gateway: `mpwa:${sender}`, raw: { error: String(e) } };
@@ -99,7 +100,8 @@ export async function sendOtpMessage(
         .eq("integration_type", "onesender")
         .maybeSingle();
 
-      if (intData?.is_active) {
+      // OTP access must not depend on the attendance-notification toggle.
+      if (intData) {
         if (intData.gateway_type === "mpwa" && intData.mpwa_connected && intData.mpwa_sender) {
           let apiKey: string = intData.mpwa_api_key || "";
           if (!apiKey) {
@@ -113,7 +115,7 @@ export async function sendOtpMessage(
             if (r.ok) return r;
           }
         }
-        if (intData.api_url && intData.api_key) {
+        if (intData.is_active && intData.api_url && intData.api_key) {
           const r = await tryOneSender(intData.api_url, intData.api_key, formatted, message);
           attempts.push(r);
           if (r.ok) return r;

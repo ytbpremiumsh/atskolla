@@ -21,7 +21,7 @@ const OFFLINE = ["offline_cash", "offline_transfer"];
 export const payoutStatus = (inv: any, now: Date = new Date()): PayoutStatus => {
   if (OFFLINE.includes(String(inv.payment_method || ""))) return "offline";
   if (inv.doku_split) {
-    // This requires an explicit provider confirmation, never elapsed time.
+    // Requires a recorded provider or authorized operator confirmation, never elapsed time.
     return inv.settlement_status === "paid" && inv.settlement_confirmed_at ? "split_paid" : "split_processing";
   }
   if (inv.settlement_id) return inv.settlement_status === "paid" ? "manual_paid" : "manual_processing";
@@ -37,7 +37,11 @@ export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
   offline: "Diterima Langsung",
 };
 
-const MONTHS = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+/** Full UUID encoded losslessly; no truncation or collision-prone name initials. */
+export const schoolSettlementKey = (schoolId: string): string => {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(schoolId)) throw new Error("Identitas sekolah tidak valid");
+  return BigInt("0x" + schoolId.replace(/-/g, "")).toString(36).toUpperCase().padStart(25, "0");
+};
 
 export type SplitDay = {
   code: string;
@@ -49,11 +53,13 @@ export type SplitDay = {
   items: any[];
 };
 
-export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[] => {
+export const groupSplitByDay = (items: any[], schoolId: string, now: Date = new Date()): SplitDay[] => {
 
+  if (!schoolId) return [];
+  const schoolKey = schoolSettlementKey(schoolId);
   const map = new Map<string, any[]>();
   for (const it of items) {
-    if (!it.paid_at) continue;
+    if (!it.paid_at || (it.school_id && it.school_id !== schoolId)) continue;
     const k = wibDateKey(it.paid_at);
     map.set(k, [...(map.get(k) || []), it]);
   }
@@ -61,7 +67,7 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
     .map(([date, list]) => {
       const settleDate = nextBusinessDay(date);
       return {
-        code: `STL-${MONTHS[Number(date.slice(5, 7)) - 1]}-${date.replace(/-/g, "")}`,
+        code: `STL-${schoolKey}-${date.replace(/-/g, "")}`,
         date,
         settleDate,
         count: list.length,
@@ -71,4 +77,11 @@ export const groupSplitByDay = (items: any[], now: Date = new Date()): SplitDay[
       };
     })
     .sort((a, b) => b.date.localeCompare(a.date));
+};
+
+/** Jadwal operasional, bukan bukti transfer atau perubahan saldo. */
+export const payoutSchedule = (paymentDate: string, now: Date = new Date()) => {
+  const date = nextBusinessDay(paymentDate);
+  const updateAt = new Date(`${date}T13:00:00+07:00`);
+  return { date, updateAt, estimatedSent: now.getTime() >= updateAt.getTime() };
 };

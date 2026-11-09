@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { groupSplitByDay, payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
+import { groupSplitByDay, payoutSchedule, payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -4535,6 +4535,13 @@ export function BendaharaSaldo() {
 // ============ PENCAIRAN + RIWAYAT (gabungan) ============
 export function BendaharaPencairan() {
   const { profile, user } = useAuth();
+  const [scheduleNow, setScheduleNow] = useState(() => new Date());
+  useEffect(() => {
+    const refresh = () => setScheduleNow(new Date());
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener("focus", refresh);
+    return () => { window.clearInterval(timer); window.removeEventListener("focus", refresh); };
+  }, []);
   const [available, setAvailable] = useState({ count: 0, gross: 0, fee: 0, net: 0, finalPayout: 0 });
   const [availableItems, setAvailableItems] = useState<any[]>([]);
   const [breakdown, setBreakdown] = useState({ onlineTotal: 0, onlineSettled: 0, offlineCount: 0, offlineGross: 0 });
@@ -4670,7 +4677,7 @@ export function BendaharaPencairan() {
       // Satu query saja: ambil semua paid online sekaligus, lalu bagi di client.
       const [paidRes, hRes, sRes] = await Promise.all([
         supabase.from("spp_invoices")
-          .select("id, status, payment_method, payment_channel, settlement_id, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
+          .select("id, status, payment_method, payment_channel, settlement_id, settlement_status, settlement_confirmed_at, settlement_confirmation_source, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
           .eq("school_id", profile.school_id)
           .eq("status", "paid"),
         supabase.from("spp_settlements").select("*").eq("school_id", profile.school_id).order("created_at", { ascending: false }),
@@ -5035,7 +5042,7 @@ export function BendaharaPencairan() {
           {/* Legend status — alur settlement otomatis */}
           <div className="rounded-xl border bg-muted/20 p-3 space-y-1.5 text-[11px]">
             <p className="font-semibold text-foreground text-xs">Keterangan Status</p>
-            <div className="flex items-start gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" /><span><b>Diproses Sistem</b> — pembayaran diterima, dana dikirim ke rekening sekolah 1 hari kerja berikutnya</span></div>
+            <div className="flex items-start gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-amber-500" /><span><b>Diproses Sistem</b> — pembayaran diterima, pencairan dijadwalkan pada hari kerja berikutnya</span></div>
             <div className="flex items-start gap-2"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-emerald-500" /><span><b>Sudah Ditransfer</b> — dana sudah masuk ke rekening sekolah</span></div>
             <p className="text-muted-foreground pt-1">Semua pembayaran SPP online dikirim otomatis. Bendahara tidak perlu mengajukan pencairan.</p>
           </div>
@@ -5043,23 +5050,23 @@ export function BendaharaPencairan() {
             <CardContent className="p-0">
               <div className="px-4 pt-4 pb-2">
                 <p className="text-sm font-semibold">Pencairan Otomatis Harian</p>
-                <p className="text-[11px] text-muted-foreground">Pembayaran lunas dikelompokkan per hari. Tanggal perkiraan bukan konfirmasi dana diterima. Jadwal aktual mengikuti penyedia pembayaran.</p>
+                <p className="text-[11px] text-muted-foreground">Pencairan Senin–Jumat, estimasi pengiriman pukul 12.00–12.50 WIB dan pembaruan estimasi pukul 13.00 WIB. Sabtu–Minggu libur, tidak ada pengiriman; pencairan dilanjutkan pada hari kerja berikutnya. Status berhasil mengikuti konfirmasi pencairan.</p>
               </div>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Jadwal penyedia</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow className="[&_th]:whitespace-nowrap"><TableHead>Code</TableHead><TableHead>Tgl Bayar</TableHead><TableHead>Trx</TableHead><TableHead>Total Masuk</TableHead><TableHead>Estimasi pencairan</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
                   <TableBody>
-                    {groupSplitByDay(splitPaid).length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
-                    {groupSplitByDay(splitPaid).map((d) => (
+                    {groupSplitByDay(splitPaid, profile?.school_id || "").length === 0 && <TableRow><TableCell colSpan={6} className="text-center py-6 text-muted-foreground">Belum ada pembayaran online</TableCell></TableRow>}
+                    {groupSplitByDay(splitPaid, profile?.school_id || "").map((d) => (
                       <TableRow key={d.date} onClick={() => openSplitDay(d)} className="[&_td]:whitespace-nowrap cursor-pointer hover:bg-muted/50 transition-colors">
                         <TableCell className="text-xs font-mono">{d.code}</TableCell>
                         <TableCell className="text-xs">{new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</TableCell>
                         <TableCell>{d.count}</TableCell>
                         <TableCell className="font-semibold text-emerald-600">{fmtIDR(d.total)}</TableCell>
-                        <TableCell className="text-xs">Sesuai penyedia</TableCell>
+                        <TableCell className="text-xs"><p>{new Date(d.settleDate + "T00:00:00+07:00").toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "short", day: "numeric", month: "short", year: "numeric" })}</p><p className="text-muted-foreground">12.00–12.50 WIB · pembaruan 13.00 WIB</p></TableCell>
                         <TableCell>{d.status === "paid"
-                          ? <Badge className="bg-emerald-500 hover:bg-emerald-500">Paid</Badge>
-                          : <Badge className="bg-amber-500 hover:bg-amber-500">Menunggu konfirmasi bank</Badge>}</TableCell>
+                          ? <Badge className="bg-emerald-500 hover:bg-emerald-500">Berhasil terkirim</Badge>
+                          : <div className="space-y-1"><Badge className="bg-amber-500 hover:bg-amber-500">{payoutSchedule(d.date, scheduleNow).estimatedSent ? "Estimasi pengiriman selesai" : "Menunggu jadwal pencairan"}</Badge><p className="text-[11px] text-muted-foreground">Menunggu konfirmasi bank</p></div>}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

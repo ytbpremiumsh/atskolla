@@ -1,3 +1,4 @@
+import { whatsAppSendError } from "@/lib/whatsAppSendResult";
 import { useGatewayStatusPolling } from "@/hooks/useGatewayStatusPolling";
 import { GatewaySetupStatus } from "@/components/GatewaySetupStatus";
 import { PageHeader } from "@/components/PageHeader";
@@ -37,7 +38,7 @@ const GROUP_PLACEHOLDERS = [
   { key: "{type}", label: "Tipe (Datang/Pulang)" },
 ];
 
-const FOOTER = `─────────────\n_ATSkolla — Platform Digital Sekolah Terintegrasi_`;
+const FOOTER = "Pesan otomatis dari sistem atskolla";
 
 const DEFAULT_ARRIVE = `*Notifikasi Kehadiran Siswa*\n\nYth. Bapak/Ibu Wali Murid,\n\nDengan hormat kami sampaikan bahwa ananda *{student_name}* (Kelas {class}) telah tercatat *HADIR* di sekolah pada hari {day}, pukul {time}.\n\nDetail Kehadiran:\n• NIS       : {student_id}\n• Metode : {method}\n• Sekolah : {school_name}\n\nTerima kasih atas perhatian Bapak/Ibu.\n\n${FOOTER}`;
 const DEFAULT_DEPART = `*Notifikasi Kepulangan Siswa*\n\nYth. Bapak/Ibu Wali Murid,\n\nDengan hormat kami sampaikan bahwa ananda *{student_name}* (Kelas {class}) telah tercatat *PULANG* dari sekolah pada hari {day}, pukul {time}.\n\nDetail Kepulangan:\n• NIS       : {student_id}\n• Metode : {method}\n• Sekolah : {school_name}\n\nTerima kasih atas perhatian Bapak/Ibu.\n\n${FOOTER}`;
@@ -177,9 +178,9 @@ const WhatsAppSettings = () => {
   const [onesenderEnabled, setOnesenderEnabled] = useState(true);
   const [teachingReminderEnabled, setTeachingReminderEnabled] = useState(false);
   const [teachingReminderTemplate, setTeachingReminderTemplate] = useState(`*Pengingat Jadwal Mengajar*\n\nYth. Bapak/Ibu *{teacher_name}*,\n\nDengan hormat kami ingatkan bahwa jadwal mengajar Anda akan dimulai dalam 15 menit.\n\nDetail Jadwal:\n• Mata Pelajaran : {subject_name}\n• Kelas                : {class_name}\n• Waktu               : {start_time} - {end_time}\n• Ruangan          : {room}\n\nMohon persiapkan diri dan hadir tepat waktu.\n\n${FOOTER}`);
-  const [testReminderPhone, setTestReminderPhone] = useState("089501123808");
+  const [testReminderPhone, setTestReminderPhone] = useState("");
   const [testingReminder, setTestingReminder] = useState(false);
-  const [testTemplatePhone, setTestTemplatePhone] = useState("089501123808");
+  const [testTemplatePhone, setTestTemplatePhone] = useState("");
   const [testingTemplate, setTestingTemplate] = useState<string | null>(null);
 
   const handleTestTemplate = async (title: string, template: string) => {
@@ -206,7 +207,8 @@ const WhatsAppSettings = () => {
         body: { school_id: schoolId, phone: testTemplatePhone, message, message_type: "test_template" },
       });
       if (error) throw error;
-      if ((data as any)?.success === false) throw new Error((data as any).error || "Gagal kirim");
+      const sendError = whatsAppSendError(data);
+      if (sendError) throw new Error(sendError);
       toast.success(`Test "${title}" terkirim ke ${testTemplatePhone}`);
     } catch (e: any) {
       toast.error("Gagal: " + (e.message || e));
@@ -235,7 +237,8 @@ const WhatsAppSettings = () => {
         body: { school_id: schoolId, phone: testReminderPhone, message, message_type: "teaching_reminder" },
       });
       if (error) throw error;
-      if ((data as any)?.success === false) throw new Error((data as any).error || "Gagal kirim");
+      const sendError = whatsAppSendError(data);
+      if (sendError) throw new Error(sendError);
       toast.success("Test reminder terkirim ke " + testReminderPhone);
     } catch (e: any) {
       toast.error("Gagal: " + (e.message || e));

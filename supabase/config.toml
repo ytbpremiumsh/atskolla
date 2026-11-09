@@ -95,3 +95,6 @@ project_id = "bohuglednqirnaearrkj"
   [functions.handle-email-suppression]
     verify_jwt = false
 
+
+[functions.parent-push-dispatch]
+verify_jwt = true

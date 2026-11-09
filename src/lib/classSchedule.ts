@@ -1,6 +1,11 @@
 /** TeachingSchedule and LiveSchedule store Monday as 0, through Sunday as 6. */
 export const SCHEDULE_DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
+/** Date.getDay() uses Sunday=0; teaching_schedules uses Monday=0. */
+export function scheduleDayIndex(date: Date): number {
+  return (date.getDay() + 6) % 7;
+}
+
 export interface ScheduleEntry {
   id: string;
   class_id: string;

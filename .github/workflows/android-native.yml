@@ -34,7 +34,7 @@ jobs:
           gradle-version: '8.13'
       - name: Compile, shrink release, build bundle and lint
         working-directory: android-native
-        run: gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:bundleRelease :app:lintRelease
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug :app:assembleRelease :app:bundleRelease :app:lintRelease
       - name: Package official signing utilities for owner-side signing
         run: |
           mkdir -p signing-tools/lib64

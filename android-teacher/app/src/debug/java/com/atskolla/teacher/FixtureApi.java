@@ -7,7 +7,7 @@ final class FixtureApi extends TeacherApi {
  @Override String uid(){return UID;}@Override boolean signedIn(){return true;}
  JSONObject profile(){return j("user_id",UID,"full_name","Ibu Ratna Puspita","school_id",SCHOOL,"qr_code",UID);}
  JSONArray pupils(){return new JSONArray().put(j("id","student-1","name","Nadia Putri","student_id","NIS-001","class","VII A","parent_name","Wali Nadia","parent_phone","","photo_url","" )).put(j("id","student-2","name","Gilang Ramadhan","student_id","NIS-002","class","VII A","parent_name","Wali Gilang","parent_phone","","photo_url",""));}
- JSONObject schedule(){return j("id","schedule-1","teacher_id",UID,"school_id",SCHOOL,"class_id","class-1","subject_id","subject-1","day_of_week",LocalDate.now(ZoneId.of("Asia/Jakarta")).getDayOfWeek().getValue()%7,"start_time","07:00:00","end_time","09:00:00","room","Ruang 7A","is_active",true);}
+ JSONObject schedule(){return j("id","schedule-1","teacher_id",UID,"school_id",SCHOOL,"class_id","class-1","subject_id","subject-1","day_of_week",LocalDate.now(ZoneId.of("Asia/Jakarta")).getDayOfWeek().getValue()-1,"start_time","07:00:00","end_time","09:00:00","room","Ruang 7A","is_active",true);}
  @Override JSONArray get(String table,String query){String today=LocalDate.now(ZoneId.of("Asia/Jakarta")).toString();switch(table){
  case "profiles":return new JSONArray().put(profile());
  case "user_roles":return new JSONArray().put(j("role","teacher"));

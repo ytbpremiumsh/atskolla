@@ -665,7 +665,7 @@ const SuperAdminRegistrationWA = () => {
             <Input
               value={settings.admin_notify_phone}
               onChange={(e) => setSettings({ ...settings, admin_notify_phone: e.target.value })}
-              placeholder="089501123808"
+              placeholder="Masukkan nomor WhatsApp tujuan"
             />
             <p className="text-[10px] text-muted-foreground">
               Format: 08xx atau 628xx — semua tiket bantuan & pencairan akan dikirim ke nomor ini

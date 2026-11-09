@@ -30,7 +30,7 @@ export function usePackageStatus(): PackageState {
     lastPaymentActivityAt: null as string | null,
     packageStatusChangedAt: null as string | null,
     disabledFeatures: DEFAULT_DISABLED,
-    gracePeriodDays: 90,
+    gracePeriodDays: 60,
     mandiriMonthlyRate: 1000,
   });
 
@@ -57,7 +57,7 @@ export function usePackageStatus(): PackageState {
         lastPaymentActivityAt: school?.last_payment_activity_at ?? null,
         packageStatusChangedAt: school?.package_status_changed_at ?? null,
         disabledFeatures: (settings?.disabled_features as string[]) || DEFAULT_DISABLED,
-        gracePeriodDays: settings?.grace_period_days ?? 90,
+        gracePeriodDays: settings?.grace_period_days ?? 60,
         mandiriMonthlyRate: Number(settings?.mandiri_monthly_rate ?? 1000),
       });
     })();

@@ -27,17 +27,18 @@ class ParentApi {
         JSONObject body=new JSONObject(args.toString());body.put("action",action);
         return request(baseUrl+"/functions/v1/parent-portal",body.toString().getBytes(StandardCharsets.UTF_8),"application/json",token,false);
     }
-    String upload(byte[] bytes,String mime,String extension,String token) throws Exception {
-        if(publicKey.isEmpty())throw new IOException("Unggah lampiran belum dikonfigurasi");
-        String path="leave/"+java.util.UUID.randomUUID()+extension;
-        request(baseUrl+"/storage/v1/object/parent-attachments/"+path,bytes,mime,token,true);
-        return baseUrl+"/storage/v1/object/public/parent-attachments/"+path;
+    String upload(byte[] bytes,String mime,String extension,String token,String studentId) throws Exception {
+        JSONObject ticket=call("prepare_leave_attachment",new JSONObject().put("student_id",studentId).put("mime",mime).put("size",bytes.length),token);
+        String uploadUrl=ticket.optString("upload_url"),attachmentUrl=ticket.optString("attachment_url");
+        if(!uploadUrl.startsWith(baseUrl+"/storage/v1/object/upload/sign/parent-attachments/")||attachmentUrl.isEmpty())throw new IOException("Tautan unggah belum tersedia. Perbarui layanan aplikasi.");
+        request(uploadUrl,bytes,mime,"",true);
+        return attachmentUrl;
     }
     private JSONObject request(String url,byte[] body,String mime,String token,boolean storage) throws Exception {
         HttpURLConnection conn=(HttpURLConnection)new URL(url).openConnection();
         try {
             conn.setConnectTimeout(12000);conn.setReadTimeout(30000);conn.setInstanceFollowRedirects(false);
-            conn.setRequestMethod("POST");conn.setDoOutput(true);conn.setRequestProperty("Content-Type",mime);
+            conn.setRequestMethod(storage?"PUT":"POST");conn.setDoOutput(true);conn.setRequestProperty("Content-Type",mime);
             conn.setRequestProperty("Accept","application/json");
             if(storage) {
                 conn.setRequestProperty("apikey",publicKey);

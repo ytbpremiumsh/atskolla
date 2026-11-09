@@ -6,7 +6,7 @@ import android.net.Uri;
 import org.json.*;
 import java.util.*;
 
-/** First snapshot is a silent baseline; only newly available invoice IDs are announced. */
+/** Never replay old invoices; include bills created after notification opt-in even on the first check. */
 final class NewInvoiceNotifications {
     static void check(android.content.Context context,JSONObject student,JSONArray invoices,String token) throws Exception {
         Vault vault=new Vault(context);synchronized(Vault.LOCK){
@@ -14,14 +14,14 @@ final class NewInvoiceNotifications {
             String key="invoice_available_seen:"+student.optString("id"),raw=vault.get(key);Set<String> seen=new LinkedHashSet<>();boolean baseline=raw.isEmpty();
             if(!baseline){JSONArray previous=new JSONArray(raw);for(int i=0;i<previous.length();i++)seen.add(previous.getString(i));}
             for(int i=0;i<invoices.length();i++){JSONObject invoice=invoices.getJSONObject(i);String id=invoice.optString("id");if(id.isEmpty()||seen.contains(id))continue;
-                if(!baseline&&Arrays.asList("pending","unpaid","expired","failed","partial").contains(invoice.optString("status")))show(context,student,invoice);
+                if(InvoiceNoticePolicy.shouldNotify(baseline,invoice.optString("status"),invoice.optString("created_at"),vault.get("notifications_since")))show(context,student,invoice);
                 seen.add(id);
             }
             vault.put(key,new JSONArray(seen).toString());
         }
     }
-    private static void show(android.content.Context context,JSONObject student,JSONObject invoice){
-        String channel="school_new_invoices",id=invoice.optString("id");NotificationManager manager=context.getSystemService(NotificationManager.class);manager.createNotificationChannel(new NotificationChannel(channel,"SPP & tagihan baru",NotificationManager.IMPORTANCE_HIGH));
+    static void show(android.content.Context context,JSONObject student,JSONObject invoice){
+        String channel="school_new_invoices",id=invoice.optString("id");try{if(!ParentPushDedup.claim(context,"invoice_new:"+id))return;}catch(Exception e){return;}NotificationManager manager=context.getSystemService(NotificationManager.class);manager.createNotificationChannel(new NotificationChannel(channel,"SPP & tagihan baru",NotificationManager.IMPORTANCE_HIGH));
         String label=invoice.optString("period_label");if(label.isEmpty())label=invoice.optString("invoice_number","Tagihan sekolah");String message=label+" • "+ParentActivity.rupiah(invoice.optDouble("total_amount"));String due=invoice.optString("due_date");if(!due.isEmpty()&&!due.equals("null"))message+="\nJatuh tempo: "+ParentActivity.date(due);
         Intent intent=new Intent(context,ParentActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP).setData(Uri.parse("atskolla://new-invoice/"+Uri.encode(id))).putExtra("open_payments",true).putExtra("student_id",student.optString("id"));PendingIntent action=PendingIntent.getActivity(context,id.hashCode(),intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         Notification publicVersion=new Notification.Builder(context,channel).setSmallIcon(R.drawable.ic_notification).setContentTitle("ATSkolla Parent").setContentText("Ada tagihan sekolah baru.").build();

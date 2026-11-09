@@ -1,3 +1,4 @@
+import { scheduleDayIndex } from "@/lib/classSchedule";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
@@ -818,7 +819,7 @@ export default function ParentDashboard() {
             {/* Jadwal Hari Ini */}
             <SectionTitle icon={CalendarDays} title="Jadwal Hari Ini" onMore={() => setTab("schedule")} />
             {(() => {
-              const todays = schedule.filter((s) => s.day_of_week === new Date().getDay()).sort((a,b)=>(a.start_time||"").localeCompare(b.start_time||""));
+              const todays = schedule.filter((s) => s.day_of_week === scheduleDayIndex(new Date())).sort((a,b)=>(a.start_time||"").localeCompare(b.start_time||""));
               if (todays.length === 0) return <EmptyMini text="Tidak ada jadwal hari ini." />;
               const nowHHMM = new Date().toTimeString().slice(0,5);
               return (
@@ -907,9 +908,9 @@ export default function ParentDashboard() {
         {tab === "schedule" && (
           <Card className="p-4 md:p-5 border-0 shadow-card rounded-2xl space-y-3">
             {(() => {
-              const DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+              const DAY_NAMES = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
               const today = new Date();
-              const dow = today.getDay();
+              const dow = scheduleDayIndex(today);
               const nowHHMM = today.toTimeString().slice(0, 5);
               const todays = schedule.filter((s) => s.day_of_week === dow);
               const ongoing = todays.find((s) => (s.start_time || "").slice(0,5) <= nowHHMM && nowHHMM < (s.end_time || "").slice(0,5));

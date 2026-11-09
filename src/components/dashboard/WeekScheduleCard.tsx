@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, Users, MapPin, ChevronRight, PlayCircle, BookOpen, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const DAYS_FULL = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-const DAYS_LETTER = ["M", "S", "S", "R", "K", "J", "S"];
+const DAYS_FULL = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+const DAYS_LETTER = ["S", "S", "R", "K", "J", "S", "M"];
 
 interface Schedule {
   id: string;
@@ -43,7 +43,7 @@ interface Props {
 
 export function WeekScheduleCard({ weekSchedules, todayDay, now, totalSessions, onSelectSchedule }: Props) {
   // Default selected = today (or Monday if weekend)
-  const initialDay = todayDay >= 1 && todayDay <= 6 ? todayDay : 1;
+  const initialDay = todayDay >= 0 && todayDay <= 6 ? todayDay : 0;
   const [selectedDay, setSelectedDay] = useState(initialDay);
   const daySchedules = weekSchedules[selectedDay] || [];
 
@@ -81,7 +81,7 @@ export function WeekScheduleCard({ weekSchedules, todayDay, now, totalSessions, 
 
           {/* Day picker tabs */}
           <div className="flex items-center justify-between gap-1.5 sm:gap-2 mt-5">
-            {[1, 2, 3, 4, 5, 6].map((d) => {
+            {[0, 1, 2, 3, 4, 5, 6].map((d) => {
               const isSelected = d === selectedDay;
               const isToday = d === todayDay;
               const dayCount = (weekSchedules[d] || []).length;

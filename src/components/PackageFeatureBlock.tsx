@@ -24,7 +24,7 @@ export function PackageFeatureBlock({ feature, children, label }: Props) {
       <h2 className="text-xl font-bold text-foreground">Fitur {label || feature} Dinonaktifkan Sementara</h2>
       <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
         Sekolah Anda menggunakan <b>Paket ATSkolla Payment (Gratis)</b> namun tidak ada aktivitas Pembayaran Online ATSkolla
-        selama lebih dari <b>{pkg.gracePeriodDays} hari</b>. Aktifkan kembali modul pembayaran, atau beralih ke Paket Mandiri untuk
+        selama lebih dari <b>{pkg.gracePeriodDays} hari</b>. Gunakan kembali SPP Online melalui akun Bendahara untuk
         mengaktifkan seluruh fitur absensi.
       </p>
       <div className="flex flex-wrap gap-2 justify-center mt-5">

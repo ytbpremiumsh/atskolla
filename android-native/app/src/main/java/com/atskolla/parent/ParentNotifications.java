@@ -40,7 +40,7 @@ final class ParentNotifications {
                 for(JSONObject row:ordered){String key=AttendanceEvents.key(id,row);if(seen.contains(key)||!AttendanceEvents.fresh(row,since,Instant.now()))continue;
                     synchronized(Vault.LOCK){if(!active(context,vault,token))return;showAttendance(context,student,row,key);seen.add(key);while(seen.size()>256)seen.remove(seen.iterator().next());vault.put(seenKey,new JSONArray(seen).toString());}
                 }
-                try{JSONObject payments=api.call("spp_list",new JSONObject().put("student_id",id),token);JSONArray invoices=payments.optJSONArray("invoices");if(invoices!=null){NewInvoiceNotifications.check(context,student,invoices,token);PaymentNotifications.check(context,student,invoices,api,token,since);}}catch(ParentApi.Failure e){if(e.unauthorized)throw e;}catch(Exception ignored){}
+                try{JSONObject payments=api.call("spp_list",new JSONObject().put("student_id",id).put("notification_only",true),token);JSONArray invoices=payments.optJSONArray("invoices");if(invoices!=null){NewInvoiceNotifications.check(context,student,invoices,token);PaymentNotifications.check(context,student,invoices,api,token,since);}}catch(ParentApi.Failure e){if(e.unauthorized)throw e;}catch(Exception ignored){}
                 JSONObject announcements;try{announcements=api.call("announcements",new JSONObject().put("student_id",id),token);}catch(ParentApi.Failure e){if(e.unauthorized)throw e;announcements=new JSONObject();}catch(java.io.IOException e){announcements=new JSONObject();}
                 if(!active(context,vault,token))return;
                 JSONArray news=announcements.optJSONArray("announcements");String newsKey="notification_seen:"+id;Instant cutoff=since;try{String saved=vault.get(newsKey);if(!saved.isEmpty())cutoff=Instant.parse(saved);}catch(Exception ignored){}
@@ -51,6 +51,7 @@ final class ParentNotifications {
     }
     private static boolean active(Context c,Vault vault,String token){return ParentNotificationJob.enabled(c)&&ParentNotificationJob.allowed(c)&&token.equals(vault.get("token"));}
     static void showAttendance(Context context,JSONObject student,JSONObject row,String key){
+        try{String event=row.optString("id");if(!ParentPushDedup.claim(context,"attendance:"+(event.isEmpty()?key:event)))return;}catch(Exception e){return;}
         NotificationManager manager=context.getSystemService(NotificationManager.class);String channel="student_attendance";
         manager.createNotificationChannel(new NotificationChannel(channel,"Absensi Datang & Pulang",NotificationManager.IMPORTANCE_HIGH));
         String id=student.optString("id"),direction=AttendanceEvents.direction(row),time=row.optString("time");if(time.length()>5)time=time.substring(0,5);
