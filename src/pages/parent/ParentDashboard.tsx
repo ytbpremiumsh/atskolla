@@ -1,3 +1,4 @@
+import { parentPaymentRequest } from "@/lib/parentPaymentAmount";
 import { scheduleDayIndex } from "@/lib/classSchedule";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { useEffect, useState, useCallback } from "react";
@@ -245,6 +246,9 @@ export default function ParentDashboard() {
       : invoiceOrId;
     if (!inv) { toast.error("Tagihan tidak ditemukan"); return; }
 
+    setInstallmentMode(null);
+    setInstallmentAmount(0);
+
     // Jika tagihan mengizinkan cicilan (non-SPP), buka dialog pilihan cicil / lunas dulu.
     if (inv.allow_installment && (inv.bill_type || "spp") !== "spp") {
       setInstallmentInvoice(inv);
@@ -282,10 +286,12 @@ export default function ParentDashboard() {
     if (!pickerInvoice) return;
     setPickerLoading(true);
     setSppBusy(pickerInvoice.id);
-    // Jika sedang dalam alur cicilan (mode=installment) → panggil endpoint installment
-    const useInstallment = installmentMode === "installment" && installmentAmount > 0;
+    // Pelunasan sisa dan cicilan memakai nominal dari dialog serta validasi sisa di server.
+    const request = parentPaymentRequest(installmentMode, installmentAmount, pickerInvoice.total_amount);
+    if (request.amount <= 0) { setPickerLoading(false); setSppBusy(null); toast.error("Tidak ada sisa tagihan yang perlu dibayar"); return; }
+    const useInstallment = request.fromChoice;
     const d = useInstallment
-      ? await invoke("spp_pay_installment", { student_id: selectedStudent, invoice_id: pickerInvoice.id, amount: installmentAmount, channel })
+      ? await invoke("spp_pay_installment", { student_id: selectedStudent, invoice_id: pickerInvoice.id, amount: request.amount, channel })
       : await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel });
     setSppBusy(null);
     setPickerLoading(false);
@@ -295,7 +301,7 @@ export default function ParentDashboard() {
       setPayingInvoiceId(d.invoice_id || pickerInvoice.id);
       setPaymentMethod(channel);
       setPaymentIframe(d.payment_url);
-      toast.success(useInstallment ? "Membuka pembayaran cicilan..." : "Membuka halaman pembayaran...");
+      toast.success(installmentMode === "installment" ? "Membuka pembayaran cicilan..." : "Membuka halaman pembayaran...");
       // Reset mode setelah dipakai
       setInstallmentMode(null);
       setInstallmentAmount(0);
@@ -1561,7 +1567,7 @@ export default function ParentDashboard() {
       <PaymentMethodPicker
         open={pickerOpen}
         onOpenChange={(o) => { if (!pickerLoading) { setPickerOpen(o); if (!o) { setPickerInvoice(null); setInstallmentMode(null); setInstallmentAmount(0); } } }}
-        billAmount={installmentMode === "installment" && installmentAmount > 0 ? installmentAmount : (pickerInvoice?.total_amount || 0)}
+        billAmount={parentPaymentRequest(installmentMode, installmentAmount, pickerInvoice?.total_amount || 0).amount}
         title={installmentMode === "installment" ? "Pilih Metode Pembayaran (Cicilan)" : "Pilih Metode Pembayaran"}
         subtitle={pickerInvoice ? (
           installmentMode === "installment"
