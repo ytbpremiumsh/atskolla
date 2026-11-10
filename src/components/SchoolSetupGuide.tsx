@@ -84,6 +84,15 @@ export function SchoolSetupPanel({
     identity: "Identitas", classes: "Kelas", students: "Siswa",
     team: "Guru / Staff", schedules: "Jadwal", whatsapp: "WhatsApp", bank: "Rekening",
   };
+  const reasons: Record<string, string> = {
+    identity: "Zona waktu dipakai untuk mencatat jam absensi dengan benar.",
+    classes: "Siswa, wali kelas, dan jadwal semuanya dikelompokkan per kelas.",
+    students: "Tanpa data siswa, kartu absensi dan portal wali belum bisa dipakai.",
+    team: "Guru dan wali kelas perlu akun sendiri untuk absensi dan laporan.",
+    schedules: "Jam datang/pulang menentukan status tepat waktu atau terlambat.",
+    whatsapp: "Wali menerima kabar kehadiran anak lewat WhatsApp.",
+    bank: "Hanya jika memakai pembayaran SPP online. Dana masuk otomatis ke rekening sekolah.",
+  };
   const guides = Object.fromEntries(steps.map((step) => [step.id, step.body]));
   if (dismissed && canFinish) return null;
   return (
@@ -91,14 +100,21 @@ export function SchoolSetupPanel({
       aria-label="Persiapan sekolah"
       className="min-w-0 overflow-hidden rounded-xl border border-primary/15 bg-card"
     >
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-primary/10 bg-primary/5 px-3 py-2">
+      <div className="flex flex-col gap-1.5 border-b border-primary/10 bg-primary/5 px-3 py-2">
         <p className="text-xs font-medium">
           {canFinish
             ? data?.bank === "pending" || data?.bank === "verified"
               ? "Data persiapan selesai. Pembayaran online masih menunggu kesiapan rekening."
               : "Data persiapan selesai. Lakukan uji penggunaan sebelum dibagikan ke seluruh sekolah."
-            : "Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem."}
+            : next
+              ? `Langkah ${Math.max(1, steps.findIndex((st) => st.id === next.id) + 1)} dari ${steps.length}: ${labels[next.id] ?? next.title}. Ikuti urutan agar semua fitur siap dipakai.`
+              : "Selesaikan tahapan persiapan terlebih dahulu sebelum menggunakan sistem."}
         </p>
+        {schoolAvailable && !pending && !error && measured.length > 0 && (
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-primary/10" aria-hidden="true">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round((complete / measured.length) * 100)}%` }} />
+          </div>
+        )}
 
       </div>
       <div className="flex min-w-0 items-start gap-3 px-3 py-2">
@@ -191,10 +207,15 @@ export function SchoolSetupPanel({
       </div>
       {schoolAvailable && !pending && !error && next && (
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-primary/10 px-3 py-2 text-xs">
-          <p className="text-muted-foreground">
-            <span className="font-semibold text-foreground">{labels[next.id] ?? next.title}: </span>
-            {guides[next.id]}
-          </p>
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <p className="text-muted-foreground">
+              <span className="font-semibold text-foreground">{labels[next.id] ?? next.title}: </span>
+              {guides[next.id]}
+            </p>
+            {reasons[next.id] && (
+              <p className="text-[11px] text-muted-foreground"><span className="font-medium text-primary">Kenapa perlu? </span>{reasons[next.id]}</p>
+            )}
+          </div>
           {next.id === "schedules" && data?.attendanceReady !== false && (
             <Link to="/holidays" className="shrink-0 text-xs font-semibold text-primary underline">Jam absensi & hari libur</Link>
           )}
