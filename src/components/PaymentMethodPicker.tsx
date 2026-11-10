@@ -150,7 +150,6 @@ export function PaymentMethodPicker({
             <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
-          <p className="text-xs text-muted-foreground">Biaya gateway dipotong dari penerimaan sekolah.</p>
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
             <span className="font-semibold text-foreground">Total Bayar</span>
             <span className="font-bold text-[#5B6CF9] text-lg">{formatIDR(total)}</span>
