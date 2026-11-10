@@ -273,7 +273,7 @@ export function PrincipalDataProvider({ children }: { children: ReactNode }) {
     if (!user || !schoolId) { setLoading(false); return; }
     loadAll();
     // Auto refresh every 60s so kepsek dashboard selalu segar tanpa tombol manual
-    const t = setInterval(() => { if (document.visibilityState === "visible") loadAll(); }, 60_000);
+    const t = setInterval(() => { if (document.visibilityState === "visible") loadAll(); }, 120_000);
     return () => clearInterval(t);
   }, [authLoading, user, schoolId, loadAll]);
 

@@ -252,8 +252,8 @@ const PublicMonitoring = () => {
   // Initial fetch + realtime subscription (no polling delay)
   useEffect(() => {
     fetchData();
-    // Fast polling at 3s for near-realtime
-    const interval = setInterval(() => fetchData(), 3000);
+    // Realtime handles instant updates; polling is only a slow backup.
+    const interval = setInterval(() => { if (document.visibilityState === "visible") fetchData(); }, 60000);
     // Also listen to realtime changes for instant updates
     const channel = supabase.channel("public-monitoring-rt")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "dismissal_logs" }, () => fetchData(true))
