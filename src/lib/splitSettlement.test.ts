@@ -63,3 +63,11 @@ it("kode berbeda antar sekolah, stabil dan menolak campuran sekolah", () => {
  expect(groupSplitByDay(rows,school)[0].code).toBe(a.code);
  expect(groupSplitByDay(rows,"")).toEqual([]);
 });
+
+it("dana menunggu transfer mengecualikan transaksi yang terkonfirmasi berhasil", async () => {
+ const {payoutStatus}=await import("./splitSettlement");
+ const items=[{doku_split:true,total_amount:36000,settlement_status:"paid",settlement_confirmed_at:"2026-11-09T07:00:00Z"},{doku_split:true,total_amount:2000,settlement_status:"paid",settlement_confirmed_at:"2026-11-09T07:00:00Z"},{doku_split:true,total_amount:1000}];
+ const pending=items.filter(i=>payoutStatus(i)==="split_processing");
+ expect(pending).toHaveLength(1);expect(pending.reduce((sum,i)=>sum+i.total_amount,0)).toBe(1000);
+ expect(items.filter(i=>payoutStatus(i)==="split_paid")).toHaveLength(2);
+});

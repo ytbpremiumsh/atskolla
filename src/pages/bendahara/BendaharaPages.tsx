@@ -4932,6 +4932,9 @@ export function BendaharaPencairan() {
     return <Badge className={map[s] || "bg-slate-500"}>{s.toUpperCase()}</Badge>;
   };
 
+  const pendingSplit = splitPaid.filter((invoice) => payoutStatus(invoice) === "split_processing");
+  const pendingSplitTotal = pendingSplit.reduce((sum, invoice) => sum + Number(invoice.total_amount || 0), 0);
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -4948,8 +4951,8 @@ export function BendaharaPencairan() {
 
       {/* KPI ringkas */}
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="Transaksi Otomatis Sistem" value={String(splitPaid.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
-        <StatCard label="Total Dana Masuk Otomatis" value={fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
+        <StatCard label="Transaksi Menunggu Transfer" value={String(pendingSplit.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
+        <StatCard label="Dana Akan Ditransfer" value={fmtIDR(pendingSplitTotal)} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
       </div>
 
 
@@ -4957,24 +4960,25 @@ export function BendaharaPencairan() {
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4 space-y-3">
             <div className="space-y-1">
-              <p className="text-sm font-semibold">Ditransfer Otomatis oleh Sistem</p>
+              <p className="text-sm font-semibold">Menunggu Transfer Otomatis</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Pembayaran ini sudah langsung dikirim sistem ke rekening sekolah, jadi tidak perlu diajukan pencairan dan tidak masuk Saldo.
+                Hanya dana yang belum ditransfer ditampilkan di sini. Dana yang sudah terkirim tersedia di Riwayat Settlement.
               </p>
             </div>
             <div className="flex items-center justify-between gap-3 rounded-xl bg-emerald-500/10 px-3 py-2.5">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Total diterima</p>
-                <p className="text-lg font-extrabold text-emerald-600 tabular-nums leading-tight">{fmtIDR(splitPaid.reduce((t, x) => t + (x.total_amount || 0), 0))}</p>
+                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Akan ditransfer</p>
+                <p className="text-lg font-extrabold text-emerald-600 tabular-nums leading-tight">{fmtIDR(pendingSplitTotal)}</p>
               </div>
-              <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-foreground ring-1 ring-border/60">{splitPaid.length} transaksi</span>
+              <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-foreground ring-1 ring-border/60">{pendingSplit.length} transaksi</span>
             </div>
-            <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setSplitOpen((v) => !v)}>
+            <Button disabled={pendingSplit.length === 0} size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setSplitOpen((v) => !v)}>
               {splitOpen ? "Sembunyikan rincian" : "Lihat rincian"}
             </Button>
-            {splitOpen && (
+            {pendingSplit.length === 0 && <p className="text-xs text-muted-foreground">Tidak ada dana yang menunggu transfer.</p>}
+            {splitOpen && pendingSplit.length > 0 && (
               <div className="max-h-64 overflow-auto divide-y divide-border rounded-lg border">
-                {splitPaid.map((x) => (
+                {pendingSplit.map((x) => (
                   <div key={x.id} className="p-2 flex justify-between gap-2 text-xs">
                     <div className="min-w-0">
                       <p className="font-semibold truncate">{x.student_name || "-"} · {x.class_name || "-"}</p>
