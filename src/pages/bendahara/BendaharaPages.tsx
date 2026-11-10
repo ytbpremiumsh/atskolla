@@ -4924,6 +4924,32 @@ export function BendaharaPencairan() {
         }
       />
 
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-4 space-y-3 text-sm">
+              <p className="font-semibold">Pencairan dana sekarang otomatis</p>
+              <p className="text-muted-foreground">
+                Setiap pembayaran SPP online langsung dibagi oleh sistem: nominal SPP dikirim otomatis ke rekening utama sekolah sesuai jadwal pencairan sistem. Bendahara tidak perlu mengajukan pencairan.
+              </p>
+              {(() => {
+                const acc = savedAccounts.find((x: any) => x.is_default) || savedAccounts[0];
+                if (!acc) return <p className="text-amber-600">Belum ada rekening. Tambahkan rekening agar pembayaran SPP online bisa digunakan.</p>;
+                return (
+                  <div className="rounded-lg border p-3 flex items-start gap-3">
+                    <Landmark className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rekening Tujuan</p>
+                      <p className="font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
+                      <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}</p>
+                      {acc.verification_status !== "verified" && (
+                        <p className="text-xs text-amber-600 mt-1">Rekening belum terverifikasi. Pembayaran SPP online belum bisa digunakan sampai diverifikasi Penyedia Layanan Gateway.</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
       {/* KPI ringkas */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Transaksi Menunggu Transfer" value={String(pendingSplit.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
@@ -4968,51 +4994,8 @@ export function BendaharaPencairan() {
         </Card>
       )}
 
-      <Tabs defaultValue="pencairan" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:w-fit gap-1 bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl border border-indigo-200/60 dark:border-indigo-800/60">
-          <TabsTrigger
-            value="pencairan"
-            className="gap-2 rounded-lg font-semibold text-[#3D4FE0] dark:text-indigo-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#5B6CF9] data-[state=active]:to-[#3D4FE0] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#5B6CF9]/30 transition-all duration-300"
-          >
-            <ArrowDownToLine className="h-4 w-4" /> Dana Masuk
-          </TabsTrigger>
-          <TabsTrigger
-            value="riwayat"
-            className="gap-2 rounded-lg font-semibold text-[#3D4FE0] dark:text-indigo-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#5B6CF9] data-[state=active]:to-[#3D4FE0] data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-[#5B6CF9]/30 transition-all duration-300"
-          >
-            <FileText className="h-4 w-4" /> Riwayat Settlement
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="pencairan" className="space-y-4 mt-4">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4 space-y-3 text-sm">
-              <p className="font-semibold">Pencairan dana sekarang otomatis</p>
-              <p className="text-muted-foreground">
-                Setiap pembayaran SPP online langsung dibagi oleh sistem: nominal SPP dikirim otomatis ke rekening utama sekolah sesuai jadwal pencairan sistem. Bendahara tidak perlu mengajukan pencairan.
-              </p>
-              {(() => {
-                const acc = savedAccounts.find((x: any) => x.is_default) || savedAccounts[0];
-                if (!acc) return <p className="text-amber-600">Belum ada rekening. Tambahkan rekening agar pembayaran SPP online bisa digunakan.</p>;
-                return (
-                  <div className="rounded-lg border p-3 flex items-start gap-3">
-                    <Landmark className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Rekening Tujuan</p>
-                      <p className="font-bold">{acc.bank_name} <span className="font-mono">· {acc.account_number}</span></p>
-                      <p className="text-xs text-muted-foreground">a.n. {acc.account_holder}</p>
-                      {acc.verification_status !== "verified" && (
-                        <p className="text-xs text-amber-600 mt-1">Rekening belum terverifikasi. Pembayaran SPP online belum bisa digunakan sampai diverifikasi Penyedia Layanan Gateway.</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="riwayat" className="space-y-4 mt-4">
+      <section className="space-y-4" aria-label="Riwayat Settlement">
+        <h2 className="text-base font-semibold">Riwayat Settlement</h2>
           {/* Legend status — alur settlement otomatis */}
           <div className="rounded-xl border bg-muted/20 p-3 space-y-1.5 text-[11px]">
             <p className="font-semibold text-foreground text-xs">Keterangan Status</p>
@@ -5092,8 +5075,7 @@ export function BendaharaPencairan() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+      </section>
 
 
       {/* Konfirmasi Pencairan */}
