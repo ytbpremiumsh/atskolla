@@ -8,6 +8,7 @@ import {
   formatIDR,
   computeChannelFee,
   qrisFeeDisclosure,
+  QRIS_MIN_FEE,
 } from "@/lib/paymentChannels";
 
 type Props = {
@@ -99,7 +100,7 @@ export function PaymentMethodPicker({
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{c.id === "qris" ? "Bayar lewat e-wallet atau mobile banking" : c.id === "va" ? "Transfer lewat ATM atau mobile banking" : "Bayar tunai di Alfamart atau Indomaret"}</p>
-                    {c.id === "qris" && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p></div>}
+                    {c.id === "qris" && feeFor(c.id) > QRIS_MIN_FEE && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p></div>}
                     <div className="flex flex-nowrap items-center gap-2 mt-2 overflow-x-auto pb-1">
                       {c.banks.map((b) => (
                         <div
