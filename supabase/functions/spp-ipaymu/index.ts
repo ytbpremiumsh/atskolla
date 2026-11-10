@@ -1,3 +1,4 @@
+// @ts-nocheck
 // iPaymu Redirect Payment (Direct API v2) integration for ATSkolla SPP.
 // Mirrors spp-doku / spp-mayar contract:
 //   actions: parent_create_payment | create_payment_link | regenerate_payment_link
