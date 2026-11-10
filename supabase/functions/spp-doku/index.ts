@@ -277,7 +277,6 @@ async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<
 }
 
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
-  channel = await requireSchoolPaymentChannel(supabaseAdmin, inv.school_id, channel);
   const cfg = await getDokuConfig(supabaseAdmin);
   if (!cfg.clientId || !cfg.secretKey) return { checked: 0, paid: 0, error: "DOKU belum dikonfigurasi" };
   const { data, error } = await supabaseAdmin.from("doku_payment_attempts")
@@ -294,6 +293,7 @@ async function ensureFreshLink(
   forceRegen = false,
   channel: string | null = null,
 ) {
+  channel = await requireSchoolPaymentChannel(supabaseAdmin, inv.school_id, channel);
   const cfg = await getDokuConfig(supabaseAdmin);
   if (!cfg.clientId || !cfg.secretKey) {
     return { success: false, error: "Doku Client-Id / Secret-Key belum dikonfigurasi" };
