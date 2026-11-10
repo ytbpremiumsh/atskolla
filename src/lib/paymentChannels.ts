@@ -5,7 +5,6 @@
 import mandiriAsset from "@/assets/payment/mandiri.png.asset.json";
 import briAsset from "@/assets/payment/bri.png.asset.json";
 import bniAsset from "@/assets/payment/bni.png.asset.json";
-import bcaAsset from "@/assets/payment/bca.png.asset.json";
 import bsiAsset from "@/assets/payment/bsi.png.asset.json";
 import qrisAsset from "@/assets/payment/qris.png.asset.json";
 import alfamartAsset from "@/assets/payment/alfamart.png.asset.json";
@@ -60,7 +59,6 @@ export const PAYMENT_CHANNELS: PaymentChannel[] = [
       { code: "MANDIRI", name: "Mandiri", logo: assetUrl(mandiriAsset.url) },
       { code: "BRI", name: "BRI", logo: assetUrl(briAsset.url) },
       { code: "BNI", name: "BNI", logo: assetUrl(bniAsset.url) },
-      { code: "BCA", name: "BCA", logo: assetUrl(bcaAsset.url) },
       { code: "BSI", name: "BSI", logo: assetUrl(bsiAsset.url) },
     ],
   },
