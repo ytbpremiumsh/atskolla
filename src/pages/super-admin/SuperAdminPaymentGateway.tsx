@@ -52,6 +52,8 @@ const SuperAdminPaymentGateway = () => {
   const [appBaseUrl, setAppBaseUrl] = useState("");
 
   // Custom admin fee per channel (charged to wali murid)
+  const [adminFee,setAdminFee] = useState("3000");
+  const [merchantTariffs,setMerchantTariffs] = useState<Record<string,number>>({});
   const [feeVa, setFeeVa] = useState("5000");
   const [feeQris, setFeeQris] = useState("5000");
   const [feeQrisPercent, setFeeQrisPercent] = useState("1");
@@ -92,6 +94,8 @@ const SuperAdminPaymentGateway = () => {
       setHasIpaymuVa(!!d.has_ipaymu_va);
       setHasIpaymuApiKey(!!d.has_ipaymu_api_key);
       setAppBaseUrl(d.app_base_url || "");
+      setAdminFee(d.atskolla_admin_fee ?? "3000");
+      setMerchantTariffs(JSON.parse(d.doku_merchant_tariffs || "{}"));
       setFeeVa(d.fee_va || "5000");
       setFeeQris(d.fee_qris || "5000");
       setFeeQrisPercent(d.fee_qris_percent || "1");
@@ -150,6 +154,8 @@ const SuperAdminPaymentGateway = () => {
     try {
       const updates: any = {
         doku_env: dokuEnv,
+        atskolla_admin_fee: adminFee,
+        doku_merchant_tariffs: JSON.stringify(merchantTariffs),
         fee_va: feeVa.trim() || "0",
         fee_qris: feeQris.trim() || "0",
         fee_qris_percent: feeQrisPercent.trim() || "1",
@@ -301,31 +307,16 @@ const SuperAdminPaymentGateway = () => {
           {/* Custom Admin Fee per channel */}
           <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4 space-y-3">
             <div>
-              <p className="text-xs font-semibold text-foreground">Custom Fee Admin per Channel</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Biaya tambahan yang ditagihkan ke wali murid saat membayar SPP & tagihan lainnya. Berlaku untuk semua gateway.
-                <br />
-                <span className="text-[10px]">QRIS = persen dari tagihan (minimum Rp 3.000). VA & Retail = nominal tetap (Rp).</span>
-              </p>
+              <p className="text-xs font-semibold text-foreground">Biaya Layanan ATSkolla</p>
+              <p className="text-xs text-muted-foreground">Biaya tetap per transaksi untuk semua metode, dibayar wali dan menjadi bagian ATSkolla. Biaya gateway dipotong dari bagian sekolah.</p>
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <div className="grid gap-1">
-                <Label className="text-[11px] flex items-center gap-1"><Banknote className="h-3 w-3" /> Virtual Account (Rp)</Label>
-                <Input type="number" min="0" value={feeVa} onChange={(e) => setFeeVa(e.target.value)} placeholder="5000" className="font-mono text-sm h-9" />
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[11px] flex items-center gap-1"><QrCode className="h-3 w-3" /> QRIS (%)</Label>
-                <div className="relative">
-                  <Input type="number" min="0" step="0.1" value={feeQrisPercent} onChange={(e) => setFeeQrisPercent(e.target.value)} placeholder="1" className="font-mono text-sm h-9 pr-7" />
-                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground">min Rp 3.000</p>
-              </div>
-              <div className="grid gap-1">
-                <Label className="text-[11px] flex items-center gap-1"><Store className="h-3 w-3" /> Retail (Rp)</Label>
-                <Input type="number" min="0" value={feeRetail} onChange={(e) => setFeeRetail(e.target.value)} placeholder="8000" className="font-mono text-sm h-9" />
-              </div>
-            </div>
+            <Label>Biaya layanan per transaksi (Rp)</Label>
+            <Input type="number" min="0" max="1000000" step="1" value={adminFee} onChange={e=>setAdminFee(e.target.value)} />
+            <p className="text-sm font-semibold">Tarif gateway akun merchant</p>
+            <p className="text-xs text-muted-foreground">QRIS: Rp555 hingga Rp100.000; 0,7% di atasnya, dihitung dari total pembayaran termasuk biaya layanan. Masukkan tarif VA/retail final termasuk pajak sesuai Fee Scheme DOKU. Metode tanpa tarif terkonfirmasi belum dapat digunakan.</p>
+            {[
+              ["VIRTUAL_ACCOUNT_BCA","VA BCA"],["VIRTUAL_ACCOUNT_BANK_MANDIRI","VA Mandiri"],["VIRTUAL_ACCOUNT_BNI","VA BNI"],["VIRTUAL_ACCOUNT_BRI","VA BRI"],["VIRTUAL_ACCOUNT_BANK_CIMB","VA CIMB Niaga"],["ONLINE_TO_OFFLINE_ALFA","Alfamart"],["ONLINE_TO_OFFLINE_INDOMARET","Indomaret"]
+            ].map(([id,label])=><div key={id} className="grid grid-cols-2 items-center gap-3"><Label>{label}</Label><Input type="number" min="0" step="1" placeholder="Belum dikonfirmasi" value={merchantTariffs[id]??""} onChange={e=>setMerchantTariffs(current=>{const next={...current};if(e.target.value==="")delete next[id];else next[id]=Number(e.target.value);return next;})}/></div>)}
             <div className="flex justify-end">
               <Button size="sm" onClick={handleSaveDoku} disabled={saving}>
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Save className="h-3.5 w-3.5 mr-1" />}

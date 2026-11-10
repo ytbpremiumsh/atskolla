@@ -1,3 +1,4 @@
+import { SchoolPaymentMethods } from "@/components/bendahara/SchoolPaymentMethods";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { PageHeader } from "@/components/PageHeader";
 import { useEffect, useState } from "react";
@@ -246,6 +247,7 @@ const SchoolSettings = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <SchoolPaymentMethods />
       <PageHeader icon={School} title="Identitas Sekolah" subtitle="Kelola informasi dan pengaturan sekolah Anda" />
 
       <Card className="border-0 shadow-card">

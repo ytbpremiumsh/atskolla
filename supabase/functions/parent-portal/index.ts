@@ -1,3 +1,4 @@
+import { schoolPaymentChannels, paymentCostConfig } from "../_shared/schoolPaymentPolicy.ts";
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 // Parent Dashboard API — handles login (WA OTP), session validation, and data access.
 // verify_jwt = false because parents do not have Supabase auth users; we use custom session tokens.
@@ -247,33 +248,7 @@ Deno.serve(async (req) => {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
 
     // ---- Public actions ----
-    if (action === "payment_config") {
-      try {
-        const { data } = await supabase
-          .from("platform_settings")
-          .select("key,value")
-          .in("key", ["fee_va", "fee_qris", "fee_retail", "fee_qris_percent"]);
-        const map: Record<string, string> = {};
-        (data || []).forEach((r: any) => { map[r.key] = r.value; });
-        const num = (v: any, d: number) => {
-          const n = parseInt(String(v ?? "").replace(/\D/g, ""), 10);
-          return isNaN(n) ? d : n;
-        };
-        const pct = parseFloat(String(map.fee_qris_percent ?? "").replace(",", "."));
-        const qrisPercent = Number.isFinite(pct) && pct >= 0 ? pct / 100 : 0.01;
-        return json({
-          ok: true,
-          fees: {
-            va: num(map.fee_va, 5000),
-            qris: num(map.fee_qris, 5000),
-            retail: num(map.fee_retail, 8000),
-          },
-          qris_percent: qrisPercent,
-        });
-      } catch {
-        return json({ ok: true, fees: { va: 5000, qris: 5000, retail: 8000 }, qris_percent: 0.01 });
-      }
-    }
+
 
     // Direct login via Nomor Kartu Identitas — no OTP required.
     if (action === "login_card") {
@@ -406,6 +381,12 @@ Deno.serve(async (req) => {
       return json({ error: "Akses ditolak untuk siswa ini" });
     }
     const schoolId = studentRow.school_id;
+    if (action === "payment_config") {
+      const enabled = await schoolPaymentChannels(supabase, schoolId);
+      const costs=await paymentCostConfig(supabase);
+      return json({ok:true,fee_bearer:"school",admin_fee:costs.admin_fee,fees:{qris:costs.admin_fee,va:costs.admin_fee,retail:costs.admin_fee},qris_percent:0,enabled_channels:enabled,methods:costs.methods.filter((m:any)=>m.id==="QRIS"||Number.isSafeInteger(costs.tariffs[m.id]))});
+    }
+
 
     // Parents use a custom session, not a Supabase Auth JWT. Authorize the
     // student above, then issue a short-lived upload URL instead of opening
@@ -674,7 +655,7 @@ Deno.serve(async (req) => {
       const gwMap: Record<string, string> = {};
       (gwRows || []).forEach((r: any) => { gwMap[r.key] = (r.value || "").toLowerCase(); });
       const rawGw = gwMap[channelKey] || gwMap.active_payment_gateway || "mayar";
-      const gateway = ["mayar", "doku", "ipaymu"].includes(rawGw) ? rawGw : "mayar";
+      const gateway = "doku";
       const fnName = gateway === "doku" ? "spp-doku" : gateway === "ipaymu" ? "spp-ipaymu" : "spp-mayar";
 
       const sppRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/${fnName}`, {
@@ -684,7 +665,7 @@ Deno.serve(async (req) => {
           "x-parent-token": session.token,
           "apikey": Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
         },
-        body: JSON.stringify({ action: "parent_create_payment", invoice_id: invoiceId, channel }),
+        body: JSON.stringify({ action: "parent_create_payment", invoice_id: invoiceId, channel, payment_method:body.payment_method }),
       });
       const sppJson = await sppRes.json();
       if (!sppJson?.success) return json({ error: sppJson?.error || "Gagal" });
@@ -754,7 +735,7 @@ Deno.serve(async (req) => {
       const gwMap: Record<string, string> = {};
       (gwRows || []).forEach((r: any) => { gwMap[r.key] = (r.value || "").toLowerCase(); });
       const rawGw = gwMap[channelKey] || gwMap.active_payment_gateway || "mayar";
-      const gateway = ["mayar", "doku", "ipaymu"].includes(rawGw) ? rawGw : "mayar";
+      const gateway = "doku";
       const fnName = gateway === "doku" ? "spp-doku" : gateway === "ipaymu" ? "spp-ipaymu" : "spp-mayar";
 
       const sppRes = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/${fnName}`, {
@@ -764,7 +745,7 @@ Deno.serve(async (req) => {
           "x-parent-token": session.token,
           "apikey": Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
         },
-        body: JSON.stringify({ action: "parent_create_installment_payment", invoice_id: invoiceId, amount, channel }),
+        body: JSON.stringify({ action: "parent_create_installment_payment", invoice_id: invoiceId, amount, channel, payment_method:body.payment_method }),
       });
       const sppJson = await sppRes.json();
       if (!sppJson?.success) return json({ error: sppJson?.error || "Gagal" });

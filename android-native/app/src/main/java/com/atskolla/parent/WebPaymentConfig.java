@@ -14,5 +14,6 @@ final class WebPaymentConfig {
     String qrisDisclosure(double amount,JSONObject server){return QrisFeeDisclosure.describe(amount,qrisPercent(server),qrisMinimum());}
     String qrisPolicy(double amount,JSONObject server){String s=qrisDisclosure(amount,server);return s.substring(0,s.lastIndexOf("\n"));}
     String qrisCalculation(double amount,JSONObject server){String s=qrisDisclosure(amount,server);return s.substring(s.lastIndexOf("\n")+1);}
-    double fee(JSONObject channel,double amount,JSONObject server){String id=channel.optString("id");if(id.equals("qris")){double percent=qrisPercent(server);return Math.max(qrisMinimum(),Math.round(Math.max(0,amount)*percent));}JSONObject fees=server.optJSONObject("fees");return fees!=null&&fees.has(id)?fees.optDouble(id,channel.optDouble("fee")):channel.optDouble("fee");}
+    boolean enabled(JSONObject channel,JSONObject server){JSONArray list=server.optJSONArray("enabled_channels");if(list==null)return false;for(int i=0;i<list.length();i++)if(list.optString(i).equals(channel.optString("id"))){JSONArray methods=server.optJSONArray("methods");if(methods==null)return false;for(int m=0;m<methods.length();m++)if(methods.optJSONObject(m).optString("channel").equals(channel.optString("id")))return true;}return false;}
+    double fee(JSONObject channel,double amount,JSONObject server){return server.optDouble("admin_fee",3000);}
 }
