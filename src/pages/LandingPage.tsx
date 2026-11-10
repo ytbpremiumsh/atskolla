@@ -37,8 +37,8 @@ const NAV = [
 
 const TRUST_BADGES = [
   { icon: CheckCircle2, label: "Tanpa Biaya Langganan" },
-  { icon: Zap, label: "Implementasi Cepat" },
-  { icon: ShieldCheck, label: "Support Seluruh Indonesia" },
+  { icon: Zap, label: "Panduan Persiapan" },
+  { icon: ShieldCheck, label: "Untuk Sekolah Indonesia" },
 ];
 
 const STATS = [
@@ -49,19 +49,19 @@ const STATS = [
 ];
 
 const PROBLEMS = [
-  { title: "Absensi masih manual", desc: "Buku hadir kertas mudah hilang, rekap bulanan memakan hari kerja." },
-  { title: "SPP dicatat manual", desc: "Kwitansi tulis tangan, rawan salah hitung dan sulit diaudit." },
-  { title: "Rekap keuangan sulit", desc: "Data tersebar di Excel berbeda-beda antara bendahara dan pimpinan sekolah." },
-  { title: "Orang tua sering lupa bayar", desc: "Tidak ada pengingat otomatis, tunggakan menumpuk tiap semester." },
-  { title: "Data tersebar di banyak aplikasi", desc: "Absensi, keuangan, komunikasi, semuanya di tools terpisah." },
+  { title: "Absensi masih manual", desc: "Pencatatan di buku membuat rekap kehadiran membutuhkan lebih banyak waktu." },
+  { title: "SPP dicatat manual", desc: "Catatan pembayaran perlu diperiksa satu per satu untuk mengetahui siapa yang sudah membayar." },
+  { title: "Rekap keuangan sulit", desc: "Catatan keuangan yang terpisah menyulitkan sekolah melihat laporan yang sama." },
+  { title: "Orang tua sering lupa bayar", desc: "Pengingat membantu orang tua mengetahui tagihan dan waktu pembayaran." },
+  { title: "Data tersebar di banyak aplikasi", desc: "Informasi absensi, keuangan, dan komunikasi tersimpan di tempat yang berbeda." },
 ];
 
 const SOLUTIONS = [
-  { icon: ScanLine, title: "Kehadiran otomatis", desc: "RFID, Face Recognition, dan QR Code tersinkron langsung ke dasbor." },
-  { icon: Receipt, title: "Tagihan SPP terotomasi", desc: "Buat tagihan per periode, pantau pembayaran, dan kirim pengingat WhatsApp." },
-  { icon: LineChart, title: "Satu dasbor keuangan", desc: "Cash flow, tunggakan, dan laporan keuangan real-time." },
+  { icon: ScanLine, title: "Kehadiran otomatis", desc: "Catat kehadiran melalui kartu, kode QR, atau pengenalan wajah." },
+  { icon: Receipt, title: "Tagihan SPP lebih teratur", desc: "Buat tagihan per periode, pantau pembayaran, dan kirim pengingat WhatsApp." },
+  { icon: LineChart, title: "Satu dasbor keuangan", desc: "Lihat pemasukan, tunggakan, dan laporan keuangan dalam satu tempat." },
   { icon: Bell, title: "Notifikasi ke wali murid", desc: "Informasi absensi, tagihan, dan pengumuman melalui portal wali dan WhatsApp yang terhubung." },
-  { icon: Landmark, title: "Satu platform terpadu", desc: "Akademik, keuangan, dan operasional dalam satu ekosistem." },
+  { icon: Landmark, title: "Satu platform terpadu", desc: "Hubungkan data siswa, kegiatan sekolah, dan keuangan dalam satu aplikasi." },
 ];
 
 const ECOSYSTEM_NODES = [
@@ -81,28 +81,28 @@ const MAIN_FEATURES = [
  {icon:MessageSquare,title:"Notifikasi WhatsApp",desc:"Kirim informasi sekolah melalui WhatsApp yang terhubung."},
  {icon:FileBarChart,title:"Laporan sekolah",desc:"Rekap kehadiran dan pembayaran, dengan ekspor Excel atau PDF."},
  {icon:Megaphone,title:"Pengumuman",desc:"Bagikan informasi penting kepada guru dan wali murid."},
- {icon:IdCard,title:"Kartu pelajar",desc:"Identitas siswa terintegrasi dengan sistem absensi."},
+ {icon:IdCard,title:"Kartu pelajar",desc:"Kartu identitas siswa yang dapat digunakan untuk absensi."},
 ];
 
 const PAYMENT_ITEMS = [
-  { icon: QrCode, title: "QRIS, VA & Retail", desc: "Bayar melalui metode yang diaktifkan sekolah. Total terlihat sebelum membayar." },
-  { icon: MessageSquare, title: "Reminder WhatsApp", desc: "Kirim pengingat tagihan melalui nomor WhatsApp sekolah yang sudah terhubung." },
-  { icon: CheckCircle2, title: "Rekonsiliasi Otomatis", desc: "Konfirmasi pembayaran memperbarui status dan sisa tagihan." },
-  { icon: Landmark, title: "Pencairan ke rekening sekolah", desc: "Pencairan Senin–Jumat. Status berhasil sesuai konfirmasi transfer." },
+  { icon: QrCode, title: "Pilihan pembayaran", desc: "Bayar melalui QRIS, transfer bank, atau gerai sesuai pilihan sekolah. Rincian biaya terlihat sebelum membayar." },
+  { icon: MessageSquare, title: "Pengingat WhatsApp", desc: "Kirim pengingat tagihan melalui nomor WhatsApp sekolah yang sudah terhubung." },
+  { icon: CheckCircle2, title: "Status pembayaran otomatis", desc: "Pembayaran yang sudah dikonfirmasi memperbarui status dan sisa tagihan secara otomatis." },
+  { icon: Landmark, title: "Pencairan ke rekening sekolah", desc: "Dana dikirim ke rekening sekolah. Perkembangan pencairan dapat dipantau oleh bendahara." },
   { icon: LineChart, title: "Dashboard Bendahara", desc: "Pantau pemasukan dan tunggakan dalam satu layar." },
-  { icon: FileBarChart, title: "Laporan Keuangan", desc: "Export Excel & PDF resmi untuk audit dan rapat komite." },
+  { icon: FileBarChart, title: "Laporan Keuangan", desc: "Unduh laporan Excel atau PDF untuk pemeriksaan dan rapat sekolah." },
 ];
 
 const HARDWARE = [
-  { icon: Radio, name: "RFID Reader", desc: "USB & mesin standalone. Plug-and-play, langsung tersinkron ke sistem." },
-  { icon: ScanFace, name: "Face Recognition", desc: "Kamera AI untuk verifikasi wajah siswa dan guru secara real-time." },
-  { icon: QrCode, name: "QR Scanner", desc: "Scan cepat dari kamera perangkat mana pun — HP, tablet, atau kios." },
-  { icon: IdCard, name: "Kartu Pelajar", desc: "Cetak kartu resmi dengan chip RFID dan branding sekolah Anda." },
+  { icon: Radio, name: "Pembaca kartu RFID", desc: "Baca kartu siswa untuk mencatat kehadiran di sekolah." },
+  { icon: ScanFace, name: "Pengenalan wajah", desc: "Gunakan kamera untuk mencatat kehadiran melalui pengenalan wajah." },
+  { icon: QrCode, name: "Pemindai QR", desc: "Pindai kode QR menggunakan kamera ponsel, tablet, atau perangkat sekolah." },
+  { icon: IdCard, name: "Kartu Pelajar", desc: "Kartu siswa dengan identitas sekolah dan pilihan kartu RFID." },
 ];
 
 const ROLES = [
   { key: "kepsek", label: "Kepala Sekolah", metric: { top: "Kehadiran hari ini", val: "94,8%", sub: "1.204 dari 1.270 siswa" }, blocks: ["Ringkasan operasional", "Trend absensi", "Aktivitas terbaru"] },
-  { key: "bendahara", label: "Bendahara", metric: { top: "SPP Bulan Ini", val: "Rp 312 Jt", sub: "87% terkumpul • 42 tunggakan" }, blocks: ["Tagihan aktif", "Cash flow harian", "Laporan periode"] },
+  { key: "bendahara", label: "Bendahara", metric: { top: "SPP Bulan Ini", val: "Rp 312 Jt", sub: "87% terkumpul • 42 tunggakan" }, blocks: ["Tagihan aktif", "Arus kas harian", "Laporan periode"] },
   { key: "guru", label: "Guru", metric: { top: "Kelas hari ini", val: "5 sesi", sub: "3 selesai • 2 mendatang" }, blocks: ["Jadwal mengajar", "Rekap kehadiran kelas", "Leaderboard kelas"] },
   { key: "ortu", label: "Orang Tua", metric: { top: "Status anak", val: "Hadir 07:12", sub: "Kelas 6B • SDN 1 Cendikia" }, blocks: ["Absensi anak", "Tagihan SPP", "Pengumuman sekolah"] },
 
@@ -111,7 +111,7 @@ const ROLES = [
 const FAQ = [
   {
     q: "Benarkah ATSkolla gratis?",
-    a: "Ya, tanpa biaya langganan sekolah. SPP Online wajib diaktifkan dan tetap digunakan, dengan toleransi aktivasi 60 hari. Biaya transaksi tetap berlaku.",
+    a: "Ya, sekolah dapat menggunakan ATSkolla tanpa biaya langganan dengan menggunakan SPP Online secara aktif. Sekolah memiliki waktu persiapan 60 hari untuk mengaktifkannya. Biaya transaksi tetap berlaku.",
   },
   {
     q: "Bagaimana sistem pembayaran SPP bekerja?",
@@ -119,7 +119,7 @@ const FAQ = [
   },
   {
     q: "Apakah pembayaran lunas berarti dana sudah cair?",
-    a: "Belum tentu. Lunas berarti pembayaran telah dikonfirmasi. Pencairan ke rekening sekolah diproses terpisah pada hari kerja Senin–Jumat; Sabtu–Minggu tidak ada pengiriman. Pantau status pencairan di dasbor Bendahara.",
+    a: "Belum tentu. Status lunas menunjukkan pembayaran sudah diterima. Pengiriman dana ke rekening sekolah diproses terpisah dan dapat dipantau di halaman Pencairan.",
   },
   {
     q: "Siapa yang menanggung biaya pembayaran?",
@@ -130,8 +130,8 @@ const FAQ = [
     a: "Akses data dibatasi sesuai sekolah dan peran pengguna. Admin mengatur akun guru, staf, dan bendahara. Gunakan kata sandi yang kuat dan jaga kerahasiaan akun.",
   },
   {
-    q: "Berapa lama proses implementasi?",
-    a: "Setelah mendaftar, ikuti panduan persiapan: lengkapi profil sekolah, kelas, siswa, guru/staf, jadwal, dan WhatsApp. Tambahkan bendahara untuk mengajukan rekening dari akun Bendahara. Tagihan online dapat dibuat setelah rekening terverifikasi.",
+    q: "Bagaimana cara mulai menggunakan ATSkolla?",
+    a: "Daftarkan sekolah, lalu ikuti panduan untuk melengkapi data sekolah, siswa, guru, dan jadwal. Bendahara menambahkan rekening sekolah untuk diperiksa. Setelah rekening disetujui, sekolah dapat membuat tagihan online.",
   },
 ];
 
@@ -275,10 +275,10 @@ function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-10 grid lg:grid-cols-2 gap-16 items-center">
         {/* Left */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-8">
-          <Eyebrow>Platform Digital Sekolah Terintegrasi</Eyebrow>
+          <Eyebrow>Aplikasi Pengelolaan Sekolah Terintegrasi</Eyebrow>
 
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-[#0b1020] leading-[1.05] tracking-tight">
-            Platform Digital Sekolah <span className="text-[#5B6CF9]">Terintegrasi</span>.
+            Aplikasi Pengelolaan Sekolah <span className="text-[#5B6CF9]">dalam Satu Tempat</span>.
           </h1>
 
           <p className="text-base md:text-lg text-[#0b1020]/65 max-w-xl leading-relaxed">
@@ -458,7 +458,7 @@ function ProblemSolution() {
       <SectionHeader
         eyebrow="Masalah yang diselesaikan"
         title={<>Dari administrasi manual ke <span className="text-[#5B6CF9]">sekolah digital</span>.</>}
-        sub="Kami mendengar keluhan yang sama dari ratusan sekolah — dan membangun ATSkolla untuk menyelesaikannya."
+        sub="ATSkolla membantu sekolah merapikan pencatatan, memantau pembayaran, dan menyampaikan informasi kepada orang tua."
       />
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Problems */}
@@ -509,9 +509,9 @@ function Ecosystem() {
   return (
     <Section id="ekosistem" className="py-20 lg:py-28 bg-white">
       <SectionHeader
-        eyebrow="Ekosistem ATSkolla"
+        eyebrow="Sekolah saling terhubung"
         title={<>Satu platform. <span className="text-[#5B6CF9]">Semua peran sekolah</span> terhubung.</>}
-        sub="ATSkolla menjadi pusat data yang menghubungkan akademik, keuangan, operasional, guru, dan orang tua."
+        sub="Data sekolah lebih mudah diakses oleh kepala sekolah, bendahara, guru, dan orang tua sesuai kebutuhan masing-masing."
       />
 
       <div className="relative rounded-3xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-8 lg:p-14 overflow-hidden">
@@ -546,7 +546,7 @@ function Ecosystem() {
                 <BrandLogo src={atskollaPlatformLogo.url} alt="ATSkolla" className="h-12 w-12 lg:h-14 lg:w-14 object-contain mb-1" />
 
                 <div className="font-display font-bold text-[#0b1020] text-sm">ATSkolla</div>
-                <div className="text-[9px] text-[#0b1020]/50 uppercase tracking-widest">Core Platform</div>
+                <div className="text-[9px] text-[#0b1020]/50 uppercase tracking-widest">Pusat layanan</div>
               </div>
             </div>
           </div>
@@ -585,7 +585,7 @@ function PaymentSystem() {
     <Section id="pembayaran" className="py-20 lg:py-28 bg-white">
       <SectionHeader
         eyebrow="Sistem pembayaran sekolah"
-        title={<>Pembayaran SPP <span className="text-[#5B6CF9]">otomatis</span>, laporan siap audit.</>}
+        title={<>Pembayaran SPP <span className="text-[#5B6CF9]">lebih mudah</span>, catatan lebih rapi.</>}
         sub="Kelola tagihan, cicilan, dan riwayat pembayaran dalam satu dasbor. Tagihan online tersedia setelah rekening sekolah terverifikasi."
       />
 
@@ -625,7 +625,7 @@ function PaymentSystem() {
               <div className="rounded-xl bg-slate-50 p-4">
                 <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Terkumpul</div>
                 <div className="font-display  text-[#0b1020] text-xl font-bold mt-1">Rp 271Jt</div>
-                <div className="text-[10px] text-emerald-400 mt-1">+12% MoM</div>
+                <div className="text-[10px] text-emerald-400 mt-1">+12% dari bulan lalu</div>
               </div>
               <div className="rounded-xl bg-slate-50 p-4">
                 <div className="text-[10px] text-[#0b1020]/50 uppercase tracking-wider">Tunggakan</div>
@@ -640,7 +640,7 @@ function PaymentSystem() {
             </div>
 
             <div className="rounded-xl bg-slate-50 p-4 mb-4">
-              <div className="text-[#0b1020]/50 text-xs mb-3">Progress pembayaran</div>
+              <div className="text-[#0b1020]/50 text-xs mb-3">Perkembangan pembayaran</div>
               <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                 <div className="h-full w-[87%] rounded-full bg-gradient-to-r from-[#5B6CF9] to-[#7c8bff]" />
               </div>
@@ -652,10 +652,10 @@ function PaymentSystem() {
             <div className="space-y-2">
               {[
                 { name: "Ahmad Fadli — VI-A", status: "Lunas via QRIS", color: "emerald" },
-                { name: "Sari Mulyani — V-B", status: "Reminder terkirim", color: "amber" },
+                { name: "Sari Mulyani — V-B", status: "Pengingat terkirim", color: "amber" },
                 { name: "Rendi Pratama — IV-C", status: "Lunas via VA BRI", color: "emerald" },
                 { name: "Dina Kartika — III-A", status: "Lunas via QRIS", color: "emerald" },
-                { name: "Bagas Wicaksono — II-B", status: "Reminder terkirim", color: "amber" },
+                { name: "Bagas Wicaksono — II-B", status: "Pengingat terkirim", color: "amber" },
                 { name: "Nadia Salsabila — VI-B", status: "Lunas via VA Mandiri", color: "emerald" },
               ].map((r) => (
                 <div key={r.name} className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-2.5">
@@ -678,9 +678,9 @@ function Hardware() {
       <div className="absolute top-0 left-1/3 w-96 h-96 bg-[#5B6CF9] rounded-full blur-[160px] opacity-10" />
       <div className="relative">
         <SectionHeader
-          eyebrow="Hardware ATSkolla"
-          title={<>Perangkat resmi <span className="text-[#5B6CF9]">terintegrasi</span> dengan sistem.</>}
-          sub="Plug-and-play — hubungkan perangkat, data absensi & identitas langsung tersinkron ke dasbor sekolah."
+          eyebrow="Perangkat sekolah"
+          title={<>Perangkat pendukung <span className="text-[#5B6CF9]">absensi sekolah</span>.</>}
+          sub="Pilih perangkat yang sesuai dengan kebutuhan sekolah untuk membantu pencatatan kehadiran."
         />
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -717,9 +717,9 @@ function DashboardPreview() {
   return (
     <Section id="dashboard" className="py-20 lg:py-28 bg-white">
       <SectionHeader
-        eyebrow="Dashboard per peran"
+        eyebrow="Tampilan sesuai tugas"
         title={<>Setiap peran mendapat <span className="text-[#5B6CF9]">tampilan yang relevan</span>.</>}
-        sub="Kepala sekolah melihat ringkasan strategis. Bendahara melihat arus kas. Wali murid melihat anaknya. Semua dari satu platform."
+        sub="Kepala sekolah memantau kegiatan sekolah, bendahara mengelola pembayaran, dan orang tua mengikuti informasi anak dalam satu aplikasi."
       />
 
       <div className="flex flex-wrap gap-2 mb-8">
@@ -784,7 +784,7 @@ function WhyFree() {
             Mengapa ATSkolla <span className="text-[#5B6CF9]">gratis</span>?
           </h2>
           <p className="mt-5 text-base lg:text-lg text-[#0b1020]/70 leading-relaxed">
-            Tanpa biaya langganan sekolah. Sebagai ketentuan penggunaan gratis, SPP Online wajib aktif dan tetap digunakan. Tersedia toleransi aktivasi 60 hari.
+            Sekolah dapat menggunakan ATSkolla tanpa biaya langganan dengan menggunakan SPP Online secara aktif. Biaya transaksi ditampilkan dengan jelas sebelum pembayaran.
           </p>
 
           <div className="mt-8 grid sm:grid-cols-3 gap-4">
@@ -808,7 +808,7 @@ function WhyFree() {
               {[
                 { l: "Biaya langganan sekolah", v: "Rp 0", accent: true },
                 { l: "Biaya transaksi", v: "Sesuai metode" },
-                { l: "Support dasar", v: "Kanal bantuan" },
+                { l: "Bantuan penggunaan", v: "Kanal bantuan" },
                 { l: "Salinan data aplikasi", v: "Melalui admin" },
               ].map((row) => (
                 <div key={row.l} className="flex items-center justify-between border-b border-slate-200 pb-4 last:border-0">
@@ -878,7 +878,7 @@ function FinalCTA() {
           Siap Membangun Sekolah Digital <span className="text-[#5B6CF9]">Bersama ATSkolla</span>?
         </h2>
         <p className="mt-5 text-lg text-[#0b1020]/65 max-w-xl mx-auto">
-          Mulai tanpa biaya langganan sekolah. Aktifkan SPP Online dalam masa toleransi 60 hari.
+          Kelola absensi, pembayaran, dan informasi sekolah dengan lebih teratur melalui ATSkolla.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <button
@@ -913,7 +913,7 @@ function Footer() {
           </div>
 
           <p className="text-sm leading-relaxed text-white/75 mb-4">
-            Platform Digital Sekolah Terintegrasi<br />
+            Aplikasi Pengelolaan Sekolah Terintegrasi<br />
             untuk sekolah di seluruh Indonesia.
           </p>
           <ul className="space-y-2 text-sm text-white/85">
@@ -1031,7 +1031,7 @@ function DevicesShowcase() {
 // ---------- Page ----------
 export default function LandingPage() {
   useEffect(() => {
-    document.title = "ATSkolla — Platform Digital Sekolah Terintegrasi";
+    document.title = "ATSkolla — Aplikasi Pengelolaan Sekolah Terintegrasi";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
       meta.setAttribute(
