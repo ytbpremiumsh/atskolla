@@ -5,7 +5,7 @@ export const DOKU_METHODS = [
  {id:"VIRTUAL_ACCOUNT_BANK_MANDIRI",channel:"va",label:"Mandiri",fee:4000},
  {id:"VIRTUAL_ACCOUNT_BNI",channel:"va",label:"BNI",fee:4000},
  {id:"VIRTUAL_ACCOUNT_BRI",channel:"va",label:"BRI",fee:4000},
- {id:"VIRTUAL_ACCOUNT_BANK_CIMB",channel:"va",label:"CIMB Niaga",fee:4000},
+ {id:"VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",channel:"va",label:"BSI",fee:4000},
  {id:"ONLINE_TO_OFFLINE_ALFA",channel:"retail",label:"Alfamart",fee:5000},
  {id:"ONLINE_TO_OFFLINE_INDOMARET",channel:"retail",label:"Indomaret",fee:6500},
 ];

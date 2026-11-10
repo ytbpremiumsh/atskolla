@@ -11,7 +11,7 @@ const methods = [
  {id:"retail",name:"Retail",icon:Store,description:"Bayar di Alfamart atau Indomaret"},
 ];
 const money = (value: unknown) => `Rp${Number(value).toLocaleString("id-ID")}`;
-const names: Record<string,string> = {VIRTUAL_ACCOUNT_BCA:"BCA",VIRTUAL_ACCOUNT_BANK_MANDIRI:"Mandiri",VIRTUAL_ACCOUNT_BNI:"BNI",VIRTUAL_ACCOUNT_BRI:"BRI",VIRTUAL_ACCOUNT_BANK_CIMB:"CIMB Niaga",ONLINE_TO_OFFLINE_ALFA:"Alfamart",ONLINE_TO_OFFLINE_INDOMARET:"Indomaret"};
+const names: Record<string,string> = {VIRTUAL_ACCOUNT_BCA:"BCA",VIRTUAL_ACCOUNT_BANK_MANDIRI:"Mandiri",VIRTUAL_ACCOUNT_BNI:"BNI",VIRTUAL_ACCOUNT_BRI:"BRI",VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI:"BSI",ONLINE_TO_OFFLINE_ALFA:"Alfamart",ONLINE_TO_OFFLINE_INDOMARET:"Indomaret"};
 export function SchoolPaymentMethods(){
  const {profile,roles}=useAuth();const [enabled,setEnabled]=useState<string[]>([]);const [costs,setCosts]=useState<any>(null);const [loading,setLoading]=useState(true);const [error,setError]=useState(false);const [saving,setSaving]=useState(false);
  const allowed=roles.some(r=>["bendahara","school_admin","super_admin"].includes(r));
