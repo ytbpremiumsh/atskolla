@@ -1,7 +1,6 @@
 export const SCHOOL_CHANNELS = ["qris", "va", "retail"] as const;
 export const DOKU_METHODS = [
  {id:"QRIS",channel:"qris",label:"QRIS",fee:0},
- {id:"VIRTUAL_ACCOUNT_BCA",channel:"va",label:"BCA",fee:4500},
  {id:"VIRTUAL_ACCOUNT_BANK_MANDIRI",channel:"va",label:"Mandiri",fee:4000},
  {id:"VIRTUAL_ACCOUNT_BNI",channel:"va",label:"BNI",fee:4000},
  {id:"VIRTUAL_ACCOUNT_BRI",channel:"va",label:"BRI",fee:4000},

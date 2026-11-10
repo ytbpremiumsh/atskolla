@@ -256,7 +256,7 @@ const SuperAdminPaymentGateway = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {([
-              { key: "va" as const, label: "Virtual Account", desc: "BCA, Mandiri, BRI, BNI, BSI, Permata", icon: Banknote, value: gatewayVa },
+              { key: "va" as const, label: "Virtual Account", desc: "Mandiri, BRI, BNI, BSI", icon: Banknote, value: gatewayVa },
               { key: "qris" as const, label: "QRIS", desc: "Semua e-wallet & mobile banking", icon: QrCode, value: gatewayQris },
               { key: "retail" as const, label: "Retail", desc: "Alfamart, Indomaret", icon: Store, value: gatewayRetail },
             ]).map(({ key, label, desc, icon: Icon, value }) => (
@@ -315,7 +315,7 @@ const SuperAdminPaymentGateway = () => {
             <p className="text-sm font-semibold">Tarif gateway akun merchant</p>
             <p className="text-xs text-muted-foreground">QRIS: Rp555 hingga Rp100.000; 0,7% di atasnya, dihitung dari total pembayaran termasuk biaya layanan. Masukkan tarif VA/retail final termasuk pajak sesuai Fee Scheme DOKU. Metode tanpa tarif terkonfirmasi belum dapat digunakan.</p>
             {[
-              ["VIRTUAL_ACCOUNT_BCA","VA BCA"],["VIRTUAL_ACCOUNT_BANK_MANDIRI","VA Mandiri"],["VIRTUAL_ACCOUNT_BNI","VA BNI"],["VIRTUAL_ACCOUNT_BRI","VA BRI"],["VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI","VA BSI"],["ONLINE_TO_OFFLINE_ALFA","Alfamart"],["ONLINE_TO_OFFLINE_INDOMARET","Indomaret"]
+              ["VIRTUAL_ACCOUNT_BANK_MANDIRI","VA Mandiri"],["VIRTUAL_ACCOUNT_BNI","VA BNI"],["VIRTUAL_ACCOUNT_BRI","VA BRI"],["VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI","VA BSI"],["ONLINE_TO_OFFLINE_ALFA","Alfamart"],["ONLINE_TO_OFFLINE_INDOMARET","Indomaret"]
             ].map(([id,label])=><div key={id} className="grid grid-cols-2 items-center gap-3"><Label>{label}</Label><Input type="number" min="0" step="1" placeholder="Belum dikonfirmasi" value={merchantTariffs[id]??""} onChange={e=>setMerchantTariffs(current=>{const next={...current};if(e.target.value==="")delete next[id];else next[id]=Number(e.target.value);return next;})}/></div>)}
             <div className="flex justify-end">
               <Button size="sm" onClick={handleSaveDoku} disabled={saving}>
