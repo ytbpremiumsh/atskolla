@@ -1530,6 +1530,171 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_push_deliveries: {
+        Row: {
+          attempts: number
+          delivered_at: string | null
+          device_id: string
+          event_id: number
+          last_error: string | null
+          lease_until: string | null
+          next_attempt_at: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          delivered_at?: string | null
+          device_id: string
+          event_id: number
+          last_error?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          delivered_at?: string | null
+          device_id?: string
+          event_id?: number
+          last_error?: string | null
+          lease_until?: string | null
+          next_attempt_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_push_deliveries_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "parent_push_devices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_push_deliveries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "parent_push_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_push_devices: {
+        Row: {
+          app_package: string
+          app_version: number
+          disabled_at: string | null
+          fcm_token: string
+          id: string
+          last_seen_at: string
+          registered_at: string
+          session_token: string
+        }
+        Insert: {
+          app_package: string
+          app_version?: number
+          disabled_at?: string | null
+          fcm_token: string
+          id?: string
+          last_seen_at?: string
+          registered_at?: string
+          session_token: string
+        }
+        Update: {
+          app_package?: string
+          app_version?: number
+          disabled_at?: string | null
+          fcm_token?: string
+          id?: string
+          last_seen_at?: string
+          registered_at?: string
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_push_devices_session_token_fkey"
+            columns: ["session_token"]
+            isOneToOne: false
+            referencedRelation: "parent_sessions"
+            referencedColumns: ["token"]
+          },
+        ]
+      }
+      parent_push_events: {
+        Row: {
+          created_at: string
+          event_key: string
+          expanded_at: string | null
+          id: number
+          kind: string
+          payload: Json
+          school_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_key: string
+          expanded_at?: string | null
+          id?: never
+          kind: string
+          payload: Json
+          school_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          event_key?: string
+          expanded_at?: string | null
+          id?: never
+          kind?: string
+          payload?: Json
+          school_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_push_events_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_push_events_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parent_push_events_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_push_runtime: {
+        Row: {
+          enabled: boolean
+          id: number
+          last_dispatch_at: string | null
+          project_id: string
+        }
+        Insert: {
+          enabled?: boolean
+          id: number
+          last_dispatch_at?: string | null
+          project_id?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: number
+          last_dispatch_at?: string | null
+          project_id?: string
+        }
+        Relationships: []
+      }
       parent_sessions: {
         Row: {
           created_at: string
@@ -2408,6 +2573,39 @@ export type Database = {
           },
         ]
       }
+      school_payment_preferences: {
+        Row: {
+          enabled_channels: string[]
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          enabled_channels?: string[]
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          enabled_channels?: string[]
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_payment_preferences_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_payment_preferences_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: true
+            referencedRelation: "schools_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -2602,6 +2800,7 @@ export type Database = {
           created_by: string | null
           expired_at: string | null
           gateway: string | null
+          gateway_fee_estimate: number | null
           id: string
           invoice_id: string
           mayar_invoice_id: string | null
@@ -2622,6 +2821,7 @@ export type Database = {
           created_by?: string | null
           expired_at?: string | null
           gateway?: string | null
+          gateway_fee_estimate?: number | null
           id?: string
           invoice_id: string
           mayar_invoice_id?: string | null
@@ -2642,6 +2842,7 @@ export type Database = {
           created_by?: string | null
           expired_at?: string | null
           gateway?: string | null
+          gateway_fee_estimate?: number | null
           id?: string
           invoice_id?: string
           mayar_invoice_id?: string | null
@@ -2676,10 +2877,12 @@ export type Database = {
           created_at: string
           denda: number
           description: string
+          doku_payment_method: string | null
           doku_split: boolean
           due_date: string
           expired_at: string | null
           gateway_fee: number
+          gateway_fee_estimate: number | null
           id: string
           installment_paid_amount: number
           invoice_number: string
@@ -2690,6 +2893,7 @@ export type Database = {
           parent_name: string | null
           parent_phone: string | null
           payment_channel: string | null
+          payment_fee_model: string | null
           payment_method: string | null
           payment_url: string | null
           period_label: string
@@ -2699,10 +2903,10 @@ export type Database = {
           regenerated_from: string | null
           school_id: string
           service_fee: number
-          settlement_status: string | null
-          settlement_confirmed_at: string | null
           settlement_confirmation_source: string | null
+          settlement_confirmed_at: string | null
           settlement_id: string | null
+          settlement_status: string | null
           status: string
           student_id: string
           student_name: string
@@ -2718,10 +2922,12 @@ export type Database = {
           created_at?: string
           denda?: number
           description: string
+          doku_payment_method?: string | null
           doku_split?: boolean
           due_date: string
           expired_at?: string | null
           gateway_fee?: number
+          gateway_fee_estimate?: number | null
           id?: string
           installment_paid_amount?: number
           invoice_number: string
@@ -2732,6 +2938,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           payment_channel?: string | null
+          payment_fee_model?: string | null
           payment_method?: string | null
           payment_url?: string | null
           period_label: string
@@ -2741,10 +2948,10 @@ export type Database = {
           regenerated_from?: string | null
           school_id: string
           service_fee?: number
-          settlement_status?: string | null
-          settlement_confirmed_at?: string | null
           settlement_confirmation_source?: string | null
+          settlement_confirmed_at?: string | null
           settlement_id?: string | null
+          settlement_status?: string | null
           status?: string
           student_id: string
           student_name: string
@@ -2760,10 +2967,12 @@ export type Database = {
           created_at?: string
           denda?: number
           description?: string
+          doku_payment_method?: string | null
           doku_split?: boolean
           due_date?: string
           expired_at?: string | null
           gateway_fee?: number
+          gateway_fee_estimate?: number | null
           id?: string
           installment_paid_amount?: number
           invoice_number?: string
@@ -2774,6 +2983,7 @@ export type Database = {
           parent_name?: string | null
           parent_phone?: string | null
           payment_channel?: string | null
+          payment_fee_model?: string | null
           payment_method?: string | null
           payment_url?: string | null
           period_label?: string
@@ -2783,10 +2993,10 @@ export type Database = {
           regenerated_from?: string | null
           school_id?: string
           service_fee?: number
-          settlement_status?: string | null
-          settlement_confirmed_at?: string | null
           settlement_confirmation_source?: string | null
+          settlement_confirmed_at?: string | null
           settlement_id?: string | null
+          settlement_status?: string | null
           status?: string
           student_id?: string
           student_name?: string
@@ -3654,12 +3864,27 @@ export type Database = {
         }[]
       }
       check_package_status: { Args: never; Returns: undefined }
+      claim_parent_push_batch: {
+        Args: { batch_size?: number }
+        Returns: {
+          attempt: number
+          device_id: string
+          event_id: number
+          event_key: string
+          fcm_token: string
+          kind: string
+          payload: Json
+          session_token: string
+          student_id: string
+        }[]
+      }
       cleanup_old_logs: { Args: never; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
+      enable_parent_push_delivery: { Args: never; Returns: undefined }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -3731,6 +3956,7 @@ export type Database = {
         Args: { _school_id: string }
         Returns: number
       }
+      school_payment_costs: { Args: never; Returns: Json }
       settle_verified_doku_payment: {
         Args: { p_order: string; p_payload: Json }
         Returns: Json
