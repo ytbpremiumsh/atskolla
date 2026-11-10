@@ -12,6 +12,9 @@ import {
 } from "@/lib/paymentChannels";
 
 type Props = {
+  serviceFee?: number;
+  paymentMethods?: {id:string;channel:string;label:string}[];
+  enabledChannels?: PaymentChannelId[];
   open: boolean;
   onOpenChange: (o: boolean) => void;
   billAmount: number;
@@ -20,7 +23,7 @@ type Props = {
   loading?: boolean;
   feeOverrides?: Partial<Record<PaymentChannelId, number>>;
   qrisPercent?: number;
-  onConfirm: (channel: PaymentChannelId, fee: number, total: number) => void | Promise<void>;
+  onConfirm: (channel: PaymentChannelId, fee: number, total: number, paymentMethod: string) => void | Promise<void>;
 };
 
 const CHANNEL_ICONS: Record<PaymentChannelId, any> = {
@@ -31,6 +34,9 @@ const CHANNEL_ICONS: Record<PaymentChannelId, any> = {
 
 export function PaymentMethodPicker({
   open,
+  serviceFee = 3000,
+  paymentMethods = [{id:"QRIS",channel:"qris",label:"QRIS"}],
+  enabledChannels = ["qris", "va", "retail"],
   onOpenChange,
   billAmount,
   title = "Pilih Metode Pembayaran",
@@ -41,9 +47,14 @@ export function PaymentMethodPicker({
   onConfirm,
 }: Props) {
   const [selected, setSelected] = useState<PaymentChannelId>("qris");
-  const feeFor = (id: PaymentChannelId) => computeChannelFee(id, billAmount, feeOverrides, qrisPercent);
+  const feeFor = (_id: PaymentChannelId) => serviceFee;
+  const [chosenMethod,setChosenMethod]=useState("");
+  const usableChannels=enabledChannels.filter(c=>paymentMethods.some(m=>m.channel===c));
   const disclosure = qrisFeeDisclosure(billAmount, qrisPercent);
-  const fee = feeFor(selected);
+  const selectedChannel = usableChannels.includes(selected) ? selected : usableChannels[0];
+  const availableMethods=paymentMethods.filter(m=>m.channel===selectedChannel);
+  const paymentMethod=availableMethods.some(m=>m.id===chosenMethod)?chosenMethod:availableMethods[0]?.id;
+  const fee = serviceFee;
   const total = (billAmount || 0) + fee;
 
   return (
@@ -63,11 +74,12 @@ export function PaymentMethodPicker({
           <ShieldCheck className="h-6 w-6 text-emerald-600" />
         </div>
 
+        {usableChannels.length === 0 && <p className="text-sm text-muted-foreground">Pembayaran online sedang dinonaktifkan sekolah.</p>}
         {/* Daftar channel */}
         <div className="space-y-2.5">
-          {PAYMENT_CHANNELS.map((c) => {
+          {PAYMENT_CHANNELS.filter(c => usableChannels.includes(c.id)).map((c) => {
             const Icon = CHANNEL_ICONS[c.id];
-            const active = selected === c.id;
+            const active = selectedChannel === c.id;
             return (
               <button
                 key={c.id}
@@ -96,11 +108,10 @@ export function PaymentMethodPicker({
                           active ? "bg-[#5B6CF9] text-white" : "bg-amber-100 text-amber-800"
                         }`}
                       >
-                        +{formatIDR(feeFor(c.id))}
+                        +{formatIDR(serviceFee)}
                       </span>
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5">{c.id === "qris" ? "Bayar lewat e-wallet atau mobile banking" : c.id === "va" ? "Transfer lewat ATM atau mobile banking" : "Bayar tunai di Alfamart atau Indomaret"}</p>
-                    {c.id === "qris" && feeFor(c.id) > QRIS_MIN_FEE && <div className="mt-2 text-[11px] leading-relaxed text-muted-foreground"><p>{disclosure.policy}</p></div>}
                     <div className="flex flex-nowrap items-center gap-2 mt-2 overflow-x-auto pb-1">
                       {c.banks.map((b) => (
                         <div
@@ -128,6 +139,7 @@ export function PaymentMethodPicker({
           })}
         </div>
 
+        {availableMethods.length > 1 && <label className="space-y-1 text-sm">Pilih bank / gerai<select className="w-full rounded-lg border bg-background p-2" value={paymentMethod} onChange={e=>setChosenMethod(e.target.value)}>{availableMethods.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}</select></label>}
         {/* Ringkasan total */}
         <div className="rounded-xl border border-border/70 p-3 space-y-1.5 bg-background">
           <div className="flex justify-between text-sm">
@@ -138,9 +150,7 @@ export function PaymentMethodPicker({
             <span className="text-muted-foreground">Biaya Layanan</span>
             <span className="font-medium">{formatIDR(fee)}</span>
           </div>
-          <p className="text-xs leading-relaxed text-muted-foreground" aria-live="polite">
-            {selected === "qris" ? disclosure.calculation : `Biaya tetap ${formatIDR(fee)} per transaksi.`}
-          </p>
+          <p className="text-xs text-muted-foreground">Biaya gateway dipotong dari penerimaan sekolah.</p>
           <div className="border-t border-border/60 pt-1.5 flex justify-between">
             <span className="font-semibold text-foreground">Total Bayar</span>
             <span className="font-bold text-[#5B6CF9] text-lg">{formatIDR(total)}</span>
@@ -148,14 +158,13 @@ export function PaymentMethodPicker({
         </div>
 
         <p className="text-[11px] text-muted-foreground leading-snug">
-          Catatan: mungkin akan ada biaya tambahan dari bank saat transfer. Pilih metode pembayaran
-          sesuai channel yang ingin digunakan di halaman pembayaran.
+          Biaya layanan ATSkolla sama untuk semua metode pembayaran.
         </p>
 
         <Button
           size="lg"
-          disabled={loading}
-          onClick={() => onConfirm(selected, fee, total)}
+          disabled={loading || !selectedChannel || !paymentMethod}
+          onClick={() => onConfirm(selectedChannel, fee, total, paymentMethod)}
           className="w-full bg-[#5B6CF9] hover:bg-[#5065E8] text-white font-semibold shadow-lg shadow-[#5B6CF9]/20"
         >
           {loading ? (

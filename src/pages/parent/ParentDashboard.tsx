@@ -132,6 +132,9 @@ export default function ParentDashboard() {
   const [pickerLoading, setPickerLoading] = useState(false);
   const [headerLogo, setHeaderLogo] = useState<string | null>(null);
   const [channelFees, setChannelFees] = useState<Partial<Record<PaymentChannelId, number>>>({});
+  const [paymentServiceFee,setPaymentServiceFee]=useState(3000);
+  const [paymentMethods,setPaymentMethods]=useState<{id:string;channel:string;label:string}[]>([]);
+  const [enabledPaymentChannels, setEnabledPaymentChannels] = useState<PaymentChannelId[]>([]);
   const [qrisPercent, setQrisPercent] = useState<number>(0.01);
   const [installmentOpen, setInstallmentOpen] = useState(false);
   const [installmentInvoice, setInstallmentInvoice] = useState<any>(null);
@@ -144,18 +147,6 @@ export default function ParentDashboard() {
     supabase.from("platform_settings").select("key, value").eq("key", "login_logo_url").maybeSingle().then(({ data }) => {
       if (data?.value) setHeaderLogo(data.value as string);
     });
-    // Load configurable service fees from super admin panel
-    fetch(`https://bohuglednqirnaearrkj.supabase.co/functions/v1/parent-portal`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "payment_config" }),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        if (d?.ok && d.fees) setChannelFees(d.fees);
-        if (d?.ok && typeof d.qris_percent === "number") setQrisPercent(d.qris_percent);
-      })
-      .catch(() => {});
   }, []);
 
   const [leaveForm, setLeaveForm] = useState<{ type: string; date: string; reason: string; attachment_url: string | null }>({ type: "izin", date: new Date().toISOString().slice(0, 10), reason: "", attachment_url: null });
@@ -245,6 +236,13 @@ export default function ParentDashboard() {
       ? list.find((x: any) => x.id === invoiceOrId)
       : invoiceOrId;
     if (!inv) { toast.error("Tagihan tidak ditemukan"); return; }
+    const config = await invoke("payment_config", {student_id:selectedStudent});
+    if(!config?.ok || !Array.isArray(config.enabled_channels)){toast.error(config?.error || "Pengaturan pembayaran belum tersedia");return;}
+    setEnabledPaymentChannels(config.enabled_channels);
+    setPaymentServiceFee(config.admin_fee);
+    setPaymentMethods(config.methods||[]);
+    if(!config.enabled_channels.length){toast.error("Pembayaran online dinonaktifkan sekolah");return;}
+
 
     setInstallmentMode(null);
     setInstallmentAmount(0);
@@ -282,7 +280,7 @@ export default function ParentDashboard() {
     setPickerOpen(true);
   };
 
-  const confirmPaySpp = async (channel: PaymentChannelId, _fee: number, _total: number) => {
+  const confirmPaySpp = async (channel: PaymentChannelId, _fee: number, _total: number, paymentMethod: string) => {
     if (!pickerInvoice) return;
     setPickerLoading(true);
     setSppBusy(pickerInvoice.id);
@@ -291,8 +289,8 @@ export default function ParentDashboard() {
     if (request.amount <= 0) { setPickerLoading(false); setSppBusy(null); toast.error("Tidak ada sisa tagihan yang perlu dibayar"); return; }
     const useInstallment = request.fromChoice;
     const d = useInstallment
-      ? await invoke("spp_pay_installment", { student_id: selectedStudent, invoice_id: pickerInvoice.id, amount: request.amount, channel })
-      : await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel });
+      ? await invoke("spp_pay_installment", { student_id: selectedStudent, invoice_id: pickerInvoice.id, amount: request.amount, channel, payment_method:paymentMethod })
+      : await invoke("spp_pay", { student_id: selectedStudent, invoice_id: pickerInvoice.id, channel, payment_method:paymentMethod });
     setSppBusy(null);
     setPickerLoading(false);
     if (d?.error) { toast.error(d.error); return; }
@@ -1565,6 +1563,9 @@ export default function ParentDashboard() {
       />
 
       <PaymentMethodPicker
+        enabledChannels={enabledPaymentChannels}
+        serviceFee={paymentServiceFee}
+        paymentMethods={paymentMethods}
         open={pickerOpen}
         onOpenChange={(o) => { if (!pickerLoading) { setPickerOpen(o); if (!o) { setPickerInvoice(null); setInstallmentMode(null); setInstallmentAmount(0); } } }}
         billAmount={parentPaymentRequest(installmentMode, installmentAmount, pickerInvoice?.total_amount || 0).amount}

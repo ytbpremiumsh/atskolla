@@ -1,7 +1,7 @@
 {
-  "versionCode": 46,
-  "versionName": "2.12.1",
+  "versionCode": 47,
+  "versionName": "2.13.0",
   "apkUrl": "",
   "sha256": "",
-  "notes": "Rincian persentase, biaya minimum, ambang nominal, dan perhitungan biaya layanan QRIS."
+  "notes": "Biaya layanan ATSkolla mengikuti Super Admin; biaya gateway ditanggung sekolah; metode mengikuti pengaturan sekolah."
 }

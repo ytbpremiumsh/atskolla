@@ -7,6 +7,8 @@ import { brandPaymentUrl } from "../_shared/brandUrl.ts";
 import { buildDokuSignature, buildDokuOrderNumber, syncDokuAttempts } from "../_shared/doku.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
+import { requireSchoolPaymentChannel, schoolNetSettlement, paymentCostConfig, paymentQuote } from "../_shared/schoolPaymentPolicy.ts";
+
 const DOKU_LINK_TTL_MIN = 60 * 24 * 3; // 3 days
 const DEFAULT_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
 const QRIS_MIN_FEE = 3000;
@@ -30,21 +32,8 @@ function normalizeChannel(c: any): string | null {
   const v = String(c || "").toLowerCase();
   return v in DEFAULT_FEES ? v : null;
 }
-async function serviceFeeFor(supabaseAdmin: any, c: any, amount = 0): Promise<number> {
-  const v = normalizeChannel(c);
-  if (!v) return 0;
-  if (v === "qris") return computeQrisFee(amount, await getQrisPercent(supabaseAdmin));
-  try {
-    const { data } = await supabaseAdmin
-      .from("platform_settings")
-      .select("value")
-      .eq("key", `fee_${v}`)
-      .maybeSingle();
-    const n = parseInt(data?.value ?? "", 10);
-    if (Number.isFinite(n) && n >= 0) return n;
-  } catch (_) {}
-  return DEFAULT_FEES[v];
-}
+// Merchant fees are deducted by DOKU from settlement, never added to the payer amount.
+async function serviceFeeFor(_db: any, _channel: any, _amount = 0): Promise<number> { return 0; }
 
 async function getDokuConfig(supabaseAdmin: any) {
   const { data } = await supabaseAdmin
@@ -198,7 +187,7 @@ async function createDokuPayment(
     },
   };
 
-  const methods = paymentMethodsFor(channel, cfg);
+  const methods = inv._payment_method ? [inv._payment_method] : paymentMethodsFor(channel, cfg);
   // Sesuai dokumentasi Doku Checkout: filter metode wajib dikirim di
   // `payment.payment_method_types`. Key lain (mis. override_configuration)
   // diabaikan silent → semua metode di Dashboard ikut tampil.
@@ -206,15 +195,13 @@ async function createDokuPayment(
     body.payment.payment_method_types = methods;
   }
 
-  // DOKU Split Settlement: nominal SPP murni (tanpa biaya admin) dikirim ke
-  // rekening sekolah (FIX). Sisanya (biaya admin dikurangi potongan DOKU)
-  // otomatis masuk ke rekening utama/default merchant (owner ATSkolla).
+  // School bears configured provider fee; the remaining administrative fee goes to the merchant default account.
   const splitBankId = String(inv._split_bank_id || "").trim();
   const splitBill = Math.round(Number(inv._split_bill) || 0);
   let split = false;
   if (splitBankId && splitBill > 0 && splitBill <= Math.round(totalCharged)) {
     body.additional_info = {
-      settlement: [{ bank_account_settlement_id: splitBankId, value: splitBill, type: "FIX" }],
+      settlement: schoolNetSettlement(splitBankId, splitBill),
     };
     split = true;
   }
@@ -226,18 +213,8 @@ async function createDokuPayment(
 
   let res = await dokuFetch(cfg, "/checkout/v1/payment", body);
 
-  // Fallback: sebagian merchant Doku belum meng-aktifkan seluruh channel
-  // (mis. QRIS / Retail belum on-boarded). Doku menolak dengan
-  // "PAYMENT CHANNEL IS INACTIVE". Coba ulang tanpa filter agar wali murid
-  // tetap bisa lanjut bayar dengan metode lain yang aktif di akun merchant.
-  const errMsgFirst = String(
-    res.json?.error?.message || res.json?.message || res.json?.response?.message || ""
-  ).toUpperCase();
-  if (!res.ok && errMsgFirst.includes("PAYMENT CHANNEL IS INACTIVE") && body.payment.payment_method_types) {
-    console.warn("[spp-doku] channel inactive, retry without payment_method_types filter", { channel, methods });
-    delete body.payment.payment_method_types;
-    res = await dokuFetch(cfg, "/checkout/v1/payment", body);
-  }
+  // Never widen method filters: another method can have a different merchant fee.
+
   if (!res.ok) {
     // Jangan pernah buat ulang link tanpa split.
     console.warn("[spp-doku] split payment rejected", res.json);
@@ -300,6 +277,7 @@ async function schoolSplitBankId(supabaseAdmin: any, schoolId: string): Promise<
 }
 
 async function syncPaidInvoices(supabaseAdmin: any, schoolId: string) {
+  channel = await requireSchoolPaymentChannel(supabaseAdmin, inv.school_id, channel);
   const cfg = await getDokuConfig(supabaseAdmin);
   if (!cfg.clientId || !cfg.secretKey) return { checked: 0, paid: 0, error: "DOKU belum dikonfigurasi" };
   const { data, error } = await supabaseAdmin.from("doku_payment_attempts")
@@ -322,9 +300,13 @@ async function ensureFreshLink(
   }
   const now = Date.now();
   const isExpired = inv.expired_at ? new Date(inv.expired_at).getTime() < now : false;
-  const serviceFee = await serviceFeeFor(supabaseAdmin, channel, inv.total_amount || 0);
+  const costs = await paymentCostConfig(supabaseAdmin);
+  const method = inv._payment_method || costs.methods.find((m:any)=>m.channel===channel)?.id;
+  if(!costs.methods.some((m:any)=>m.id===method&&m.channel===channel))throw new Error("Metode tidak sesuai channel");
+  const quote = paymentQuote(Number(inv.total_amount),costs.admin_fee,method,costs.tariffs);
+  const serviceFee = quote.admin;
   const sameChannel = channel ? inv.payment_channel === channel : true;
-  if (!forceRegen && inv.payment_url && !isExpired && sameChannel) {
+  if (!forceRegen && inv.payment_fee_model === "school_gateway_admin_v1" && inv.doku_payment_method === method && Number(inv.service_fee || 0) === serviceFee && inv.gateway_fee_estimate === quote.fee && inv.payment_url && !isExpired && sameChannel) {
     return {
       success: true,
       payment_url: inv.payment_url,
@@ -337,7 +319,7 @@ async function ensureFreshLink(
   const splitBankId = await schoolSplitBankId(supabaseAdmin, inv.school_id);
   const created = await createDokuPayment(cfg, {
     ...inv, _amount_override: totalCharged,
-    _split_bank_id: splitBankId, _split_bill: Number(inv.total_amount) || 0,
+    _split_bank_id: splitBankId, _split_bill: quote.school, _payment_method: method,
   }, channel);
   const { error: logError } = await supabaseAdmin.from("spp_logs").insert({
     school_id: inv.school_id,
@@ -363,6 +345,9 @@ async function ensureFreshLink(
     expired_at: created.expiry.toISOString(),
     status: "pending",
     service_fee: serviceFee,
+    payment_fee_model: "school_gateway_admin_v1",
+    doku_payment_method: method,
+    gateway_fee_estimate: quote.fee,
     payment_channel: channel,
     doku_split: !!created.split,
   }).eq("id", inv.id).neq("status", "paid").select("id").maybeSingle();
@@ -441,13 +426,18 @@ serve(async (req) => {
       const cfg = await getDokuConfig(supabaseAdmin);
       if (!cfg.clientId || !cfg.secretKey) return err("Doku belum dikonfigurasi");
 
-      const serviceFee = await serviceFeeFor(supabaseAdmin, channel, amount);
+      await requireSchoolPaymentChannel(supabaseAdmin, inv.school_id, channel);
+      const costs = await paymentCostConfig(supabaseAdmin);
+      const method = body.payment_method || costs.methods.find((m:any)=>m.channel===channel)?.id;
+      if(!costs.methods.some((m:any)=>m.id===method&&m.channel===channel))return err("Metode tidak sesuai channel");
+      const quote = paymentQuote(amount,costs.admin_fee,method,costs.tariffs);
+      const serviceFee = quote.admin;
       const totalCharged = amount + serviceFee;
       const cicilanInv = {
         ...inv,
         _amount_override: totalCharged,
         _split_bank_id: await schoolSplitBankId(supabaseAdmin, inv.school_id),
-        _split_bill: amount,
+        _split_bill: quote.school, _payment_method: method,
         period_label: `Cicilan ${inv.period_label || ""}`.trim(),
         invoice_number: `${inv.invoice_number || "SPP"}-CIC${Date.now().toString().slice(-6)}`,
       };
@@ -472,6 +462,7 @@ serve(async (req) => {
         payment_method: "online_doku",
         payment_channel: channel,
         gateway: "doku",
+        gateway_fee_estimate: quote.fee,
         mayar_invoice_id: created.dokuInvoiceId,
         mayar_transaction_id: created.dokuInvoiceId,
         mayar_payment_url: created.url,
@@ -481,7 +472,7 @@ serve(async (req) => {
       }).select("id").single();
       if (insErr) return err("Gagal simpan cicilan: " + insErr.message);
       // Selalu sinkronkan tanda split dengan link terbaru (bisa true atau false).
-      await supabaseAdmin.from("spp_invoices").update({ doku_split: !!created.split }).eq("id", inv.id).neq("status", "paid");
+      await supabaseAdmin.from("spp_invoices").update({ doku_split: !!created.split, payment_fee_model: "school_gateway_admin_v1" }).eq("id", inv.id).neq("status", "paid");
 
       const { error: transactionError } = await supabaseAdmin.from("payment_transactions").insert({
         school_id: inv.school_id,
@@ -526,7 +517,7 @@ serve(async (req) => {
         sesVariants.some((p) => studentVariants.includes(p)) ||
         sesVariants.some((p) => invVariants.includes(p));
       if (!owned) return err("Akses ditolak");
-      const result = await ensureFreshLink(supabaseAdmin, inv, false, normalizeChannel(body.channel));
+      const result = await ensureFreshLink(supabaseAdmin, { ...inv, _payment_method: body.payment_method }, false, normalizeChannel(body.channel));
       if (!result.success) return err(result.error || "Gagal");
       return ok({
         payment_url: brandPaymentUrl(result.payment_url),
@@ -566,7 +557,7 @@ serve(async (req) => {
       const { data: inv } = await supabaseAdmin.from("spp_invoices").select("*").eq("id", invoice_id).eq("school_id", schoolId).maybeSingle();
       if (!inv) return err("Invoice tidak ditemukan");
       if (inv.status === "paid") return err("Invoice sudah dibayar");
-      const result = await ensureFreshLink(supabaseAdmin, inv, action === "regenerate_payment_link", normalizeChannel(body.channel));
+      const result = await ensureFreshLink(supabaseAdmin, { ...inv, _payment_method: body.payment_method }, action === "regenerate_payment_link", normalizeChannel(body.channel));
       if (!result.success) return err(result.error || "Gagal");
       return ok({ payment_url: brandPaymentUrl(result.payment_url), invoice_id: result.invoice_id });
     }

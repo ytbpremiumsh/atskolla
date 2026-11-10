@@ -4,6 +4,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 
 
 const KEYS = [
+  "atskolla_admin_fee", "doku_merchant_tariffs",
   "active_payment_gateway",
   "gateway_va",
   "gateway_qris",
@@ -77,6 +78,8 @@ serve(async (req) => {
         has_ipaymu_api_key: !!map.ipaymu_api_key,
         // App base URL untuk return URL pembayaran
         app_base_url: map.app_base_url || "",
+        atskolla_admin_fee: map.atskolla_admin_fee ?? "3000",
+        doku_merchant_tariffs: map.doku_merchant_tariffs || "{}",
         // Fees
         fee_va: map.fee_va || "5000",
         fee_qris: map.fee_qris || "5000",
@@ -86,6 +89,10 @@ serve(async (req) => {
     }
 
     if (action === "set") {
+      if (updates?.atskolla_admin_fee !== undefined) {
+        const n=Number(updates.atskolla_admin_fee);if(!Number.isSafeInteger(n)||n<0||n>1000000)return ok({error:"Biaya layanan harus berupa rupiah utuh antara 0 dan 1.000.000"});
+      }
+      if(updates?.doku_merchant_tariffs!==undefined){try{const v=JSON.parse(updates.doku_merchant_tariffs);if(!v||Array.isArray(v)||typeof v!=="object"||Object.values(v).some((n:any)=>!Number.isSafeInteger(n)||n<0||n>1000000))throw 0;}catch{return ok({error:"Tarif DOKU tidak valid"});}}
       const rows = Object.entries(updates || {}).filter(([k]) => KEYS.includes(k));
       for (const [key, value] of rows) {
         const { data: existing } = await admin.from("platform_settings").select("id").eq("key", key).maybeSingle();

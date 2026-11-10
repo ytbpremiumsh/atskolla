@@ -516,7 +516,7 @@ export function BendaharaDashboard() {
   useEffect(() => {
     fetchDashboardData();
     if (profile?.school_id) {
-      supabase.functions.invoke("spp-mayar", { body: { action: "sync_paid_invoices" } }).catch(() => null);
+      supabase.functions.invoke("spp-doku", { body: { action: "sync_paid_invoices" } }).catch(() => null);
     }
   }, [fetchDashboardData, profile?.school_id]);
 
@@ -1920,7 +1920,7 @@ export function BendaharaGenerate() {
 
           const processOne = async (inv: any) => {
             try {
-              const { data: linkRes } = await supabase.functions.invoke("spp-mayar", {
+              const { data: linkRes } = await supabase.functions.invoke("spp-doku", {
                 body: { action: "create_payment_link", invoice_id: inv.id },
               });
               const paymentUrl = linkRes?.payment_url;
@@ -2363,7 +2363,7 @@ function BendaharaGenerateCustom() {
           let linkOk = 0, linkFail = 0, waOk = 0, waFail = 0, waSkip = 0;
           const processOne = async (inv: any) => {
             try {
-              const { data: linkRes } = await supabase.functions.invoke("spp-mayar", {
+              const { data: linkRes } = await supabase.functions.invoke("spp-doku", {
                 body: { action: "create_payment_link", invoice_id: inv.id },
               });
               const paymentUrl = linkRes?.payment_url;
@@ -3009,7 +3009,7 @@ function ClassGroupedList({ students, filterAY, filterMonth, navigate, invoices,
       let paymentUrl = inv.payment_url;
       try {
         if (!paymentUrl) {
-          const { data: linkRes } = await supabase.functions.invoke("spp-mayar", {
+          const { data: linkRes } = await supabase.functions.invoke("spp-doku", {
             body: { action: "create_payment_link", invoice_id: inv.id },
           });
           paymentUrl = linkRes?.payment_url;
@@ -3301,7 +3301,7 @@ export function BendaharaSPPDetail() {
     setBusy(`link-${inv.id}`);
     toast.loading(regen ? "Membuat ulang link pembayaran..." : "Membuat link pembayaran...");
     const action = regen ? "regenerate_payment_link" : "create_payment_link";
-    const { data, error } = await supabase.functions.invoke("spp-mayar", { body: { action, invoice_id: inv.id, channel } });
+    const { data, error } = await supabase.functions.invoke("spp-doku", { body: { action, invoice_id: inv.id, channel } });
     toast.dismiss();
     setBusy(null);
     setLinkPickerLoading(false);
@@ -4418,7 +4418,7 @@ export function BendaharaSaldo() {
     fetchAll();
     if (profile?.school_id && !syncingRef.current) {
       syncingRef.current = true;
-      supabase.functions.invoke("spp-mayar", { body: { action: "sync_paid_invoices" } })
+      supabase.functions.invoke("spp-doku", { body: { action: "sync_paid_invoices" } })
         .catch(() => null)
         .finally(() => { syncingRef.current = false; });
     }
@@ -4677,7 +4677,7 @@ export function BendaharaPencairan() {
       // Satu query saja: ambil semua paid online sekaligus, lalu bagi di client.
       const [paidRes, hRes, sRes] = await Promise.all([
         supabase.from("spp_invoices")
-          .select("id, status, payment_method, payment_channel, settlement_id, settlement_status, settlement_confirmed_at, settlement_confirmation_source, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
+          .select("id, status, payment_method, payment_channel, payment_fee_model, gateway_fee_estimate, settlement_id, settlement_status, settlement_confirmed_at, settlement_confirmation_source, doku_split, total_amount, gateway_fee, net_amount, student_name, class_name, period_label, invoice_number, paid_at")
           .eq("school_id", profile.school_id)
           .eq("status", "paid"),
         supabase.from("spp_settlements").select("*").eq("school_id", profile.school_id).order("created_at", { ascending: false }),
@@ -4743,7 +4743,7 @@ export function BendaharaPencairan() {
     // 2) Sync gateway di background; refresh data setelah selesai (non-blocking UI)
     if (!syncingRef.current) {
       syncingRef.current = true;
-      supabase.functions.invoke("spp-mayar", { body: { action: "sync_paid_invoices" } })
+      supabase.functions.invoke("spp-doku", { body: { action: "sync_paid_invoices" } })
         .catch(() => null)
         .finally(() => {
           syncingRef.current = false;
@@ -4933,7 +4933,7 @@ export function BendaharaPencairan() {
   };
 
   const pendingSplit = splitPaid.filter((invoice) => payoutStatus(invoice) === "split_processing");
-  const pendingSplitTotal = pendingSplit.reduce((sum, invoice) => sum + Number(invoice.total_amount || 0), 0);
+  const pendingSplitTotal = pendingSplit.reduce((sum, invoice) => sum + Math.max(0,Number(invoice.total_amount || 0) - (invoice.payment_fee_model === "school_gateway_admin_v1" ? Number(invoice.gateway_fee_estimate || 0) : 0)), 0);
 
   return (
     <div className="space-y-4">
@@ -4952,7 +4952,7 @@ export function BendaharaPencairan() {
       {/* KPI ringkas */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Transaksi Menunggu Transfer" value={String(pendingSplit.length)} icon={Receipt} gradient="from-violet-500 to-purple-600" />
-        <StatCard label="Dana Akan Ditransfer" value={fmtIDR(pendingSplitTotal)} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
+        <StatCard label="Estimasi Dana Akan Ditransfer" value={fmtIDR(pendingSplitTotal)} icon={Banknote} gradient="from-emerald-500 to-teal-600" />
       </div>
 
 
@@ -4967,7 +4967,7 @@ export function BendaharaPencairan() {
             </div>
             <div className="flex items-center justify-between gap-3 rounded-xl bg-emerald-500/10 px-3 py-2.5">
               <div className="min-w-0">
-                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Akan ditransfer</p>
+                <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">Estimasi akan ditransfer</p>
                 <p className="text-lg font-extrabold text-emerald-600 tabular-nums leading-tight">{fmtIDR(pendingSplitTotal)}</p>
               </div>
               <span className="shrink-0 rounded-full bg-card px-2.5 py-1 text-xs font-semibold text-foreground ring-1 ring-border/60">{pendingSplit.length} transaksi</span>
@@ -4984,7 +4984,7 @@ export function BendaharaPencairan() {
                       <p className="font-semibold truncate">{x.student_name || "-"} · {x.class_name || "-"}</p>
                       <p className="text-muted-foreground truncate">{x.period_label || x.invoice_number} · {x.paid_at ? new Date(x.paid_at).toLocaleDateString("id-ID") : "-"}</p>
                     </div>
-                    <p className="font-bold shrink-0">{fmtIDR(x.total_amount || 0)}</p>
+                    <p className="font-bold shrink-0">{fmtIDR(Math.max(0,Number(x.total_amount || 0) - (x.payment_fee_model === "school_gateway_admin_v1" ? Number(x.gateway_fee_estimate || 0) : 0)))}</p>
                   </div>
                 ))}
               </div>
