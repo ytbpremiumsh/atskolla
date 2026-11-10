@@ -228,6 +228,34 @@ export default function ParentDashboard() {
     };
   }, [loadTab, selectedStudent]);
 
+  // Refresh settings while choosing a payment; never retain old methods on errors.
+  const applyPaymentConfig = useCallback((config: any) => {
+    const valid = config?.ok && Array.isArray(config.enabled_channels) && Array.isArray(config.methods);
+    const channels = valid ? config.enabled_channels : [];
+    setEnabledPaymentChannels(channels);
+    setPaymentMethods(valid ? config.methods.filter((m: any) => channels.includes(m.channel)) : []);
+    if (valid) setPaymentServiceFee(config.admin_fee);
+    return Boolean(valid);
+  }, []);
+
+  useEffect(() => {
+    if (!pickerOpen || !selectedStudent) return;
+    let live = true, busy = false;
+    const refresh = async () => {
+      if (busy) return;
+      busy = true;
+      try { const config = await invoke("payment_config", {student_id:selectedStudent}); if(live) applyPaymentConfig(config); }
+      catch { if(live) applyPaymentConfig(null); }
+      finally { busy = false; }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 5000);
+    window.addEventListener("focus", refresh);
+    const visible = () => { if(document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", visible);
+    return () => { live=false;window.clearInterval(timer);window.removeEventListener("focus",refresh);document.removeEventListener("visibilitychange",visible); };
+  }, [pickerOpen, selectedStudent, invoke, applyPaymentConfig]);
+
   // Membuka picker channel pembayaran (sebelum benar-benar membuat link Mayar).
   const paySpp = async (invoiceOrId: any) => {
     // Cari objek invoice lengkap supaya bisa tampilkan info di picker.
@@ -236,11 +264,8 @@ export default function ParentDashboard() {
       ? list.find((x: any) => x.id === invoiceOrId)
       : invoiceOrId;
     if (!inv) { toast.error("Tagihan tidak ditemukan"); return; }
-    const config = await invoke("payment_config", {student_id:selectedStudent});
-    if(!config?.ok || !Array.isArray(config.enabled_channels)){toast.error(config?.error || "Pengaturan pembayaran belum tersedia");return;}
-    setEnabledPaymentChannels(config.enabled_channels);
-    setPaymentServiceFee(config.admin_fee);
-    setPaymentMethods(config.methods||[]);
+    const config = await invoke("payment_config", {student_id:selectedStudent}).catch(()=>null);
+    if(!applyPaymentConfig(config)){toast.error(config?.error || "Pengaturan pembayaran belum tersedia");return;}
     if(!config.enabled_channels.length){toast.error("Pembayaran online dinonaktifkan sekolah");return;}
 
 
@@ -284,6 +309,11 @@ export default function ParentDashboard() {
     if (!pickerInvoice) return;
     setPickerLoading(true);
     setSppBusy(pickerInvoice.id);
+    const latest = await invoke("payment_config", {student_id:selectedStudent}).catch(()=>null);
+    if (!applyPaymentConfig(latest) || !latest.enabled_channels.includes(channel) || !latest.methods.some((m:any)=>m.id===paymentMethod && m.channel===channel)) {
+      setPickerLoading(false);setSppBusy(null);
+      toast.error("Metode pembayaran berubah. Silakan pilih metode yang tersedia.");return;
+    }
     // Pelunasan sisa dan cicilan memakai nominal dari dialog serta validasi sisa di server.
     const request = parentPaymentRequest(installmentMode, installmentAmount, pickerInvoice.total_amount);
     if (request.amount <= 0) { setPickerLoading(false); setSppBusy(null); toast.error("Tidak ada sisa tagihan yang perlu dibayar"); return; }
