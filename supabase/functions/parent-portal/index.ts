@@ -1,4 +1,4 @@
-import { schoolPaymentChannels, paymentCostConfig } from "../_shared/schoolPaymentPolicy.ts";
+import { schoolPaymentChannels, schoolPaymentMethods, paymentCostConfig } from "../_shared/schoolPaymentPolicy.ts";
 declare const EdgeRuntime: { waitUntil(promise: Promise<unknown>): void };
 // Parent Dashboard API — handles login (WA OTP), session validation, and data access.
 // verify_jwt = false because parents do not have Supabase auth users; we use custom session tokens.
@@ -384,7 +384,8 @@ Deno.serve(async (req) => {
     if (action === "payment_config") {
       const enabled = await schoolPaymentChannels(supabase, schoolId);
       const costs=await paymentCostConfig(supabase);
-      return json({ok:true,fee_bearer:"school",admin_fee:costs.admin_fee,fees:{qris:costs.admin_fee,va:costs.admin_fee,retail:costs.admin_fee},qris_percent:0,enabled_channels:enabled,methods:costs.methods.filter((m:any)=>m.id==="QRIS"||Number.isSafeInteger(costs.tariffs[m.id]))});
+      const allowed=await schoolPaymentMethods(supabase,schoolId);
+      return json({ok:true,fee_bearer:"school",admin_fee:costs.admin_fee,fees:{qris:costs.admin_fee,va:costs.admin_fee,retail:costs.admin_fee},qris_percent:0,enabled_channels:enabled,methods:allowed.filter((m:any)=>m.id==="QRIS"||Number.isSafeInteger(costs.tariffs[m.id]))});
     }
 
 

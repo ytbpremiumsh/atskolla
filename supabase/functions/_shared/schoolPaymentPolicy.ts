@@ -13,6 +13,18 @@ export async function schoolPaymentChannels(db: any, schoolId: string): Promise<
  if(error)throw new Error("Pengaturan pembayaran sekolah belum tersedia");
  return (data?.enabled_channels ?? [...SCHOOL_CHANNELS]).filter((v:string)=>SCHOOL_CHANNELS.includes(v as any));
 }
+export async function schoolPaymentMethods(db:any,schoolId:string) {
+ const {data,error}=await db.from("school_payment_preferences").select("enabled_channels,disabled_methods").eq("school_id",schoolId).maybeSingle();
+ if(error)throw new Error("Pengaturan pembayaran sekolah belum tersedia");
+ const channels=data?.enabled_channels??[...SCHOOL_CHANNELS];
+ const disabled=data?.disabled_methods??[];
+ return DOKU_METHODS.filter(m=>channels.includes(m.channel)&&!disabled.includes(m.id));
+}
+export async function requireSchoolPaymentMethod(db:any,schoolId:string,channel:string,method:string) {
+ const allowed=await schoolPaymentMethods(db,schoolId);
+ if(!allowed.some(m=>m.channel===channel&&m.id===method))throw new Error("Bank atau gerai ini dinonaktifkan oleh sekolah");
+ return method;
+}
 export async function requireSchoolPaymentChannel(db:any,schoolId:string,channel:string|null){
  const channels=await schoolPaymentChannels(db,schoolId);const selected=channel||channels[0];
  if(!selected||!channels.includes(selected))throw new Error("Metode pembayaran ini dinonaktifkan oleh sekolah");return selected;

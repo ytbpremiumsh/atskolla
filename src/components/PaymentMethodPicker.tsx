@@ -1,3 +1,4 @@
+import { visibleSchoolMethods } from "@/lib/schoolPaymentMethods";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -45,9 +46,10 @@ export function PaymentMethodPicker({
 }: Props) {
   const [selected, setSelected] = useState<PaymentChannelId>("qris");
   const [chosenMethod,setChosenMethod]=useState("");
-  const usableChannels=enabledChannels.filter(c=>paymentMethods.some(m=>m.channel===c));
+  const visibleMethods=visibleSchoolMethods(paymentMethods,enabledChannels);
+  const usableChannels=enabledChannels.filter(c=>visibleMethods.some(m=>m.channel===c));
   const selectedChannel = usableChannels.includes(selected) ? selected : usableChannels[0];
-  const availableMethods=paymentMethods.filter(m=>m.channel===selectedChannel);
+  const availableMethods=visibleMethods.filter(m=>m.channel===selectedChannel);
   const paymentMethod=availableMethods.some(m=>m.id===chosenMethod)?chosenMethod:availableMethods[0]?.id;
   const fee = serviceFee;
   const total = (billAmount || 0) + fee;
@@ -99,7 +101,7 @@ export function PaymentMethodPicker({
                     </div>
                     <p className="text-[11px] text-muted-foreground mt-0.5 [@media(max-height:650px)]:hidden">{c.id === "qris" ? "Bayar lewat e-wallet atau mobile banking" : c.id === "va" ? "Transfer lewat ATM atau mobile banking" : "Bayar tunai di Alfamart atau Indomaret"}</p>
                     <div className="flex flex-nowrap items-center gap-1 mt-1 [@media(max-height:650px)]:hidden">
-                      {c.banks.map((b) => (
+                      {c.banks.filter(b=>visibleMethods.some(m=>m.channel===c.id && m.logoCode===b.code)).map((b) => (
                         <div
                           key={b.code}
                           className="h-6 w-10 shrink-0 rounded-md bg-white border border-border/50 flex items-center justify-center p-1 shadow-sm"
