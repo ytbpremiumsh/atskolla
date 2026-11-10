@@ -58,9 +58,9 @@ const PROBLEMS = [
 
 const SOLUTIONS = [
   { icon: ScanLine, title: "Kehadiran otomatis", desc: "RFID, Face Recognition, dan QR Code tersinkron langsung ke dasbor." },
-  { icon: Receipt, title: "Tagihan SPP terotomasi", desc: "Invoice tergenerate per periode dengan reminder WhatsApp otomatis." },
+  { icon: Receipt, title: "Tagihan SPP terotomasi", desc: "Buat tagihan per periode, pantau pembayaran, dan kirim pengingat WhatsApp." },
   { icon: LineChart, title: "Satu dasbor keuangan", desc: "Cash flow, tunggakan, dan laporan keuangan real-time." },
-  { icon: Bell, title: "Notifikasi ke wali murid", desc: "Reminder tagihan, absensi, dan pengumuman terkirim otomatis." },
+  { icon: Bell, title: "Notifikasi ke wali murid", desc: "Informasi absensi, tagihan, dan pengumuman melalui portal wali dan WhatsApp yang terhubung." },
   { icon: Landmark, title: "Satu platform terpadu", desc: "Akademik, keuangan, dan operasional dalam satu ekosistem." },
 ];
 
@@ -79,7 +79,7 @@ const MODULES = [
     icon: BookOpen,
     items: [
       { icon: ScanLine, title: "Absensi", desc: "RFID, Face Recognition, QR Code" },
-      { icon: CalendarDays, title: "Jadwal", desc: "Live schedule per guru & kelas" },
+      { icon: CalendarDays, title: "Jadwal", desc: "Jadwal mingguan per guru dan kelas" },
       { icon: FileBarChart, title: "Rekap & Laporan", desc: "Rekap kehadiran 1-31, export Excel & PDF" },
       { icon: Megaphone, title: "Pengumuman", desc: "Broadcast ke wali murid & guru" },
     ],
@@ -88,8 +88,8 @@ const MODULES = [
     group: "Keuangan",
     icon: Wallet,
     items: [
-      { icon: Receipt, title: "Pembayaran SPP", desc: "Invoice per periode otomatis" },
-      { icon: Landmark, title: "Virtual Account", desc: "VA seluruh bank utama" },
+      { icon: Receipt, title: "Pembayaran SPP", desc: "Tagihan berkala dan pembayaran cicilan" },
+      { icon: Landmark, title: "Virtual Account", desc: "Pilihan bank sesuai metode yang aktif" },
       { icon: QrCode, title: "QRIS", desc: "Pembayaran instan dari mana saja" },
       { icon: BookOpen, title: "Buku Kas", desc: "Pencatatan kas harian" },
       { icon: LineChart, title: "Cash Flow", desc: "Arus kas masuk & keluar" },
@@ -111,9 +111,10 @@ const MODULES = [
 ];
 
 const PAYMENT_ITEMS = [
-  { icon: QrCode, title: "QRIS & Virtual Account", desc: "Wali murid bayar SPP kapan saja lewat QRIS atau VA otomatis BCA, Mandiri, BNI, BRI, dan bank utama lainnya." },
-  { icon: MessageSquare, title: "Reminder WhatsApp", desc: "Pengingat tagihan terjadwal otomatis, siap kirim sebelum jatuh tempo." },
-  { icon: CheckCircle2, title: "Rekonsiliasi Otomatis", desc: "Pembayaran masuk langsung tercatat sebagai lunas — tanpa konfirmasi manual." },
+  { icon: QrCode, title: "QRIS, VA & Retail", desc: "Wali memilih QRIS, transfer bank, atau gerai retail yang diaktifkan sekolah. Total pembayaran ditampilkan sebelum melanjutkan." },
+  { icon: MessageSquare, title: "Reminder WhatsApp", desc: "Kirim pengingat tagihan melalui nomor WhatsApp sekolah yang sudah terhubung." },
+  { icon: CheckCircle2, title: "Rekonsiliasi Otomatis", desc: "Status pembayaran diperbarui setelah konfirmasi penyedia diterima. Cicilan mengurangi sisa tagihan." },
+  { icon: Landmark, title: "Pencairan ke rekening sekolah", desc: "Diproses pada hari kerja Senin–Jumat. Status berhasil mengikuti konfirmasi pencairan, bukan hanya jadwal perkiraan." },
   { icon: LineChart, title: "Dashboard Bendahara", desc: "Ringkasan pemasukan, tunggakan, dan proyeksi kas dalam satu layar." },
   { icon: FileBarChart, title: "Laporan Keuangan", desc: "Export Excel & PDF resmi untuk audit dan rapat komite." },
 ];
@@ -136,19 +137,27 @@ const ROLES = [
 const FAQ = [
   {
     q: "Benarkah ATSkolla gratis?",
-    a: "Ya. Sekolah dapat menggunakan platform inti ATSkolla sepenuhnya gratis, tanpa biaya langganan bulanan dan tanpa komitmen.",
+    a: "Ya, tanpa biaya langganan sekolah. SPP Online wajib diaktifkan dan tetap digunakan, dengan toleransi aktivasi 60 hari. Biaya transaksi tetap berlaku.",
   },
   {
     q: "Bagaimana sistem pembayaran SPP bekerja?",
-    a: "ATSkolla membuat invoice otomatis per periode. Wali murid membayar via QRIS atau Virtual Account, dana masuk ke rekening sekolah, dan status pembayaran langsung ter-update di dasbor bendahara. Reminder WhatsApp dikirim otomatis sebelum jatuh tempo.",
+    a: "Bendahara menyiapkan rekening sekolah hingga terverifikasi, lalu membuat tagihan. Wali membayar melalui metode yang tersedia, sekaligus lunas atau mencicil. Status diperbarui setelah konfirmasi pembayaran diterima.",
+  },
+  {
+    q: "Apakah pembayaran lunas berarti dana sudah cair?",
+    a: "Belum tentu. Lunas berarti pembayaran telah dikonfirmasi. Pencairan ke rekening sekolah diproses terpisah pada hari kerja Senin–Jumat; Sabtu–Minggu tidak ada pengiriman. Pantau status pencairan di dasbor Bendahara.",
+  },
+  {
+    q: "Siapa yang menanggung biaya pembayaran?",
+    a: "Biaya penyedia pembayaran dipotong dari dana yang diterima sekolah. Rincian tarif tersedia di halaman Metode Pembayaran sekolah. Wali melihat tagihan, biaya layanan, dan total bayar sebelum membayar.",
   },
   {
     q: "Apakah data sekolah aman?",
-    a: "Seluruh data dienkripsi in-transit (TLS 1.2+) dan at-rest. Kami menggunakan role-based access control, audit log, serta backup harian. Data tetap milik sekolah — dapat diekspor kapan saja.",
+    a: "Akses data dibatasi sesuai sekolah dan peran pengguna. Admin mengatur akun guru, staf, dan bendahara. Gunakan kata sandi yang kuat dan jaga kerahasiaan akun.",
   },
   {
     q: "Berapa lama proses implementasi?",
-    a: "Umumnya 1–3 hari kerja. Sekolah tinggal mendaftar, upload data siswa & kelas, atur rekening penerimaan, dan platform siap dipakai. Tim kami mendampingi onboarding tanpa biaya tambahan.",
+    a: "Setelah mendaftar, ikuti panduan persiapan: lengkapi profil sekolah, kelas, siswa, guru/staf, jadwal, dan WhatsApp. Tambahkan bendahara untuk mengajukan rekening dari akun Bendahara. Tagihan online dapat dibuat setelah rekening terverifikasi.",
   },
 ];
 
@@ -640,7 +649,7 @@ function PaymentSystem() {
       <SectionHeader
         eyebrow="Sistem pembayaran sekolah"
         title={<>Pembayaran SPP <span className="text-[#5B6CF9]">otomatis</span>, laporan siap audit.</>}
-        sub="Dari tagihan hingga rekonsiliasi, semua tercatat rapi tanpa kerja manual bendahara."
+        sub="Kelola tagihan, cicilan, dan riwayat pembayaran dalam satu dasbor. Tagihan online tersedia setelah rekening sekolah terverifikasi."
       />
 
       <div className="grid lg:grid-cols-5 gap-8 items-start">
@@ -838,14 +847,14 @@ function WhyFree() {
             Mengapa ATSkolla <span className="text-[#5B6CF9]">gratis</span>?
           </h2>
           <p className="mt-5 text-base lg:text-lg text-[#0b1020]/70 leading-relaxed">
-            ATSkolla dapat digunakan sekolah sepenuhnya gratis — tanpa biaya langganan, tanpa biaya setup, dan tanpa komitmen.
+            Tanpa biaya langganan sekolah. Sebagai ketentuan penggunaan gratis, SPP Online wajib aktif dan tetap digunakan. Tersedia toleransi aktivasi 60 hari.
           </p>
 
           <div className="mt-8 grid sm:grid-cols-3 gap-4">
             {[
-              { icon: CreditCard, t: "Payment gateway" },
+              { icon: CreditCard, t: "Pembayaran online" },
               { icon: IdCard, t: "Cetak kartu pelajar" },
-              { icon: Server, t: "Perangkat & hardware" },
+              { icon: Server, t: "Perangkat absensi" },
             ].map((x) => (
               <div key={x.t} className="rounded-2xl border border-slate-200 bg-white p-4">
                 <x.icon className="h-5 w-5 text-[#5B6CF9]" />
@@ -861,8 +870,8 @@ function WhyFree() {
             <div className="relative space-y-5">
               {[
                 { l: "Biaya langganan sekolah", v: "Rp 0", accent: true },
-                { l: "Setup & onboarding", v: "Gratis" },
-                { l: "Update platform", v: "Otomatis" },
+                { l: "Aktivasi SPP Online", v: "Toleransi 60 hari" },
+                { l: "Biaya transaksi", v: "Sesuai metode" },
                 { l: "Support dasar", v: "Kanal bantuan" },
                 { l: "Salinan data aplikasi", v: "Melalui admin" },
               ].map((row) => (
@@ -933,7 +942,7 @@ function FinalCTA() {
           Siap Membangun Sekolah Digital <span className="text-[#5B6CF9]">Bersama ATSkolla</span>?
         </h2>
         <p className="mt-5 text-lg text-[#0b1020]/65 max-w-xl mx-auto">
-          Aktifkan platform hari ini — tanpa biaya langganan, tanpa komitmen jangka panjang.
+          Mulai tanpa biaya langganan sekolah. Aktifkan SPP Online dalam masa toleransi 60 hari.
         </p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <button
@@ -1051,7 +1060,7 @@ function DevicesShowcase() {
             Akses ATSkolla dari <span className="text-[#5B6CF9]">laptop hingga smartphone</span>.
           </h2>
           <p className="mt-5 text-base lg:text-lg text-[#0b1020]/70 leading-relaxed">
-            Antarmuka responsif yang dirancang untuk admin sekolah di desktop dan wali kelas maupun orang tua di mobile — data selalu tersinkron real-time.
+            Kelola sekolah melalui browser. Wali murid dapat memantau absensi, jadwal, tagihan, cicilan, dan pengumuman melalui portal web atau aplikasi Android.
           </p>
         </motion.div>
 
