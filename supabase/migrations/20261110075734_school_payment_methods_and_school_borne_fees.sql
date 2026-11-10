@@ -9,10 +9,13 @@ alter table public.school_payment_preferences enable row level security;
 revoke all on public.school_payment_preferences from anon;
 grant select,insert,update on public.school_payment_preferences to authenticated;
 grant all on public.school_payment_preferences to service_role;
+drop policy if exists school_payment_preferences_read on public.school_payment_preferences;
 create policy school_payment_preferences_read on public.school_payment_preferences for select to authenticated
 using (public.has_role(auth.uid(),'super_admin') or (school_id=public.get_user_school_id(auth.uid()) and (public.has_role(auth.uid(),'bendahara') or public.has_role(auth.uid(),'school_admin'))));
+drop policy if exists school_payment_preferences_insert on public.school_payment_preferences;
 create policy school_payment_preferences_insert on public.school_payment_preferences for insert to authenticated
 with check (public.has_role(auth.uid(),'super_admin') or (school_id=public.get_user_school_id(auth.uid()) and (public.has_role(auth.uid(),'bendahara') or public.has_role(auth.uid(),'school_admin'))));
+drop policy if exists school_payment_preferences_update on public.school_payment_preferences;
 create policy school_payment_preferences_update on public.school_payment_preferences for update to authenticated
 using (public.has_role(auth.uid(),'super_admin') or (school_id=public.get_user_school_id(auth.uid()) and (public.has_role(auth.uid(),'bendahara') or public.has_role(auth.uid(),'school_admin'))))
 with check (public.has_role(auth.uid(),'super_admin') or (school_id=public.get_user_school_id(auth.uid()) and (public.has_role(auth.uid(),'bendahara') or public.has_role(auth.uid(),'school_admin'))));
