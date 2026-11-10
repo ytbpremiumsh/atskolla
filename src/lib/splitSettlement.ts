@@ -24,6 +24,7 @@ export const payoutStatus = (inv: any, now: Date = new Date()): PayoutStatus => 
     // Requires a recorded provider or authorized operator confirmation, never elapsed time.
     return inv.settlement_status === "paid" && inv.settlement_confirmed_at ? "split_paid" : "split_processing";
   }
+  if (inv.settlement_status === "paid" && inv.settlement_confirmed_at) return "manual_paid";
   if (inv.settlement_id) return inv.settlement_status === "paid" ? "manual_paid" : "manual_processing";
   return "legacy";
 };
@@ -35,14 +36,16 @@ export const invoicePayoutStatus = (invoice: any, settlements: any[]): PayoutSta
 export const schoolReceiptAmount = (invoice: any): number =>
   invoice.payment_fee_model === "school_gateway_admin_v1"
     ? Math.max(0, Number(invoice.total_amount ?? 0) - Number(invoice.gateway_fee_estimate ?? 0))
-    : Number(invoice.net_amount ?? invoice.total_amount ?? 0);
+    : invoice.doku_split
+      ? Number(invoice.total_amount ?? 0)
+      : Number(invoice.net_amount ?? invoice.total_amount ?? 0);
 
 export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
   split_paid: "Sudah Ditransfer",
   split_processing: "Menunggu Konfirmasi Bank",
   manual_processing: "Pencairan Diproses",
   manual_paid: "Sudah Dicairkan",
-  legacy: "Saldo Lama",
+  legacy: "Pencairan belum tercatat",
   offline: "Diterima Langsung",
 };
 
@@ -80,7 +83,7 @@ export const groupSplitByDay = (items: any[], schoolId: string, now: Date = new 
         date,
         settleDate,
         count: list.length,
-        total: list.reduce((s, x) => s + Number(x.total_amount ?? 0), 0),
+        total: list.reduce((s, x) => s + schoolReceiptAmount(x), 0),
         status: (list.every(i => payoutStatus(i, now) === "split_paid") ? "paid" : "processing") as SplitDay["status"],
         items: list,
       };

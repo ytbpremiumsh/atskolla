@@ -82,3 +82,12 @@ it("saldo mempertahankan konfirmasi invoice meskipun tidak ada baris settlement"
  expect(schoolReceiptAmount({payment_fee_model:"school_gateway_admin_v1",total_amount:100000,gateway_fee_estimate:721})).toBe(99279);
  expect(schoolReceiptAmount({total_amount:10000,net_amount:9445})).toBe(9445);
 });
+
+it("transaksi split lama menggunakan nominal sekolah, bukan saldo internal nol", async () => {
+ const {schoolReceiptAmount,payoutStatus}=await import("./splitSettlement");
+ expect(schoolReceiptAmount({doku_split:true,total_amount:1000,net_amount:0})).toBe(1000);
+ expect(schoolReceiptAmount({doku_split:false,total_amount:1000,net_amount:0})).toBe(0);
+ expect(payoutStatus({doku_split:false,total_amount:1000,settlement_status:"paid",settlement_confirmed_at:"2026-11-10T09:00:00Z"})).toBe("manual_paid");
+ const [day]=groupSplitByDay([{doku_split:true,payment_fee_model:"school_gateway_admin_v1",paid_at:"2026-11-10T02:00:00Z",total_amount:100000,gateway_fee_estimate:721}],school);
+ expect(day.total).toBe(99279);
+});

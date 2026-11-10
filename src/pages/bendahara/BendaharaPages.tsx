@@ -4446,10 +4446,9 @@ export function BendaharaSaldo() {
   const countBy = (k: string) => withStatus.filter((i) => i._ps === k).length;
   const processing = { total: sumBy("split_processing") + sumBy("manual_processing"), count: countBy("split_processing") + countBy("manual_processing") };
   const transferred = {
-    total: sumBy("split_paid") + sumDisbursed(settlements),
+    total: sumBy("split_paid") + withStatus.filter(i => i._ps === "manual_paid" && !i.settlement_id).reduce((sum, i) => sum + schoolReceiptAmount(i), 0) + sumDisbursed(settlements),
     count: countBy("split_paid") + countBy("manual_paid"),
   };
-  const legacy = { total: sumBy("legacy"), count: countBy("legacy") };
 
   const statusBadge = (k: PayoutStatus) => {
     const cls: Record<PayoutStatus, string> = {
@@ -4480,10 +4479,9 @@ export function BendaharaSaldo() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <StatCard label="Total SPP Online Lunas" value={fmtIDR(totals.gross)} sub={`${txCount} transaksi`} icon={TrendingUp} gradient="from-blue-500 to-indigo-600" />
         <StatCard label="Sudah Ditransfer ke Sekolah" value={fmtIDR(transferred.total)} sub={`${transferred.count} transaksi`} icon={ArrowDownToLine} gradient="from-emerald-500 to-teal-600" />
-        <StatCard label="Saldo Lama" value={fmtIDR(legacy.total)} sub={legacy.count ? `${legacy.count} transaksi, dicairkan oleh ATSkolla` : "Tidak ada"} icon={Wallet} gradient="from-sky-500 to-cyan-600" />
       </div>
 
       <Card className="border-0 shadow-sm">
@@ -4492,7 +4490,6 @@ export function BendaharaSaldo() {
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
             <span><b className="text-amber-600">Diproses Sistem</b> — pembayaran lunas, konfirmasi settlement bank belum tersedia</span>
             <span><b className="text-emerald-600">Sudah Ditransfer</b> — dana sudah dikirim ke rekening sekolah</span>
-            <span><b className="text-sky-600">Saldo Lama</b> — pembayaran sebelum pencairan otomatis, dicairkan oleh ATSkolla</span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -4605,7 +4602,7 @@ export function BendaharaPencairan() {
     setDetailOpen(true);
     setDetailLoading(true);
     const { data } = await supabase.from("spp_invoices")
-      .select("id, invoice_number, student_name, class_name, period_label, total_amount, gateway_fee, net_amount, payment_method, paid_at")
+      .select("id, invoice_number, student_name, class_name, period_label, total_amount, gateway_fee, net_amount, payment_fee_model, gateway_fee_estimate, doku_split, payment_method, paid_at")
       .eq("settlement_id", s.id)
       .order("paid_at", { ascending: true });
     setDetailItems((data as any[]) || []);
@@ -4688,7 +4685,7 @@ export function BendaharaPencairan() {
       const allPaid = (paidRes.data || []) as any[];
       const online = allPaid.filter((x) => !isOfflinePayment(x.payment_method));
       const offline = allPaid.filter((x) => isOfflinePayment(x.payment_method));
-      const availableList = online.filter((x) => !x.settlement_id && !x.doku_split);
+      const availableList = online.filter((x) => !x.settlement_id && !x.doku_split && payoutStatus(x) !== "manual_paid");
 
       const fee = Number((sRes.data as any)?.withdraw_fee_default ?? DEFAULT_WITHDRAW_FEE);
       const minP = Number((sRes.data as any)?.min_payout ?? 10000);
@@ -4698,30 +4695,8 @@ export function BendaharaPencairan() {
       // Pakai helper yang sama dengan Bendahara Saldo & Super Admin agar angka konsisten.
       setAvailable(computeAvailableSaldo(availableList, fee));
 
-      const invoiceBySettlement = online.reduce((map, x) => {
-        if (!x.settlement_id) return map;
-        const current = map.get(x.settlement_id) || { count: 0, gross: 0, fee: 0, net: 0 };
-        const netVal = (x.net_amount ?? x.total_amount ?? 0);
-        current.count += 1;
-        current.gross += x.total_amount || 0;
-        current.fee += x.gateway_fee || 0;
-        current.net += netVal;
-        map.set(x.settlement_id, current);
-        return map;
-      }, new Map<string, { count: number; gross: number; fee: number; net: number }>());
-
-      const reconciledHistory = ((hRes.data || []) as any[]).map((s) => {
-        const inv = invoiceBySettlement.get(s.id) || { count: 0, gross: 0, fee: 0, net: 0 };
-        const withdrawFee = s.withdraw_fee ?? DEFAULT_WITHDRAW_FEE;
-        return {
-          ...s,
-          total_transactions: inv.count,
-          total_gross: inv.gross,
-          total_gateway_fee: inv.fee,
-          total_net: inv.net,
-          final_payout: Math.max(0, inv.net - (inv.count > 0 ? withdrawFee : 0)),
-        };
-      });
+      // Keep the recorded payout snapshot; linked invoices may have changed since transfer.
+      const reconciledHistory = (hRes.data || []) as any[];
 
       setBreakdown({
         onlineTotal: online.length,
@@ -4933,7 +4908,7 @@ export function BendaharaPencairan() {
   };
 
   const pendingSplit = splitPaid.filter((invoice) => payoutStatus(invoice) === "split_processing");
-  const pendingSplitTotal = pendingSplit.reduce((sum, invoice) => sum + Math.max(0,Number(invoice.total_amount || 0) - (invoice.payment_fee_model === "school_gateway_admin_v1" ? Number(invoice.gateway_fee_estimate || 0) : 0)), 0);
+  const pendingSplitTotal = pendingSplit.reduce((sum, invoice) => sum + schoolReceiptAmount(invoice), 0);
 
   return (
     <div className="space-y-4">
@@ -4984,7 +4959,7 @@ export function BendaharaPencairan() {
                       <p className="font-semibold truncate">{x.student_name || "-"} · {x.class_name || "-"}</p>
                       <p className="text-muted-foreground truncate">{x.period_label || x.invoice_number} · {x.paid_at ? new Date(x.paid_at).toLocaleDateString("id-ID") : "-"}</p>
                     </div>
-                    <p className="font-bold shrink-0">{fmtIDR(Math.max(0,Number(x.total_amount || 0) - (x.payment_fee_model === "school_gateway_admin_v1" ? Number(x.gateway_fee_estimate || 0) : 0)))}</p>
+                    <p className="font-bold shrink-0">{fmtIDR(schoolReceiptAmount(x))}</p>
                   </div>
                 ))}
               </div>
@@ -5033,11 +5008,6 @@ export function BendaharaPencairan() {
                   </div>
                 );
               })()}
-              {available.count > 0 && (
-                <p className="text-xs rounded-md bg-muted/60 px-3 py-2 text-muted-foreground">
-                  Ada saldo lama sebelum sistem otomatis: {available.count} transaksi ({fmtIDR(available.gross)}). Saldo ini akan dicairkan oleh admin ATSkolla.
-                </p>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -5088,7 +5058,7 @@ export function BendaharaPencairan() {
                     {history.length === 0 && <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Belum ada settlement</TableCell></TableRow>}
                     {history.map(s => {
                       const withdrawFee = s.withdraw_fee ?? DEFAULT_WITHDRAW_FEE;
-                      // Angka final_payout sudah direkonsiliasi dari invoice terkait (net − fee)
+                      // Gunakan snapshot pencairan yang tersimpan.
                       const rowFinal = s.final_payout ?? 0;
                       const canCancel = s.status === "pending" && s.requested_by === user?.id;
                       return (
@@ -5414,7 +5384,7 @@ export function BendaharaPencairan() {
                       <TableCell className="text-xs">{it.period_label}</TableCell>
                       <TableCell className="text-xs">{formatPaymentMethodLabel(it.payment_method, (it as any).payment_channel)}</TableCell>
                       <TableCell className="text-xs">{it.paid_at ? new Date(it.paid_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(/\./g, ":") + " WIB" : "-"}</TableCell>
-                      <TableCell className="text-xs text-right font-semibold">{fmtIDR(it.total_amount)}</TableCell>
+                      <TableCell className="text-xs text-right font-semibold">{fmtIDR(schoolReceiptAmount(it))}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

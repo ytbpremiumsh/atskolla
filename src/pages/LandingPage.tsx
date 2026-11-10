@@ -73,49 +73,23 @@ const ECOSYSTEM_NODES = [
   { icon: Building2, label: "Sekolah" },
 ];
 
-const MODULES = [
-  {
-    group: "Akademik",
-    icon: BookOpen,
-    items: [
-      { icon: ScanLine, title: "Absensi", desc: "RFID, Face Recognition, QR Code" },
-      { icon: CalendarDays, title: "Jadwal", desc: "Jadwal mingguan per guru dan kelas" },
-      { icon: FileBarChart, title: "Rekap & Laporan", desc: "Rekap kehadiran 1-31, export Excel & PDF" },
-      { icon: Megaphone, title: "Pengumuman", desc: "Broadcast ke wali murid & guru" },
-    ],
-  },
-  {
-    group: "Keuangan",
-    icon: Wallet,
-    items: [
-      { icon: Receipt, title: "Pembayaran SPP", desc: "Tagihan berkala dan pembayaran cicilan" },
-      { icon: Landmark, title: "Virtual Account", desc: "Pilihan bank sesuai metode yang aktif" },
-      { icon: QrCode, title: "QRIS", desc: "Pembayaran instan dari mana saja" },
-      { icon: BookOpen, title: "Buku Kas", desc: "Pencatatan kas harian" },
-      { icon: LineChart, title: "Cash Flow", desc: "Arus kas masuk & keluar" },
-      { icon: FileBarChart, title: "Invoice & Kwitansi", desc: "Dokumen digital resmi" },
-      { icon: Banknote, title: "Laporan Keuangan", desc: "Neraca, laba rugi, tunggakan" },
-    ],
-  },
-  {
-    group: "Operasional",
-    icon: Cpu,
-    items: [
-      { icon: Radio, title: "RFID Reader", desc: "Perangkat scan kartu pelajar" },
-      { icon: ScanFace, title: "Pengenalan wajah", desc: "Verifikasi wajah realtime" },
-      { icon: QrCode, title: "QR Code", desc: "Scan cepat dari HP" },
-      { icon: IdCard, title: "Kartu Pelajar", desc: "Cetak resmi terintegrasi" },
-
-    ],
-  },
+const MAIN_FEATURES = [
+ {icon:ScanLine,title:"Absensi digital",desc:"Catat kehadiran dengan kartu RFID, QR, atau pengenalan wajah."},
+ {icon:Receipt,title:"SPP & tagihan",desc:"Kelola tagihan, pembayaran online, dan cicilan siswa."},
+ {icon:CalendarDays,title:"Jadwal pelajaran",desc:"Jadwal mingguan yang terhubung dengan portal wali."},
+ {icon:GraduationCap,title:"Portal wali murid",desc:"Pantau absensi, tagihan, dan informasi anak dari web atau Android."},
+ {icon:MessageSquare,title:"Notifikasi WhatsApp",desc:"Kirim informasi sekolah melalui WhatsApp yang terhubung."},
+ {icon:FileBarChart,title:"Laporan sekolah",desc:"Rekap kehadiran dan pembayaran, dengan ekspor Excel atau PDF."},
+ {icon:Megaphone,title:"Pengumuman",desc:"Bagikan informasi penting kepada guru dan wali murid."},
+ {icon:IdCard,title:"Kartu pelajar",desc:"Identitas siswa terintegrasi dengan sistem absensi."},
 ];
 
 const PAYMENT_ITEMS = [
-  { icon: QrCode, title: "QRIS, VA & Retail", desc: "Wali memilih QRIS, transfer bank, atau gerai retail yang diaktifkan sekolah. Total pembayaran ditampilkan sebelum melanjutkan." },
+  { icon: QrCode, title: "QRIS, VA & Retail", desc: "Bayar melalui metode yang diaktifkan sekolah. Total terlihat sebelum membayar." },
   { icon: MessageSquare, title: "Reminder WhatsApp", desc: "Kirim pengingat tagihan melalui nomor WhatsApp sekolah yang sudah terhubung." },
-  { icon: CheckCircle2, title: "Rekonsiliasi Otomatis", desc: "Status pembayaran diperbarui setelah konfirmasi penyedia diterima. Cicilan mengurangi sisa tagihan." },
-  { icon: Landmark, title: "Pencairan ke rekening sekolah", desc: "Diproses pada hari kerja Senin–Jumat. Status berhasil mengikuti konfirmasi pencairan, bukan hanya jadwal perkiraan." },
-  { icon: LineChart, title: "Dashboard Bendahara", desc: "Ringkasan pemasukan, tunggakan, dan proyeksi kas dalam satu layar." },
+  { icon: CheckCircle2, title: "Rekonsiliasi Otomatis", desc: "Konfirmasi pembayaran memperbarui status dan sisa tagihan." },
+  { icon: Landmark, title: "Pencairan ke rekening sekolah", desc: "Pencairan Senin–Jumat. Status berhasil sesuai konfirmasi transfer." },
+  { icon: LineChart, title: "Dashboard Bendahara", desc: "Pantau pemasukan dan tunggakan dalam satu layar." },
   { icon: FileBarChart, title: "Laporan Keuangan", desc: "Export Excel & PDF resmi untuk audit dan rapat komite." },
 ];
 
@@ -596,50 +570,13 @@ function Ecosystem() {
 
 // ---------- Modules ----------
 function Modules() {
-  return (
-    <Section id="modul" className="py-20 lg:py-28 bg-[#f5f7fb]">
-      <SectionHeader
-        eyebrow="Modul ATSkolla"
-        title={<>Semua yang dibutuhkan sekolah, <span className="text-[#5B6CF9]">tanpa berpindah aplikasi</span>.</>}
-        sub="Dikelompokkan berdasarkan area kerja — bukan daftar fitur panjang tanpa struktur."
-      />
-
-      <div className="space-y-10">
-        {MODULES.map((group) => (
-          <div key={group.group}>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center">
-                <group.icon className="h-4 w-4 text-[#5B6CF9]" />
-              </div>
-              <div className="font-display text-xl font-bold text-[#0b1020]">{group.group}</div>
-              <div className="flex-1 h-px bg-slate-200" />
-              <div className="text-xs text-[#0b1020]/50">{group.items.length} modul</div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {group.items.map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, margin: "-40px" }}
-                  variants={fadeUp}
-                  transition={{ duration: 0.4, delay: i * 0.04 }}
-                  className="rounded-2xl bg-white border border-slate-200 p-5 hover:border-[#5B6CF9]/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-[#5B6CF9]/5 transition-all"
-                >
-                  <div className="h-10 w-10 rounded-xl bg-[#5B6CF9]/10 flex items-center justify-center mb-4">
-                    <item.icon className="h-5 w-5 text-[#5B6CF9]" />
-                  </div>
-                  <div className="font-display font-semibold text-[#0b1020]">{item.title}</div>
-                  <div className="text-sm text-[#0b1020]/55 mt-1">{item.desc}</div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Section>
-  );
+ return <Section id="modul" className="py-20 lg:py-28 bg-[#f5f7fb]">
+  <SectionHeader eyebrow="Fitur utama ATSkolla" title={<>Kebutuhan sekolah, <span className="text-[#5B6CF9]">dalam satu aplikasi</span>.</>} sub="Dari absensi hingga pembayaran, lebih mudah dikelola dan dipantau."/>
+  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{MAIN_FEATURES.map((item,i)=><motion.div key={item.title} initial="hidden" whileInView="show" viewport={{once:true}} variants={fadeUp} transition={{duration:0.3,delay:i*0.03}} className="h-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+   <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#5B6CF9]/10"><item.icon className="h-5 w-5 text-[#5B6CF9]"/></div>
+   <h3 className="font-display font-semibold text-[#0b1020]">{item.title}</h3><p className="mt-2 text-sm leading-relaxed text-[#0b1020]/60">{item.desc}</p>
+  </motion.div>)}</div>
+ </Section>;
 }
 
 // ---------- Payment System ----------
@@ -652,11 +589,11 @@ function PaymentSystem() {
         sub="Kelola tagihan, cicilan, dan riwayat pembayaran dalam satu dasbor. Tagihan online tersedia setelah rekening sekolah terverifikasi."
       />
 
-      <div className="grid lg:grid-cols-5 gap-8 items-start">
+      <div className="grid lg:grid-cols-2 gap-6 items-stretch">
         {/* Feature list */}
-        <div className="lg:col-span-2 space-y-3">
+        <div className="grid sm:grid-cols-2 gap-3">
           {PAYMENT_ITEMS.map((p) => (
-            <div key={p.title} className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#5B6CF9]/40 transition-colors">
+            <div key={p.title} className="h-full rounded-2xl border border-slate-200 bg-white p-4 hover:border-[#5B6CF9]/40 transition-colors">
               <div className="flex gap-4">
                 <div className="h-10 w-10 rounded-xl bg-[#5B6CF9]/10 flex items-center justify-center shrink-0">
                   <p.icon className="h-5 w-5 text-[#5B6CF9]" />
@@ -671,7 +608,7 @@ function PaymentSystem() {
         </div>
 
         {/* Dashboard mock */}
-        <div className="lg:col-span-3 rounded-3xl bg-white p-6 shadow-2xl relative overflow-hidden">
+        <div className="h-full rounded-3xl bg-white p-5 sm:p-6 shadow-xl relative overflow-hidden">
           <div className="absolute -top-10 -right-10 w-64 h-64 bg-[#5B6CF9] rounded-full blur-[100px] opacity-15" />
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
@@ -870,7 +807,6 @@ function WhyFree() {
             <div className="relative space-y-5">
               {[
                 { l: "Biaya langganan sekolah", v: "Rp 0", accent: true },
-                { l: "Aktivasi SPP Online", v: "Toleransi 60 hari" },
                 { l: "Biaya transaksi", v: "Sesuai metode" },
                 { l: "Support dasar", v: "Kanal bantuan" },
                 { l: "Salinan data aplikasi", v: "Melalui admin" },
