@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { exportApplicationData } from "../_shared/backup.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
