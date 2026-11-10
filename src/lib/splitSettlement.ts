@@ -28,6 +28,15 @@ export const payoutStatus = (inv: any, now: Date = new Date()): PayoutStatus => 
   return "legacy";
 };
 
+/** Preserve invoice confirmation; linked settlement is a fallback for legacy payouts. */
+export const invoicePayoutStatus = (invoice: any, settlements: any[]): PayoutStatus =>
+  payoutStatus({ ...invoice, settlement_status: invoice.settlement_status ?? settlements.find(s => s.id === invoice.settlement_id)?.status });
+
+export const schoolReceiptAmount = (invoice: any): number =>
+  invoice.payment_fee_model === "school_gateway_admin_v1"
+    ? Math.max(0, Number(invoice.total_amount ?? 0) - Number(invoice.gateway_fee_estimate ?? 0))
+    : Number(invoice.net_amount ?? invoice.total_amount ?? 0);
+
 export const PAYOUT_LABEL: Record<PayoutStatus, string> = {
   split_paid: "Sudah Ditransfer",
   split_processing: "Menunggu Konfirmasi Bank",

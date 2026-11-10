@@ -71,3 +71,14 @@ it("dana menunggu transfer mengecualikan transaksi yang terkonfirmasi berhasil",
  expect(pending).toHaveLength(1);expect(pending.reduce((sum,i)=>sum+i.total_amount,0)).toBe(1000);
  expect(items.filter(i=>payoutStatus(i)==="split_paid")).toHaveLength(2);
 });
+
+it("saldo mempertahankan konfirmasi invoice meskipun tidak ada baris settlement", async () => {
+ const {invoicePayoutStatus,schoolReceiptAmount}=await import("./splitSettlement");
+ const paid={doku_split:true,total_amount:36000,settlement_status:"paid",settlement_confirmed_at:"2026-11-09T07:00:00Z"};
+ expect(invoicePayoutStatus(paid,[])).toBe("split_paid");
+ expect(invoicePayoutStatus({...paid,settlement_id:"x"},[{id:"x",status:"processing"}])).toBe("split_paid");
+ expect(invoicePayoutStatus({settlement_id:"x"},[{id:"x",status:"paid"}])).toBe("manual_paid");
+ expect(invoicePayoutStatus({doku_split:true},[])).toBe("split_processing");
+ expect(schoolReceiptAmount({payment_fee_model:"school_gateway_admin_v1",total_amount:100000,gateway_fee_estimate:721})).toBe(99279);
+ expect(schoolReceiptAmount({total_amount:10000,net_amount:9445})).toBe(9445);
+});

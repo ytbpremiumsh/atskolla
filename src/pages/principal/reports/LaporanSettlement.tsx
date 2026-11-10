@@ -1,5 +1,5 @@
 import { fetchAllPages } from "@/lib/pagedQuery";
-import { payoutStatus, PAYOUT_LABEL } from "@/lib/splitSettlement";
+import { payoutStatus, invoicePayoutStatus, PAYOUT_LABEL } from "@/lib/splitSettlement";
 import { usePrincipalData } from "@/hooks/usePrincipalData";
 import { useEffect, useMemo, useState } from "react";
 import { Wallet } from "lucide-react";
@@ -82,7 +82,7 @@ export default function LaporanSettlement() {
     return v === "offline_cash" || v === "offline_transfer";
   };
 
-  const statusFor = (i:any) => payoutStatus({...i,settlement_status:settlements.find(s=>s.id===i.settlement_id)?.status});
+  const statusFor = (i:any) => invoicePayoutStatus(i, settlements);
 
   const paidSummary = useMemo(() => {
     const arr = paidInvoices;

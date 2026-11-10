@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { groupSplitByDay, payoutSchedule, payoutStatus, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
+import { groupSplitByDay, payoutSchedule, payoutStatus, invoicePayoutStatus, schoolReceiptAmount, PAYOUT_LABEL, type PayoutStatus } from "@/lib/splitSettlement";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PageHeader } from "@/components/PageHeader";
@@ -4420,7 +4420,7 @@ export function BendaharaSaldo() {
       syncingRef.current = true;
       supabase.functions.invoke("spp-doku", { body: { action: "sync_paid_invoices" } })
         .catch(() => null)
-        .finally(() => { syncingRef.current = false; });
+        .finally(() => { syncingRef.current = false; fetchAll(); });
     }
   }, [fetchAll, profile?.school_id]);
 
@@ -4441,8 +4441,8 @@ export function BendaharaSaldo() {
   const txCount = items.length;
 
   // Konsep Split Settlement: semua dana online otomatis ditransfer sistem ke rekening sekolah.
-  const withStatus = items.map((i) => ({ ...i, _ps: payoutStatus({ ...i, settlement_status: settlements.find(s => s.id === i.settlement_id)?.status }) }));
-  const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + Number(i.net_amount ?? i.total_amount ?? 0), 0);
+  const withStatus = items.map((i) => ({ ...i, _ps: invoicePayoutStatus(i, settlements) }));
+  const sumBy = (k: string) => withStatus.filter((i) => i._ps === k).reduce((s, i) => s + schoolReceiptAmount(i), 0);
   const countBy = (k: string) => withStatus.filter((i) => i._ps === k).length;
   const processing = { total: sumBy("split_processing") + sumBy("manual_processing"), count: countBy("split_processing") + countBy("manual_processing") };
   const transferred = {
@@ -4476,7 +4476,7 @@ export function BendaharaSaldo() {
             </span>
           </div>
           <p className="text-3xl md:text-4xl font-extrabold tracking-tight">{fmtIDR(processing.total)}</p>
-          <p className="text-[11px] opacity-80 mt-1">{processing.count} transaksi menunggu konfirmasi settlement penyedia pembayaran</p>
+          <p className="text-[11px] opacity-80 mt-1">{processing.count} transaksi menunggu pencairan</p>
         </CardContent>
       </Card>
 
@@ -4517,7 +4517,7 @@ export function BendaharaSaldo() {
                     <TableCell className="text-xs font-medium">{i.student_name || "-"}<span className="block text-[10px] text-muted-foreground">{i.class_name}</span></TableCell>
                     <TableCell className="text-xs">{i.description || i.period_label}</TableCell>
                     <TableCell className="text-xs">{formatPaymentMethodLabel(i.payment_method, i.payment_channel)}</TableCell>
-                    <TableCell className="text-sm text-right font-semibold text-emerald-600">{fmtIDR(Number(i.net_amount ?? i.total_amount ?? 0))}</TableCell>
+                    <TableCell className="text-sm text-right font-semibold text-emerald-600">{fmtIDR(schoolReceiptAmount(i))}</TableCell>
                     <TableCell>{statusBadge(i._ps)}</TableCell>
                   </TableRow>
                 ))}
