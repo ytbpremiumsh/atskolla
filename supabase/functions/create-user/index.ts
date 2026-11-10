@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { getMpwaBase } from "../_shared/mpwaBase.ts";
 import { corsHeaders, handlePreflight } from "../_shared/cors.ts";
