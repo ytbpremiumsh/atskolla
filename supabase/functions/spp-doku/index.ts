@@ -7,7 +7,7 @@ import { brandPaymentUrl } from "../_shared/brandUrl.ts";
 import { buildDokuSignature, buildDokuOrderNumber, syncDokuAttempts } from "../_shared/doku.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
-import { requireSchoolPaymentChannel, schoolNetSettlement, paymentCostConfig, paymentQuote } from "../_shared/schoolPaymentPolicy.ts";
+import { requireSchoolPaymentChannel, requireSchoolPaymentMethod, schoolPaymentMethods, schoolNetSettlement, paymentCostConfig, paymentQuote } from "../_shared/schoolPaymentPolicy.ts";
 
 const DOKU_LINK_TTL_MIN = 60 * 24 * 3; // 3 days
 const DEFAULT_FEES: Record<string, number> = { va: 5000, qris: 5000, retail: 8000 };
@@ -301,7 +301,9 @@ async function ensureFreshLink(
   const now = Date.now();
   const isExpired = inv.expired_at ? new Date(inv.expired_at).getTime() < now : false;
   const costs = await paymentCostConfig(supabaseAdmin);
-  const method = inv._payment_method || costs.methods.find((m:any)=>m.channel===channel)?.id;
+  const allowedMethods = await schoolPaymentMethods(supabaseAdmin,inv.school_id);
+  const method = inv._payment_method || allowedMethods.find((m:any)=>m.channel===channel && (m.id==="QRIS" || Number.isSafeInteger(costs.tariffs[m.id])))?.id;
+  await requireSchoolPaymentMethod(supabaseAdmin,inv.school_id,channel!,method);
   if(!costs.methods.some((m:any)=>m.id===method&&m.channel===channel))throw new Error("Metode tidak sesuai channel");
   const quote = paymentQuote(Number(inv.total_amount),costs.admin_fee,method,costs.tariffs);
   const serviceFee = quote.admin;
@@ -428,7 +430,9 @@ serve(async (req) => {
 
       await requireSchoolPaymentChannel(supabaseAdmin, inv.school_id, channel);
       const costs = await paymentCostConfig(supabaseAdmin);
-      const method = body.payment_method || costs.methods.find((m:any)=>m.channel===channel)?.id;
+      const allowedMethods = await schoolPaymentMethods(supabaseAdmin,inv.school_id);
+      const method = body.payment_method || allowedMethods.find((m:any)=>m.channel===channel && (m.id==="QRIS" || Number.isSafeInteger(costs.tariffs[m.id])))?.id;
+      await requireSchoolPaymentMethod(supabaseAdmin,inv.school_id,channel,method);
       if(!costs.methods.some((m:any)=>m.id===method&&m.channel===channel))return err("Metode tidak sesuai channel");
       const quote = paymentQuote(amount,costs.admin_fee,method,costs.tariffs);
       const serviceFee = quote.admin;

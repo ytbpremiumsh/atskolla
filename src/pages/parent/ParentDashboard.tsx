@@ -1,3 +1,4 @@
+import { visibleSchoolMethods } from "@/lib/schoolPaymentMethods";
 import { parentPaymentRequest } from "@/lib/parentPaymentAmount";
 import { scheduleDayIndex } from "@/lib/classSchedule";
 import { BrandLogo } from "@/components/brand/BrandLogo";
@@ -233,7 +234,7 @@ export default function ParentDashboard() {
     const valid = config?.ok && Array.isArray(config.enabled_channels) && Array.isArray(config.methods);
     const channels = valid ? config.enabled_channels : [];
     setEnabledPaymentChannels(channels);
-    setPaymentMethods(valid ? config.methods.filter((m: any) => channels.includes(m.channel)) : []);
+    setPaymentMethods(valid ? visibleSchoolMethods(config.methods, channels) : []);
     if (valid) setPaymentServiceFee(config.admin_fee);
     return Boolean(valid);
   }, []);
