@@ -100,7 +100,7 @@ const PublicClassMonitoring = () => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(() => fetchData(), 10000);
+    const interval = setInterval(() => { if (document.visibilityState === "visible") fetchData(); }, 60000);
     const channel = supabase
       .channel(`public-class-${decodedClass}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "dismissal_logs" }, () => fetchData(true))

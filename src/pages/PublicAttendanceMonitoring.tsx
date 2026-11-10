@@ -108,7 +108,7 @@ const PublicAttendanceMonitoring = () => {
   }, [schoolId, soundEnabled]);
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
+    const interval = setInterval(() => { if (document.visibilityState === "visible") fetchData(); }, 60000);
     const channel = supabase
       .channel("public-attendance-rt")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "attendance_logs" }, () => fetchData())

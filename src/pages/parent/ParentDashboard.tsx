@@ -220,7 +220,7 @@ export default function ParentDashboard() {
     const onVisible = () => { if (document.visibilityState === "visible") loadTab(); };
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("focus", loadTab);
-    const interval = window.setInterval(loadTab, 60_000);
+    const interval = window.setInterval(() => { if (document.visibilityState === "visible") loadTab(); }, 60_000);
     return () => {
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", loadTab);
@@ -249,7 +249,7 @@ export default function ParentDashboard() {
       finally { busy = false; }
     };
     void refresh();
-    const timer = window.setInterval(refresh, 5000);
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") void refresh(); }, 30000);
     window.addEventListener("focus", refresh);
     const visible = () => { if(document.visibilityState === "visible") void refresh(); };
     document.addEventListener("visibilitychange", visible);
