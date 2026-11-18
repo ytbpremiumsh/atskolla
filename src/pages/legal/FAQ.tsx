@@ -25,17 +25,17 @@ const FAQS: QA[] = [
   // Umum
   { category: "Umum", q: "Apa itu ATSkolla?", a: "ATSkolla adalah platform digital sekolah terintegrasi yang menyatukan absensi (QR, Face Recognition, RFID), pembayaran SPP online, manajemen keuangan, jadwal mengajar, pengumuman, dan portal wali murid dalam satu aplikasi." },
   { category: "Umum", q: "Sekolah apa saja yang bisa menggunakan ATSkolla?", a: "Semua jenjang: PAUD/TK, SD, SMP, SMA/SMK, hingga pesantren dan lembaga pendidikan non-formal." },
-  { category: "Umum", q: "Apakah ada uji coba gratis?", a: "Bisa langsung digunakan, karena gratis. ATSkolla tidak menerapkan sistem langganan berpaket — seluruh fitur (absensi QR, Face Recognition, RFID, manajemen keuangan, portal wali murid, dll) aktif untuk semua sekolah tanpa batas waktu." },
+  { category: "Umum", q: "Apakah ada uji coba gratis?", a: "Sekolah dapat menggunakan ATSkolla tanpa biaya langganan dengan menggunakan SPP Online secara aktif. Sekolah memiliki waktu persiapan 60 hari untuk menyiapkannya. Biaya transaksi dan layanan tambahan yang dipilih tetap mengikuti ketentuan yang ditampilkan." },
 
   // SPP
-  { category: "Pembayaran SPP", q: "Bagaimana cara wali murid membayar SPP?", a: "Wali murid login ke portal wali murid, memilih tagihan yang ingin dibayar, lalu memilih metode pembayaran (VA bank, QRIS, atau retail). Setelah bayar, status tagihan otomatis terupdate." },
-  { category: "Pembayaran SPP", q: "Apakah pembayaran langsung masuk ke rekening sekolah?", a: "Pembayaran DOKU Split mengalokasikan pokok tagihan ke rekening sekolah yang aktif dan terverifikasi, tanpa pengajuan withdraw manual. Dana masuk mengikuti jadwal settlement bank/penyedia pembayaran. Status tagihan lunas berbeda dari konfirmasi dana diterima rekening. Saldo dari transaksi lama mengikuti alur pencairan yang ditampilkan bendahara." },
+  { category: "Pembayaran SPP", q: "Bagaimana cara wali murid membayar SPP?", a: "Masuk ke portal wali, pilih siswa dan tagihan, lalu pilih metode yang tersedia. Periksa pokok tagihan, biaya layanan, serta total bayar. Status diperbarui setelah konfirmasi pembayaran diterima. Jika tagihan mengizinkan cicilan, pembayaran berikutnya mengikuti sisa yang masih perlu dibayar." },
+  { category: "Pembayaran SPP", q: "Apakah pembayaran langsung masuk ke rekening sekolah?", a: "Pembayaran yang sudah dikonfirmasi dan pengiriman dana ke rekening sekolah memiliki status terpisah. Penerimaan sekolah memperhitungkan biaya penyedia pembayaran yang berlaku. Bendahara dapat memantau dana menunggu transfer dan riwayat pencairan; waktu perkiraan bukan bukti dana telah diterima." },
   { category: "Pembayaran SPP", q: "Bagaimana jika wali murid salah transfer nominal?", a: "Sistem hanya menerima nominal yang sesuai tagihan. Untuk VA, nominal sudah terkunci sehingga tidak bisa salah bayar." },
 
   // VA & QRIS
-  { category: "VA & QRIS", q: "Bank apa saja yang didukung untuk Virtual Account?", a: "Mandiri, BRI, BNI, BCA, dan BSI. VA berlaku hingga tagihan dibayar atau kedaluwarsa." },
+  { category: "VA & QRIS", q: "Bank apa saja yang didukung untuk Virtual Account?", a: "Pilihan dapat mencakup Mandiri, BNI, BRI, dan BSI, sesuai aktivasi penyedia, tarif yang sudah dikonfirmasi, serta pengaturan sekolah. Bank yang dinonaktifkan tidak ditawarkan kepada wali. Gunakan daftar yang muncul pada pembayaran sebagai acuan." },
   { category: "VA & QRIS", q: "Apakah QRIS bisa digunakan dari semua e-wallet?", a: "Ya. QRIS dapat dipindai dari GoPay, OVO, DANA, ShopeePay, LinkAja, serta mobile banking bank manapun." },
-  { category: "VA & QRIS", q: "Berapa biaya layanannya?", a: "VA: Rp 5.000. QRIS: minimal Rp 3.000 (persentase dari nominal tagihan). Retail: Rp 8.000. Biaya ini ditampilkan transparan pada saat checkout." },
+  { category: "VA & QRIS", q: "Berapa biaya layanannya?", a: "Biaya layanan ditampilkan sebelum pembayaran dan ditambahkan pada pokok yang dibayar wali. Biaya penyedia pembayaran dipotong dari dana yang diterima sekolah. Besar potongan dapat berbeda menurut metode; bendahara dapat melihatnya pada halaman Metode Pembayaran. Pengaturan yang sedang berlaku menjadi acuan." },
 
   // Status
   { category: "Status Pembayaran", q: "Berapa lama status pembayaran terupdate?", a: "Status diperbarui setelah server menerima konfirmasi sah dari payment gateway. Sistem DOKU juga memeriksa ulang transaksi tertunda secara berkala. Waktu pembaruan bergantung pada respons penyedia dan koneksi. Kembali dari halaman pembayaran saja tidak menjadi bukti lunas." },
@@ -47,7 +47,7 @@ const FAQS: QA[] = [
   { category: "Refund", q: "Berapa lama proses refund?", a: "3–7 hari kerja untuk transfer bank, 3–14 hari kerja untuk QRIS/e-wallet, 7–14 hari kerja untuk retail." },
 
   // Akun
-  { category: "Akun", q: "Bagaimana cara mendaftarkan sekolah?", a: "Kunjungi halaman Daftar Gratis, isi data sekolah (nama, NPSN, WhatsApp admin), dan akun langsung aktif. Layanan ATSkolla Gratis digunakan tanpa biaya langganan dengan kewajiban memakai SPP Online. Masa toleransi tanpa aktivitas pembayaran adalah 60 hari; setelah itu fitur absensi dapat dinonaktifkan sementara sampai pembayaran kembali digunakan." },
+  { category: "Akun", q: "Bagaimana cara mendaftarkan sekolah?", a: "Daftarkan sekolah melalui halaman pendaftaran, lalu ikuti panduan persiapan data, akun petugas, dan jadwal. Tambahkan bendahara untuk mengajukan rekening. Setelah rekening disetujui penyedia, sekolah dapat membuat tagihan online. Penggunaan gratis mensyaratkan SPP Online tetap digunakan, dengan waktu persiapan 60 hari." },
   { category: "Akun", q: "Bagaimana wali murid mendapatkan akun?", a: "Sekolah menginput data siswa dan orang tua. Wali murid login menggunakan nomor WhatsApp/Nomor Kartu Identitas sesuai konfigurasi sekolah." },
   { category: "Akun", q: "Lupa password, bagaimana?", a: "Gunakan menu Lupa Password. Kode OTP akan dikirim ke nomor WhatsApp yang terdaftar." },
 ];

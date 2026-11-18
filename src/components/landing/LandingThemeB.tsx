@@ -214,6 +214,7 @@ const LandingThemeB = () => {
           <div className="hidden md:flex items-center gap-6 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             {[
               { href: "#features", label: "Fitur" },
+              { href: "/artikel", label: "Artikel" },
               { href: "#how-it-works", label: "Cara Kerja" },
               ...(showPricing ? [{ href: "#pricing", label: "Harga" }] : []),
               { href: "https://wa.me/6289605757557", label: "Kontak", external: true },
@@ -370,10 +371,10 @@ const LandingThemeB = () => {
           </motion.div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
             {[
-              { value: get("hero_stat_1_value", "500+"), label: get("hero_stat_1_label", "Sekolah Aktif") },
-              { value: get("hero_stat_2_value", "120K+"), label: get("hero_stat_2_label", "Siswa Terdaftar") },
-              { value: get("hero_stat_3_value", "99.9%"), label: get("hero_stat_3_label", "Data Akurat") },
-              { value: get("hero_stat_4_value", "34"), label: get("hero_stat_4_label", "Provinsi") },
+              { value: "Absensi", label: "Catatan kehadiran" },
+              { value: "SPP Online", label: "Tagihan dan pembayaran" },
+              { value: "Portal Wali", label: "Informasi anak" },
+              { value: "Laporan", label: "Rekap sekolah" },
             ].map((stat, i) => (
               <motion.div key={i} custom={i + 2} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center py-4">
                 <p className="text-3xl sm:text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">{stat.value}</p>
@@ -715,6 +716,7 @@ const LandingThemeB = () => {
               <p className="text-xs text-slate-400">© {new Date().getFullYear()} {get("footer_brand_name", "ATSkolla")}. All rights reserved.</p>
               <div className="flex items-center gap-5 text-xs text-slate-400 flex-wrap justify-center">
                 <button onClick={() => navigate("/syarat-ketentuan")} className="hover:text-indigo-600 transition-colors">Syarat & Ketentuan</button>
+                <a href="/artikel" className="hover:text-indigo-600 transition-colors">Artikel</a>
                 <button onClick={() => navigate("/kebijakan-refund")} className="hover:text-indigo-600 transition-colors">Refund</button>
                 <button onClick={() => navigate("/faq")} className="hover:text-indigo-600 transition-colors">FAQ</button>
                 <button onClick={() => navigate("/kontak")} className="hover:text-indigo-600 transition-colors">Kontak</button>

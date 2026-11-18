@@ -20,7 +20,7 @@ export default function Terms() {
       description="Aturan penggunaan layanan ATSkolla, hak & kewajiban pengguna, ketentuan pembayaran, keamanan akun, dan penggunaan sistem."
       path="/syarat-ketentuan"
       breadcrumb="Syarat & Ketentuan"
-      updatedAt="7 Juli 2026"
+      updatedAt="18 November 2026"
       toc={TOC}
     >
       <Prose>
@@ -53,7 +53,7 @@ export default function Terms() {
       <CheckList
         variant="success"
         items={[
-          "Pengguna berhak menggunakan fitur sesuai dengan paket berlangganan yang aktif.",
+          "Pengguna dapat menggunakan fitur sesuai peran, pengaturan sekolah, dan ketentuan layanan yang berlaku.",
           "Pengguna berhak atas dukungan teknis melalui kanal resmi ATSkolla.",
           "Pengguna wajib menjaga kerahasiaan data siswa, guru, dan wali murid sesuai peraturan perundang-undangan yang berlaku.",
         ]}
@@ -69,22 +69,24 @@ export default function Terms() {
       <SectionHeading id="pembayaran" num={4}>Ketentuan Pembayaran</SectionHeading>
       <Prose>
         <p>
-          Pembayaran berlangganan dan pembayaran SPP diproses melalui payment gateway resmi
-          yang terintegrasi dengan ATSkolla. Seluruh transaksi tercatat dan dapat diverifikasi
+          Pembayaran SPP dan tagihan online diproses melalui penyedia pembayaran yang terhubung
+          dengan ATSkolla. Seluruh transaksi tercatat dan dapat diverifikasi
           melalui riwayat transaksi.
         </p>
       </Prose>
       <CheckList
         items={[
-          "Metode: Virtual Account bank nasional, QRIS (semua e-wallet), dan gerai retail (Alfamart / Indomaret).",
-          "Biaya layanan payment gateway ditampilkan transparan pada saat checkout.",
-          "Bukti pembayaran dikirim otomatis dan tersedia untuk diunduh dalam format PDF.",
+          "Pilihan pembayaran dapat mencakup Virtual Account, QRIS, dan gerai retail. Metode yang tersedia mengikuti aktivasi penyedia serta pengaturan sekolah.",
+          "Wali melihat pokok tagihan, biaya layanan, dan total sebelum membayar. Biaya penyedia pembayaran dipotong dari dana yang diterima sekolah sesuai metode yang digunakan.",
+          "Bukti pembayaran yang tersedia dapat dilihat melalui riwayat transaksi dan diunduh sesuai fitur layanan.",
         ]}
       />
       <InfoCallout tone="info" title="Verifikasi otomatis">
-        Status pembayaran diverifikasi otomatis oleh sistem melalui webhook gateway.
-        Konfirmasi diterima kurang dari 1 menit pada kondisi normal.
+        Status pembayaran diperbarui setelah konfirmasi sah dari penyedia diterima.
+        Waktu pembaruan bergantung pada respons penyedia dan koneksi.
       </InfoCallout>
+
+      <Prose><p>Layanan tanpa biaya langganan sekolah mensyaratkan penggunaan SPP Online secara aktif, dengan waktu persiapan 60 hari. Tagihan online dapat dibuat setelah rekening sekolah disetujui penyedia. Pembayaran lunas dan pencairan dana merupakan dua status yang berbeda; pencairan mengikuti konfirmasi penyedia. Pembayaran cicilan hanya tersedia pada tagihan yang mengizinkannya dan mengurangi sisa setelah transaksi dikonfirmasi.</p></Prose>
 
       <SectionHeading id="keamanan" num={5}>Keamanan Sistem</SectionHeading>
       <CheckList
