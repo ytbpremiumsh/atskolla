@@ -4,7 +4,7 @@ import articles from "@/content/articles.json";
 import "./articles.css";
 
 function Shell({children}:{children:React.ReactNode}) {
- return <div className="pc-page"><header className="pc-header"><div className="pc-wrap"><a className="pc-brand" href="/"><img src="/images/logo-atskolla.png" alt="ATSkolla — Platform Digital Sekolah" width={180} height={48} decoding="async" /></a><nav className="pc-nav" aria-label="Navigasi utama"><a href="/">Beranda</a><a href="/artikel">Artikel</a><a href="/panduan">Panduan</a><a href="/kontak">Kontak</a></nav></div></header>{children}<footer className="pc-footer"><div className="pc-wrap"><nav><a href="/tentang">Tentang ATSkolla</a><a href="/kebijakan-privasi">Kebijakan privasi</a><a href="/syarat-ketentuan">Syarat penggunaan</a><a href="/kontak">Kontak</a></nav><p>ATSkolla dikelola oleh CV Prestasi Kita Bersama. © 2026 ATSkolla.</p></div></footer></div>;
+ return <div className="pc-page"><header className="pc-header"><div className="pc-wrap"><a className="pc-brand" href="/"><img src="/images/logo-atskolla.png" alt="ATSkolla — Platform Digital Sekolah" width={180} height={48} decoding="async" /></a><nav className="pc-nav" aria-label="Navigasi utama"><a href="/">Beranda</a><a href="/artikel">Artikel</a><a href="/panduan">Panduan</a><a href="/kontak">Kontak</a></nav></div></header>{children}<footer className="pc-footer"><div className="pc-wrap"><nav><a href="/tentang">Tentang ATSkolla</a><a href="/kebijakan-privasi">Kebijakan privasi</a><a href="/syarat-ketentuan">Syarat penggunaan</a><a href="/kontak">Kontak</a></nav><p>© 2026 ATSkolla.</p></div></footer></div>;
 }
 export default function PublicArticles(){
  const {slug}=useParams();const article=slug?articles.find(a=>a.slug===slug):null;
