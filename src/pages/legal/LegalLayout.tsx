@@ -236,6 +236,8 @@ export function LegalLayout({
               </div>
             </div>
             <nav className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500">
+              <a href="/artikel" className="hover:text-[#5B6CF9]">Artikel</a>
+              <Link to="/kebijakan-privasi" className="hover:text-[#5B6CF9]">Privasi</Link>
               <Link to="/syarat-ketentuan" className="hover:text-[#5B6CF9]">Syarat & Ketentuan</Link>
               <Link to="/kebijakan-refund" className="hover:text-[#5B6CF9]">Kebijakan Refund</Link>
               <Link to="/faq" className="hover:text-[#5B6CF9]">FAQ</Link>

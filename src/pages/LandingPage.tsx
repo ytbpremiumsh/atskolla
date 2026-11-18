@@ -31,6 +31,7 @@ const NAV = [
   { label: "Fitur", href: "#modul" },
 
   { label: "FAQ", href: "#faq" },
+  { label: "Artikel", href: "/artikel" },
   { label: "Tentang", href: "/tentang" },
   { label: "Kontak", href: "/kontak" },
 ];
@@ -613,11 +614,11 @@ function PaymentSystem() {
           <div className="relative">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <div className="text-[#0b1020]/50 text-xs">Dashboard Bendahara</div>
+                <div className="text-[#0b1020]/50 text-xs">Ilustrasi Dashboard Bendahara</div>
                 <div className="font-display  text-[#0b1020] font-bold text-lg">SPP Bulan November</div>
               </div>
               <div className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /> ILUSTRASI
               </div>
             </div>
 
@@ -950,6 +951,7 @@ function Footer() {
           <div className="font-display font-bold text-white text-[15px] mb-4">Perusahaan</div>
           <ul className="space-y-2.5 text-sm">
             <li><a href="/syarat-ketentuan" className="text-white/75 hover:text-white transition-colors">Syarat & Ketentuan</a></li>
+            <li><a href="/artikel" className="text-white/75 hover:text-white transition-colors">Artikel & Panduan</a></li>
             <li><a href="/kebijakan-privasi" className="text-white/75 hover:text-white transition-colors">Kebijakan Privasi</a></li>
             <li><a href="/kontak" className="text-white/75 hover:text-white transition-colors">Hubungi Kami</a></li>
           </ul>

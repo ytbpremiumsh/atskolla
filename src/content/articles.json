@@ -1,0 +1,392 @@
+[
+  {
+    "slug": "cara-membuat-rekap-absensi-siswa",
+    "title": "Cara Membuat Rekap Absensi Siswa yang Mudah Diperiksa",
+    "description": "Langkah menyiapkan daftar siswa, mencatat kehadiran, menangani koreksi, dan menyusun rekap bulanan tanpa hitungan ganda.",
+    "category": "Administrasi sekolah",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Mulai dari pertanyaan yang ingin dijawab",
+        "paragraphs": [
+          "Rekap absensi membantu sekolah mengetahui siapa yang hadir, siapa yang perlu dikonfirmasi, dan apakah ada ketidakhadiran berulang. Rekap yang baik tidak hanya berisi jumlah. Wali kelas perlu dapat menelusuri dari mana angka tersebut berasal.",
+          "Tentukan lebih dahulu periode, kelas, dan jenis kehadiran yang dihitung. Absensi masuk sekolah berbeda dengan kehadiran pada setiap mata pelajaran. Menggabungkan keduanya tanpa penjelasan dapat membuat satu siswa terlihat tidak hadir beberapa kali pada hari yang sama."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Siapkan daftar siswa dan hari belajar",
+        "paragraphs": [
+          "Gunakan nomor identitas siswa sebagai acuan, bukan nama saja. Dua siswa dapat memiliki nama yang sama, sedangkan penulisan nama dapat berubah. Cantumkan kelas dan status keaktifan agar siswa pindahan tidak otomatis dihitung untuk hari ketika ia belum terdaftar.",
+          "Tandai hari belajar, libur, dan kegiatan khusus sebelum menghitung jumlah ketidakhadiran. Tanggal merah atau hari tanpa kegiatan belajar tidak seharusnya masuk sebagai hari alpa. Jika ada perubahan kalender, catat tanggal perubahan dan pastikan rekap mengikuti kalender yang sudah disepakati sekolah."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Bedakan status dengan jelas",
+        "paragraphs": [
+          "Sepakati arti hadir, terlambat, izin, sakit, dan alpa. Keterlambatan dapat menjadi keterangan tambahan pada kehadiran, bukan ketidakhadiran penuh. Jika izin masih menunggu pemeriksaan, gunakan catatan belum dikonfirmasi agar petugas tidak langsung menyimpulkan siswa alpa.",
+          "Jangan mengubah status berdasarkan pesan yang tidak dapat ditelusuri. Catat tanggal izin, petugas yang memeriksa, serta rujukan permohonannya. Untuk surat sakit, simpan dokumen hanya pada tempat yang dapat diakses petugas terkait; dokumen kesehatan tidak perlu dimasukkan ke rekap umum."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Periksa catatan ganda dan koreksi",
+        "paragraphs": [
+          "Pemindaian kartu dua kali tidak berarti dua kehadiran. Periksa catatan berdasarkan siswa, tanggal, dan sesi yang relevan. Jika sistem menyimpan waktu masuk dan pulang, kedua catatan tersebut memiliki fungsi berbeda dan tidak boleh dijumlahkan sebagai dua hari hadir.",
+          "Saat ada kesalahan, perbaiki melalui petugas yang berwenang dan tuliskan alasannya. Misalnya, siswa hadir tetapi perangkat tidak terhubung. Bukti konfirmasi dari wali kelas membantu pemeriksaan. Simpan riwayat koreksi supaya perubahan tidak hanya bergantung pada ingatan petugas."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Hitung dengan contoh yang sederhana",
+        "paragraphs": [
+          "Sebagai simulasi, satu kelas memiliki 30 siswa dan 20 hari belajar. Jika semua siswa terdaftar sepanjang periode, jumlah kesempatan hadir adalah 30 × 20 = 600. Bila catatan hadir berjumlah 560, persentase kehadiran adalah 560 ÷ 600 × 100%, atau sekitar 93,33%. Ini contoh perhitungan, bukan statistik sekolah tertentu.",
+          "Jika ada siswa masuk di tengah bulan, jumlah kesempatan hadir perlu disesuaikan. Persentase tanpa penjelasan pembagi mudah disalahartikan. Cantumkan jumlah hari belajar dan jelaskan apakah siswa terlambat tetap masuk dalam jumlah hadir."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Bagikan laporan sesuai kebutuhan",
+        "paragraphs": [
+          "Laporan untuk pimpinan dapat berupa ringkasan kelas, sedangkan wali kelas memerlukan rincian per siswa. Wali murid cukup menerima informasi anaknya sendiri. Hindari mengirim daftar lengkap nomor kontak atau lampiran izin ke grup umum.",
+          "Sebelum menyimpan laporan bulanan, cocokkan beberapa sampel tanggal dengan catatan harian. Setelah diperiksa, beri nama berkas yang jelas, misalnya Rekap-Absensi-Kelas-7A-November-2026. Simpan versi final dan bedakan dari berkas sementara agar petugas tidak memakai laporan yang sudah diganti."
+        ]
+      }
+    ],
+    "checklist": [
+      "Daftar siswa dan periode sudah benar.",
+      "Hari libur tidak dihitung sebagai alpa.",
+      "Catatan ganda dan izin telah diperiksa.",
+      "Koreksi memiliki alasan dan penanggung jawab.",
+      "Laporan dibagikan hanya kepada pihak yang memerlukan."
+    ]
+  },
+  {
+    "slug": "mengelola-tagihan-spp-dan-cicilan",
+    "title": "Mengelola Tagihan SPP dan Cicilan Tanpa Salah Menghitung Sisa",
+    "description": "Panduan membedakan nilai tagihan, cicilan yang sudah valid, biaya layanan, dan dana yang diterima sekolah.",
+    "category": "Keuangan sekolah",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Pisahkan tagihan dari transaksi pembayaran",
+        "paragraphs": [
+          "Tagihan menunjukkan kewajiban yang perlu dibayar. Transaksi mencatat pembayaran yang dilakukan untuk kewajiban tersebut. Satu tagihan dapat memiliki beberapa transaksi jika sekolah mengizinkan cicilan. Karena itu, jangan menjumlahkan nilai tagihan berulang kali untuk setiap pembayaran.",
+          "Sebelum menerbitkan tagihan, pastikan identitas siswa, periode, jenis pembayaran, dan nominal benar. Tagihan SPP bulanan sebaiknya dibedakan dari daftar ulang atau kegiatan sekolah. Penamaan yang jelas membantu wali murid memahami tujuan pembayaran tanpa harus menghubungi bendahara."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Tetapkan aturan cicilan sebelum tagihan dibagikan",
+        "paragraphs": [
+          "Tentukan tagihan mana yang boleh dicicil, batas waktu, dan ketentuan nominalnya sesuai kebijakan sekolah. Jangan menjanjikan semua jenis tagihan bisa dicicil jika pengaturannya berbeda. Sampaikan aturan itu sejak awal, bukan setelah orang tua membuka halaman pembayaran.",
+          "Catat potongan atau keringanan sebagai perubahan yang dapat ditelusuri. Misalnya, nilai awal, besaran keringanan, alasan, dan petugas yang menyetujui. Tanpa catatan tersebut, selisih antara tagihan dan pembayaran dapat terlihat seperti tunggakan padahal ada penyesuaian yang sah."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Kurangi sisa hanya dengan pembayaran yang sudah valid",
+        "paragraphs": [
+          "Sebagai contoh simulasi, tagihan daftar ulang bernilai Rp1.000.000. Siswa memiliki dua cicilan yang telah dikonfirmasi, masing-masing Rp10.000. Jumlah yang sudah dibayar adalah Rp20.000 sehingga sisa tagihan Rp980.000. Pilihan bayar lunas berikutnya harus memakai sisa Rp980.000, bukan nilai awal Rp1.000.000.",
+          "Pembayaran yang masih menunggu, gagal, dibatalkan, atau kedaluwarsa belum boleh mengurangi sisa. Jika ada pengembalian dana atau pembatalan transaksi yang sebelumnya berhasil, bendahara perlu meninjau kembali saldo tagihan sesuai catatan resmi."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Bedakan pokok tagihan dan biaya layanan",
+        "paragraphs": [
+          "Pokok tagihan adalah bagian pembayaran untuk kewajiban siswa. Biaya layanan yang ditampilkan kepada wali merupakan komponen terpisah. Misalnya, jika sisa tagihan Rp980.000 dan biaya layanan pada halaman pembayaran Rp3.000, total yang dibayar wali menjadi Rp983.000. Contoh biaya ini hanya ilustrasi; gunakan rincian yang sedang berlaku.",
+          "Jangan memasukkan biaya layanan sebagai tambahan cicilan pokok. Sebaliknya, biaya penyedia pembayaran yang menjadi tanggungan sekolah dapat membuat penerimaan bersih sekolah berbeda dari pokok tagihan. Kedua hal tersebut perlu dibedakan dalam laporan agar siswa tidak dianggap masih berutang karena potongan penyedia."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Lunas tidak sama dengan dana sudah masuk rekening",
+        "paragraphs": [
+          "Status lunas menunjukkan pembayaran telah dikonfirmasi untuk tagihan. Pengiriman dana ke rekening sekolah memiliki proses dan status tersendiri. Bendahara perlu membaca halaman pencairan untuk mengetahui dana yang masih menunggu atau sudah terkonfirmasi terkirim.",
+          "Tanggal perkiraan bukan bukti bahwa dana sudah diterima. Cocokkan informasi pencairan dengan laporan penyedia atau catatan rekening yang dapat dipertanggungjawabkan. Jika terjadi selisih, gunakan nomor transaksi untuk menelusuri pembayaran dan hindari mengubah status hanya supaya angka laporan terlihat sama."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Lakukan pemeriksaan rutin",
+        "paragraphs": [
+          "Periksa daftar transaksi berhasil, transaksi tertunda, dan sisa tagihan pada periode yang sama. Ambil beberapa sampel siswa untuk memastikan jumlah cicilan yang valid cocok dengan perubahan sisa. Saat mengirim pengingat, gunakan sisa terbaru agar orang tua tidak menerima permintaan membayar nilai yang sudah dilunasi.",
+          "Simpan bukti dan laporan dengan nama yang mudah dicari. Bila wali mengirim bukti transfer, jadikan bahan penelusuran, bukan alasan otomatis membuat transaksi kedua. Periksa dahulu apakah pembayaran yang sama sudah tercatat."
+        ]
+      }
+    ],
+    "checklist": [
+      "Jenis tagihan dan aturan cicilan jelas.",
+      "Sisa dikurangi hanya oleh pembayaran terkonfirmasi.",
+      "Biaya layanan dipisahkan dari pokok tagihan.",
+      "Status lunas dan pencairan diperiksa terpisah.",
+      "Pengingat memakai sisa tagihan terbaru."
+    ]
+  },
+  {
+    "slug": "panduan-wali-murid-membayar-tagihan-online",
+    "title": "Panduan Wali Murid Membayar Tagihan Sekolah secara Online",
+    "description": "Apa yang perlu diperiksa sebelum membayar, saat memilih metode, dan ketika status pembayaran belum berubah.",
+    "category": "Panduan wali murid",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Pastikan sekolah dan siswa yang dipilih sudah benar",
+        "paragraphs": [
+          "Buka portal melalui tautan resmi yang diberikan sekolah. Periksa alamat situs sebelum memasukkan data akun, terutama jika tautan diterima dari pesan yang diteruskan. Jangan memberikan kata sandi atau kode verifikasi kepada orang lain yang mengaku membantu pembayaran.",
+          "Jika satu akun memiliki beberapa anak, pilih anak yang sesuai sebelum membuka tagihan. Cocokkan nama, kelas, jenis pembayaran, dan periode. Nama tagihan yang mirip belum tentu merujuk pada kewajiban yang sama, misalnya SPP bulan ini dan biaya daftar ulang tahun ajaran berikutnya."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Baca sisa tagihan, bukan hanya nominal awal",
+        "paragraphs": [
+          "Periksa pembayaran yang sudah tercatat. Untuk tagihan yang dapat dicicil, jumlah pelunasan mengikuti sisa setelah cicilan valid dikurangi dari nilai tagihan. Jangan memakai tangkapan layar lama sebagai acuan karena sisa dapat berubah setelah pembayaran lain dikonfirmasi.",
+          "Sebagai ilustrasi, tagihan Rp500.000 yang sudah dibayar Rp200.000 memiliki sisa Rp300.000. Jika halaman pembayaran berikutnya menampilkan pokok Rp500.000 lagi, hentikan dahulu dan minta bendahara memeriksa. Wali tidak perlu mencoba membayar untuk membuktikan bahwa nominalnya keliru."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Pilih metode yang tersedia",
+        "paragraphs": [
+          "Sekolah dapat menyediakan QRIS, transfer Virtual Account, atau pembayaran melalui gerai. Tidak semua bank atau gerai selalu ditampilkan karena pilihannya mengikuti pengaturan sekolah dan ketersediaan layanan penyedia. Pilih metode yang memang muncul pada halaman pembayaran.",
+          "Sebelum melanjutkan, baca rincian pokok tagihan, biaya layanan, dan total bayar. Untuk transfer Virtual Account, gunakan nomor yang dibuat pada transaksi tersebut. Untuk gerai, ikuti petunjuk dan kode pembayaran yang ditampilkan. Jangan mengirim dana ke nomor rekening pribadi yang tidak tercantum dalam alur resmi sekolah."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Selesaikan pembayaran sesuai petunjuk",
+        "paragraphs": [
+          "Periksa kembali nominal pada aplikasi bank, dompet digital, atau layar kasir sebelum menyetujui pembayaran. Simpan nomor referensi dan waktu pembayaran. Jika ada batas waktu, ikuti waktu pada transaksi yang sedang digunakan; kode lama dapat memiliki masa berlaku yang berbeda.",
+          "Saat koneksi terputus setelah pembayaran disetujui, jangan langsung mengulang transaksi. Periksa riwayat pada bank atau dompet digital lebih dahulu. Mengulang tanpa pemeriksaan dapat menyebabkan dua pembayaran yang perlu ditangani terpisah."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Tunggu konfirmasi dan periksa riwayat",
+        "paragraphs": [
+          "Kembali dari halaman penyedia tidak selalu berarti pembayaran sudah berhasil. Portal sekolah memperbarui status setelah konfirmasi pembayaran diterima. Periksa riwayat transaksi dan sisa tagihan untuk memastikan pembayaran yang sama sudah masuk.",
+          "Jika status belum berubah, simpan bukti, nomor tagihan, nominal, serta waktu pembayaran lalu hubungi bendahara melalui kanal resmi. Jangan memublikasikan bukti yang memuat data pribadi ke grup terbuka. Tanyakan apakah transaksi sudah ditemukan sebelum membuat pembayaran baru."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Simpan bukti yang diperlukan",
+        "paragraphs": [
+          "Bila bukti pembayaran tersedia di portal, unduh dan simpan menurut siswa serta periode. Bukti dari bank juga berguna untuk penelusuran jika ada perbedaan status. Keduanya membantu menjelaskan pembayaran, tetapi perubahan status resmi tetap perlu mengikuti hasil pemeriksaan transaksi.",
+          "Gunakan perangkat pribadi bila memungkinkan. Pada komputer bersama, keluar dari akun setelah selesai dan jangan menyimpan kata sandi. Kebiasaan sederhana ini membantu mencegah orang lain membuka informasi anak atau tagihan keluarga."
+        ]
+      }
+    ],
+    "checklist": [
+      "Nama siswa, kelas, dan periode sesuai.",
+      "Pokok, biaya layanan, dan total sudah dibaca.",
+      "Nomor pembayaran berasal dari alur resmi.",
+      "Riwayat bank diperiksa sebelum mengulang pembayaran.",
+      "Bukti disimpan tanpa dibagikan secara terbuka."
+    ]
+  },
+  {
+    "slug": "mengelola-izin-dan-sakit-siswa",
+    "title": "Mengelola Izin dan Sakit Siswa dengan Catatan yang Rapi",
+    "description": "Panduan menyampaikan permohonan, menyiapkan lampiran seperlunya, dan mencocokkan izin dengan catatan kehadiran.",
+    "category": "Administrasi sekolah",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Bedakan permohonan dan persetujuan",
+        "paragraphs": [
+          "Permohonan izin adalah informasi yang diajukan wali. Persetujuan merupakan hasil pemeriksaan oleh pihak sekolah sesuai aturan yang berlaku di sekolah tersebut. Keduanya perlu dibedakan agar pengiriman formulir tidak langsung dianggap sebagai persetujuan.",
+          "Sekolah sebaiknya menjelaskan siapa yang memeriksa permohonan, bagaimana wali mengetahui hasilnya, dan apa yang dilakukan jika ada koreksi. Dengan alur yang jelas, wali kelas tidak perlu menebak apakah pesan sudah ditindaklanjuti oleh petugas lain."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Sampaikan informasi yang cukup",
+        "paragraphs": [
+          "Cantumkan identitas siswa, kelas, tanggal tidak hadir, jenis permohonan, dan keterangan singkat yang relevan. Jika tidak hadir lebih dari satu hari, pastikan rentang tanggal jelas. Hindari menulis tanggal hanya sebagai hari ini karena permohonan dapat diperiksa pada hari berikutnya.",
+          "Keterangan tidak perlu memuat cerita pribadi yang tidak berkaitan dengan ketidakhadiran. Untuk sakit, ikuti kebutuhan administrasi sekolah tanpa menambahkan informasi kesehatan berlebihan. Panduan ini membahas pencatatan sekolah dan tidak memberikan penilaian kondisi kesehatan siswa."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Siapkan lampiran hanya jika diperlukan",
+        "paragraphs": [
+          "Periksa ketentuan sekolah mengenai surat atau dokumen pendukung. Jika lampiran diminta, gunakan foto atau PDF yang terbaca, tidak terpotong, dan sesuai dengan tanggal permohonan. Jangan mengunggah dokumen milik orang lain atau seluruh riwayat kesehatan jika yang dibutuhkan hanya satu surat.",
+          "Beri nama berkas yang sederhana dan pastikan jenis serta ukuran berkas sesuai petunjuk formulir. Bila unggahan gagal, periksa pesan kesalahan dan coba berkas yang sesuai ketentuan. Hindari mengirim formulir berkali-kali tanpa mengecek apakah permohonan sebelumnya sudah tersimpan."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Periksa dokumen secara terbatas",
+        "paragraphs": [
+          "Wali kelas atau petugas yang ditunjuk memeriksa kesesuaian identitas, tanggal, dan kebutuhan administrasi. Jika ada kekurangan, beri keterangan yang spesifik, misalnya tanggal pada surat belum terlihat, bukan penolakan tanpa penjelasan.",
+          "Lampiran izin dapat memuat informasi sensitif. Akses sebaiknya diberikan hanya kepada petugas yang memerlukan. Rekap kehadiran umum cukup menunjukkan status izin atau sakit tanpa menampilkan isi surat, diagnosis, nomor kontak, atau dokumen lengkap."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Cocokkan dengan absensi harian",
+        "paragraphs": [
+          "Setelah permohonan diputuskan, cocokkan tanggalnya dengan catatan absensi. Jika siswa sudah tercatat hadir pada sebagian hari, jangan mengganti seluruh rentang secara otomatis tanpa pemeriksaan. Perhatikan pula hari libur yang tidak memerlukan pencatatan tidak hadir.",
+          "Jika terjadi perubahan, simpan alasan dan petugas yang memprosesnya. Catatan ini membantu menjelaskan mengapa status yang semula belum dikonfirmasi menjadi izin atau sakit. Perubahan tersebut sebaiknya dapat ditelusuri saat rekap bulanan diperiksa."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Tutup alur dengan pemberitahuan yang jelas",
+        "paragraphs": [
+          "Wali perlu mengetahui apakah permohonan diterima, perlu diperbaiki, atau belum diperiksa. Gunakan pesan singkat yang menyebut permohonan terkait tanpa menyebarkan isi dokumen. Sediakan kanal untuk klarifikasi jika tanggal atau identitas ternyata keliru.",
+          "Sekolah juga perlu menentukan tempat penyimpanan lampiran dan aturan peninjauannya. Jangan menyimpan salinan di banyak grup atau perangkat pribadi tanpa keperluan. Tujuannya adalah membantu administrasi kehadiran sambil menjaga informasi keluarga tetap terbatas."
+        ]
+      }
+    ],
+    "checklist": [
+      "Tanggal dan siswa teridentifikasi jelas.",
+      "Lampiran hanya berisi dokumen yang diperlukan.",
+      "Status diajukan dibedakan dari disetujui.",
+      "Absensi dicocokkan setelah pemeriksaan.",
+      "Surat tidak dibagikan ke grup umum."
+    ]
+  },
+  {
+    "slug": "menyusun-jadwal-pelajaran-mingguan",
+    "title": "Menyusun Jadwal Pelajaran Mingguan agar Tidak Bertabrakan",
+    "description": "Urutan menyiapkan kelas, guru, ruang, jam belajar, dan pemeriksaan jadwal sebelum dibagikan kepada wali.",
+    "category": "Kegiatan sekolah",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Siapkan data sebelum mengisi jadwal",
+        "paragraphs": [
+          "Mulai dari daftar kelas, mata pelajaran, guru pengampu, ruang, dan jam belajar. Gunakan penamaan yang konsisten agar kelas yang sama tidak tercatat sebagai dua kelas berbeda. Pastikan guru yang dipilih masih aktif dan memiliki penugasan yang sesuai.",
+          "Tentukan periode berlakunya jadwal. Jadwal semester lalu dapat menjadi acuan, tetapi jangan langsung dipakai tanpa pemeriksaan. Perubahan kelas, guru, atau ruang dapat membuat jadwal lama tidak lagi cocok meskipun nama mata pelajarannya sama."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Tentukan sesi, istirahat, dan pergantian kegiatan",
+        "paragraphs": [
+          "Susun jam mulai serta selesai untuk setiap sesi. Sisakan waktu istirahat dan perpindahan kegiatan sesuai kebutuhan sekolah. Pelajaran di laboratorium, kegiatan bersama, dan upacara dapat memerlukan pola waktu yang berbeda dari sesi kelas biasa.",
+          "Gunakan format waktu yang konsisten. Misalnya, 07.00–08.00 untuk satu sesi. Jangan mencampur jam selesai dengan durasi karena petugas berikutnya dapat menafsirkannya berbeda. Periksa juga apakah ada sesi yang dimulai sebelum sesi sebelumnya selesai."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Periksa benturan dari tiga sisi",
+        "paragraphs": [
+          "Pertama, satu kelas tidak seharusnya memiliki dua pelajaran pada waktu yang sama. Kedua, seorang guru tidak dapat mengajar dua kelas di lokasi berbeda pada sesi yang bertabrakan. Ketiga, ruang khusus tidak dapat dipakai bersamaan oleh dua kegiatan jika kapasitasnya tidak memungkinkan.",
+          "Sebagai contoh simulasi, kelas 7A memakai laboratorium pukul 08.00–09.00. Menempatkan kelas 7B di ruang yang sama pukul 08.30–09.30 membuat benturan selama 30 menit. Periksa rentang waktu, bukan hanya apakah jam mulainya sama."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Pastikan hari tampil sama di semua layar",
+        "paragraphs": [
+          "Setelah jadwal disimpan, cocokkan tampilan sekolah dengan portal wali. Pelajaran yang disusun untuk Senin harus tetap tampil pada Senin. Jangan hanya memeriksa nama pelajaran; lihat hari, waktu, kelas, guru, dan ruangnya.",
+          "Lakukan pemeriksaan menggunakan satu contoh kelas sebelum menyalin pola ke seluruh sekolah. Jika sistem memakai pengaturan zona waktu sekolah, pastikan pengaturannya sesuai. Ketidaksesuaian hari atau jam perlu diperbaiki pada sumbernya, bukan ditutup dengan mengganti nama hari secara manual di satu layar."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Kelola perubahan tanpa membingungkan wali",
+        "paragraphs": [
+          "Tentukan siapa yang boleh mengubah jadwal dan siapa yang memeriksanya. Saat ada guru pengganti, jelaskan apakah perubahan hanya berlaku untuk satu pertemuan atau seluruh periode. Perbedaan ini membantu mencegah jadwal tetap berubah karena pergantian sementara.",
+          "Untuk libur atau kegiatan khusus, gunakan pengaturan yang memang disediakan bagi tanggal tersebut. Menghapus jadwal mingguan untuk mengosongkan satu hari dapat berdampak pada minggu berikutnya. Setelah perubahan, periksa kembali tampilan siswa dan informasi yang dibagikan."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Terbitkan versi yang mudah dikenali",
+        "paragraphs": [
+          "Sebelum dibagikan, beri keterangan tanggal mulai berlaku. Hindari mengirim beberapa gambar jadwal dengan judul yang sama tanpa menjelaskan mana yang terbaru. Jika menggunakan portal, arahkan wali memeriksa sumber yang sama agar tidak bergantung pada tangkapan layar lama.",
+          "Simpan catatan perubahan yang penting, misalnya pergantian jam atau ruang. Setelah satu minggu berjalan, kumpulkan kendala guru dan kelas untuk perbaikan berikutnya. Jadwal yang baik bukan hanya penuh, tetapi dapat dijalankan dan dipahami oleh pengguna."
+        ]
+      }
+    ],
+    "checklist": [
+      "Guru, kelas, ruang, dan periode sudah benar.",
+      "Waktu belajar dan istirahat tidak bertabrakan.",
+      "Hari serta jam di portal wali sesuai sumber sekolah.",
+      "Perubahan sementara tidak mengganti jadwal tetap tanpa sengaja.",
+      "Versi yang dibagikan memiliki tanggal berlaku."
+    ]
+  },
+  {
+    "slug": "kebiasaan-menjaga-data-siswa",
+    "title": "Kebiasaan Sederhana untuk Menjaga Data Siswa di Sekolah",
+    "description": "Langkah praktis mengatur akses akun, berbagi laporan, dan menangani lampiran tanpa menyebarkan data siswa secara berlebihan.",
+    "category": "Keamanan penggunaan",
+    "publishedAt": "2026-11-18",
+    "author": "Tim ATSkolla",
+    "sections": [
+      {
+        "id": "bagian-1",
+        "heading": "Kenali informasi yang perlu dibatasi",
+        "paragraphs": [
+          "Data siswa bukan hanya nama. Nomor identitas, nomor telepon wali, riwayat kehadiran, tagihan, dan lampiran izin juga perlu diperhatikan. Jika beberapa informasi digabungkan, seseorang dapat mengetahui lebih banyak tentang keluarga daripada yang diperlukan untuk suatu kegiatan.",
+          "Mulailah dengan mencatat data apa yang dikumpulkan dan untuk keperluan apa. Jika sebuah formulir tidak membutuhkan nomor identitas tambahan atau dokumen lengkap, jangan meminta data tersebut sekadar karena kolomnya tersedia. Pengumpulan yang lebih terarah membantu petugas mengelola informasi dengan lebih jelas."
+        ]
+      },
+      {
+        "id": "bagian-2",
+        "heading": "Gunakan akun sesuai tugas",
+        "paragraphs": [
+          "Admin, bendahara, guru, dan wali murid memiliki kebutuhan yang berbeda. Bendahara memerlukan informasi pembayaran, sedangkan wali cukup melihat informasi anaknya sendiri. Hindari membagikan satu akun admin kepada banyak petugas karena tindakan masing-masing orang menjadi sulit ditelusuri.",
+          "Saat ada petugas pindah tugas atau tidak lagi bekerja di sekolah, tinjau aksesnya. Jangan hanya menghapus namanya dari grup pesan. Periksa akun aplikasi, alamat email pemulihan, perangkat yang masih digunakan, dan salinan laporan yang pernah dibagikan."
+        ]
+      },
+      {
+        "id": "bagian-3",
+        "heading": "Jaga kata sandi dan kode verifikasi",
+        "paragraphs": [
+          "Gunakan kata sandi yang sulit ditebak dan berbeda dari layanan lain. Jangan menyimpan daftar kata sandi dalam grup percakapan atau menempelkan akses admin pada perangkat umum. Jika tersedia, gunakan pengelola kata sandi dan pengamanan tambahan yang sesuai dengan layanan.",
+          "Kode verifikasi adalah alat untuk membuktikan akses pemilik akun, bukan informasi yang perlu dikirim kepada petugas bantuan. Jika ada permintaan kode atau kata sandi melalui pesan mendadak, hentikan dahulu dan konfirmasi lewat kanal resmi yang sudah dikenal."
+        ]
+      },
+      {
+        "id": "bagian-4",
+        "heading": "Periksa laporan sebelum dibagikan",
+        "paragraphs": [
+          "Pilih kolom yang memang diperlukan penerima. Laporan ringkas untuk rapat tidak selalu memerlukan nomor telepon wali atau rincian setiap transaksi siswa. Surat sakit dan dokumen pribadi sebaiknya tidak ditempelkan pada laporan kehadiran yang dibagikan luas.",
+          "Gunakan contoh rekaan saat membuat materi promosi atau pelatihan publik. Bila tangkapan layar aplikasi menampilkan data nyata, periksa apakah identitas, kontak, nomor kartu, dan informasi pembayaran sudah disamarkan. Jangan menganggap sebuah gambar aman hanya karena ukurannya kecil."
+        ]
+      },
+      {
+        "id": "bagian-5",
+        "heading": "Pisahkan penyimpanan kerja dan salinan cadangan",
+        "paragraphs": [
+          "Tentukan tempat penyimpanan resmi agar laporan tidak tersebar tanpa kendali di perangkat pribadi. Beri nama berkas yang jelas dan batasi tautan unduhan. Saat seseorang tidak lagi memerlukan berkas, tinjau kembali apakah aksesnya masih sesuai.",
+          "Salinan cadangan membantu pemulihan ketika terjadi kerusakan atau kesalahan penghapusan, tetapi salinan itu juga memuat data yang perlu dilindungi. Simpan dengan akses terbatas dan lakukan pemeriksaan pemulihan sesuai prosedur sekolah. Jangan hanya mengandalkan keberadaan tombol backup tanpa memastikan hasilnya dapat digunakan."
+        ]
+      },
+      {
+        "id": "bagian-6",
+        "heading": "Buat langkah penanganan jika terjadi kesalahan",
+        "paragraphs": [
+          "Jika laporan terkirim ke penerima yang keliru, catat informasi apa yang dibagikan, kapan, dan kepada siapa. Hubungi petugas yang bertanggung jawab untuk membatasi akses dan menilai tindakan berikutnya. Menghapus pesan saja belum tentu menarik semua salinan yang sudah diterima.",
+          "Sekolah perlu memiliki petunjuk penggunaan data yang mudah dipahami serta saluran pertanyaan bagi wali. Panduan ini berisi kebiasaan operasional umum, bukan pengganti kebijakan sekolah atau penilaian hukum untuk suatu kejadian. Tinjau praktik secara berkala agar sesuai dengan layanan yang benar-benar digunakan."
+        ]
+      }
+    ],
+    "checklist": [
+      "Akses mengikuti tugas masing-masing pengguna.",
+      "Kata sandi dan kode verifikasi tidak dibagikan.",
+      "Laporan hanya memuat kolom yang diperlukan.",
+      "Materi publik memakai data rekaan atau identitas tersamarkan.",
+      "Salinan cadangan dan tautan berkas ikut dibatasi aksesnya."
+    ]
+  }
+]

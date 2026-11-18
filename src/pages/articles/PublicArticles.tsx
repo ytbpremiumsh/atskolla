@@ -1,0 +1,20 @@
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+import articles from "@/content/articles.json";
+import "./articles.css";
+
+function Shell({children}:{children:React.ReactNode}) {
+ return <div className="pc-page"><header className="pc-header"><div className="pc-wrap"><a className="pc-brand" href="/">ATSkolla.</a><nav className="pc-nav" aria-label="Navigasi utama"><a href="/">Beranda</a><a href="/artikel">Artikel</a><a href="/panduan">Panduan</a><a href="/kontak">Kontak</a></nav></div></header>{children}<footer className="pc-footer"><div className="pc-wrap"><nav><a href="/tentang">Tentang ATSkolla</a><a href="/kebijakan-privasi">Kebijakan privasi</a><a href="/syarat-ketentuan">Syarat penggunaan</a><a href="/kontak">Kontak</a></nav><p>ATSkolla dikelola oleh CV Prestasi Kita Bersama. © 2026 ATSkolla.</p></div></footer></div>;
+}
+export default function PublicArticles(){
+ const {slug}=useParams();const article=slug?articles.find(a=>a.slug===slug):null;
+ useEffect(()=>{
+  document.title=(article?.title||(slug?"Artikel tidak ditemukan":"Artikel & Panduan Sekolah"))+" — ATSkolla";
+  let canonical=document.querySelector('link[rel="canonical"]');if(!canonical){canonical=document.createElement('link');canonical.setAttribute('rel','canonical');document.head.append(canonical);}canonical.setAttribute('href',`https://www.atskolla.com/artikel${article?'/'+article.slug:''}`);
+  const meta=document.querySelector('meta[name="description"]');meta?.setAttribute('content',article?.description||"Panduan praktis untuk administrasi sekolah, pembayaran, dan wali murid.");
+  window.scrollTo(0,0);
+ },[article,slug]);
+ if(slug&&!article)return <Shell><main className="pc-wrap pc-hero"><h1>Artikel tidak ditemukan</h1><p>Periksa kembali alamatnya atau <a href="/artikel">buka daftar artikel</a>.</p></main></Shell>;
+ if(!article)return <Shell><main><section className="pc-hero"><div className="pc-wrap"><span className="pc-eyebrow">Ruang belajar ATSkolla</span><h1>Informasi yang membantu sekolah dan orang tua.</h1><p className="pc-lead">Panduan praktis untuk merapikan administrasi, memahami pembayaran, dan mengikuti kegiatan anak. Bisa dibaca tanpa masuk akun.</p></div></section><div className="pc-wrap"><div className="pc-grid">{articles.map((a,i)=><article className="pc-card" key={a.slug}><div className="pc-mark" aria-hidden="true">{String(i+1).padStart(2,'0')}</div><span className="pc-tag">{a.category}</span><h2><a href={'/artikel/'+a.slug}>{a.title}</a></h2><p>{a.description}</p><a className="pc-read" href={'/artikel/'+a.slug}>Baca panduan →</a></article>)}</div></div></main></Shell>;
+ return <Shell><main><section className="pc-hero"><div className="pc-wrap"><nav className="pc-breadcrumb"><a href="/">Beranda</a> / <a href="/artikel">Artikel</a> / {article.category}</nav><span className="pc-eyebrow">{article.category}</span><h1>{article.title}</h1><p className="pc-lead">{article.description}</p><div className="pc-meta"><span>{article.author}</span><time dateTime={article.publishedAt}>18 November 2026</time></div></div></section><div className="pc-wrap pc-layout"><article className="pc-article">{article.sections.map(s=><section key={s.id}><h2 id={s.id}>{s.heading}</h2>{s.paragraphs.map((p,i)=><p key={i}>{p}</p>)}</section>)}<section className="pc-checklist"><h2>Periksa sebelum selesai</h2><ul>{article.checklist.map(c=><li key={c}>{c}</li>)}</ul></section><p className="pc-note">Contoh dalam panduan ini bersifat ilustratif. Ketentuan administrasi dan ketersediaan fitur mengikuti pengaturan sekolah. Lihat <a href="/panduan">panduan layanan</a> atau <a href="/kontak">hubungi kami</a> untuk bantuan.</p><section className="pc-related"><h2>Bacaan berikutnya</h2>{articles.filter(a=>a.slug!==article.slug).slice(0,3).map(a=><a key={a.slug} href={'/artikel/'+a.slug}>{a.title}</a>)}</section></article><aside className="pc-aside"><h2>Dalam panduan ini</h2><ol>{article.sections.map(s=><li key={s.id}><a href={'#'+s.id}>{s.heading}</a></li>)}</ol></aside></div></main></Shell>;
+}

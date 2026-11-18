@@ -9,23 +9,22 @@ import {
 const ATSKOLLA_LOGO_URL = "https://www.atskolla.com/images/logo-atskolla.png";
 
 const VALUES = [
-  { icon: ShieldCheck, title: "Terpercaya", desc: "Data terenkripsi, backup harian, dan audit log lengkap untuk keamanan sekolah." },
-  { icon: HeartHandshake, title: "Berpihak pada Sekolah", desc: "Platform inti gratis, tanpa komitmen jangka panjang, dan support tanpa biaya tambahan." },
-  { icon: Zap, title: "Cepat & Mudah", desc: "Implementasi 1–3 hari kerja, antarmuka sederhana, siap dipakai semua peran sekolah." },
+  { icon: ShieldCheck, title: "Terpercaya", desc: "Akses disesuaikan dengan sekolah dan peran pengguna agar informasi digunakan sesuai kebutuhan." },
+  { icon: HeartHandshake, title: "Berpihak pada Sekolah", desc: "Penggunaan tanpa biaya langganan sekolah mengikuti ketentuan SPP Online yang dijelaskan sebelum pendaftaran." },
+  { icon: Zap, title: "Cepat & Mudah", desc: "Panduan persiapan membantu sekolah melengkapi data dan akun secara bertahap." },
   { icon: Sparkles, title: "Terus Berkembang", desc: "Fitur baru dirilis rutin berdasarkan masukan sekolah di seluruh Indonesia." },
 ];
 
 const STATS = [
-  { icon: Building2, value: "500+", label: "Sekolah Aktif" },
-  { icon: GraduationCap, value: "120K+", label: "Siswa Terlayani" },
-  { icon: MapPin, value: "34", label: "Provinsi" },
+ {icon:Building2,value:"Sekolah",label:"Administrasi terpusat"},
+ {icon:GraduationCap,value:"Siswa",label:"Informasi sesuai kebutuhan"},
+ {icon:MapPin,value:"Online",label:"Akses web dan Android"},
 ];
-
 const MILESTONES = [
-  { year: "2023", title: "Awal Perjalanan", desc: "ATSkolla lahir dari kebutuhan langsung mengelola absensi dan SPP sekolah." },
-  { year: "2024", title: "Ekspansi Nasional", desc: "Digunakan oleh ratusan sekolah dari SD, SMP, SMA, hingga pesantren dan madrasah." },
-  { year: "2025", title: "Platform Terpadu", desc: "Modul akademik, keuangan, dan operasional menyatu dalam satu ekosistem." },
-  { year: "2026", title: "Inovasi Berkelanjutan", desc: "Fokus pada AI, otomasi, dan pengalaman terbaik untuk sekolah Indonesia." },
+ {year:"01",title:"Persiapan data",desc:"Lengkapi profil sekolah, siswa, kelas, dan akun petugas."},
+ {year:"02",title:"Kegiatan sekolah",desc:"Atur jadwal dan catat kehadiran sesuai kebutuhan sekolah."},
+ {year:"03",title:"Pembayaran",desc:"Bendahara menyiapkan rekening dan mengelola tagihan online."},
+ {year:"04",title:"Informasi bersama",desc:"Wali memantau informasi anak melalui portal yang terhubung."},
 ];
 
 export default function TentangKami() {
@@ -40,7 +39,7 @@ export default function TentangKami() {
       }
       el.setAttribute("content", content);
     };
-    const desc = "Kenali ATSkolla — platform digital sekolah terintegrasi yang membantu ratusan sekolah di Indonesia mengelola absensi, SPP, dan operasional harian.";
+    const desc = "Kenali ATSkolla, layanan pengelolaan absensi, SPP, jadwal, dan informasi sekolah.";
     setMeta("description", desc);
     setMeta("og:title", "Tentang Kami — ATSkolla", "property");
     setMeta("og:description", desc, "property");
@@ -91,7 +90,7 @@ export default function TentangKami() {
             Kami membangun <span className="text-[#5B6CF9]">sekolah digital</span> untuk Indonesia.
           </h1>
           <p className="mt-5 text-base md:text-lg text-[#0b1020]/65 max-w-2xl mx-auto leading-relaxed">
-            ATSkolla adalah platform digital sekolah terintegrasi — dibangun oleh tim yang paham langsung tantangan operasional sekolah di Indonesia.
+            ATSkolla membantu sekolah mengelola kehadiran, pembayaran, jadwal, dan informasi wali murid dalam satu layanan.
           </p>
         </div>
       </section>
@@ -104,13 +103,13 @@ export default function TentangKami() {
               Cerita di balik <span className="text-[#5B6CF9]">ATSkolla</span>.
             </h2>
             <p className="mt-5 text-[#0b1020]/70 leading-relaxed">
-              ATSkolla lahir dari pengalaman langsung mengelola sekolah — mulai dari absensi manual yang mudah hilang, tagihan SPP yang menumpuk, hingga laporan keuangan yang tersebar di banyak file Excel.
+              Administrasi sekolah melibatkan banyak catatan: kehadiran harian, tagihan, jadwal, dan komunikasi dengan orang tua. ATSkolla menyediakan tempat untuk merapikan informasi tersebut agar lebih mudah diperiksa.
             </p>
             <p className="mt-4 text-[#0b1020]/70 leading-relaxed">
-              Kami membangun satu platform terpadu yang memudahkan kepala sekolah, bendahara, guru, dan wali murid bekerja dalam satu sistem — tanpa biaya langganan bulanan, tanpa komitmen jangka panjang.
+              Kepala sekolah, bendahara, guru, dan wali murid memperoleh akses sesuai tugasnya. Penggunaan tanpa biaya langganan sekolah mengikuti ketentuan penggunaan SPP Online secara aktif.
             </p>
             <p className="mt-4 text-[#0b1020]/70 leading-relaxed">
-              Hari ini, ATSkolla dipercaya oleh ratusan sekolah di seluruh Indonesia — dari SD, SMP, SMA, hingga pesantren dan madrasah.
+              Layanan dirancang untuk membantu berbagai jenjang pendidikan. Sekolah dapat menyesuaikan data, akun petugas, metode pembayaran, dan kegiatan sesuai kebutuhan.
             </p>
           </div>
 
@@ -184,7 +183,7 @@ export default function TentangKami() {
         <div className="max-w-6xl mx-auto px-6 lg:px-10">
           <div className="max-w-2xl mb-10">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-[#0b1020] tracking-tight leading-[1.1]">
-              Perjalanan <span className="text-[#5B6CF9]">ATSkolla</span>.
+              Mulai menggunakan <span className="text-[#5B6CF9]">ATSkolla</span>.
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -209,7 +208,7 @@ export default function TentangKami() {
             Siap bergabung bersama <span className="text-[#5B6CF9]">ratusan sekolah</span> lainnya?
           </h2>
           <p className="mt-5 text-[#0b1020]/65 max-w-xl mx-auto">
-            Aktifkan ATSkolla hari ini — tanpa biaya langganan, tanpa komitmen jangka panjang.
+            Kenali fitur dan panduan ATSkolla, lalu siapkan penggunaannya sesuai kebutuhan sekolah.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Link
@@ -236,6 +235,7 @@ export default function TentangKami() {
             <span className="text-xs text-[#0b1020]/50">© {new Date().getFullYear()} ATSkolla</span>
           </div>
           <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-[#0b1020]/60">
+            <a href="/artikel">Artikel & Panduan</a>
             <Link to="/" className="hover:text-[#5B6CF9]">Beranda</Link>
             <Link to="/faq" className="hover:text-[#5B6CF9]">FAQ</Link>
             <Link to="/syarat-ketentuan" className="hover:text-[#5B6CF9]">Syarat</Link>

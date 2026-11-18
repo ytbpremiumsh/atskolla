@@ -25,6 +25,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 // All other pages lazy-loaded for code splitting
+const PublicArticles = lazy(() => import("./pages/articles/PublicArticles"));
 const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Monitoring = lazy(() => import("./pages/Monitoring"));
@@ -232,6 +233,8 @@ function AppRoutes() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/" element={<RootRoute />} />
+        <Route path="/artikel" element={<PublicArticles />} />
+        <Route path="/artikel/:slug" element={<PublicArticles />} />
         <Route path="/panduan" element={<Panduan />} />
         <Route path="/panduan/:role" element={<PanduanDetail />} />
         <Route path="/login" element={<Login forcedMode="parent" />} />
