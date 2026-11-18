@@ -1,15 +1,15 @@
 [
   {
     "slug": "cara-membuat-rekap-absensi-siswa",
-    "title": "Cara Membuat Rekap Absensi Siswa yang Mudah Diperiksa",
-    "description": "Langkah menyiapkan daftar siswa, mencatat kehadiran, menangani koreksi, dan menyusun rekap bulanan tanpa hitungan ganda.",
+    "title": "Cara Membuat Rekap Absensi Siswa yang Rapi dan Akurat",
+    "description": "Pelajari cara membuat rekap absensi siswa, membedakan status kehadiran, memeriksa data ganda, dan menghitung laporan bulanan dengan contoh sederhana.",
     "category": "Administrasi sekolah",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Mulai dari pertanyaan yang ingin dijawab",
+        "heading": "Mulai rekap absensi siswa dengan periode yang jelas",
         "paragraphs": [
           "Rekap absensi membantu sekolah mengetahui siapa yang hadir, siapa yang perlu dikonfirmasi, dan apakah ada ketidakhadiran berulang. Rekap yang baik tidak hanya berisi jumlah. Wali kelas perlu dapat menelusuri dari mana angka tersebut berasal.",
           "Tentukan lebih dahulu periode, kelas, dan jenis kehadiran yang dihitung. Absensi masuk sekolah berbeda dengan kehadiran pada setiap mata pelajaran. Menggabungkan keduanya tanpa penjelasan dapat membuat satu siswa terlihat tidak hadir beberapa kali pada hari yang sama."
@@ -62,19 +62,31 @@
       "Catatan ganda dan izin telah diperiksa.",
       "Koreksi memiliki alasan dan penanggung jawab.",
       "Laporan dibagikan hanya kepada pihak yang memerlukan."
+    ],
+    "introduction": "Rekap absensi siswa membantu sekolah melihat kehadiran selama satu periode. Agar laporan dapat dipercaya, gunakan daftar siswa yang benar, status yang konsisten, dan pemeriksaan sebelum laporan dibagikan. Berikut langkah membuat rekap absensi yang mudah diperiksa.",
+    "image": "/images/articles/absensi.webp",
+    "imageAlt": "Ilustrasi buku rekap absensi siswa dengan tanda kehadiran dan pensil",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Bagaimana cara menghitung persentase kehadiran siswa?",
+        "answer": "Bagi jumlah hari hadir dengan jumlah hari belajar yang dijadwalkan untuk siswa tersebut, lalu kalikan 100%. Misalnya 18 hari hadir dari 20 hari belajar menghasilkan 90%. Jelaskan aturan penghitungan izin dan sakit agar laporan tidak ditafsirkan berbeda."
+      }
     ]
   },
   {
     "slug": "mengelola-tagihan-spp-dan-cicilan",
-    "title": "Mengelola Tagihan SPP dan Cicilan Tanpa Salah Menghitung Sisa",
-    "description": "Panduan membedakan nilai tagihan, cicilan yang sudah valid, biaya layanan, dan dana yang diterima sekolah.",
+    "title": "Cara Mengelola Tagihan SPP dan Menghitung Sisa Cicilan",
+    "description": "Panduan mengelola tagihan SPP dan cicilan: hitung sisa pembayaran yang valid, pisahkan biaya layanan, dan cocokkan transaksi dengan pencairan dana sekolah.",
     "category": "Keuangan sekolah",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Pisahkan tagihan dari transaksi pembayaran",
+        "heading": "Pisahkan tagihan SPP dari transaksi pembayaran",
         "paragraphs": [
           "Tagihan menunjukkan kewajiban yang perlu dibayar. Transaksi mencatat pembayaran yang dilakukan untuk kewajiban tersebut. Satu tagihan dapat memiliki beberapa transaksi jika sekolah mengizinkan cicilan. Karena itu, jangan menjumlahkan nilai tagihan berulang kali untuk setiap pembayaran.",
           "Sebelum menerbitkan tagihan, pastikan identitas siswa, periode, jenis pembayaran, dan nominal benar. Tagihan SPP bulanan sebaiknya dibedakan dari daftar ulang atau kegiatan sekolah. Penamaan yang jelas membantu wali murid memahami tujuan pembayaran tanpa harus menghubungi bendahara."
@@ -127,19 +139,31 @@
       "Biaya layanan dipisahkan dari pokok tagihan.",
       "Status lunas dan pencairan diperiksa terpisah.",
       "Pengingat memakai sisa tagihan terbaru."
+    ],
+    "introduction": "Mengelola tagihan SPP dimulai dengan membedakan nilai tagihan, pembayaran yang sudah dikonfirmasi, dan sisa yang belum dibayar. Catatan yang terpisah membantu bendahara menghindari tagihan ganda dan menjelaskan cicilan kepada wali murid.",
+    "image": "/images/articles/spp.webp",
+    "imageAlt": "Ilustrasi tagihan SPP, kalkulator, dan catatan pembayaran cicilan",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Bagaimana cara menghitung sisa tagihan SPP?",
+        "answer": "Kurangi pokok tagihan dengan jumlah pembayaran pokok yang sudah valid. Sebagai simulasi, tagihan Rp1.000.000 yang telah dibayar dua kali masing-masing Rp10.000 menyisakan Rp980.000. Biaya layanan bukan cicilan pokok dan tidak digunakan untuk mengurangi sisa tagihan."
+      }
     ]
   },
   {
     "slug": "panduan-wali-murid-membayar-tagihan-online",
-    "title": "Panduan Wali Murid Membayar Tagihan Sekolah secara Online",
-    "description": "Apa yang perlu diperiksa sebelum membayar, saat memilih metode, dan ketika status pembayaran belum berubah.",
+    "title": "Cara Membayar SPP Online: Panduan untuk Wali Murid",
+    "description": "Ikuti cara membayar SPP online: periksa sisa tagihan, pilih metode yang tersedia, cek total pembayaran, lalu simpan bukti dan pantau status transaksi.",
     "category": "Panduan wali murid",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Pastikan sekolah dan siswa yang dipilih sudah benar",
+        "heading": "Periksa identitas sekolah dan siswa sebelum membayar SPP",
         "paragraphs": [
           "Buka portal melalui tautan resmi yang diberikan sekolah. Periksa alamat situs sebelum memasukkan data akun, terutama jika tautan diterima dari pesan yang diteruskan. Jangan memberikan kata sandi atau kode verifikasi kepada orang lain yang mengaku membantu pembayaran.",
           "Jika satu akun memiliki beberapa anak, pilih anak yang sesuai sebelum membuka tagihan. Cocokkan nama, kelas, jenis pembayaran, dan periode. Nama tagihan yang mirip belum tentu merujuk pada kewajiban yang sama, misalnya SPP bulan ini dan biaya daftar ulang tahun ajaran berikutnya."
@@ -192,19 +216,31 @@
       "Nomor pembayaran berasal dari alur resmi.",
       "Riwayat bank diperiksa sebelum mengulang pembayaran.",
       "Bukti disimpan tanpa dibagikan secara terbuka."
+    ],
+    "introduction": "Untuk membayar SPP online, pilih siswa dan tagihan yang benar, periksa jumlah yang masih harus dibayar, lalu ikuti petunjuk metode pembayaran. Panduan ini membantu wali memeriksa transaksi sejak sebelum membayar hingga statusnya dikonfirmasi.",
+    "image": "/images/articles/pembayaran.webp",
+    "imageAlt": "Ilustrasi pembayaran sekolah melalui ponsel dengan bukti konfirmasi",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Apa yang harus dilakukan jika sudah membayar tetapi status belum lunas?",
+        "answer": "Periksa status transaksi di aplikasi bank atau e-wallet dan cocokkan nomor referensinya. Simpan bukti pembayaran, lalu hubungi sekolah melalui kanal resmi jika status belum berubah. Jangan membayar ulang hanya karena halaman sebelumnya tertutup atau konfirmasi belum muncul."
+      }
     ]
   },
   {
     "slug": "mengelola-izin-dan-sakit-siswa",
-    "title": "Mengelola Izin dan Sakit Siswa dengan Catatan yang Rapi",
-    "description": "Panduan menyampaikan permohonan, menyiapkan lampiran seperlunya, dan mencocokkan izin dengan catatan kehadiran.",
+    "title": "Cara Mengajukan Izin dan Sakit Siswa beserta Lampiran",
+    "description": "Panduan izin dan sakit siswa: informasi yang perlu dikirim, cara menyiapkan lampiran PDF atau gambar, dan pemeriksaan status permohonan di sekolah.",
     "category": "Administrasi sekolah",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Bedakan permohonan dan persetujuan",
+        "heading": "Bedakan permohonan izin siswa dan persetujuan sekolah",
         "paragraphs": [
           "Permohonan izin adalah informasi yang diajukan wali. Persetujuan merupakan hasil pemeriksaan oleh pihak sekolah sesuai aturan yang berlaku di sekolah tersebut. Keduanya perlu dibedakan agar pengiriman formulir tidak langsung dianggap sebagai persetujuan.",
           "Sekolah sebaiknya menjelaskan siapa yang memeriksa permohonan, bagaimana wali mengetahui hasilnya, dan apa yang dilakukan jika ada koreksi. Dengan alur yang jelas, wali kelas tidak perlu menebak apakah pesan sudah ditindaklanjuti oleh petugas lain."
@@ -257,19 +293,31 @@
       "Status diajukan dibedakan dari disetujui.",
       "Absensi dicocokkan setelah pemeriksaan.",
       "Surat tidak dibagikan ke grup umum."
+    ],
+    "introduction": "Pengajuan izin dan sakit siswa perlu menyebutkan identitas, tanggal tidak hadir, dan alasan secukupnya. Lampiran hanya disertakan jika sekolah memerlukannya. Catatan permohonan dan keputusan sekolah kemudian dicocokkan dengan absensi agar status kehadiran tetap jelas.",
+    "image": "/images/articles/izin.webp",
+    "imageAlt": "Ilustrasi surat izin sakit siswa dengan dokumen lampiran",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Apa yang perlu diperiksa saat lampiran izin gagal diunggah?",
+        "answer": "Periksa jenis dan ukuran file sesuai batas yang tercantum pada formulir sekolah. Pastikan PDF dapat dibuka atau gambar terbaca, lalu coba kembali dengan koneksi yang stabil. Jika tetap gagal, hubungi sekolah melalui kanal resmi tanpa mengirim dokumen kesehatan ke grup umum."
+      }
     ]
   },
   {
     "slug": "menyusun-jadwal-pelajaran-mingguan",
-    "title": "Menyusun Jadwal Pelajaran Mingguan agar Tidak Bertabrakan",
-    "description": "Urutan menyiapkan kelas, guru, ruang, jam belajar, dan pemeriksaan jadwal sebelum dibagikan kepada wali.",
+    "title": "Cara Menyusun Jadwal Pelajaran Mingguan Tanpa Bentrok",
+    "description": "Pelajari cara menyusun jadwal pelajaran mingguan: atur sesi, guru, kelas dan ruang, periksa benturan, lalu bagikan perubahan jadwal dengan jelas.",
     "category": "Kegiatan sekolah",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Siapkan data sebelum mengisi jadwal",
+        "heading": "Siapkan data kelas, guru, dan ruang pelajaran",
         "paragraphs": [
           "Mulai dari daftar kelas, mata pelajaran, guru pengampu, ruang, dan jam belajar. Gunakan penamaan yang konsisten agar kelas yang sama tidak tercatat sebagai dua kelas berbeda. Pastikan guru yang dipilih masih aktif dan memiliki penugasan yang sesuai.",
           "Tentukan periode berlakunya jadwal. Jadwal semester lalu dapat menjadi acuan, tetapi jangan langsung dipakai tanpa pemeriksaan. Perubahan kelas, guru, atau ruang dapat membuat jadwal lama tidak lagi cocok meskipun nama mata pelajarannya sama."
@@ -322,19 +370,31 @@
       "Hari serta jam di portal wali sesuai sumber sekolah.",
       "Perubahan sementara tidak mengganti jadwal tetap tanpa sengaja.",
       "Versi yang dibagikan memiliki tanggal berlaku."
+    ],
+    "introduction": "Jadwal pelajaran mingguan yang rapi menghubungkan kelas, guru, ruang, dan waktu belajar dalam satu acuan. Sebelum jadwal dibagikan, periksa benturan dan pastikan hari serta jam tampil sama di semua media yang dipakai sekolah.",
+    "image": "/images/articles/jadwal.webp",
+    "imageAlt": "Ilustrasi jadwal pelajaran mingguan dengan jam dan buku",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Apa yang diperiksa agar jadwal pelajaran tidak bentrok?",
+        "answer": "Periksa apakah satu guru, kelas, atau ruang digunakan pada waktu yang bertumpang tindih. Dua sesi tetap dapat bentrok meskipun jam mulainya berbeda. Sebagai contoh, sesi 07.00–08.00 bertabrakan dengan sesi 07.30–08.30 jika memakai guru atau ruang yang sama."
+      }
     ]
   },
   {
     "slug": "kebiasaan-menjaga-data-siswa",
-    "title": "Kebiasaan Sederhana untuk Menjaga Data Siswa di Sekolah",
-    "description": "Langkah praktis mengatur akses akun, berbagi laporan, dan menangani lampiran tanpa menyebarkan data siswa secara berlebihan.",
+    "title": "Cara Menjaga Data Siswa dalam Administrasi Sekolah",
+    "description": "Panduan menjaga data siswa: batasi akses akun, lindungi kata sandi dan OTP, periksa laporan sebelum dibagikan, serta kelola lampiran secara hati-hati.",
     "category": "Keamanan penggunaan",
     "publishedAt": "2026-11-18",
     "author": "Tim ATSkolla",
     "sections": [
       {
         "id": "bagian-1",
-        "heading": "Kenali informasi yang perlu dibatasi",
+        "heading": "Kenali data siswa yang perlu dibatasi",
         "paragraphs": [
           "Data siswa bukan hanya nama. Nomor identitas, nomor telepon wali, riwayat kehadiran, tagihan, dan lampiran izin juga perlu diperhatikan. Jika beberapa informasi digabungkan, seseorang dapat mengetahui lebih banyak tentang keluarga daripada yang diperlukan untuk suatu kegiatan.",
           "Mulailah dengan mencatat data apa yang dikumpulkan dan untuk keperluan apa. Jika sebuah formulir tidak membutuhkan nomor identitas tambahan atau dokumen lengkap, jangan meminta data tersebut sekadar karena kolomnya tersedia. Pengumpulan yang lebih terarah membantu petugas mengelola informasi dengan lebih jelas."
@@ -387,6 +447,18 @@
       "Laporan hanya memuat kolom yang diperlukan.",
       "Materi publik memakai data rekaan atau identitas tersamarkan.",
       "Salinan cadangan dan tautan berkas ikut dibatasi aksesnya."
+    ],
+    "introduction": "Menjaga data siswa dimulai dari kebiasaan administrasi sehari-hari: memakai akun sesuai tugas, membatasi penerima laporan, dan menyimpan lampiran hanya ketika diperlukan. Langkah sederhana berikut membantu sekolah mengurangi penyebaran informasi yang tidak perlu.",
+    "image": "/images/articles/privasi.webp",
+    "imageAlt": "Ilustrasi kartu siswa yang dilindungi perisai dan kunci",
+    "imageWidth": 1200,
+    "imageHeight": 675,
+    "modifiedAt": "2026-11-18",
+    "questions": [
+      {
+        "question": "Apakah laporan siswa boleh dibagikan melalui grup umum?",
+        "answer": "Periksa kebutuhan dan penerimanya terlebih dahulu. Laporan yang memuat identitas lengkap, nomor kontak, rincian pembayaran, atau informasi kesehatan sebaiknya diberikan hanya kepada pihak yang berwenang. Untuk pengumuman umum, gunakan ringkasan yang tidak membuka data pribadi siswa."
+      }
     ]
   }
 ]

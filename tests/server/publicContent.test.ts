@@ -22,7 +22,16 @@ describe("artikel publik dan sitemap",()=>{
    expect(dom.window.document.querySelectorAll(".pc-article section h2").length).toBeGreaterThanOrEqual(6);
    expect(dom.window.document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe('https://www.atskolla.com/artikel/'+a.slug);
    expect(JSON.parse(dom.window.document.querySelector('script[type="application/ld+json"]')!.textContent!)["@type"]).toBe("Article");
-   expect(html).not.toContain('id="root"');dom.window.close();
+   expect(html).not.toContain('id="root"');
+   const image=dom.window.document.querySelector<HTMLImageElement>('.pc-cover img');
+   expect(image?.getAttribute('src')).toBe(a.image);expect(image?.alt).toBe(a.imageAlt);
+   expect(image?.getAttribute('width')).toBe('1200');expect(image?.getAttribute('height')).toBe('675');
+   expect(dom.window.document.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe('https://www.atskolla.com'+a.image);
+   const schema=JSON.parse(dom.window.document.querySelector('script[type="application/ld+json"]')!.textContent!);
+   expect(schema.image).toContain('https://www.atskolla.com'+a.image);expect(schema.dateModified).toBe(a.modifiedAt);
+   expect(dom.window.document.querySelector('.pc-intro')?.textContent).toBe(a.introduction);
+   expect(dom.window.document.querySelector('.pc-questions')?.textContent).toContain(a.questions[0].question);
+   expect(html).not.toContain('data-advertising-settings');dom.window.close();
   }
  });
  it("tautan artikel saling terhubung dan sitemap tidak memuat halaman pribadi",()=>{
@@ -40,20 +49,45 @@ describe("batas pemuatan iklan",()=>{
  it("tidak memuat iklan pada subdomain sekolah meskipun jalur artikel cocok",()=>{
   const dom=adPage('https://sekolah.atskolla.com/artikel/panduan');expect(dom.window.document.querySelector('#advertising-choice')).toBeNull();dom.window.close();
  });
- it("pilihan menolak tidak memuat skrip AdSense",()=>{
+ it("artikel memuat satu skrip tanpa banner kustom dan tanpa menyimpan izin",()=>{
   const dom=adPage('https://www.atskolla.com/artikel/panduan');
-  expect(dom.window.document.querySelector('#atskolla-adsense')).toBeNull();
-  dom.window.document.querySelector<HTMLButtonElement>('#advertising-choice button')!.click();
-  expect(dom.window.localStorage.getItem('atskolla-advertising-choice-v1')).toBe('deny');expect(dom.window.document.querySelector('#atskolla-adsense')).toBeNull();dom.window.close();
- });
- it("pilihan mengizinkan hanya memuat satu skrip dengan publisher yang benar",()=>{
-  const dom=adPage('https://www.atskolla.com/artikel/panduan');
-  dom.window.document.querySelectorAll<HTMLButtonElement>('#advertising-choice button')[1].click();
   dom.window.eval(adSource);
-  const script=dom.window.document.querySelector<HTMLScriptElement>('#atskolla-adsense');
-  expect(script?.src).toContain('client=ca-pub-0516573569377801');expect(script?.async).toBe(true);expect(dom.window.document.querySelectorAll('#atskolla-adsense')).toHaveLength(1);dom.window.close();
+  expect(dom.window.document.querySelector('#advertising-choice')).toBeNull();
+  expect(dom.window.localStorage.length).toBe(0);
+  expect(dom.window.document.querySelectorAll('#atskolla-adsense')).toHaveLength(1);
+  expect(dom.window.document.querySelector<HTMLScriptElement>('#atskolla-adsense')?.src).toContain('client=ca-pub-0516573569377801');dom.window.close();
  });
  it("index aplikasi memakai meta verifikasi, bukan skrip iklan global",async()=>{
   const html=await readFile(join(process.cwd(),'index.html'),'utf8');expect(html).toContain('google-adsense-account');expect(html).not.toContain('adsbygoogle.js');
+ });
+});
+
+describe("thumbnail dan SEO artikel",()=>{
+ it("setiap artikel memiliki gambar unik, alt deskriptif, pengantar dan jawaban praktis",async()=>{
+  expect(new Set(articles.map(a=>a.image)).size).toBe(6);
+  for(const a of articles){
+   const file=await readFile(join(process.cwd(),'public',a.image));expect(file.length).toBeGreaterThan(1000);
+   const dom=new JSDOM(renderArticle(a));const doc=dom.window.document;
+   const image=doc.querySelector<HTMLImageElement>('.pc-cover img');
+   expect(image?.getAttribute('alt')).toBe(a.imageAlt);expect(image?.getAttribute('width')).toBe('1200');
+   expect(doc.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe('https://www.atskolla.com'+a.image);
+   const schema=JSON.parse(doc.querySelector('script[type="application/ld+json"]')!.textContent!);
+   expect(schema.image).toContain('https://www.atskolla.com'+a.image);expect(schema.dateModified).toBe(a.modifiedAt);
+   expect(doc.querySelector('.pc-intro')?.textContent).toBe(a.introduction);
+   expect(doc.querySelector('.pc-questions')?.textContent).toContain(a.questions[0].answer);
+   expect(doc.querySelectorAll('h1')).toHaveLength(1);expect(doc.querySelector('[data-advertising-settings]')).toBeNull();
+   dom.window.close();
+  }
+ });
+ it("kartu gambar mempunyai ukuran tetap dan pemuatan lazy",()=>{
+  const dom=new JSDOM(renderHub());const images=dom.window.document.querySelectorAll('.pc-thumb img');expect(images).toHaveLength(6);
+  images.forEach(img=>{expect(img.getAttribute('width')).toBe('1200');expect(img.getAttribute('height')).toBe('675');expect(img.getAttribute('loading')).toBe('lazy');});dom.window.close();
+ });
+});
+
+describe("aset thumbnail",()=>{
+ it("setiap artikel menggunakan aset WebP lokal yang berbeda",async()=>{
+  expect(new Set(articles.map(a=>a.image)).size).toBe(6);
+  for(const a of articles){const bytes=await readFile(join(process.cwd(),'public',a.image));expect(bytes.subarray(0,4).toString()).toBe('RIFF');expect(bytes.subarray(8,12).toString()).toBe('WEBP');expect(bytes.length).toBeLessThan(180000);}
  });
 });
