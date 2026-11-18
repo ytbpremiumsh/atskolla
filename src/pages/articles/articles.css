@@ -4,3 +4,6 @@
 .pc-thumb{display:block;aspect-ratio:16/9;overflow:hidden;border-radius:14px;margin-bottom:20px;background:#e8effa}.pc-thumb img,.pc-cover img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain}.pc-cover{margin:0 0 28px;overflow:hidden;border-radius:16px;background:#e8effa}
 
 .pc-brand{display:block;flex-shrink:0;background:none;border:0;border-radius:0;box-shadow:none;padding:0}.pc-brand img{display:block;width:180px;height:48px;object-fit:cover;object-position:center;background:none;border:0;border-radius:0;box-shadow:none}@media(max-width:580px){.pc-brand img{width:150px;height:40px}}
+
+/* Justify article prose while allowing long words and links to wrap on mobile. */
+.pc-article p{text-align:justify;text-align-last:start;overflow-wrap:break-word;hyphens:auto}
