@@ -15,6 +15,8 @@ import { Copy, Plus, Trash2, BarChart3, Pencil, Link2, ExternalLink, Eye } from 
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
+import { vpsShortlinksAvailable, shortlinkVpsRequest } from "@/lib/shortlinkVps";
+
 type ShortLink = {
   id: string;
   code: string;
@@ -44,6 +46,8 @@ export default function SuperAdminShortlinks() {
   const { toast } = useToast();
   const [links, setLinks] = useState<ShortLink[]>([]);
   const [loading, setLoading] = useState(true);
+  const [vps, setVps] = useState(false);
+  const [vpsKey, setVpsKey] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<ShortLink | null>(null);
   const [form, setForm] = useState({ code: "", target_url: "", title: "", description: "", is_active: true });
@@ -67,9 +71,17 @@ export default function SuperAdminShortlinks() {
 
   const fetchLinks = async () => {
     setLoading(true);
-    const { data } = await supabase.from("short_links").select("*").order("created_at", { ascending: false });
-    setLinks((data as ShortLink[]) || []);
-    setLoading(false);
+    try {
+      const available = await vpsShortlinksAvailable(); setVps(available);
+      if (available) { setLinks(await shortlinkVpsRequest('/links')); }
+      else { const {data,error}=await supabase.from("short_links").select("*").order("created_at",{ascending:false}); if(error)throw error;setLinks((data as ShortLink[])||[]); }
+    } catch { toast({title:"Shortlink belum dapat dimuat",description:"Periksa koneksi atau kunci pengelola VPS.",variant:"destructive"}); }
+    finally {setLoading(false);}
+  };
+
+  const exportLinks = () => {
+    const blob = new Blob([JSON.stringify(links,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);const anchor=document.createElement('a');anchor.href=url;anchor.download='atskolla-shortlinks.json';anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
 
   const fetchGa = async () => {
@@ -122,7 +134,10 @@ export default function SuperAdminShortlinks() {
       description: form.description.trim() || null,
       is_active: form.is_active,
     };
-    if (editing) {
+    if (vps) {
+      try { await shortlinkVpsRequest(editing?'/links/'+editing.id:'/links',{method:editing?'PATCH':'POST',body:JSON.stringify(payload)}); }
+      catch(error) { return toast({title:"Gagal",description:(error as Error).message,variant:"destructive"}); }
+    } else if (editing) {
       const { error } = await supabase.from("short_links").update(payload).eq("id", editing.id);
       if (error) return toast({ title: "Gagal", description: error.message, variant: "destructive" });
     } else {
@@ -136,8 +151,8 @@ export default function SuperAdminShortlinks() {
 
   const remove = async (id: string) => {
     if (!confirm("Hapus shortlink ini?")) return;
-    const { error } = await supabase.from("short_links").delete().eq("id", id);
-    if (error) return toast({ title: "Gagal", description: error.message, variant: "destructive" });
+    if(vps){try{await shortlinkVpsRequest('/links/'+id,{method:'DELETE'});}catch(error){return toast({title:"Gagal",description:(error as Error).message,variant:"destructive"});}}
+    else {const {error}=await supabase.from("short_links").delete().eq("id",id);if(error)return toast({title:"Gagal",description:error.message,variant:"destructive"});}
     toast({ title: "Terhapus" });
     fetchLinks();
   };
@@ -148,6 +163,7 @@ export default function SuperAdminShortlinks() {
   };
 
   const openAnalytics = async (l: ShortLink) => {
+    if(vps){toast({title:l.click_count.toLocaleString('id-ID')+' klik',description:'Shortlink VPS mencatat jumlah klik tanpa menyimpan rincian perangkat pengunjung.'});return;}
     setAnalyticsLink(l);
     const { data } = await supabase
       .from("short_link_clicks")
@@ -188,6 +204,7 @@ export default function SuperAdminShortlinks() {
         </div>
       </div>
 
+      {vps && <Card><CardContent className="pt-5 space-y-2"><Label>Kunci pengelola shortlink VPS</Label><Input type="password" autoComplete="off" value={vpsKey} onChange={event=>setVpsKey(event.target.value)} placeholder="Masukkan kunci pengelola" /><Button onClick={()=>{sessionStorage.setItem('atskolla-shortlink-vps-key',vpsKey);setVpsKey('');void fetchLinks();}}>Hubungkan</Button><p className="text-xs text-muted-foreground">Kunci disimpan selama sesi browser ini. Redirect pengunjung berjalan dari VPS.</p></CardContent></Card>}
       <Tabs defaultValue="links">
         <TabsList>
           <TabsTrigger value="links"><Link2 className="h-4 w-4 mr-2" />Shortlink</TabsTrigger>
@@ -198,7 +215,7 @@ export default function SuperAdminShortlinks() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base">Daftar Shortlink</CardTitle>
-              <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Buat Baru</Button>
+              <div className="flex gap-2"><Button size="sm" variant="outline" onClick={exportLinks} disabled={loading || !links.length}>Ekspor untuk VPS</Button><Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Buat Baru</Button></div>
             </CardHeader>
             <CardContent>
               {loading ? (

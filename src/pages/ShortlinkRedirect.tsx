@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Link2 } from "lucide-react";
 
+import { resolveVpsShortlink } from "@/lib/shortlinkVps";
+
 type RedirectStatus = "loading" | "notfound" | "error";
 
 export default function ShortlinkRedirect() {
@@ -25,6 +27,14 @@ export default function ShortlinkRedirect() {
     const resolve = async () => {
       const normalizedCode = code.trim().toLowerCase();
       try {
+        const local = await resolveVpsShortlink(normalizedCode);
+        if (cancelled) return;
+        if (local.available) {
+          if (!local.target_url) { setStatus("notfound"); return; }
+          const url = new URL(local.target_url, window.location.origin);
+          if (!["https:","http:"].includes(url.protocol) || (url.origin === window.location.origin && ["/"+normalizedCode,"/s/"+normalizedCode].includes(url.pathname.toLowerCase()))) { setStatus("error"); return; }
+          window.location.replace(url.toString()); return;
+        }
         // SECURITY DEFINER RPC resolves active links without requiring public
         // SELECT access to the short_links table.
         const { data, error } = await (supabase.rpc as any)("resolve_shortlink", {
@@ -106,8 +116,8 @@ export default function ShortlinkRedirect() {
         </h1>
         <p className="max-w-md text-muted-foreground">
           {notFound
-            ? `Kode “${code}” belum terdaftar atau sedang nonaktif. Periksa kode dan statusnya di Dashboard Super Admin → CMS & Konten Publik → Shortlink.`
-            : "Database shortlink belum siap. Di Lovable, terapkan migration supabase/migrations/20261015000000_repair_shortlink_resolver.sql ke database yang terhubung, lalu coba tautan ini lagi."}
+            ? `Kode “${code}” tidak ditemukan atau tautannya sedang dinonaktifkan. Silakan hubungi pengirim untuk mendapatkan tautan yang benar.`
+            : "Tautan sedang mengalami gangguan. Silakan coba lagi atau hubungi pengirim tautan."}
         </p>
         <a href="/" className="text-primary underline">Kembali ke beranda</a>
       </div>

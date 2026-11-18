@@ -1,0 +1,18 @@
+[Unit]
+Description=ATSkolla Independent Shortlinks
+After=network.target
+[Service]
+User=www-data
+Group=www-data
+EnvironmentFile=/etc/atskolla-shortlinks.env
+WorkingDirectory=/opt/atskolla-shortlinks
+ExecStart=/usr/bin/python3 /opt/atskolla-shortlinks/server.py
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/atskolla-shortlinks
+[Install]
+WantedBy=multi-user.target
