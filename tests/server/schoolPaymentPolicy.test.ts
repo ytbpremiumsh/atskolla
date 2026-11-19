@@ -13,3 +13,21 @@ it("tarif tidak tersedia gagal tertutup",async()=>{const db={from:()=>({select:(
  it("BSI memakai kode DOKU sendiri dan tidak memakai tarif CIMB",()=>{ expect(DOKU_METHODS.find(m=>m.label==="BSI")?.id).toBe("VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI"); expect(()=>paymentQuote(100000,3000,"VIRTUAL_ACCOUNT_BANK_SYARIAH_MANDIRI",{VIRTUAL_ACCOUNT_BANK_CIMB:4000})).toThrow(); });
 
 it("BCA tidak ditawarkan meskipun tarif lama masih tersimpan",()=>{expect(DOKU_METHODS.some(m=>m.id==="VIRTUAL_ACCOUNT_BCA")).toBe(false);expect(()=>paymentQuote(100000,3000,"VIRTUAL_ACCOUNT_BCA",{VIRTUAL_ACCOUNT_BCA:4500})).toThrow("tidak valid");});
+
+it("per bank dan gerai mengikuti pilihan sekolah serta menolak permintaan langsung",async()=>{
+ const {schoolPaymentMethods,requireSchoolPaymentMethod}=await import("../../supabase/functions/_shared/schoolPaymentPolicy");
+ const db={from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{enabled_channels:["va","retail"],disabled_methods:["VIRTUAL_ACCOUNT_BNI","ONLINE_TO_OFFLINE_ALFA"]}})})})})};
+ const methods=await schoolPaymentMethods(db,"school");
+ expect(methods.map(m=>m.id)).not.toContain("VIRTUAL_ACCOUNT_BNI");
+ expect(methods.map(m=>m.id)).not.toContain("ONLINE_TO_OFFLINE_ALFA");
+ expect(methods.map(m=>m.id)).toContain("VIRTUAL_ACCOUNT_BRI");
+ expect(methods.map(m=>m.id)).toContain("ONLINE_TO_OFFLINE_INDOMARET");
+ await expect(requireSchoolPaymentMethod(db,"school","va","VIRTUAL_ACCOUNT_BNI")).rejects.toThrow("dinonaktifkan");
+ await expect(requireSchoolPaymentMethod(db,"school","retail","ONLINE_TO_OFFLINE_ALFA")).rejects.toThrow("dinonaktifkan");
+ await expect(requireSchoolPaymentMethod(db,"school","va","VIRTUAL_ACCOUNT_BRI")).resolves.toBe("VIRTUAL_ACCOUNT_BRI");
+});
+it("gagal membaca pilihan bank tidak membuka semua metode",async()=>{
+ const {schoolPaymentMethods}=await import("../../supabase/functions/_shared/schoolPaymentPolicy");
+ const db={from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({error:new Error("offline")})})})})};
+ await expect(schoolPaymentMethods(db,"school")).rejects.toThrow("belum tersedia");
+});
